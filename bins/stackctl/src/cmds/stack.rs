@@ -13,12 +13,15 @@ pub struct StackArgs {
 #[derive(Debug, Subcommand)]
 pub enum StackCommands {
     /// List available stacks
+    #[command(alias("ls"))]
     List(StackListArgs),
 
     /// Describe a specific stack
+    #[command(alias("desc"))]
     Describe(StackDescribeArgs),
 
     /// Install a specific stack
+    #[command(alias("i"), alias("in"))]
     Install(StackInstallArgs),
 }
 
