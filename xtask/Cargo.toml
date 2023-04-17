@@ -1,0 +1,11 @@
+[package]
+name = "xtask"
+version = "0.0.1"
+edition = "2021"
+
+[dependencies]
+stackctl = { path = "../bins/stackctl" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+clap_complete = "4.2.0"
+clap_mangen = "0.2.10"
