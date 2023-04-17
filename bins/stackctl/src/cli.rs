@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use stackable::constants::DEFAULT_STACKABLE_NAMESPACE;
 
 use crate::cmds::{
-    completions::CompletionsArgs, demos::DemosArgs, operator::OperatorArgs, release::ReleaseArgs,
+    completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs, release::ReleaseArgs,
     services::ServicesArgs, stack::StackArgs,
 };
 
@@ -40,7 +40,7 @@ pub enum Commands {
     Services(ServicesArgs),
 
     /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
-    Demos(DemosArgs),
+    Demo(DemoArgs),
 
     /// Generate shell completions for this tool
     #[command(alias("comp"))]
