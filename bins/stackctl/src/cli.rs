@@ -1,0 +1,96 @@
+use clap::{Parser, Subcommand, ValueEnum};
+use stackable::constants::DEFAULT_STACKABLE_NAMESPACE;
+
+use crate::cmds::{
+    completions::CompletionsArgs, demos::DemosArgs, operator::OperatorArgs, release::ReleaseArgs,
+    services::ServicesArgs, stack::StackArgs,
+};
+
+#[derive(Debug, Parser)]
+#[command(author, version, about, propagate_version = true)]
+pub struct Cli {
+    /// Log level this application uses
+    #[arg(short, long, value_enum, default_value_t = Default::default())]
+    pub(crate) log_level: LogLevel,
+
+    /// Namespace in the cluster used to deploy the products and operators
+    #[arg(short, long, default_value = DEFAULT_STACKABLE_NAMESPACE)]
+    pub(crate) namespace: String,
+
+    #[command(subcommand)]
+    pub(crate) subcommand: Commands,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum Commands {
+    /// Interact with single operator instead of the full platform
+    #[command(alias("op"))]
+    Operator(OperatorArgs),
+
+    /// Interact with all operators of the platform which are released together
+    #[command(alias("re"))]
+    Release(ReleaseArgs),
+
+    /// Interact with stacks, which are ready-to-use product combinations
+    #[command(alias("st"))]
+    Stack(StackArgs),
+
+    /// Interact with deployed services of products
+    #[command(alias("svc"))]
+    Services(ServicesArgs),
+
+    /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
+    Demos(DemosArgs),
+
+    /// Generate shell completions for this tool
+    #[command(alias("comp"))]
+    Completions(CompletionsArgs),
+}
+
+#[derive(Clone, Debug, ValueEnum)]
+pub enum LogLevel {
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+impl Default for LogLevel {
+    fn default() -> Self {
+        Self::Warn
+    }
+}
+
+#[derive(Clone, Debug, ValueEnum)]
+pub enum OutputType {
+    /// Print output formatted as plain text
+    Plain,
+
+    /// Print output formatted as JSON
+    Json,
+
+    /// Print output formatted as YAML
+    Yaml,
+}
+
+impl Default for OutputType {
+    fn default() -> Self {
+        Self::Plain
+    }
+}
+
+#[derive(Clone, Debug, ValueEnum)]
+pub enum ClusterType {
+    /// Use a kind cluster, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>
+    Kind,
+
+    /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
+    Minikube,
+}
+
+impl Default for ClusterType {
+    fn default() -> Self {
+        Self::Kind
+    }
+}

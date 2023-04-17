@@ -1,0 +1,15 @@
+[package]
+name = "stackctl"
+version = "0.0.1"
+edition = "2021"
+
+[lib]
+path = "src/main.rs"
+
+[dependencies]
+thiserror = { workspace = true }
+stackable = { path = "../../" }
+anyhow = { workspace = true }
+clap = { workspace = true }
+
+
