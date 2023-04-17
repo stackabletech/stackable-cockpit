@@ -1,0 +1,49 @@
+.ie \n(.g .ds Aq \(aq
+.el .ds Aq '
+.TH stackctl 1  "stackctl 0.0.1" 
+.SH NAME
+stackctl
+.SH SYNOPSIS
+\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+.SH DESCRIPTION
+.SH OPTIONS
+.TP
+\fB\-l\fR, \fB\-\-log\-level\fR=\fILOG_LEVEL\fR [default: warn]
+Log level this application uses
+.br
+
+.br
+[\fIpossible values: \fRerror, warn, info, debug, trace]
+.TP
+\fB\-n\fR, \fB\-\-namespace\fR=\fINAMESPACE\fR [default: stackable]
+Namespace in the cluster used to deploy the products and operators
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version
+.SH SUBCOMMANDS
+.TP
+stackctl\-operator(1)
+Interact with single operator instead of the full platform
+.TP
+stackctl\-release(1)
+Interact with all operators of the platform which are released together
+.TP
+stackctl\-stack(1)
+Interact with stacks, which are ready\-to\-use product combinations
+.TP
+stackctl\-services(1)
+Interact with deployed services of products
+.TP
+stackctl\-demos(1)
+Interact with demos, which are end\-to\-end usage demonstrations of the Stackable data platform
+.TP
+stackctl\-completions(1)
+Generate shell completions for this tool
+.TP
+stackctl\-help(1)
+Print this message or the help of the given subcommand(s)
+.SH VERSION
+v0.0.1
