@@ -81,9 +81,11 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
-'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
-'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -192,16 +194,33 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (describe)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'*-i+[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
+'*--include=[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
+'*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
+'*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
@@ -212,6 +231,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
+':release_name -- Name of the release to uninstall:' \
 && ret=0
 ;;
 (help)
@@ -260,7 +280,97 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
+":: :_stackctl__stack_commands" \
+"*::: :->stack" \
 && ret=0
+
+    case $state in
+    (stack)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-stack-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(describe)
+_arguments "${_arguments_options[@]}" \
+'-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':stack_name -- Name of the stack to describe:' \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" \
+'*-p+[List of parameters to use when installing the stack]:PARAMETERS: ' \
+'*--parameters=[List of parameters to use when installing the stack]:PARAMETERS: ' \
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_stackctl__stack__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-stack-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(describe)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
 ;;
 (services)
 _arguments "${_arguments_options[@]}" \
@@ -268,15 +378,162 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
+":: :_stackctl__services_commands" \
+"*::: :->services" \
+&& ret=0
+
+    case $state in
+    (services)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-services-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'-a[Will display services of all namespaces, not only the current one]' \
+'--all-namespaces[Will display services of all namespaces, not only the current one]' \
+'-s[Display credentials and secrets in the output]' \
+'--show-credentials[Display credentials and secrets in the output]' \
+'--show-versions[Display product versions in the output]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
 && ret=0
 ;;
-(demos)
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_stackctl__services__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-services-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
+(demo)
 _arguments "${_arguments_options[@]}" \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
+":: :_stackctl__demo_commands" \
+"*::: :->demo" \
 && ret=0
+
+    case $state in
+    (demo)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-demo-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(describe)
+_arguments "${_arguments_options[@]}" \
+'-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+json\:"Print output formatted as JSON"
+yaml\:"Print output formatted as YAML"))' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" \
+'*-s+[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
+'*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
+'*-p+[List of parameters to use when installing the demo]:PARAMETERS: ' \
+'*--parameters=[List of parameters to use when installing the demo]:PARAMETERS: ' \
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
+kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':DEMO -- Demo to install:' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_stackctl__demo__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-demo-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(describe)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
@@ -368,15 +625,79 @@ esac
 ;;
 (stack)
 _arguments "${_arguments_options[@]}" \
+":: :_stackctl__help__stack_commands" \
+"*::: :->stack" \
 && ret=0
+
+    case $state in
+    (stack)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-help-stack-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(describe)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 ;;
 (services)
 _arguments "${_arguments_options[@]}" \
+":: :_stackctl__help__services_commands" \
+"*::: :->services" \
 && ret=0
-;;
-(demos)
+
+    case $state in
+    (services)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-help-services-command-$line[1]:"
+        case $line[1] in
+            (list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
+;;
+        esac
+    ;;
+esac
+;;
+(demo)
+_arguments "${_arguments_options[@]}" \
+":: :_stackctl__help__demo_commands" \
+"*::: :->demo" \
+&& ret=0
+
+    case $state in
+    (demo)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-help-demo-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(describe)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
@@ -402,7 +723,7 @@ _stackctl_commands() {
 'release:Interact with all operators of the platform which are released together' \
 'stack:Interact with stacks, which are ready-to-use product combinations' \
 'services:Interact with deployed services of products' \
-'demos:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
+'demo:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
 'completions:Generate shell completions for this tool' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -418,15 +739,39 @@ _stackctl__help__completions_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl help completions commands' commands "$@"
 }
-(( $+functions[_stackctl__demos_commands] )) ||
-_stackctl__demos_commands() {
-    local commands; commands=()
-    _describe -t commands 'stackctl demos commands' commands "$@"
+(( $+functions[_stackctl__demo_commands] )) ||
+_stackctl__demo_commands() {
+    local commands; commands=(
+'list:List deployed services' \
+'describe:Print out detailed demo information' \
+'install:Install a specific demo' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'stackctl demo commands' commands "$@"
 }
-(( $+functions[_stackctl__help__demos_commands] )) ||
-_stackctl__help__demos_commands() {
+(( $+functions[_stackctl__help__demo_commands] )) ||
+_stackctl__help__demo_commands() {
+    local commands; commands=(
+'list:List deployed services' \
+'describe:Print out detailed demo information' \
+'install:Install a specific demo' \
+    )
+    _describe -t commands 'stackctl help demo commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__describe_commands] )) ||
+_stackctl__demo__describe_commands() {
     local commands; commands=()
-    _describe -t commands 'stackctl help demos commands' commands "$@"
+    _describe -t commands 'stackctl demo describe commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__help__describe_commands] )) ||
+_stackctl__demo__help__describe_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo help describe commands' commands "$@"
+}
+(( $+functions[_stackctl__help__demo__describe_commands] )) ||
+_stackctl__help__demo__describe_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help demo describe commands' commands "$@"
 }
 (( $+functions[_stackctl__help__operator__describe_commands] )) ||
 _stackctl__help__operator__describe_commands() {
@@ -437,6 +782,11 @@ _stackctl__help__operator__describe_commands() {
 _stackctl__help__release__describe_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl help release describe commands' commands "$@"
+}
+(( $+functions[_stackctl__help__stack__describe_commands] )) ||
+_stackctl__help__stack__describe_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help stack describe commands' commands "$@"
 }
 (( $+functions[_stackctl__operator__describe_commands] )) ||
 _stackctl__operator__describe_commands() {
@@ -458,6 +808,31 @@ _stackctl__release__help__describe_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl release help describe commands' commands "$@"
 }
+(( $+functions[_stackctl__stack__describe_commands] )) ||
+_stackctl__stack__describe_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack describe commands' commands "$@"
+}
+(( $+functions[_stackctl__stack__help__describe_commands] )) ||
+_stackctl__stack__help__describe_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack help describe commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__help_commands] )) ||
+_stackctl__demo__help_commands() {
+    local commands; commands=(
+'list:List deployed services' \
+'describe:Print out detailed demo information' \
+'install:Install a specific demo' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'stackctl demo help commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__help__help_commands] )) ||
+_stackctl__demo__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo help help commands' commands "$@"
+}
 (( $+functions[_stackctl__help_commands] )) ||
 _stackctl__help_commands() {
     local commands; commands=(
@@ -465,7 +840,7 @@ _stackctl__help_commands() {
 'release:Interact with all operators of the platform which are released together' \
 'stack:Interact with stacks, which are ready-to-use product combinations' \
 'services:Interact with deployed services of products' \
-'demos:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
+'demo:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
 'completions:Generate shell completions for this tool' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -509,6 +884,49 @@ _stackctl__release__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl release help help commands' commands "$@"
 }
+(( $+functions[_stackctl__services__help_commands] )) ||
+_stackctl__services__help_commands() {
+    local commands; commands=(
+'list:List deployed services' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'stackctl services help commands' commands "$@"
+}
+(( $+functions[_stackctl__services__help__help_commands] )) ||
+_stackctl__services__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl services help help commands' commands "$@"
+}
+(( $+functions[_stackctl__stack__help_commands] )) ||
+_stackctl__stack__help_commands() {
+    local commands; commands=(
+'list:List available stacks' \
+'describe:Describe a specific stack' \
+'install:Install a specific stack' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'stackctl stack help commands' commands "$@"
+}
+(( $+functions[_stackctl__stack__help__help_commands] )) ||
+_stackctl__stack__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack help help commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__help__install_commands] )) ||
+_stackctl__demo__help__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo help install commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__install_commands] )) ||
+_stackctl__demo__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo install commands' commands "$@"
+}
+(( $+functions[_stackctl__help__demo__install_commands] )) ||
+_stackctl__help__demo__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help demo install commands' commands "$@"
+}
 (( $+functions[_stackctl__help__operator__install_commands] )) ||
 _stackctl__help__operator__install_commands() {
     local commands; commands=()
@@ -518,6 +936,11 @@ _stackctl__help__operator__install_commands() {
 _stackctl__help__release__install_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl help release install commands' commands "$@"
+}
+(( $+functions[_stackctl__help__stack__install_commands] )) ||
+_stackctl__help__stack__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help stack install commands' commands "$@"
 }
 (( $+functions[_stackctl__operator__help__install_commands] )) ||
 _stackctl__operator__help__install_commands() {
@@ -539,6 +962,16 @@ _stackctl__release__install_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl release install commands' commands "$@"
 }
+(( $+functions[_stackctl__stack__help__install_commands] )) ||
+_stackctl__stack__help__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack help install commands' commands "$@"
+}
+(( $+functions[_stackctl__stack__install_commands] )) ||
+_stackctl__stack__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack install commands' commands "$@"
+}
 (( $+functions[_stackctl__help__operator__installed_commands] )) ||
 _stackctl__help__operator__installed_commands() {
     local commands; commands=()
@@ -554,6 +987,21 @@ _stackctl__operator__installed_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl operator installed commands' commands "$@"
 }
+(( $+functions[_stackctl__demo__help__list_commands] )) ||
+_stackctl__demo__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo help list commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__list_commands] )) ||
+_stackctl__demo__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo list commands' commands "$@"
+}
+(( $+functions[_stackctl__help__demo__list_commands] )) ||
+_stackctl__help__demo__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help demo list commands' commands "$@"
+}
 (( $+functions[_stackctl__help__operator__list_commands] )) ||
 _stackctl__help__operator__list_commands() {
     local commands; commands=()
@@ -563,6 +1011,16 @@ _stackctl__help__operator__list_commands() {
 _stackctl__help__release__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl help release list commands' commands "$@"
+}
+(( $+functions[_stackctl__help__services__list_commands] )) ||
+_stackctl__help__services__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help services list commands' commands "$@"
+}
+(( $+functions[_stackctl__help__stack__list_commands] )) ||
+_stackctl__help__stack__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help stack list commands' commands "$@"
 }
 (( $+functions[_stackctl__operator__help__list_commands] )) ||
 _stackctl__operator__help__list_commands() {
@@ -583,6 +1041,26 @@ _stackctl__release__help__list_commands() {
 _stackctl__release__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl release list commands' commands "$@"
+}
+(( $+functions[_stackctl__services__help__list_commands] )) ||
+_stackctl__services__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl services help list commands' commands "$@"
+}
+(( $+functions[_stackctl__services__list_commands] )) ||
+_stackctl__services__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl services list commands' commands "$@"
+}
+(( $+functions[_stackctl__stack__help__list_commands] )) ||
+_stackctl__stack__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack help list commands' commands "$@"
+}
+(( $+functions[_stackctl__stack__list_commands] )) ||
+_stackctl__stack__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl stack list commands' commands "$@"
 }
 (( $+functions[_stackctl__help__operator_commands] )) ||
 _stackctl__help__operator_commands() {
@@ -630,22 +1108,36 @@ _stackctl__release_commands() {
 }
 (( $+functions[_stackctl__help__services_commands] )) ||
 _stackctl__help__services_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'list:List deployed services' \
+    )
     _describe -t commands 'stackctl help services commands' commands "$@"
 }
 (( $+functions[_stackctl__services_commands] )) ||
 _stackctl__services_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'list:List deployed services' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
     _describe -t commands 'stackctl services commands' commands "$@"
 }
 (( $+functions[_stackctl__help__stack_commands] )) ||
 _stackctl__help__stack_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'list:List available stacks' \
+'describe:Describe a specific stack' \
+'install:Install a specific stack' \
+    )
     _describe -t commands 'stackctl help stack commands' commands "$@"
 }
 (( $+functions[_stackctl__stack_commands] )) ||
 _stackctl__stack_commands() {
-    local commands; commands=()
+    local commands; commands=(
+'list:List available stacks' \
+'describe:Describe a specific stack' \
+'install:Install a specific stack' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
     _describe -t commands 'stackctl stack commands' commands "$@"
 }
 (( $+functions[_stackctl__help__operator__uninstall_commands] )) ||
