@@ -82,7 +82,10 @@ impl Default for OutputType {
 
 #[derive(Clone, Debug, ValueEnum)]
 pub enum ClusterType {
-    /// Use a kind cluster, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>
+    /// Don't use any local cluster
+    None,
+
+    /// Use a kind cluster, see 'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'
     Kind,
 
     /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
@@ -91,6 +94,6 @@ pub enum ClusterType {
 
 impl Default for ClusterType {
     fn default() -> Self {
-        Self::Kind
+        Self::None
     }
 }

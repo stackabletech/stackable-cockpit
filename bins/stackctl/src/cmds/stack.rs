@@ -57,7 +57,7 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
     parameters: Vec<String>,
 
     /// Type of local cluster to use for testing
-    #[arg(short, long, value_enum, value_name = "CLUSTER_TYPE")]
+    #[arg(short, long, value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
     #[arg(
         long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
 control-plane and 3 workers) will be created for testing purposes. Currently
