@@ -10,6 +10,7 @@ path = "src/main.rs"
 clap_complete = { workspace = true }
 thiserror = { workspace = true }
 stackable = { path = "../../" }
+dotenvy = { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }
 
