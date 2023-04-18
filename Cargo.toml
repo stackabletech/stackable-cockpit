@@ -12,6 +12,7 @@ edition = "2021"
 
 [dependencies]
 thiserror = { workspace = true }
+which = { workspace = true }
 
 [workspace.dependencies]
 serde = { version = "1.0.160", features = ["derive"] }
@@ -20,3 +21,4 @@ serde_json = "1.0.96"
 serde_yaml = "0.9.21"
 thiserror = "1.0.40"
 anyhow = "1.0.70"
+which = "4.4.0"
