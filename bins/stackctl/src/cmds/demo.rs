@@ -1,8 +1,16 @@
+use std::collections::HashMap;
+
 use clap::{Args, Subcommand};
 use stackable::constants::DEFAULT_LOCAL_CLUSTER_NAME;
 use thiserror::Error;
 
-use crate::cli::{ClusterType, OutputType};
+use crate::{
+    cli::{ClusterType, OutputType},
+    utils::read_from_file_or_url,
+};
+
+const REMOTE_DEMO_FILE: &str =
+    "https://raw.githubusercontent.com/stackabletech/stackablectl/main/demos/demos-v2.yaml";
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -79,6 +87,22 @@ impl DemoArgs {
     }
 }
 
+pub struct DemoList(HashMap<String, String>);
+
+impl DemoList {
+    pub fn build() -> Self {
+        let mut list = HashMap::new();
+
+        // TODO (Techassi): First load the remote demo file
+
+        // After that, the STACKABLE_ADDITIONAL_DEMO_FILES env var is used
+
+        // Lastly, the CLI argument --additional-demo-files is used
+
+        Self(list)
+    }
+}
+
 fn list_cmd(args: &DemoListArgs) -> Result<String, DemoError> {
     todo!()
 }
@@ -89,4 +113,8 @@ fn describe_cmd(args: &DemoDescribeArgs) -> Result<String, DemoError> {
 
 fn install_cmd(args: &DemoInstallArgs) -> Result<String, DemoError> {
     todo!()
+}
+
+async fn get_remote_demos() {
+    let content = read_from_file_or_url(REMOTE_DEMO_FILE).await?;
 }
