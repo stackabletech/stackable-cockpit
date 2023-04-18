@@ -3,6 +3,7 @@ use std::process::Command;
 use crate::{
     cluster::ClusterError,
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
+    utils::path::binaries_present,
 };
 
 pub struct MinikubeCluster {
@@ -24,6 +25,12 @@ impl MinikubeCluster {
 
     /// Create a new local cluster by calling the minikube binary
     pub fn create(&self) -> Result<(), ClusterError> {
+        // Check if required binaries are present
+        if !binaries_present(["docker", "minikube"]) {
+            return Err(ClusterError::MissingDeps);
+        }
+
+        // Create local cluster via minikube
         let minikube_cmd = Command::new("minikube")
             .arg("start")
             .args(["--nodes", self.node_count.to_string().as_str()])

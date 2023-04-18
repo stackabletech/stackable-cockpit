@@ -16,4 +16,7 @@ pub enum ClusterError {
 
     #[error("command error: {0}")]
     Cmd(String),
+
+    #[error("missing dependencies")]
+    MissingDeps,
 }

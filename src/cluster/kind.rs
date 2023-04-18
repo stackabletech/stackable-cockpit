@@ -6,6 +6,7 @@ use std::{
 use crate::{
     cluster::ClusterError,
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
+    utils::path::binaries_present,
 };
 
 const KIND_CLUSTER_DEF_HEADER: &str = r#"
@@ -48,6 +49,11 @@ impl KindCluster {
 
     /// Create a new local cluster by calling the kind binary
     pub fn create(&self) -> Result<(), ClusterError> {
+        // Check if required binaries are present
+        if !binaries_present(["docker", "kind"]) {
+            return Err(ClusterError::MissingDeps);
+        }
+
         let config = KindClusterConfig::new(self.node_count);
 
         let kind_cmd = Command::new("kind")
