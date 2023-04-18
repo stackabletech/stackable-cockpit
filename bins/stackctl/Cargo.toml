@@ -7,6 +7,7 @@ edition = "2021"
 path = "src/main.rs"
 
 [dependencies]
+clap_complete = { workspace = true }
 thiserror = { workspace = true }
 stackable = { path = "../../" }
 anyhow = { workspace = true }
