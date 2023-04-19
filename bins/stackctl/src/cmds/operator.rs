@@ -21,11 +21,11 @@ pub enum OperatorCommands {
     Describe(OperatorDescribeArgs),
 
     /// Install one or more operators
-    #[command(alias("i"), alias("in"))]
+    #[command(aliases(["i", "in"]))]
     Install(OperatorInstallArgs),
 
     /// Uninstall one or more operators
-    #[command(alias("rm"), alias("un"))]
+    #[command(aliases(["rm", "un"]))]
     Uninstall(OperatorUninstallArgs),
 
     /// List installed operator (same as list -i)

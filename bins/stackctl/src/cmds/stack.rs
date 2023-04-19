@@ -21,7 +21,7 @@ pub enum StackCommands {
     Describe(StackDescribeArgs),
 
     /// Install a specific stack
-    #[command(alias("i"), alias("in"))]
+    #[command(aliases(["i", "in"]))]
     Install(StackInstallArgs),
 }
 

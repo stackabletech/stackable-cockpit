@@ -21,11 +21,11 @@ pub enum ReleaseCommands {
     Describe(ReleaseDescribeArgs),
 
     /// Install a specific release
-    #[command(alias("i"), alias("in"))]
+    #[command(aliases(["i", "in"]))]
     Install(ReleaseInstallArgs),
 
     /// Uninstall a release
-    #[command(alias("rm"), alias("un"))]
+    #[command(aliases(["rm", "un"]))]
     Uninstall(ReleaseUninstallArgs),
 }
 

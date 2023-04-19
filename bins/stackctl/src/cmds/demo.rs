@@ -29,7 +29,7 @@ pub enum DemoCommands {
     Describe(DemoDescribeArgs),
 
     /// Install a specific demo
-    #[command(alias("i"), alias("in"))]
+    #[command(aliases(["i", "in"]))]
     Install(DemoInstallArgs),
 }
 
