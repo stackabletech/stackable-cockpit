@@ -1,12 +1,16 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, env};
 
 use clap::{Args, Subcommand};
-use stackable::constants::DEFAULT_LOCAL_CLUSTER_NAME;
+use stackable::{
+    constants::DEFAULT_LOCAL_CLUSTER_NAME,
+    types::demo::{DemoSpecV2, DemosV2},
+};
 use thiserror::Error;
 
 use crate::{
     cli::{ClusterType, OutputType},
-    utils::read_from_file_or_url,
+    constants::ADDITIONAL_DEMO_FILES_ENV_KEY,
+    utils::{read_from_file_or_url, string_to_paths, PathParseError, ReadError},
 };
 
 const REMOTE_DEMO_FILE: &str =
@@ -75,7 +79,16 @@ installation on the system."
 }
 
 #[derive(Debug, Error)]
-pub enum DemoError {}
+pub enum DemoError {
+    #[error("read error: {0}")]
+    ReadError(#[from] ReadError),
+
+    #[error("yaml error: {0}")]
+    YamlError(#[from] serde_yaml::Error),
+
+    #[error("path parse error: {0}")]
+    PathParseError(#[from] PathParseError),
+}
 
 impl DemoArgs {
     pub fn run(&self) -> Result<String, DemoError> {
@@ -87,19 +100,26 @@ impl DemoArgs {
     }
 }
 
-pub struct DemoList(HashMap<String, String>);
+pub struct DemoList(HashMap<String, DemoSpecV2>);
 
 impl DemoList {
-    pub fn build() -> Self {
+    pub async fn build(additional_demo_files: Vec<String>) -> Result<Self, DemoError> {
         let mut list = HashMap::new();
 
-        // TODO (Techassi): First load the remote demo file
+        // First load the remote demo file
+        let demos = get_remote_demos().await?;
+        for (demo_name, demo) in demos.iter() {
+            list.insert(demo_name.to_owned(), demo.to_owned());
+        }
 
         // After that, the STACKABLE_ADDITIONAL_DEMO_FILES env var is used
+        if let Ok(paths_string) = env::var(ADDITIONAL_DEMO_FILES_ENV_KEY) {
+            let paths = string_to_paths(paths_string)?;
+        }
 
         // Lastly, the CLI argument --additional-demo-files is used
 
-        Self(list)
+        Ok(Self(list))
     }
 }
 
@@ -115,6 +135,9 @@ fn install_cmd(args: &DemoInstallArgs) -> Result<String, DemoError> {
     todo!()
 }
 
-async fn get_remote_demos() {
+async fn get_remote_demos() -> Result<DemosV2, DemoError> {
     let content = read_from_file_or_url(REMOTE_DEMO_FILE).await?;
+    let demos = serde_yaml::from_str::<DemosV2>(&content)?;
+
+    Ok(demos)
 }

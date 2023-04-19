@@ -10,8 +10,14 @@ pub struct DemosV2 {
     demos: HashMap<String, DemoSpecV2>,
 }
 
+impl DemosV2 {
+    pub fn iter(&self) -> std::collections::hash_map::Iter<String, DemoSpecV2> {
+        self.demos.iter()
+    }
+}
+
 /// This struct describes a demo with the v2 spec
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DemoSpecV2 {
     /// A short description of the demo

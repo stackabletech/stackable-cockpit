@@ -5,10 +5,10 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 pub enum ReadError {
     #[error("io error: {0}")]
-    Io(#[from] io::Error),
+    IoError(#[from] io::Error),
 
     #[error("request error: {0}")]
-    Request(#[from] reqwest::Error),
+    RequestError(#[from] reqwest::Error),
 }
 
 /// Reads the contents of a file either by retrieving a file via HTTP(S) or by reading a local file on disk via it's

@@ -9,6 +9,7 @@ path = "src/main.rs"
 [dependencies]
 clap_complete = { workspace = true }
 lazy_static = { workspace = true }
+serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 stackable = { path = "../../" }
 dotenvy = { workspace = true }
