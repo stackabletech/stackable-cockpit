@@ -24,6 +24,7 @@ pub struct DemoSpecV2 {
     pub description: String,
 
     /// An optional link to a documentation page
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub documentation: Option<String>,
 
     /// The name of the underlying stack

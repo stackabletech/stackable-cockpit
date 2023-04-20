@@ -28,7 +28,7 @@ async fn main() -> Result<()> {
         Commands::Release(args) => args.run()?,
         Commands::Stack(args) => args.run()?,
         Commands::Services(args) => args.run()?,
-        Commands::Demo(args) => args.run()?,
+        Commands::Demo(args) => args.run().await?,
         Commands::Completions(args) => args.run()?,
     };
 

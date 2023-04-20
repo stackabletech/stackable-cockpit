@@ -14,6 +14,7 @@ edition = "2021"
 thiserror = { workspace = true }
 which = { workspace = true }
 serde = { workspace = true }
+url = { workspace = true }
 
 [workspace.dependencies]
 tokio = { version = "1.27.0", features = ["rt-multi-thread", "macros"] }
@@ -28,3 +29,4 @@ thiserror = "1.0.40"
 dotenvy = "0.15.7"
 anyhow = "1.0.70"
 which = "4.4.0"
+url = "2.3.1"

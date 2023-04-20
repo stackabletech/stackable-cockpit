@@ -9,6 +9,7 @@ path = "src/main.rs"
 [dependencies]
 clap_complete = { workspace = true }
 lazy_static = { workspace = true }
+serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 thiserror = { workspace = true }
 stackable = { path = "../../" }
@@ -17,5 +18,6 @@ reqwest = { workspace = true }
 anyhow = { workspace = true }
 tokio = { workspace = true }
 clap = { workspace = true }
+comfy-table = "6.1.4"
 
 
