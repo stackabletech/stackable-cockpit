@@ -19,6 +19,7 @@ _stackctl() {
 '--log-level=[Log level this application uses]:LOG_LEVEL:(error warn info debug trace)' \
 '-n+[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
 '--namespace=[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
+'*--additional-demo-files=[]:ADDITIONAL_DEMO_FILES:_files' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \
@@ -477,6 +478,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
+':DEMO -- Demo to describe:' \
 && ret=0
 ;;
 (install)
@@ -497,6 +499,14 @@ minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '-V[Print version]' \
 '--version[Print version]' \
 ':DEMO -- Demo to install:' \
+&& ret=0
+;;
+(uninstall)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
 && ret=0
 ;;
 (help)
@@ -520,6 +530,10 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (install)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(uninstall)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -763,6 +777,10 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
+(uninstall)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -858,9 +876,10 @@ _stackctl__help__completions_commands() {
 (( $+functions[_stackctl__demo_commands] )) ||
 _stackctl__demo_commands() {
     local commands; commands=(
-'list:List deployed services' \
+'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
+'uninstall:' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackctl demo commands' commands "$@"
@@ -868,9 +887,10 @@ _stackctl__demo_commands() {
 (( $+functions[_stackctl__help__demo_commands] )) ||
 _stackctl__help__demo_commands() {
     local commands; commands=(
-'list:List deployed services' \
+'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
+'uninstall:' \
     )
     _describe -t commands 'stackctl help demo commands' commands "$@"
 }
@@ -967,9 +987,10 @@ _stackctl__completions__help__help_commands() {
 (( $+functions[_stackctl__demo__help_commands] )) ||
 _stackctl__demo__help_commands() {
     local commands; commands=(
-'list:List deployed services' \
+'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
+'uninstall:' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackctl demo help commands' commands "$@"
@@ -1285,6 +1306,21 @@ _stackctl__stack_commands() {
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackctl stack commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__help__uninstall_commands] )) ||
+_stackctl__demo__help__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo help uninstall commands' commands "$@"
+}
+(( $+functions[_stackctl__demo__uninstall_commands] )) ||
+_stackctl__demo__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl demo uninstall commands' commands "$@"
+}
+(( $+functions[_stackctl__help__demo__uninstall_commands] )) ||
+_stackctl__help__demo__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help demo uninstall commands' commands "$@"
 }
 (( $+functions[_stackctl__help__operator__uninstall_commands] )) ||
 _stackctl__help__operator__uninstall_commands() {

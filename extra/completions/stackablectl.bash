@@ -69,6 +69,9 @@ _stackctl() {
             stackctl__demo,list)
                 cmd="stackctl__demo__list"
                 ;;
+            stackctl__demo,uninstall)
+                cmd="stackctl__demo__uninstall"
+                ;;
             stackctl__demo__help,describe)
                 cmd="stackctl__demo__help__describe"
                 ;;
@@ -80,6 +83,9 @@ _stackctl() {
                 ;;
             stackctl__demo__help,list)
                 cmd="stackctl__demo__help__list"
+                ;;
+            stackctl__demo__help,uninstall)
+                cmd="stackctl__demo__help__uninstall"
                 ;;
             stackctl__help,completions)
                 cmd="stackctl__help__completions"
@@ -119,6 +125,9 @@ _stackctl() {
                 ;;
             stackctl__help__demo,list)
                 cmd="stackctl__help__demo__list"
+                ;;
+            stackctl__help__demo,uninstall)
+                cmd="stackctl__help__demo__uninstall"
                 ;;
             stackctl__help__operator,describe)
                 cmd="stackctl__help__operator__describe"
@@ -268,7 +277,7 @@ _stackctl() {
 
     case "${cmd}" in
         stackctl)
-            opts="-l -n -h -V --log-level --namespace --help --version operator release stack services demo completions help"
+            opts="-l -n -h -V --log-level --namespace --additional-demo-files --help --version operator release stack services demo completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -287,6 +296,10 @@ _stackctl() {
                     return 0
                     ;;
                 -n)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --additional-demo-files)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -424,7 +437,7 @@ _stackctl() {
             return 0
             ;;
         stackctl__demo)
-            opts="-h -V --help --version list describe install help"
+            opts="-h -V --help --version list describe install uninstall help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -438,7 +451,7 @@ _stackctl() {
             return 0
             ;;
         stackctl__demo__describe)
-            opts="-o -h -V --output --help --version"
+            opts="-o -h -V --output --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -460,7 +473,7 @@ _stackctl() {
             return 0
             ;;
         stackctl__demo__help)
-            opts="list describe install help"
+            opts="list describe install uninstall help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -516,6 +529,20 @@ _stackctl() {
             return 0
             ;;
         stackctl__demo__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__demo__help__uninstall)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -586,6 +613,20 @@ _stackctl() {
                     COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
                     return 0
                     ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__demo__uninstall)
+            opts="-h -V --help --version"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -664,7 +705,7 @@ _stackctl() {
             return 0
             ;;
         stackctl__help__demo)
-            opts="list describe install"
+            opts="list describe install uninstall"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -706,6 +747,20 @@ _stackctl() {
             return 0
             ;;
         stackctl__help__demo__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__help__demo__uninstall)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
