@@ -2,6 +2,8 @@ use std::{fmt::Display, str::FromStr};
 
 use thiserror::Error;
 
+/// OperatorSpec describes the format of an operator name with optional version number. The string format is
+/// `<OPERATOR_NAME>(=<VERSION>)`. Valid values values are: `operator`, `operator=1.2.3` or `operator=1.2.3-rc1`.
 #[derive(Clone, Debug)]
 pub struct OperatorSpec {
     pub operator_name: String,
@@ -34,11 +36,11 @@ impl Display for OperatorSpec {
     }
 }
 
-impl TryFrom<String> for OperatorSpec {
-    type Error = OperatorSpecParseError;
+impl FromStr for OperatorSpec {
+    type Err = OperatorSpecParseError;
 
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        let input = value.trim();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let input = s.trim();
 
         // Empty input is not allowed
         if input.is_empty() {
@@ -77,11 +79,11 @@ impl TryFrom<String> for OperatorSpec {
     }
 }
 
-impl FromStr for OperatorSpec {
-    type Err = OperatorSpecParseError;
+impl TryFrom<String> for OperatorSpec {
+    type Error = OperatorSpecParseError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::try_from(s.to_string())
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::from_str(&value)
     }
 }
 
@@ -98,7 +100,7 @@ mod test {
     use crate::types::platform::{OperatorSpec, OperatorSpecParseError};
 
     #[test]
-    fn test_simple_operator_spec() {
+    fn simple_operator_spec() {
         match OperatorSpec::try_from("operator") {
             Ok(spec) => {
                 assert_eq!(spec.operator_name, String::from("operator"));
@@ -109,7 +111,7 @@ mod test {
     }
 
     #[test]
-    fn test_version_operator_spec() {
+    fn version_operator_spec() {
         match OperatorSpec::try_from("operator=1.2.3") {
             Ok(spec) => {
                 assert_eq!(spec.operator_name, String::from("operator"));
@@ -120,7 +122,7 @@ mod test {
     }
 
     #[test]
-    fn test_empty_operator_spec() {
+    fn empty_operator_spec() {
         match OperatorSpec::try_from("") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
             Err(err) => assert_eq!(err, OperatorSpecParseError::InvalidSpecInput),
@@ -128,7 +130,7 @@ mod test {
     }
 
     #[test]
-    fn test_empty_version_operator_spec() {
+    fn empty_version_operator_spec() {
         match OperatorSpec::try_from("operator=") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
             Err(err) => assert_eq!(err, OperatorSpecParseError::InvalidSpecVersion),
@@ -136,7 +138,7 @@ mod test {
     }
 
     #[test]
-    fn test_invalid_version_operator_spec() {
+    fn invalid_version_operator_spec() {
         match OperatorSpec::try_from("operator=1.2.3=") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
             Err(err) => assert_eq!(err, OperatorSpecParseError::InvalidEqualSignCount),
