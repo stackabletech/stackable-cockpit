@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::manifest::ManifestSpec;
+use crate::types::demos::ManifestSpec;
 
 /// This struct describes a complete demos v2 file
 #[derive(Debug, Deserialize, Serialize)]

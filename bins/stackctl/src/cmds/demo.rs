@@ -4,7 +4,7 @@ use clap::{Args, Subcommand};
 use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
 use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    types::demo::{DemoSpecV2, DemosV2},
+    types::demos::{DemoSpecV2, DemosV2},
 };
 use thiserror::Error;
 
@@ -227,6 +227,10 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
 /// Install a specific demo
 fn install_cmd(args: &DemoInstallArgs, list: DemoList) -> Result<String, DemoError> {
+    let demo = list
+        .get(&args.demo_name)
+        .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
+
     todo!()
 }
 
