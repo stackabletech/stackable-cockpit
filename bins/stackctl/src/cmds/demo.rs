@@ -36,6 +36,9 @@ pub enum DemoCommands {
     /// Install a specific demo
     #[command(aliases(["i", "in"]))]
     Install(DemoInstallArgs),
+
+    #[command(aliases(["rm", "un"]))]
+    Uninstall(DemoUninstallArgs),
 }
 
 #[derive(Debug, Args)]
@@ -83,6 +86,9 @@ installation on the system."
     cluster_name: String,
 }
 
+#[derive(Debug, Args)]
+pub struct DemoUninstallArgs {}
+
 #[derive(Debug, Error)]
 pub enum DemoError {
     #[error("read error: {0}")]
@@ -111,6 +117,7 @@ impl DemoArgs {
             DemoCommands::List(args) => list_cmd(args, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
             DemoCommands::Install(args) => install_cmd(args, list),
+            DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
         }
     }
 }
@@ -223,7 +230,7 @@ fn install_cmd(args: &DemoInstallArgs, list: DemoList) -> Result<String, DemoErr
     todo!()
 }
 
-fn install_cmd(args: &DemoInstallArgs) -> Result<String, DemoError> {
+fn uninstall_cmd(args: &DemoUninstallArgs, list: DemoList) -> Result<String, DemoError> {
     todo!()
 }
 
