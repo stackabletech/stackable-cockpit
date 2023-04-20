@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand, ValueEnum};
+use clap::{Parser, Subcommand, ValueEnum, ValueHint};
 use stackable::constants::DEFAULT_STACKABLE_NAMESPACE;
 
 use crate::cmds::{
@@ -11,14 +11,17 @@ use crate::cmds::{
 pub struct Cli {
     /// Log level this application uses
     #[arg(short, long, value_enum, default_value_t = Default::default())]
-    pub(crate) log_level: LogLevel,
+    pub log_level: LogLevel,
 
     /// Namespace in the cluster used to deploy the products and operators
     #[arg(short, long, default_value = DEFAULT_STACKABLE_NAMESPACE)]
-    pub(crate) namespace: String,
+    pub namespace: String,
+
+    #[arg(long, value_hint = ValueHint::FilePath)]
+    pub additional_demo_files: Vec<String>,
 
     #[command(subcommand)]
-    pub(crate) subcommand: Commands,
+    pub subcommand: Commands,
 }
 
 #[derive(Debug, Subcommand)]

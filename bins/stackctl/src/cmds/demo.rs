@@ -1,7 +1,7 @@
 use std::{collections::HashMap, env, path::PathBuf};
 
 use clap::{Args, Subcommand};
-use comfy_table::{ContentArrangement, Row, Table};
+use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
 use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     types::demo::{DemoSpecV2, DemosV2},
@@ -9,7 +9,7 @@ use stackable::{
 use thiserror::Error;
 
 use crate::{
-    cli::{ClusterType, OutputType},
+    cli::{Cli, ClusterType, OutputType},
     constants::ADDITIONAL_DEMO_FILES_ENV_KEY,
     utils::{read_from_file_or_url, string_to_paths, PathParseError, ReadError},
 };
@@ -46,6 +46,10 @@ pub struct DemoListArgs {
 
 #[derive(Debug, Args)]
 pub struct DemoDescribeArgs {
+    /// Demo to describe
+    #[arg(name = "DEMO")]
+    demo_name: String,
+
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
 }
@@ -92,14 +96,21 @@ pub enum DemoError {
 
     #[error("path parse error: {0}")]
     PathParseError(#[from] PathParseError),
+
+    #[error("no demo with name '{0}'")]
+    NoSuchDemo(String),
 }
 
 impl DemoArgs {
-    pub async fn run(&self) -> Result<String, DemoError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, DemoError> {
+        // Build demo list based on the (default) remote demo file, and additional files provided by the
+        // STACKABLE_ADDITIONAL_DEMO_FILES env variable or the --additional-demo-files CLI argument.
+        let list = DemoList::build(&common_args.additional_demo_files).await?;
+
         match &self.subcommand {
-            DemoCommands::List(args) => list_cmd(args).await,
-            DemoCommands::Describe(args) => describe_cmd(args),
-            DemoCommands::Install(args) => install_cmd(args),
+            DemoCommands::List(args) => list_cmd(args, list).await,
+            DemoCommands::Describe(args) => describe_cmd(args, list).await,
+            DemoCommands::Install(args) => install_cmd(args, list),
         }
     }
 }
@@ -108,7 +119,7 @@ impl DemoArgs {
 pub struct DemoList(HashMap<String, DemoSpecV2>);
 
 impl DemoList {
-    pub async fn build() -> Result<Self, DemoError> {
+    pub async fn build(additional_demo_files: &Vec<String>) -> Result<Self, DemoError> {
         let mut map = HashMap::new();
 
         // First load the remote demo file
@@ -130,15 +141,27 @@ impl DemoList {
         }
 
         // Lastly, the CLI argument --additional-demo-files is used
+        for path in additional_demo_files {
+            let demos = get_local_demos(path.into()).await?;
+            for (demo_name, demo) in demos.iter() {
+                map.insert(demo_name.to_owned(), demo.to_owned());
+            }
+        }
 
         Ok(Self(map))
+    }
+
+    /// Get a demo by name
+    pub fn get<T>(&self, demo_name: T) -> Option<&DemoSpecV2>
+    where
+        T: Into<String>,
+    {
+        self.0.get(&demo_name.into())
     }
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
-async fn list_cmd(args: &DemoListArgs) -> Result<String, DemoError> {
-    let list = DemoList::build().await?;
-
+async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoError> {
     match args.output_type {
         OutputType::Plain => {
             let mut table = Table::new();
@@ -163,7 +186,40 @@ async fn list_cmd(args: &DemoListArgs) -> Result<String, DemoError> {
     }
 }
 
-fn describe_cmd(args: &DemoDescribeArgs) -> Result<String, DemoError> {
+/// Describe a specific demo by printing out a table (plain), JSON or YAML
+async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoError> {
+    let demo = list
+        .get(&args.demo_name)
+        .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
+
+    match args.output_type {
+        OutputType::Plain => {
+            let mut table = Table::new();
+            table
+                .load_preset(NOTHING)
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .add_row(vec!["DEMO", &args.demo_name])
+                .add_row(vec!["DESCRIPTION", &demo.description]);
+
+            if let Some(documentation) = &demo.documentation {
+                table.add_row(vec!["DOCUMENTATION", documentation]);
+            }
+
+            table
+                .add_row(vec!["STACK", &demo.stack])
+                .add_row(vec!["LABELS", &demo.labels.join(", ")]);
+
+            // TODO (Techassi): Add parameter output
+
+            Ok(table.to_string())
+        }
+        OutputType::Json => Ok(serde_json::to_string(&demo)?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&demo)?),
+    }
+}
+
+/// Install a specific demo
+fn install_cmd(args: &DemoInstallArgs, list: DemoList) -> Result<String, DemoError> {
     todo!()
 }
 

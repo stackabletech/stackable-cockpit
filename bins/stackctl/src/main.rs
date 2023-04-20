@@ -23,12 +23,12 @@ async fn main() -> Result<()> {
         }
     }
 
-    let output = match cli.subcommand {
+    let output = match &cli.subcommand {
         Commands::Operator(args) => args.run()?,
         Commands::Release(args) => args.run()?,
         Commands::Stack(args) => args.run()?,
         Commands::Services(args) => args.run()?,
-        Commands::Demo(args) => args.run().await?,
+        Commands::Demo(args) => args.run(&cli).await?,
         Commands::Completions(args) => args.run()?,
     };
 

@@ -1,6 +1,6 @@
-pub(crate) mod completions;
-pub(crate) mod demo;
-pub(crate) mod operator;
-pub(crate) mod release;
-pub(crate) mod services;
-pub(crate) mod stack;
+pub mod completions;
+pub mod demo;
+pub mod operator;
+pub mod release;
+pub mod services;
+pub mod stack;

@@ -6,7 +6,9 @@ use crate::types::manifest::ManifestSpec;
 
 /// This struct describes a complete demos v2 file
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DemosV2 {
+    #[serde(with = "serde_yaml::with::singleton_map_recursive")]
     demos: HashMap<String, DemoSpecV2>,
 }
 
