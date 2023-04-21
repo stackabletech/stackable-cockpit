@@ -21,4 +21,4 @@ to check out the code they execute. Currently, the `pre-commit` hook runs two ta
 git config --local core.hooksPath .githooks/
 ```
 
-[xtasks][./xtask/src/main.rs]
+[xtasks]: ./xtask/src/main.rs
