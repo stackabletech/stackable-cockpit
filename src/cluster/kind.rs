@@ -1,4 +1,5 @@
 use std::{
+    fmt::Display,
     io::Write,
     process::{Command, Stdio},
 };
@@ -30,10 +31,6 @@ pub struct KindCluster {
     namespace: String,
     node_count: usize,
     name: String,
-}
-
-pub struct KindClusterConfig {
-    node_count: usize,
 }
 
 impl KindCluster {
@@ -92,12 +89,12 @@ impl KindCluster {
     }
 }
 
-impl KindClusterConfig {
-    pub fn new(node_count: usize) -> Self {
-        Self { node_count }
-    }
+pub struct KindClusterConfig {
+    node_count: usize,
+}
 
-    pub fn to_string(&self) -> String {
+impl Display for KindClusterConfig {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let config = format!("{}{}", KIND_CLUSTER_DEF_HEADER, KIND_CLUSTER_DEF_CP);
         let mut workers = String::new();
 
@@ -106,6 +103,12 @@ impl KindClusterConfig {
             workers.push_str(format!("        node-labels: node={}", i + 1).as_str());
         }
 
-        format!("{}{}", config, workers)
+        write!(f, "{}{}", config, workers)
+    }
+}
+
+impl KindClusterConfig {
+    pub fn new(node_count: usize) -> Self {
+        Self { node_count }
     }
 }

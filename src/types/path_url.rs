@@ -3,6 +3,7 @@ use std::{path::PathBuf, str::FromStr};
 use thiserror::Error;
 use url::{ParseError, Url};
 
+#[derive(Debug, Clone)]
 pub enum PathOrUrl {
     Path(PathBuf),
     Url(Url),
@@ -43,18 +44,20 @@ impl TryFrom<&str> for PathOrUrl {
     }
 }
 
-impl TryFrom<PathBuf> for PathOrUrl {
-    type Error = PathOrUrlParseError;
-
-    fn try_from(value: PathBuf) -> Result<Self, Self::Error> {
-        Ok(Self::Path(value))
+impl From<PathBuf> for PathOrUrl {
+    fn from(value: PathBuf) -> Self {
+        Self::Path(value)
     }
 }
 
-impl TryFrom<Url> for PathOrUrl {
-    type Error = PathOrUrlParseError;
+impl From<Url> for PathOrUrl {
+    fn from(value: Url) -> Self {
+        Self::Url(value)
+    }
+}
 
-    fn try_from(value: Url) -> Result<Self, Self::Error> {
-        Ok(Self::Url(value))
+impl From<&PathOrUrl> for PathOrUrl {
+    fn from(value: &PathOrUrl) -> Self {
+        value.clone()
     }
 }

@@ -1,22 +1,10 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 
-use crate::types::{ManifestSpec, Parameter};
+use crate::types::{ManifestSpec, Parameter, RawParameter, RawParameterParseError};
 
-/// This struct describes a complete demos v2 file
-#[derive(Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct DemosV2 {
-    #[serde(with = "serde_yaml::with::singleton_map_recursive")]
-    demos: HashMap<String, DemoSpecV2>,
-}
-
-impl DemosV2 {
-    pub fn iter(&self) -> std::collections::hash_map::Iter<String, DemoSpecV2> {
-        self.demos.iter()
-    }
-}
+pub type RawDemoParameterParseError = RawParameterParseError;
+pub type RawDemoParameter = RawParameter;
+pub type DemoParameter = Parameter;
 
 /// This struct describes a demo with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -43,5 +31,5 @@ pub struct DemoSpecV2 {
 
     /// A variable number of supported parameters
     #[serde(default)]
-    pub parameters: Vec<Parameter>,
+    pub parameters: Vec<DemoParameter>,
 }

@@ -1,10 +1,10 @@
-use std::{collections::HashMap, env, path::PathBuf};
+use std::env;
 
 use clap::{Args, Subcommand};
 use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
 use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    platform::demo::{DemoSpecV2, DemosV2},
+    platform::demo::{DemoList, DemoListError},
     types::{IntoParameters, IntoParametersError},
 };
 use thiserror::Error;
@@ -12,7 +12,7 @@ use thiserror::Error;
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     constants::ADDITIONAL_DEMO_FILES_ENV_KEY,
-    utils::{read_from_file_or_url, string_to_paths, PathParseError, ReadError},
+    utils::{PathParseError, ReadError},
 };
 
 const REMOTE_DEMO_FILE: &str =
@@ -106,13 +106,31 @@ pub enum DemoError {
 
     #[error("no demo with name '{0}'")]
     NoSuchDemo(String),
+
+    #[error("failed to convert input parameters to validated parameters: {0}")]
+    IntoParametersError(#[from] IntoParametersError),
+
+    #[error("demo list error: {0}")]
+    DemoListError(#[from] DemoListError),
 }
 
 impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoError> {
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_ADDITIONAL_DEMO_FILES env variable or the --additional-demo-files CLI argument.
-        let list = DemoList::build(&common_args.additional_demo_files).await?;
+
+        let env_files = match env::var(ADDITIONAL_DEMO_FILES_ENV_KEY) {
+            Ok(env_files) => vec![env_files], // TODO (Techassi): Actually parse this as PathOrUrl
+            Err(_) => vec![],
+        };
+
+        // let list = DemoList::build(
+        //     REMOTE_DEMO_FILE.into(),
+        //     env_files,
+        //     common_args.additional_demo_files,
+        // )
+        // .await?;
+        todo!();
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -120,51 +138,6 @@ impl DemoArgs {
             DemoCommands::Install(args) => install_cmd(args, list),
             DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
         }
-    }
-}
-
-#[derive(Debug)]
-pub struct DemoList(HashMap<String, DemoSpecV2>);
-
-impl DemoList {
-    pub async fn build(additional_demo_files: &Vec<String>) -> Result<Self, DemoError> {
-        let mut map = HashMap::new();
-
-        // First load the remote demo file
-        let demos = get_remote_demos().await?;
-        for (demo_name, demo) in demos.iter() {
-            map.insert(demo_name.to_owned(), demo.to_owned());
-        }
-
-        // After that, the STACKABLE_ADDITIONAL_DEMO_FILES env var is used
-        if let Ok(paths_string) = env::var(ADDITIONAL_DEMO_FILES_ENV_KEY) {
-            let paths = string_to_paths(paths_string)?;
-
-            for path in paths {
-                let demos = get_local_demos(path).await?;
-                for (demo_name, demo) in demos.iter() {
-                    map.insert(demo_name.to_owned(), demo.to_owned());
-                }
-            }
-        }
-
-        // Lastly, the CLI argument --additional-demo-files is used
-        for path in additional_demo_files {
-            let demos = get_local_demos(path.into()).await?;
-            for (demo_name, demo) in demos.iter() {
-                map.insert(demo_name.to_owned(), demo.to_owned());
-            }
-        }
-
-        Ok(Self(map))
-    }
-
-    /// Get a demo by name
-    pub fn get<T>(&self, demo_name: T) -> Option<&DemoSpecV2>
-    where
-        T: Into<String>,
-    {
-        self.0.get(&demo_name.into())
     }
 }
 
@@ -178,7 +151,7 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoErr
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["NAME", "STACK", "DESCRIPTION"]);
 
-            for (demo_name, demo_spec) in list.0.iter() {
+            for (demo_name, demo_spec) in list.inner() {
                 let row = Row::from(vec![
                     demo_name.clone(),
                     demo_spec.stack.clone(),
@@ -189,8 +162,8 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoErr
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&list.0)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&list.0)?),
+        OutputType::Json => Ok(serde_json::to_string(&list.inner())?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&list.inner())?),
     }
 }
 
@@ -232,23 +205,11 @@ fn install_cmd(args: &DemoInstallArgs, list: DemoList) -> Result<String, DemoErr
         .get(&args.demo_name)
         .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
 
+    let parameters = args.parameters.into_params(&demo.parameters)?;
+
     todo!()
 }
 
 fn uninstall_cmd(args: &DemoUninstallArgs, list: DemoList) -> Result<String, DemoError> {
     todo!()
-}
-
-async fn get_remote_demos() -> Result<DemosV2, DemoError> {
-    let content = read_from_file_or_url(REMOTE_DEMO_FILE).await?;
-    let demos = serde_yaml::from_str::<DemosV2>(&content)?;
-
-    Ok(demos)
-}
-
-async fn get_local_demos(path: PathBuf) -> Result<DemosV2, DemoError> {
-    let content = read_from_file_or_url(path).await?;
-    let demos = serde_yaml::from_str(&content)?;
-
-    Ok(demos)
 }

@@ -36,7 +36,7 @@ pub enum IntoParametersError {
 
 pub trait IntoParameters: Sized + IntoRawParameters {
     fn into_params<T>(
-        &self,
+        self,
         valid_parameters: T,
     ) -> Result<HashMap<String, String>, IntoParametersError>
     where
@@ -166,23 +166,23 @@ impl TryFrom<&str> for RawParameter {
 }
 
 pub trait IntoRawParameters: Sized {
-    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError>;
+    fn into_raw_params(self) -> Result<Vec<RawParameter>, RawParameterParseError>;
 }
 
 impl IntoRawParameters for &String {
-    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
-        self.clone().into_raw_params()
+    fn into_raw_params(self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+        self.to_owned().into_raw_params()
     }
 }
 
 impl IntoRawParameters for String {
-    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+    fn into_raw_params(self) -> Result<Vec<RawParameter>, RawParameterParseError> {
         self.as_str().into_raw_params()
     }
 }
 
 impl IntoRawParameters for &str {
-    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+    fn into_raw_params(self) -> Result<Vec<RawParameter>, RawParameterParseError> {
         let input = self.trim();
 
         if input.is_empty() {
@@ -191,7 +191,7 @@ impl IntoRawParameters for &str {
 
         let mut params = Vec::new();
 
-        let parts: Vec<&str> = input.split(" ").collect();
+        let parts: Vec<&str> = input.split(' ').collect();
         for part in parts {
             let param: RawParameter = part.parse()?;
             params.push(param);
@@ -202,7 +202,7 @@ impl IntoRawParameters for &str {
 }
 
 impl IntoRawParameters for Vec<String> {
-    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+    fn into_raw_params(self) -> Result<Vec<RawParameter>, RawParameterParseError> {
         let parameters = self
             .iter()
             .map(|s| s.parse())
