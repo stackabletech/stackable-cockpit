@@ -10,3 +10,15 @@ This repository contains the Stackable library, the Stackable CLI tool, and the 
 
 [daemon-readme]: ./bins/stackd/README.md
 [ctl-readme]: ./bins/stackctl/README.md
+
+## Developer Setup
+
+This repository ships custom Git hooks. They are located in the `.githooks` directory. Before you enable them, make sure
+to check out the code they execute. Currently, the `pre-commit` hook runs two tasks: `gen-man` and `gen-comp`. See
+[here][xtasks] what these tasks do. To enable all hooks inside the directory, use the following command:
+
+```shell
+git config --local core.hooksPath .githooks/
+```
+
+[xtasks][./xtask/src/main.rs]
