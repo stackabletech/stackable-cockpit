@@ -4,7 +4,8 @@ use clap::{Args, Subcommand};
 use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
 use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    types::demos::{DemoSpecV2, DemosV2},
+    platform::demo::{DemoSpecV2, DemosV2},
+    types::{IntoParameters, IntoParametersError},
 };
 use thiserror::Error;
 

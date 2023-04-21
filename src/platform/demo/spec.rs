@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::types::demos::ManifestSpec;
+use crate::types::{ManifestSpec, Parameter};
 
 /// This struct describes a complete demos v2 file
 #[derive(Debug, Deserialize, Serialize)]
@@ -40,4 +40,8 @@ pub struct DemoSpecV2 {
     /// A variable number of Helm or YAML manifests
     #[serde(default)]
     pub manifests: Vec<ManifestSpec>,
+
+    /// A variable number of supported parameters
+    #[serde(default)]
+    pub parameters: Vec<Parameter>,
 }

@@ -1,6 +1,6 @@
 use std::{fs, io};
 
-use stackable::types::util::{PathOrUrl, PathOrUrlParseError};
+use stackable::types::{PathOrUrl, PathOrUrlParseError};
 use thiserror::Error;
 
 #[derive(Debug, Error)]

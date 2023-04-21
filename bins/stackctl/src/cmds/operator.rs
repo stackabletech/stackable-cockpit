@@ -1,5 +1,5 @@
 use clap::{Args, Subcommand};
-use stackable::{constants::DEFAULT_LOCAL_CLUSTER_NAME, types::platform::OperatorSpec};
+use stackable::{constants::DEFAULT_LOCAL_CLUSTER_NAME, platform::operator::OperatorSpec};
 use thiserror::Error;
 
 use crate::cli::{ClusterType, OutputType};

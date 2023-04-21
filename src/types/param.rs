@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 /// Parameter descibes a common parameter format. This format is used in demo and stack definitions
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameter {
     /// Parameter description
@@ -69,6 +69,7 @@ pub trait IntoParameters: Sized + IntoRawParameters {
     }
 }
 
+impl IntoParameters for Vec<String> {}
 impl IntoParameters for &String {}
 impl IntoParameters for String {}
 impl IntoParameters for &str {}
@@ -164,9 +165,25 @@ impl TryFrom<&str> for RawParameter {
     }
 }
 
-pub trait IntoRawParameters: Sized + AsRef<str> {
+pub trait IntoRawParameters: Sized {
+    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError>;
+}
+
+impl IntoRawParameters for &String {
     fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
-        let input = self.as_ref().trim();
+        self.clone().into_raw_params()
+    }
+}
+
+impl IntoRawParameters for String {
+    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+        self.as_str().into_raw_params()
+    }
+}
+
+impl IntoRawParameters for &str {
+    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+        let input = self.trim();
 
         if input.is_empty() {
             return Err(RawParameterParseError::InvalidParameterInput);
@@ -184,9 +201,16 @@ pub trait IntoRawParameters: Sized + AsRef<str> {
     }
 }
 
-impl IntoRawParameters for &String {}
-impl IntoRawParameters for String {}
-impl IntoRawParameters for &str {}
+impl IntoRawParameters for Vec<String> {
+    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+        let parameters = self
+            .iter()
+            .map(|s| s.parse())
+            .collect::<Result<Vec<RawParameter>, RawParameterParseError>>()?;
+
+        Ok(parameters)
+    }
+}
 
 #[cfg(test)]
 mod test {

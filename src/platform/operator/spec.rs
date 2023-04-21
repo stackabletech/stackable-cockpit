@@ -97,7 +97,7 @@ impl TryFrom<&str> for OperatorSpec {
 
 #[cfg(test)]
 mod test {
-    use crate::types::platform::{OperatorSpec, OperatorSpecParseError};
+    use crate::platform::operator::{OperatorSpec, OperatorSpecParseError};
 
     #[test]
     fn simple_operator_spec() {
