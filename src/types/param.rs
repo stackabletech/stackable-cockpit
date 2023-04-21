@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fmt::{Display, Formatter},
     str::FromStr,
 };
@@ -24,22 +25,53 @@ pub struct Parameter {
     pub name: String,
 }
 
+#[derive(Debug, Error, PartialEq)]
+pub enum IntoParametersError {
+    #[error("raw parameter parse error: {0}")]
+    ParseError(#[from] RawParameterParseError),
+
+    #[error("invalid parameter '{parameter}', expected one of {expected}")]
+    InvalidParameter { parameter: String, expected: String },
+}
+
 pub trait IntoParameters: Sized + IntoRawParameters {
-    fn into_params<T>(&self, valid_parameters: T) -> Result<Vec<Parameter>, RawParameterParseError>
+    fn into_params<T>(
+        &self,
+        valid_parameters: T,
+    ) -> Result<HashMap<String, String>, IntoParametersError>
     where
         T: AsRef<[Parameter]>,
     {
-        let valid_parameters = valid_parameters.as_ref();
-        let params = self.into_raw_params()?;
+        let raw_parameters = self.into_raw_params()?;
+        let parameters = valid_parameters.as_ref();
 
-        // Iterate over valid parameters and do:
-        // - check if the provided parameters are valid
-        // - use the provided value for the final parameter value
-        // - use the default value when the parameter is not provided
+        let mut parameters: HashMap<String, String> = parameters
+            .iter()
+            .map(|p| (p.name.clone(), p.default.clone()))
+            .collect();
 
-        Ok(vec![])
+        for raw_paramater in raw_parameters {
+            if !parameters.contains_key(&raw_paramater.name) {
+                return Err(IntoParametersError::InvalidParameter {
+                    parameter: raw_paramater.name,
+                    expected: valid_parameters
+                        .as_ref()
+                        .iter()
+                        .map(|p| p.name.clone())
+                        .collect::<Vec<String>>()
+                        .join(", "),
+                });
+            }
+            parameters.insert(raw_paramater.name, raw_paramater.value);
+        }
+
+        Ok(parameters)
     }
 }
+
+impl IntoParameters for &String {}
+impl IntoParameters for String {}
+impl IntoParameters for &str {}
 
 /// RawParameter describes a common raw parameter format. Raw parameters are passed in as strings and have the following
 /// format: `<NAME>=<VALUE>`.
@@ -158,7 +190,10 @@ impl IntoRawParameters for &str {}
 
 #[cfg(test)]
 mod test {
-    use crate::types::{IntoRawParameters, RawParameter, RawParameterParseError};
+    use crate::types::{
+        IntoParameters, IntoParametersError, IntoRawParameters, Parameter, RawParameter,
+        RawParameterParseError,
+    };
 
     #[test]
     fn single_parameter_str() {
@@ -223,7 +258,7 @@ mod test {
     }
 
     #[test]
-    fn multi_parameters_str() {
+    fn multi_raw_parameters_str() {
         match "param1=value1 param2=value2".into_raw_params() {
             Ok(params) => {
                 assert_eq!(params.len(), 2);
@@ -257,7 +292,7 @@ mod test {
     }
 
     #[test]
-    fn multi_parameters_string() {
+    fn multi_raw_parameters_string() {
         match "param1=value1 param2=value2".to_string().into_raw_params() {
             Ok(params) => {
                 assert_eq!(params.len(), 2);
@@ -287,6 +322,55 @@ mod test {
                 assert!(p.is_none());
             }
             Err(err) => panic!("{err}"),
+        }
+    }
+
+    #[test]
+    fn multi_parameter_valid() {
+        let valid_parameters = vec![Parameter {
+            description: "Description1".into(),
+            default: "Default value 1".into(),
+            name: "param1".into(),
+            value: "".into(),
+        }];
+
+        let input = "param1=value1";
+
+        match input.into_params(valid_parameters) {
+            Ok(validated) => {
+                assert_eq!(validated.len(), 1);
+
+                if let Some(value) = validated.get("param1".into()) {
+                    assert_eq!(*value, "value1".to_string());
+                    return;
+                }
+
+                panic!("No parameter in map with name param1");
+            }
+            Err(err) => panic!("{err}"),
+        }
+    }
+
+    #[test]
+    fn multi_parameter_invalid() {
+        let valid_parameters = vec![Parameter {
+            description: "Description1".into(),
+            default: "Default value 1".into(),
+            name: "param1".into(),
+            value: "".into(),
+        }];
+
+        let input = "param2=value2";
+
+        match input.into_params(valid_parameters) {
+            Ok(validated) => panic!("SHOULD FAIL: {validated:?}"),
+            Err(err) => assert_eq!(
+                err,
+                IntoParametersError::InvalidParameter {
+                    parameter: "param2".into(),
+                    expected: "param1".into()
+                }
+            ),
         }
     }
 }
