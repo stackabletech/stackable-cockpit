@@ -1,0 +1,292 @@
+use std::{
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
+
+use serde::{Deserialize, Serialize};
+use thiserror::Error;
+
+/// Parameter descibes a common parameter format. This format is used in demo and stack definitions
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Parameter {
+    /// Parameter description
+    pub description: String,
+
+    /// Parameter default value
+    pub default: String,
+
+    /// Parameer value
+    #[serde(skip)]
+    pub value: String,
+
+    /// Parameter name
+    pub name: String,
+}
+
+pub trait IntoParameters: Sized + IntoRawParameters {
+    fn into_params<T>(&self, valid_parameters: T) -> Result<Vec<Parameter>, RawParameterParseError>
+    where
+        T: AsRef<[Parameter]>,
+    {
+        let valid_parameters = valid_parameters.as_ref();
+        let params = self.into_raw_params()?;
+
+        // Iterate over valid parameters and do:
+        // - check if the provided parameters are valid
+        // - use the provided value for the final parameter value
+        // - use the default value when the parameter is not provided
+
+        Ok(vec![])
+    }
+}
+
+/// RawParameter describes a common raw parameter format. Raw parameters are passed in as strings and have the following
+/// format: `<NAME>=<VALUE>`.
+#[derive(Debug, PartialEq)]
+pub struct RawParameter {
+    /// Parameter value
+    pub value: String,
+
+    /// Parameter name
+    pub name: String,
+}
+
+#[derive(Debug, Error, PartialEq)]
+pub enum RawParameterParseError {
+    #[error("invalid equal sign count in parameter, expected one")]
+    InvalidEqualSignCount,
+
+    #[error("invalid parameter value, cannot be empty")]
+    InvalidParameterValue,
+
+    #[error("invalid parameter name, cannot be empty")]
+    InvalidParameterName,
+
+    #[error("invalid (empty) parameter input")]
+    InvalidParameterInput,
+}
+
+impl Display for RawParameter {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}={}", self.name, self.value)
+    }
+}
+
+impl FromStr for RawParameter {
+    type Err = RawParameterParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let input = s.trim();
+
+        // Empty input is not allowed
+        if input.is_empty() {
+            return Err(RawParameterParseError::InvalidParameterInput);
+        }
+
+        // Split at each equal sign
+        let parts: Vec<&str> = input.split('=').collect();
+        let len = parts.len();
+
+        // If there are more than 2 equal signs, return error
+        // because of invalid spec format
+        if len > 2 {
+            return Err(RawParameterParseError::InvalidEqualSignCount);
+        }
+
+        // Only specifying a key is not valid
+        if len == 1 {
+            return Err(RawParameterParseError::InvalidParameterValue);
+        }
+
+        // If there is an equal sign, but no key before
+        if parts[0].is_empty() {
+            return Err(RawParameterParseError::InvalidParameterName);
+        }
+
+        // If there is an equal sign, but no value after
+        if parts[1].is_empty() {
+            return Err(RawParameterParseError::InvalidParameterValue);
+        }
+
+        Ok(Self {
+            name: parts[0].to_string(),
+            value: parts[1].to_string(),
+        })
+    }
+}
+
+impl TryFrom<String> for RawParameter {
+    type Error = RawParameterParseError;
+
+    fn try_from(value: String) -> Result<Self, Self::Error> {
+        Self::from_str(value.as_str())
+    }
+}
+
+impl TryFrom<&str> for RawParameter {
+    type Error = RawParameterParseError;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        Self::from_str(value)
+    }
+}
+
+pub trait IntoRawParameters: Sized + AsRef<str> {
+    fn into_raw_params(&self) -> Result<Vec<RawParameter>, RawParameterParseError> {
+        let input = self.as_ref().trim();
+
+        if input.is_empty() {
+            return Err(RawParameterParseError::InvalidParameterInput);
+        }
+
+        let mut params = Vec::new();
+
+        let parts: Vec<&str> = input.split(" ").collect();
+        for part in parts {
+            let param: RawParameter = part.parse()?;
+            params.push(param);
+        }
+
+        Ok(params)
+    }
+}
+
+impl IntoRawParameters for &String {}
+impl IntoRawParameters for String {}
+impl IntoRawParameters for &str {}
+
+#[cfg(test)]
+mod test {
+    use crate::types::{IntoRawParameters, RawParameter, RawParameterParseError};
+
+    #[test]
+    fn single_parameter_str() {
+        match RawParameter::try_from("param=value") {
+            Ok(param) => {
+                assert_eq!(param.name, "param".to_string());
+                assert_eq!(param.value, "value".to_string());
+            }
+            Err(err) => panic!("{err}"),
+        }
+    }
+
+    #[test]
+    fn single_parameter_string() {
+        match RawParameter::try_from("param=value".to_string()) {
+            Ok(param) => {
+                assert_eq!(param.name, "param".to_string());
+                assert_eq!(param.value, "value".to_string());
+            }
+            Err(err) => panic!("{err}"),
+        }
+    }
+
+    #[test]
+    fn single_parameter_no_value() {
+        match RawParameter::try_from("param") {
+            Ok(param) => panic!("SHOULD FAIL: {param}"),
+            Err(err) => assert_eq!(err, RawParameterParseError::InvalidParameterValue),
+        }
+    }
+
+    #[test]
+    fn single_parameter_equal_sign_no_value() {
+        match RawParameter::try_from("param=") {
+            Ok(param) => panic!("SHOULD FAIL: {param}"),
+            Err(err) => assert_eq!(err, RawParameterParseError::InvalidParameterValue),
+        }
+    }
+
+    #[test]
+    fn single_parameter_only_equal_sign() {
+        match RawParameter::try_from("=") {
+            Ok(param) => panic!("SHOULD FAIL: {param}"),
+            Err(err) => assert_eq!(err, RawParameterParseError::InvalidParameterName),
+        }
+    }
+
+    #[test]
+    fn single_parameter_multi_equal_sign() {
+        match RawParameter::try_from("param=value=invalid") {
+            Ok(param) => panic!("SHOULD FAIL: {param}"),
+            Err(err) => assert_eq!(err, RawParameterParseError::InvalidEqualSignCount),
+        }
+    }
+
+    #[test]
+    fn single_parameter_multi_only_equal_sign() {
+        match RawParameter::try_from("==") {
+            Ok(param) => panic!("SHOULD FAIL: {param}"),
+            Err(err) => assert_eq!(err, RawParameterParseError::InvalidEqualSignCount),
+        }
+    }
+
+    #[test]
+    fn multi_parameters_str() {
+        match "param1=value1 param2=value2".into_raw_params() {
+            Ok(params) => {
+                assert_eq!(params.len(), 2);
+                let mut iter = params.iter();
+
+                let p = iter.next();
+                assert!(p.is_some());
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param1".into(),
+                        value: "value1".into()
+                    }
+                );
+
+                let p = iter.next();
+                assert!(p.is_some());
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param2".into(),
+                        value: "value2".into()
+                    }
+                );
+
+                let p = iter.next();
+                assert!(p.is_none());
+            }
+            Err(err) => panic!("{err}"),
+        }
+    }
+
+    #[test]
+    fn multi_parameters_string() {
+        match "param1=value1 param2=value2".to_string().into_raw_params() {
+            Ok(params) => {
+                assert_eq!(params.len(), 2);
+                let mut iter = params.iter();
+
+                let p = iter.next();
+                assert!(p.is_some());
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param1".into(),
+                        value: "value1".into()
+                    }
+                );
+
+                let p = iter.next();
+                assert!(p.is_some());
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param2".into(),
+                        value: "value2".into()
+                    }
+                );
+
+                let p = iter.next();
+                assert!(p.is_none());
+            }
+            Err(err) => panic!("{err}"),
+        }
+    }
+}
