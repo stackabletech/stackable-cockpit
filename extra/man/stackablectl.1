@@ -4,7 +4,7 @@
 .SH NAME
 stackctl
 .SH SYNOPSIS
-\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-\-additional\-demo\-files\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-a\fR|\fB\-\-additional\-demo\-file\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 .SH OPTIONS
 .TP
@@ -18,11 +18,20 @@ Log level this application uses
 \fB\-n\fR, \fB\-\-namespace\fR=\fINAMESPACE\fR [default: stackable]
 Namespace in the cluster used to deploy the products and operators
 .TP
-\fB\-\-additional\-demo\-files\fR=\fIADDITIONAL_DEMO_FILES\fR
+\fB\-a\fR, \fB\-\-additional\-demo\-file\fR=\fIADDITIONAL_DEMO_FILES\fR
+Provide one or more additional (custom) demo file(s)
 
+Demos are loaded in the following order: Remote (default) demo file, custom
+demo files provided via the \*(AqSTACKABLE_ADDITIONAL_DEMO_FILES\*(Aq environment
+variable, and lastly demo files provided via the \*(Aq\-a/\-\-additional\-demo\-file\*(Aq
+argument(s). If there are demos with the same name, the later demo definition
+will be used.
+
+Use "stackablectl \-a path/to/demos1.yaml \-a path/to/demos2.yaml [OPTIONS] <COMMAND>"
+to provide multiple additional demo files.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
-Print help
+Print help (see a summary with \*(Aq\-h\*(Aq)
 .TP
 \fB\-V\fR, \fB\-\-version\fR
 Print version

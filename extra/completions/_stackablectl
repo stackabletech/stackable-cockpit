@@ -19,9 +19,10 @@ _stackctl() {
 '--log-level=[Log level this application uses]:LOG_LEVEL:(error warn info debug trace)' \
 '-n+[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
 '--namespace=[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
-'*--additional-demo-files=[]:ADDITIONAL_DEMO_FILES:_files' \
-'-h[Print help]' \
-'--help[Print help]' \
+'*-a+[Provide one or more additional (custom) demo file(s)]:ADDITIONAL_DEMO_FILES:_files' \
+'*--additional-demo-file=[Provide one or more additional (custom) demo file(s)]:ADDITIONAL_DEMO_FILES:_files' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackctl_commands" \

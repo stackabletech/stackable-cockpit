@@ -17,7 +17,18 @@ pub struct Cli {
     #[arg(short, long, default_value = DEFAULT_STACKABLE_NAMESPACE)]
     pub namespace: String,
 
-    #[arg(long, value_hint = ValueHint::FilePath)]
+    /// Provide one or more additional (custom) demo file(s)
+    #[arg(short, long = "additional-demo-file", value_hint = ValueHint::FilePath)]
+    #[arg(long_help = "Provide one or more additional (custom) demo file(s)
+
+Demos are loaded in the following order: Remote (default) demo file, custom
+demo files provided via the 'STACKABLE_ADDITIONAL_DEMO_FILES' environment
+variable, and lastly demo files provided via the '-a/--additional-demo-file'
+argument(s). If there are demos with the same name, the later demo definition
+will be used.
+
+Use \"stackablectl -a path/to/demos1.yaml -a path/to/demos2.yaml [OPTIONS] <COMMAND>\"
+to provide multiple additional demo files.")]
     pub additional_demo_files: Vec<String>,
 
     #[command(subcommand)]

@@ -103,8 +103,6 @@ pub enum DemoError {
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
 
-    // #[error("path parse error: {0}")]
-    // PathParseError(#[from] PathParseError),
     #[error("no demo with name '{0}'")]
     NoSuchDemo(String),
 
