@@ -18,18 +18,44 @@ pub struct Cli {
     pub namespace: String,
 
     /// Provide one or more additional (custom) demo file(s)
-    #[arg(short, long = "additional-demo-file", value_hint = ValueHint::FilePath)]
+    #[arg(short, long, value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) demo file(s)
 
 Demos are loaded in the following order: Remote (default) demo file, custom
-demo files provided via the 'STACKABLE_ADDITIONAL_DEMO_FILES' environment
-variable, and lastly demo files provided via the '-a/--additional-demo-file'
-argument(s). If there are demos with the same name, the later demo definition
+demo files provided via the 'STACKABLE_DEMO_FILES' environment variable, and
+lastly demo files provided via the '-d/--demo-file' argument(s). If there are
+demos with the same name, the last demo definition will be used.
+
+Use \"stackablectl -d path/to/demos1.yaml -d path/to/demos2.yaml [OPTIONS] <COMMAND>\"
+to provide multiple additional demo files.")]
+    pub demo_files: Vec<String>,
+
+    /// Provide one or more additional (custom) stack file(s)
+    #[arg(short, long, value_hint = ValueHint::FilePath)]
+    #[arg(long_help = "Provide one or more additional (custom) stack file(s)
+    
+Stacks are loaded in the following order: Remote (default) stack file, custom
+stack files provided via the 'STACKABLE_STACK_FILES' environment variable, and
+lastly demo files provided via the '-s/--stack-file' argument(s). If there are
+stacks with the same name, the last stack definition will be used.
+
+Use \"stackablectl -s path/to/stacks1.yaml -s path/to/stacks2.yaml [OPTIONS] <COMMAND>\"
+to provide multiple additional stack files.")]
+    pub stack_files: Vec<String>,
+
+    /// Provide one or more additional (custom) release file(s)
+    #[arg(short, long, value_hint = ValueHint::FilePath)]
+    #[arg(long_help = "Provide one or more additional (custom) release file(s)
+    
+Releases are loaded in the following order: Remote (default) release file,
+custom release files provided via the 'STACKABLE_RELEASE_FILES' environment
+variable, and lastly release files provided via the '-r/--release-file'
+argument(s). If there are releases with the same name, the last stack definition
 will be used.
 
-Use \"stackablectl -a path/to/demos1.yaml -a path/to/demos2.yaml [OPTIONS] <COMMAND>\"
-to provide multiple additional demo files.")]
-    pub additional_demo_files: Vec<String>,
+Use \"stackablectl -r path/to/realeases1.yaml -r path/to/realeases2.yaml [OPTIONS] <COMMAND>\"
+to provide multiple additional stack files.")]
+    pub release_file: Vec<String>,
 
     #[command(subcommand)]
     pub subcommand: Commands,

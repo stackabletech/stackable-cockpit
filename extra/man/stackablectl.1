@@ -4,7 +4,7 @@
 .SH NAME
 stackctl
 .SH SYNOPSIS
-\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-a\fR|\fB\-\-additional\-demo\-file\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-files\fR] [\fB\-s\fR|\fB\-\-stack\-files\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 .SH OPTIONS
 .TP
@@ -18,17 +18,39 @@ Log level this application uses
 \fB\-n\fR, \fB\-\-namespace\fR=\fINAMESPACE\fR [default: stackable]
 Namespace in the cluster used to deploy the products and operators
 .TP
-\fB\-a\fR, \fB\-\-additional\-demo\-file\fR=\fIADDITIONAL_DEMO_FILES\fR
+\fB\-d\fR, \fB\-\-demo\-files\fR=\fIDEMO_FILES\fR
 Provide one or more additional (custom) demo file(s)
 
 Demos are loaded in the following order: Remote (default) demo file, custom
-demo files provided via the \*(AqSTACKABLE_ADDITIONAL_DEMO_FILES\*(Aq environment
-variable, and lastly demo files provided via the \*(Aq\-a/\-\-additional\-demo\-file\*(Aq
-argument(s). If there are demos with the same name, the later demo definition
+demo files provided via the \*(AqSTACKABLE_DEMO_FILES\*(Aq environment variable, and
+lastly demo files provided via the \*(Aq\-d/\-\-demo\-file\*(Aq argument(s). If there are
+demos with the same name, the last demo definition will be used.
+
+Use "stackablectl \-d path/to/demos1.yaml \-d path/to/demos2.yaml [OPTIONS] <COMMAND>"
+to provide multiple additional demo files.
+.TP
+\fB\-s\fR, \fB\-\-stack\-files\fR=\fISTACK_FILES\fR
+Provide one or more additional (custom) stack file(s)
+    
+Stacks are loaded in the following order: Remote (default) stack file, custom
+stack files provided via the \*(AqSTACKABLE_STACK_FILES\*(Aq environment variable, and
+lastly demo files provided via the \*(Aq\-s/\-\-stack\-file\*(Aq argument(s). If there are
+stacks with the same name, the last stack definition will be used.
+
+Use "stackablectl \-s path/to/stacks1.yaml \-s path/to/stacks2.yaml [OPTIONS] <COMMAND>"
+to provide multiple additional stack files.
+.TP
+\fB\-r\fR, \fB\-\-release\-file\fR=\fIRELEASE_FILE\fR
+Provide one or more additional (custom) release file(s)
+    
+Releases are loaded in the following order: Remote (default) release file,
+custom release files provided via the \*(AqSTACKABLE_RELEASE_FILES\*(Aq environment
+variable, and lastly release files provided via the \*(Aq\-r/\-\-release\-file\*(Aq
+argument(s). If there are releases with the same name, the last stack definition
 will be used.
 
-Use "stackablectl \-a path/to/demos1.yaml \-a path/to/demos2.yaml [OPTIONS] <COMMAND>"
-to provide multiple additional demo files.
+Use "stackablectl \-r path/to/realeases1.yaml \-r path/to/realeases2.yaml [OPTIONS] <COMMAND>"
+to provide multiple additional stack files.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Print help (see a summary with \*(Aq\-h\*(Aq)

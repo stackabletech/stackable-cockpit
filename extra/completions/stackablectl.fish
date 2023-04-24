@@ -1,6 +1,8 @@
 complete -c stackctl -n "__fish_use_subcommand" -s l -l log-level -d 'Log level this application uses' -r -f -a "{error	,warn	,info	,debug	,trace	}"
 complete -c stackctl -n "__fish_use_subcommand" -s n -l namespace -d 'Namespace in the cluster used to deploy the products and operators' -r
-complete -c stackctl -n "__fish_use_subcommand" -s a -l additional-demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackctl -n "__fish_use_subcommand" -s d -l demo-files -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackctl -n "__fish_use_subcommand" -s s -l stack-files -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackctl -n "__fish_use_subcommand" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
 complete -c stackctl -n "__fish_use_subcommand" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackctl -n "__fish_use_subcommand" -s V -l version -d 'Print version'
 complete -c stackctl -n "__fish_use_subcommand" -f -a "operator" -d 'Interact with single operator instead of the full platform'

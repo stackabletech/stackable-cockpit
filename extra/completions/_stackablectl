@@ -19,8 +19,12 @@ _stackctl() {
 '--log-level=[Log level this application uses]:LOG_LEVEL:(error warn info debug trace)' \
 '-n+[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
 '--namespace=[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
-'*-a+[Provide one or more additional (custom) demo file(s)]:ADDITIONAL_DEMO_FILES:_files' \
-'*--additional-demo-file=[Provide one or more additional (custom) demo file(s)]:ADDITIONAL_DEMO_FILES:_files' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
+'*--demo-files=[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
+'*--stack-files=[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
