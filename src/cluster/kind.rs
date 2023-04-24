@@ -7,7 +7,7 @@ use std::{
 use crate::{
     cluster::ClusterError,
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
-    utils::path::binaries_present,
+    utils::check::binaries_present,
 };
 
 const KIND_CLUSTER_DEF_HEADER: &str = r#"

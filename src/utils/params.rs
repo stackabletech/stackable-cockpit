@@ -214,7 +214,7 @@ impl IntoRawParameters for Vec<String> {
 
 #[cfg(test)]
 mod test {
-    use crate::types::{
+    use crate::utils::params::{
         IntoParameters, IntoParametersError, IntoRawParameters, Parameter, RawParameter,
         RawParameterParseError,
     };

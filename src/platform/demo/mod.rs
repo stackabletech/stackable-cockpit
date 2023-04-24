@@ -4,9 +4,9 @@ use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
-use crate::{
-    types::PathOrUrl,
-    utils::read::{read_yaml_data, ReadError},
+use crate::utils::{
+    path::PathOrUrl,
+    read::{read_yaml_data, ReadError},
 };
 
 mod spec;

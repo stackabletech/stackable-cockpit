@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::types::{ManifestSpec, Parameter, RawParameter, RawParameterParseError};
+use crate::{
+    common::ManifestSpec,
+    utils::params::{Parameter, RawParameter, RawParameterParseError},
+};
 
 pub type RawDemoParameterParseError = RawParameterParseError;
 pub type RawDemoParameter = RawParameter;

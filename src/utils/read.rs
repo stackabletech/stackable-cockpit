@@ -3,7 +3,7 @@ use std::{fs, io};
 use serde::Deserialize;
 use thiserror::Error;
 
-use crate::types::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError};
+use crate::utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError};
 
 #[derive(Debug, Error)]
 pub enum ReadError {

@@ -3,7 +3,7 @@ use std::process::Command;
 use crate::{
     cluster::ClusterError,
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
-    utils::path::binaries_present,
+    utils::check::binaries_present,
 };
 
 pub struct MinikubeCluster {

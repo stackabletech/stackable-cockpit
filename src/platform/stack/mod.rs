@@ -8,8 +8,12 @@ mod spec;
 pub use spec::*;
 
 use crate::{
-    types::PathOrUrl,
-    utils::read::{read_yaml_data, ReadError},
+    common::ManifestSpec,
+    utils::{
+        params::{IntoParameters, IntoParametersError},
+        path::PathOrUrl,
+        read::{read_yaml_data, ReadError},
+    },
 };
 
 /// This struct describes a complete demos v2 file
@@ -32,6 +36,9 @@ pub struct StackList(HashMap<String, StackSpecV2>);
 pub enum StackListError {
     #[error("read error: {0}")]
     ReadError(#[from] ReadError),
+
+    #[error("url parse error: {0}")]
+    ParseUrlError(#[from] url::ParseError),
 }
 
 impl StackList {
@@ -41,13 +48,14 @@ impl StackList {
         arg_files: T,
     ) -> Result<Self, StackListError>
     where
-        U: Into<Url>,
+        U: AsRef<str>,
         T: AsRef<[PathOrUrl]>,
     {
         let mut map = HashMap::new();
+        let remote_url = Url::parse(remote_url.as_ref())?;
 
         // First load the remote stack file
-        let stacks = read_yaml_data::<StacksV2>(remote_url.into()).await?;
+        let stacks = read_yaml_data::<StacksV2>(remote_url).await?;
         for (stack_name, stack) in stacks.inner() {
             map.insert(stack_name.to_owned(), stack.to_owned());
         }
@@ -70,4 +78,44 @@ impl StackList {
 
         Ok(Self(map))
     }
+
+    pub fn inner(&self) -> &HashMap<String, StackSpecV2> {
+        &self.0
+    }
+
+    /// Get a demo by name
+    pub fn get<T>(&self, stack_name: T) -> Option<&StackSpecV2>
+    where
+        T: Into<String>,
+    {
+        self.0.get(&stack_name.into())
+    }
+}
+
+pub struct Stack {
+    parameters: HashMap<String, String>,
+    manifests: Vec<ManifestSpec>,
+    operators: Vec<String>,
+    release: String,
+}
+
+#[derive(Debug, Error)]
+pub enum StackError {
+    #[error("parameter parse error: {0}")]
+    ParameterError(#[from] IntoParametersError),
+}
+
+impl Stack {
+    pub fn new_from_spec(spec: &StackSpecV2, parameters: &Vec<String>) -> Result<Self, StackError> {
+        let parameters = parameters.clone().into_params(&spec.parameters)?;
+
+        Ok(Self {
+            manifests: spec.manifests.clone(),
+            operators: spec.operators.clone(),
+            release: spec.release.clone(),
+            parameters,
+        })
+    }
+
+    pub fn install(&self) {}
 }

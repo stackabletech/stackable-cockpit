@@ -1,23 +1,98 @@
-use which::which;
+use std::{path::PathBuf, str::FromStr};
 
-use std::ffi::OsStr;
+use thiserror::Error;
+use url::{ParseError, Url};
 
-/// Returns if the binary with `name` is present in the $PATH.
-pub fn binary_present<T: AsRef<OsStr>>(name: T) -> bool {
-    which(name).is_ok()
+#[derive(Debug, Clone)]
+pub enum PathOrUrl {
+    Path(PathBuf),
+    Url(Url),
 }
 
-/// Returns if ALL binaries in the list are present in the $PATH.
-pub fn binaries_present<T, L>(names: L) -> bool
-where
-    T: AsRef<OsStr>,
-    L: AsRef<[T]>,
-{
-    for name in names.as_ref() {
-        if !binary_present(name) {
-            return false;
-        }
-    }
+#[derive(Debug, Error)]
+pub enum PathOrUrlParseError {
+    #[error("url parse error: {0}")]
+    UrlParseError(#[from] ParseError),
+}
 
-    true
+pub trait IntoPathOrUrl: Sized {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError>;
+}
+
+impl<T: AsRef<str>> IntoPathOrUrl for T {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
+        PathOrUrl::from_str(self.as_ref())
+    }
+}
+
+impl IntoPathOrUrl for PathOrUrl {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
+        Ok(self)
+    }
+}
+
+impl IntoPathOrUrl for &PathOrUrl {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
+        Ok(self.to_owned())
+    }
+}
+
+pub trait IntoPathsOrUrls: Sized {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError>;
+}
+
+impl<T: AsRef<str>> IntoPathsOrUrls for Vec<T> {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let mut paths_or_urls = Vec::new();
+
+        for item in self {
+            let path_or_url = item.into_path_or_url()?;
+            paths_or_urls.push(path_or_url)
+        }
+
+        Ok(paths_or_urls)
+    }
+}
+
+impl IntoPathsOrUrls for PathOrUrl {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        Ok(vec![self])
+    }
+}
+
+impl IntoPathsOrUrls for &PathOrUrl {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        Ok(vec![self.to_owned()])
+    }
+}
+
+pub trait ParsePathsOrUrls {
+    fn parse_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError>;
+}
+
+impl<T: AsRef<str>> ParsePathsOrUrls for T {
+    fn parse_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let items: Vec<&str> = self.as_ref().split(' ').collect();
+        let mut paths_or_urls = Vec::new();
+
+        for item in items {
+            let path_or_url = item.into_path_or_url()?;
+            paths_or_urls.push(path_or_url);
+        }
+
+        Ok(paths_or_urls)
+    }
+}
+
+impl FromStr for PathOrUrl {
+    type Err = PathOrUrlParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.starts_with("https://") || s.starts_with("http://") {
+            return Ok(Self::Url(Url::parse(s)?));
+        }
+
+        let path = PathBuf::from(s);
+        Ok(Self::Path(path))
+    }
 }
