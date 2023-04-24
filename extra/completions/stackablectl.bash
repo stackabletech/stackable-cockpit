@@ -284,11 +284,11 @@ _stackctl() {
             fi
             case "${prev}" in
                 --log-level)
-                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 -l)
-                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --namespace)

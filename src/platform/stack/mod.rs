@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+use tracing::{debug, info, instrument};
 use url::Url;
 
 mod spec;
@@ -92,6 +93,7 @@ impl StackList {
     }
 }
 
+#[derive(Debug)]
 pub struct Stack {
     parameters: HashMap<String, String>,
     manifests: Vec<ManifestSpec>,
@@ -106,7 +108,9 @@ pub enum StackError {
 }
 
 impl Stack {
+    #[instrument(skip_all)]
     pub fn new_from_spec(spec: &StackSpecV2, parameters: &Vec<String>) -> Result<Self, StackError> {
+        debug!("Creating stack");
         let parameters = parameters.clone().into_params(&spec.parameters)?;
 
         Ok(Self {
@@ -117,5 +121,13 @@ impl Stack {
         })
     }
 
-    pub fn install(&self) {}
+    #[instrument(skip_all)]
+    pub fn install(&self) {
+        info!("Installing stack")
+    }
+
+    #[instrument(skip_all)]
+    pub fn install_manifests(&self, demo_parameters: &HashMap<String, String>) {
+        info!("Installing stack manifests")
+    }
 }

@@ -6,7 +6,7 @@ use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         demo::{DemoList, DemoListError},
-        stack::{Stack, StackList, StackListError},
+        stack::{Stack, StackError, StackList, StackListError},
     },
     utils::{
         params::{IntoParameters, IntoParametersError},
@@ -117,7 +117,10 @@ pub enum DemoError {
     DemoListError(#[from] DemoListError),
 
     #[error("stack list error: {0}")]
-    SatckListError(#[from] StackListError),
+    StackListError(#[from] StackListError),
+
+    #[error("stack error: {0}")]
+    StackError(#[from] StackError),
 
     #[error("path/url parse error: {0}")]
     PathOrUrlParseError(#[from] PathOrUrlParseError),
@@ -126,7 +129,7 @@ pub enum DemoError {
 impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoError> {
         // Build demo list based on the (default) remote demo file, and additional files provided by the
-        // STACKABLE_ADDITIONAL_DEMO_FILES env variable or the --additional-demo-files CLI argument.
+        // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
 
         let env_files = match env::var(DEMO_FILES_ENV_KEY) {
             Ok(env_files) => env_files.parse_paths_or_urls()?,
@@ -215,23 +218,31 @@ async fn install_cmd(
         .get(&args.demo_name)
         .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
 
+    // Build demo list based on the (default) remote demo file, and additional files provided by the
+    // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
     let env_files = match env::var(STACK_FILES_ENV_KEY) {
         Ok(env_files) => env_files.parse_paths_or_urls()?,
         Err(_) => vec![],
     };
 
     let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
-
     let stack_list = StackList::build(REMOTE_STACK_FILE, env_files, arg_files).await?;
+
+    // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
         .get(&demo_spec.stack)
         .ok_or(DemoError::NoSuchStack(demo_spec.stack.clone()))?;
 
-    let stack = Stack::new_from_spec(stack_spec, &args.stack_parameters);
+    // Create the stack based on the spec
+    // This does not yet install it. This is done via the Install method
+    let stack = Stack::new_from_spec(stack_spec, &args.stack_parameters)?;
 
+    // Install the stack and referenced manifests
     let demo_parameters = args.parameters.clone().into_params(&demo_spec.parameters)?;
+    stack.install();
+    stack.install_manifests(&demo_parameters);
 
-    todo!()
+    Ok("".into())
 }
 
 fn uninstall_cmd(args: &DemoUninstallArgs, list: DemoList) -> Result<String, DemoError> {
