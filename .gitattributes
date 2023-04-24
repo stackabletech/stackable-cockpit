@@ -1,2 +1,2 @@
-extra/completions linguist-generated
-extra/man linguist-generated
+extra/completions/* linguist-generated
+extra/man/* linguist-generated
