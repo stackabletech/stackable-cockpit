@@ -1,6 +1,10 @@
 #!/bin/sh
 
-set -eu
+set -e
+
+if [ ! -z "$SKIP_PRE_COMMIT" ]; then
+  exit 0
+fi
 
 if ! cargo xtask gen-man
 then
