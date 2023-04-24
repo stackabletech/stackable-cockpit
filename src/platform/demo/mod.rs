@@ -34,6 +34,9 @@ pub struct DemoList(HashMap<String, DemoSpecV2>);
 pub enum DemoListError {
     #[error("read error: {0}")]
     ReadError(#[from] ReadError),
+
+    #[error("url parse error: {0}")]
+    ParseUrlError(#[from] url::ParseError),
 }
 
 impl DemoList {
@@ -43,13 +46,14 @@ impl DemoList {
         arg_files: T,
     ) -> Result<Self, DemoListError>
     where
-        U: Into<Url>,
+        U: AsRef<str>,
         T: AsRef<[PathOrUrl]>,
     {
         let mut map = HashMap::new();
+        let remote_url = Url::parse(remote_url.as_ref())?;
 
         // First load the remote demo file
-        let demos = read_yaml_data::<DemosV2>(remote_url.into()).await?;
+        let demos = read_yaml_data::<DemosV2>(remote_url).await?;
         for (demo_name, demo) in demos.inner() {
             map.insert(demo_name.to_owned(), demo.to_owned());
         }

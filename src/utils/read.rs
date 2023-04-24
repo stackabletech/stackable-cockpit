@@ -3,7 +3,7 @@ use std::{fs, io};
 use serde::Deserialize;
 use thiserror::Error;
 
-use crate::types::PathOrUrl;
+use crate::types::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError};
 
 #[derive(Debug, Error)]
 pub enum ReadError {
@@ -15,14 +15,18 @@ pub enum ReadError {
 
     #[error("yaml parse error: {0}")]
     YamlError(#[from] serde_yaml::Error),
+
+    #[error("path/url parse error: {0}")]
+    PathOrUrlParseError(#[from] PathOrUrlParseError),
 }
 
 /// Reads YAML data from a remote URL or a local file and deserializes it into type `T`
-pub async fn read_yaml_data<T>(path_or_url: impl Into<PathOrUrl>) -> Result<T, ReadError>
+pub async fn read_yaml_data<T>(path_or_url: impl IntoPathOrUrl) -> Result<T, ReadError>
 where
-    T: for<'a> Deserialize<'a>,
+    T: for<'a> Deserialize<'a> + Sized,
 {
-    let data = read_from_file_or_url(path_or_url.into()).await?;
+    let path_or_url = path_or_url.into_path_or_url()?;
+    let data = read_from_file_or_url(path_or_url).await?;
     let yaml = serde_yaml::from_str::<T>(&data)?;
 
     Ok(yaml)

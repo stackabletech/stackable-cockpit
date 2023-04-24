@@ -5,14 +5,16 @@ use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
 use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::demo::{DemoList, DemoListError},
-    types::{IntoParameters, IntoParametersError},
+    types::{
+        IntoParameters, IntoParametersError, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrlParseError,
+    },
+    utils::read::ReadError,
 };
 use thiserror::Error;
 
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     constants::ADDITIONAL_DEMO_FILES_ENV_KEY,
-    utils::{PathParseError, ReadError},
 };
 
 const REMOTE_DEMO_FILE: &str =
@@ -101,9 +103,8 @@ pub enum DemoError {
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
 
-    #[error("path parse error: {0}")]
-    PathParseError(#[from] PathParseError),
-
+    // #[error("path parse error: {0}")]
+    // PathParseError(#[from] PathParseError),
     #[error("no demo with name '{0}'")]
     NoSuchDemo(String),
 
@@ -112,6 +113,9 @@ pub enum DemoError {
 
     #[error("demo list error: {0}")]
     DemoListError(#[from] DemoListError),
+
+    #[error("path/url parse error: {0}")]
+    PathOrUrlParseError(#[from] PathOrUrlParseError),
 }
 
 impl DemoArgs {
@@ -120,17 +124,16 @@ impl DemoArgs {
         // STACKABLE_ADDITIONAL_DEMO_FILES env variable or the --additional-demo-files CLI argument.
 
         let env_files = match env::var(ADDITIONAL_DEMO_FILES_ENV_KEY) {
-            Ok(env_files) => vec![env_files], // TODO (Techassi): Actually parse this as PathOrUrl
+            Ok(env_files) => env_files.parse_paths_or_urls()?,
             Err(_) => vec![],
         };
 
-        // let list = DemoList::build(
-        //     REMOTE_DEMO_FILE.into(),
-        //     env_files,
-        //     common_args.additional_demo_files,
-        // )
-        // .await?;
-        todo!();
+        let arg_files = common_args
+            .additional_demo_files
+            .clone()
+            .into_paths_or_urls()?;
+
+        let list = DemoList::build(REMOTE_DEMO_FILE, env_files, arg_files).await?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -205,7 +208,7 @@ fn install_cmd(args: &DemoInstallArgs, list: DemoList) -> Result<String, DemoErr
         .get(&args.demo_name)
         .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
 
-    let parameters = args.parameters.into_params(&demo.parameters)?;
+    let parameters = args.parameters.clone().into_params(&demo.parameters)?;
 
     todo!()
 }

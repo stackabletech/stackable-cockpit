@@ -15,6 +15,75 @@ pub enum PathOrUrlParseError {
     UrlParseError(#[from] ParseError),
 }
 
+pub trait IntoPathOrUrl: Sized {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError>;
+}
+
+impl<T: AsRef<str>> IntoPathOrUrl for T {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
+        PathOrUrl::from_str(self.as_ref())
+    }
+}
+
+impl IntoPathOrUrl for PathOrUrl {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
+        Ok(self)
+    }
+}
+
+impl IntoPathOrUrl for &PathOrUrl {
+    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
+        Ok(self.to_owned())
+    }
+}
+
+pub trait IntoPathsOrUrls: Sized {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError>;
+}
+
+impl<T: AsRef<str>> IntoPathsOrUrls for Vec<T> {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let mut paths_or_urls = Vec::new();
+
+        for item in self {
+            let path_or_url = item.into_path_or_url()?;
+            paths_or_urls.push(path_or_url)
+        }
+
+        Ok(paths_or_urls)
+    }
+}
+
+impl IntoPathsOrUrls for PathOrUrl {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        Ok(vec![self])
+    }
+}
+
+impl IntoPathsOrUrls for &PathOrUrl {
+    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        Ok(vec![self.to_owned()])
+    }
+}
+
+pub trait ParsePathsOrUrls {
+    fn parse_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError>;
+}
+
+impl<T: AsRef<str>> ParsePathsOrUrls for T {
+    fn parse_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let items: Vec<&str> = self.as_ref().split(' ').collect();
+        let mut paths_or_urls = Vec::new();
+
+        for item in items {
+            let path_or_url = item.into_path_or_url()?;
+            paths_or_urls.push(path_or_url);
+        }
+
+        Ok(paths_or_urls)
+    }
+}
+
 impl FromStr for PathOrUrl {
     type Err = PathOrUrlParseError;
 
@@ -25,39 +94,5 @@ impl FromStr for PathOrUrl {
 
         let path = PathBuf::from(s);
         Ok(Self::Path(path))
-    }
-}
-
-impl TryFrom<String> for PathOrUrl {
-    type Error = PathOrUrlParseError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        Self::from_str(value.as_str())
-    }
-}
-
-impl TryFrom<&str> for PathOrUrl {
-    type Error = PathOrUrlParseError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::from_str(value)
-    }
-}
-
-impl From<PathBuf> for PathOrUrl {
-    fn from(value: PathBuf) -> Self {
-        Self::Path(value)
-    }
-}
-
-impl From<Url> for PathOrUrl {
-    fn from(value: Url) -> Self {
-        Self::Url(value)
-    }
-}
-
-impl From<&PathOrUrl> for PathOrUrl {
-    fn from(value: &PathOrUrl) -> Self {
-        value.clone()
     }
 }
