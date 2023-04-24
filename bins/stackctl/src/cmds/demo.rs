@@ -14,7 +14,7 @@ use thiserror::Error;
 
 use crate::{
     cli::{Cli, ClusterType, OutputType},
-    constants::ADDITIONAL_DEMO_FILES_ENV_KEY,
+    constants::{DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_STACK_FILE, STACK_FILES_ENV_KEY},
 };
 
 const REMOTE_DEMO_FILE: &str =
