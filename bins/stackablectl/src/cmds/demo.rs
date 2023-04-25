@@ -3,6 +3,7 @@ use std::env;
 use clap::{Args, Subcommand};
 use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
 use stackable::{
+    common::Listed,
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         demo::{DemoList, DemoListError},
@@ -155,8 +156,8 @@ impl DemoArgs {
             REMOTE_DEMO_FILE,
             env_files,
             arg_files,
-            !common_args.no_cache,
             cache_file_path,
+            !common_args.no_cache,
         )
         .await?;
 
@@ -265,6 +266,6 @@ async fn install_cmd(
     Ok("".into())
 }
 
-fn uninstall_cmd(args: &DemoUninstallArgs, list: DemoList) -> Result<String, DemoError> {
+fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoError> {
     todo!()
 }

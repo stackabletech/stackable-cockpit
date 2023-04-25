@@ -1,13 +1,17 @@
 use std::{fs, path::PathBuf};
 
+use async_trait::async_trait;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
 
-use crate::utils::{
-    path::PathOrUrl,
-    read::{read_cached_yaml_data, read_yaml_data, CacheStatus, ReadError},
+use crate::{
+    common::Listed,
+    utils::{
+        path::PathOrUrl,
+        read::{read_cached_yaml_data, read_yaml_data, CacheStatus, ReadError},
+    },
 };
 
 mod spec;
@@ -46,14 +50,17 @@ pub enum DemoListError {
     YamlError(#[from] serde_yaml::Error),
 }
 
-impl DemoList {
-    pub async fn build<U, T>(
+#[async_trait(?Send)]
+impl Listed<DemosV2> for DemoList {
+    type Error = DemoListError;
+
+    async fn build<U, T>(
         remote_url: U,
         env_files: T,
         arg_files: T,
-        use_cache: bool,
         cache_file_path: PathBuf,
-    ) -> Result<Self, DemoListError>
+        use_cache: bool,
+    ) -> Result<Self, Self::Error>
     where
         U: AsRef<str>,
         T: AsRef<[PathOrUrl]>,
@@ -63,19 +70,7 @@ impl DemoList {
 
         // First load the remote demo file. This uses the cached file if present, and if not, requests the remote file
         // and then saves the contents on disk for cached use later
-        let demos = if use_cache {
-            match read_cached_yaml_data::<DemosV2>(cache_file_path.clone())? {
-                CacheStatus::Hit(demos) => demos,
-                CacheStatus::Expired | CacheStatus::Miss => {
-                    let demos = read_yaml_data::<DemosV2>(remote_url).await?;
-                    fs::write(cache_file_path, serde_yaml::to_string(&demos)?)?;
-                    demos
-                }
-            }
-        } else {
-            read_yaml_data::<DemosV2>(remote_url).await?
-        };
-
+        let demos = Self::get_default_file(remote_url, cache_file_path, use_cache).await?;
         for (demo_name, demo) in demos.inner() {
             map.insert(demo_name.to_owned(), demo.to_owned());
         }
@@ -98,7 +93,9 @@ impl DemoList {
 
         Ok(Self(map))
     }
+}
 
+impl DemoList {
     pub fn inner(&self) -> &IndexMap<String, DemoSpecV2> {
         &self.0
     }
