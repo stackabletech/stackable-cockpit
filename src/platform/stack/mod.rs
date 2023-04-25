@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use tracing::{debug, info, instrument};
@@ -22,16 +23,16 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 pub struct StacksV2 {
     #[serde(with = "serde_yaml::with::singleton_map_recursive")]
-    stacks: HashMap<String, StackSpecV2>,
+    stacks: IndexMap<String, StackSpecV2>,
 }
 
 impl StacksV2 {
-    pub fn inner(&self) -> &HashMap<String, StackSpecV2> {
+    pub fn inner(&self) -> &IndexMap<String, StackSpecV2> {
         &self.stacks
     }
 }
 
-pub struct StackList(HashMap<String, StackSpecV2>);
+pub struct StackList(IndexMap<String, StackSpecV2>);
 
 #[derive(Debug, Error)]
 pub enum StackListError {
@@ -52,7 +53,7 @@ impl StackList {
         U: AsRef<str>,
         T: AsRef<[PathOrUrl]>,
     {
-        let mut map = HashMap::new();
+        let mut map = IndexMap::new();
         let remote_url = Url::parse(remote_url.as_ref())?;
 
         // First load the remote stack file
@@ -80,7 +81,7 @@ impl StackList {
         Ok(Self(map))
     }
 
-    pub fn inner(&self) -> &HashMap<String, StackSpecV2> {
+    pub fn inner(&self) -> &IndexMap<String, StackSpecV2> {
         &self.0
     }
 

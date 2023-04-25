@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use url::Url;
@@ -18,17 +19,17 @@ pub use spec::*;
 #[serde(rename_all = "camelCase")]
 pub struct DemosV2 {
     #[serde(with = "serde_yaml::with::singleton_map_recursive")]
-    demos: HashMap<String, DemoSpecV2>,
+    demos: IndexMap<String, DemoSpecV2>,
 }
 
 impl DemosV2 {
-    pub fn inner(&self) -> &HashMap<String, DemoSpecV2> {
+    pub fn inner(&self) -> &IndexMap<String, DemoSpecV2> {
         &self.demos
     }
 }
 
 #[derive(Debug)]
-pub struct DemoList(HashMap<String, DemoSpecV2>);
+pub struct DemoList(IndexMap<String, DemoSpecV2>);
 
 #[derive(Debug, Error)]
 pub enum DemoListError {
@@ -49,7 +50,7 @@ impl DemoList {
         U: AsRef<str>,
         T: AsRef<[PathOrUrl]>,
     {
-        let mut map = HashMap::new();
+        let mut map = IndexMap::new();
         let remote_url = Url::parse(remote_url.as_ref())?;
 
         // First load the remote demo file
@@ -77,7 +78,7 @@ impl DemoList {
         Ok(Self(map))
     }
 
-    pub fn inner(&self) -> &HashMap<String, DemoSpecV2> {
+    pub fn inner(&self) -> &IndexMap<String, DemoSpecV2> {
         &self.0
     }
 
