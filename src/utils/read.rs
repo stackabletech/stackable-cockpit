@@ -1,4 +1,4 @@
-use std::{fs, io};
+use std::{fs, io, path::PathBuf};
 
 use serde::Deserialize;
 use thiserror::Error;
@@ -30,6 +30,23 @@ where
     let yaml = serde_yaml::from_str::<T>(&data)?;
 
     Ok(yaml)
+}
+
+/// Reads potentially cached YAML data from a local file and deserializes it into type `T`. The function checks if the
+/// provided path exists and is a file, and if yes, reads from this file. If the path doesn't exist or doesn't point
+/// to a file, [`None`] is returned. A [`ReadError`] is returned when the file cannot be read or deserialization failed.
+pub fn read_cached_yaml_data<T>(path: PathBuf) -> Result<Option<T>, ReadError>
+where
+    T: for<'a> Deserialize<'a> + Sized,
+{
+    if path.is_file() {
+        let data = fs::read_to_string(path)?;
+        let yaml = serde_yaml::from_str::<T>(&data)?;
+
+        return Ok(Some(yaml));
+    }
+
+    Ok(None)
 }
 
 /// Reads the contents of a file either by retrieving a file via HTTP(S) or by reading a local file on disk via it's

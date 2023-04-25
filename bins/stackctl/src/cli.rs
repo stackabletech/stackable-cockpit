@@ -14,12 +14,26 @@ pub struct Cli {
     #[arg(short, long)]
     pub log_level: Option<Level>,
 
+    /// Do not cache the remote (default) demo, stack and release files
+    #[arg(long)]
+    #[arg(
+        long_help = "Do not cache the remote (default) demo, stack and release files
+
+Cached files are saved at '$XDG_CACHE_HOME/stackctl', which is usually
+'$HOME/.cache/stackctl' when not explicitly set."
+    )]
+    pub no_cache: bool,
+
+    /// Do not request any remote files via the network
+    #[arg(long)]
+    pub offline: bool,
+
     /// Namespace in the cluster used to deploy the products and operators
     #[arg(short, long, default_value = DEFAULT_STACKABLE_NAMESPACE)]
     pub namespace: String,
 
     /// Provide one or more additional (custom) demo file(s)
-    #[arg(short, long, value_hint = ValueHint::FilePath)]
+    #[arg(short, long = "demo-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) demo file(s)
 
 Demos are loaded in the following order: Remote (default) demo file, custom
@@ -32,7 +46,7 @@ to provide multiple additional demo files.")]
     pub demo_files: Vec<String>,
 
     /// Provide one or more additional (custom) stack file(s)
-    #[arg(short, long, value_hint = ValueHint::FilePath)]
+    #[arg(short, long = "stack-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) stack file(s)
     
 Stacks are loaded in the following order: Remote (default) stack file, custom
@@ -45,7 +59,7 @@ to provide multiple additional stack files.")]
     pub stack_files: Vec<String>,
 
     /// Provide one or more additional (custom) release file(s)
-    #[arg(short, long, value_hint = ValueHint::FilePath)]
+    #[arg(short, long = "release-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) release file(s)
     
 Releases are loaded in the following order: Remote (default) release file,

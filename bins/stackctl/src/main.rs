@@ -15,6 +15,11 @@ async fn main() -> Result<()> {
     // Parse the CLI args and commands
     let cli = cli::Cli::parse();
 
+    // Catch if --offline is used for now
+    if cli.offline {
+        todo!()
+    }
+
     // Construct the tracing subscriber
     let format = fmt::format()
         .with_level(false)

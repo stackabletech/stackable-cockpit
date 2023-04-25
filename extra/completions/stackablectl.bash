@@ -277,7 +277,7 @@ _stackctl() {
 
     case "${cmd}" in
         stackctl)
-            opts="-l -n -d -s -r -h -V --log-level --namespace --demo-files --stack-files --release-file --help --version operator release stack services demo completions help"
+            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --namespace --demo-file --stack-file --release-file --help --version operator release stack services demo completions help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -299,7 +299,7 @@ _stackctl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --demo-files)
+                --demo-file)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -307,7 +307,7 @@ _stackctl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --stack-files)
+                --stack-file)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

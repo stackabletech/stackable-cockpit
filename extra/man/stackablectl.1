@@ -4,17 +4,26 @@
 .SH NAME
 stackctl
 .SH SYNOPSIS
-\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-files\fR] [\fB\-s\fR|\fB\-\-stack\-files\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackctl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 .SH OPTIONS
 .TP
 \fB\-l\fR, \fB\-\-log\-level\fR=\fILOG_LEVEL\fR
 Log level this application uses
 .TP
+\fB\-\-no\-cache\fR
+Do not cache the remote (default) demo, stack and release files
+
+Cached files are saved at \*(Aq$XDG_CACHE_HOME/stackctl\*(Aq, which is usually
+\*(Aq$HOME/.cache/stackctl\*(Aq when not explicitly set.
+.TP
+\fB\-\-offline\fR
+Do not request any remote files via the network
+.TP
 \fB\-n\fR, \fB\-\-namespace\fR=\fINAMESPACE\fR [default: stackable]
 Namespace in the cluster used to deploy the products and operators
 .TP
-\fB\-d\fR, \fB\-\-demo\-files\fR=\fIDEMO_FILES\fR
+\fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILES\fR
 Provide one or more additional (custom) demo file(s)
 
 Demos are loaded in the following order: Remote (default) demo file, custom
@@ -25,7 +34,7 @@ demos with the same name, the last demo definition will be used.
 Use "stackablectl \-d path/to/demos1.yaml \-d path/to/demos2.yaml [OPTIONS] <COMMAND>"
 to provide multiple additional demo files.
 .TP
-\fB\-s\fR, \fB\-\-stack\-files\fR=\fISTACK_FILES\fR
+\fB\-s\fR, \fB\-\-stack\-file\fR=\fISTACK_FILES\fR
 Provide one or more additional (custom) stack file(s)
     
 Stacks are loaded in the following order: Remote (default) stack file, custom

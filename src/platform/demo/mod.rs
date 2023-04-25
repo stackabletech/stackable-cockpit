@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{fs, path::PathBuf};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::utils::{
     path::PathOrUrl,
-    read::{read_yaml_data, ReadError},
+    read::{read_cached_yaml_data, read_yaml_data, ReadError},
 };
 
 mod spec;
@@ -33,11 +33,17 @@ pub struct DemoList(IndexMap<String, DemoSpecV2>);
 
 #[derive(Debug, Error)]
 pub enum DemoListError {
+    #[error("io error: {0}")]
+    IoError(#[from] std::io::Error),
+
     #[error("read error: {0}")]
     ReadError(#[from] ReadError),
 
     #[error("url parse error: {0}")]
     ParseUrlError(#[from] url::ParseError),
+
+    #[error("yaml error: {0}")]
+    YamlError(#[from] serde_yaml::Error),
 }
 
 impl DemoList {
@@ -45,6 +51,8 @@ impl DemoList {
         remote_url: U,
         env_files: T,
         arg_files: T,
+        use_cache: bool,
+        cache_file_path: PathBuf,
     ) -> Result<Self, DemoListError>
     where
         U: AsRef<str>,
@@ -53,8 +61,21 @@ impl DemoList {
         let mut map = IndexMap::new();
         let remote_url = Url::parse(remote_url.as_ref())?;
 
-        // First load the remote demo file
-        let demos = read_yaml_data::<DemosV2>(remote_url).await?;
+        // First load the remote demo file. This uses the cached file if present, and if not, requests the remote file
+        // and then saves the contents on disk for cached use later
+        let demos = if use_cache {
+            match read_cached_yaml_data::<DemosV2>(cache_file_path.clone())? {
+                Some(demos) => demos,
+                None => {
+                    let demos = read_yaml_data::<DemosV2>(remote_url).await?;
+                    fs::write(cache_file_path, serde_yaml::to_string(&demos)?)?;
+                    demos
+                }
+            }
+        } else {
+            read_yaml_data::<DemosV2>(remote_url).await?
+        };
+
         for (demo_name, demo) in demos.inner() {
             map.insert(demo_name.to_owned(), demo.to_owned());
         }

@@ -20,6 +20,5 @@ tracing = { workspace = true }
 anyhow = { workspace = true }
 tokio = { workspace = true }
 clap = { workspace = true }
+xdg = { workspace = true }
 comfy-table = "6.1.4"
-
-

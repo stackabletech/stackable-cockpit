@@ -15,10 +15,14 @@ use stackable::{
     },
 };
 use thiserror::Error;
+use xdg::BaseDirectoriesError;
 
 use crate::{
     cli::{Cli, ClusterType, OutputType},
-    constants::{DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_STACK_FILE, STACK_FILES_ENV_KEY},
+    constants::{
+        CACHE_DEMO_PATH, DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_STACK_FILE,
+        STACK_FILES_ENV_KEY,
+    },
 };
 
 #[derive(Debug, Args)]
@@ -95,6 +99,9 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Error)]
 pub enum DemoError {
+    #[error("io error: {0}")]
+    IoError(#[from] std::io::Error),
+
     #[error("read error: {0}")]
     ReadError(#[from] ReadError),
 
@@ -124,6 +131,9 @@ pub enum DemoError {
 
     #[error("path/url parse error: {0}")]
     PathOrUrlParseError(#[from] PathOrUrlParseError),
+
+    #[error("xdg base directory error: {0}")]
+    XdgError(#[from] BaseDirectoriesError),
 }
 
 impl DemoArgs {
@@ -138,7 +148,17 @@ impl DemoArgs {
 
         let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
 
-        let list = DemoList::build(REMOTE_DEMO_FILE, env_files, arg_files).await?;
+        let cache_file_path =
+            xdg::BaseDirectories::with_prefix("stackctl")?.place_cache_file(CACHE_DEMO_PATH)?;
+
+        let list = DemoList::build(
+            REMOTE_DEMO_FILE,
+            env_files,
+            arg_files,
+            !common_args.no_cache,
+            cache_file_path,
+        )
+        .await?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
