@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::utils::{
     path::PathOrUrl,
-    read::{read_cached_yaml_data, read_yaml_data, ReadError},
+    read::{read_cached_yaml_data, read_yaml_data, CacheStatus, ReadError},
 };
 
 mod spec;
@@ -65,8 +65,8 @@ impl DemoList {
         // and then saves the contents on disk for cached use later
         let demos = if use_cache {
             match read_cached_yaml_data::<DemosV2>(cache_file_path.clone())? {
-                Some(demos) => demos,
-                None => {
+                CacheStatus::Hit(demos) => demos,
+                CacheStatus::Expired | CacheStatus::Miss => {
                     let demos = read_yaml_data::<DemosV2>(remote_url).await?;
                     fs::write(cache_file_path, serde_yaml::to_string(&demos)?)?;
                     demos

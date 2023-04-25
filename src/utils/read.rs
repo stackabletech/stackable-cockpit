@@ -20,6 +20,12 @@ pub enum ReadError {
     PathOrUrlParseError(#[from] PathOrUrlParseError),
 }
 
+pub enum CacheStatus<T> {
+    Hit(T),
+    Expired,
+    Miss,
+}
+
 /// Reads YAML data from a remote URL or a local file and deserializes it into type `T`
 pub async fn read_yaml_data<T>(path_or_url: impl IntoPathOrUrl) -> Result<T, ReadError>
 where
@@ -35,18 +41,20 @@ where
 /// Reads potentially cached YAML data from a local file and deserializes it into type `T`. The function checks if the
 /// provided path exists and is a file, and if yes, reads from this file. If the path doesn't exist or doesn't point
 /// to a file, [`None`] is returned. A [`ReadError`] is returned when the file cannot be read or deserialization failed.
-pub fn read_cached_yaml_data<T>(path: PathBuf) -> Result<Option<T>, ReadError>
+pub fn read_cached_yaml_data<T>(path: PathBuf) -> Result<CacheStatus<T>, ReadError>
 where
     T: for<'a> Deserialize<'a> + Sized,
 {
+    // TODO (Techassi): Implement expired status
+
     if path.is_file() {
         let data = fs::read_to_string(path)?;
         let yaml = serde_yaml::from_str::<T>(&data)?;
 
-        return Ok(Some(yaml));
+        return Ok(CacheStatus::Hit(yaml));
     }
 
-    Ok(None)
+    Ok(CacheStatus::Miss)
 }
 
 /// Reads the contents of a file either by retrieving a file via HTTP(S) or by reading a local file on disk via it's
