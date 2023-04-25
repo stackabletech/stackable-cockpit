@@ -124,11 +124,13 @@ impl Stack {
 
     #[instrument(skip_all)]
     pub fn install(&self) {
-        info!("Installing stack")
+        info!("Installing stack");
+        todo!()
     }
 
     #[instrument(skip_all)]
     pub fn install_manifests(&self, demo_parameters: &HashMap<String, String>) {
-        info!("Installing stack manifests")
+        info!("Installing stack manifests");
+        todo!()
     }
 }

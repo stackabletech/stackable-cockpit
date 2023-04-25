@@ -1,3 +1,4 @@
+pub mod cache;
 pub mod completions;
 pub mod demo;
 pub mod operator;

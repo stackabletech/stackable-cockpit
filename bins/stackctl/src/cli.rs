@@ -3,8 +3,8 @@ use stackable::constants::DEFAULT_STACKABLE_NAMESPACE;
 use tracing::Level;
 
 use crate::cmds::{
-    completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs, release::ReleaseArgs,
-    services::ServicesArgs, stack::StackArgs,
+    cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
+    release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
 };
 
 #[derive(Debug, Parser)]
@@ -100,6 +100,9 @@ pub enum Commands {
     /// Generate shell completions for this tool
     #[command(alias("comp"))]
     Completions(CompletionsArgs),
+
+    /// Interact with locally cached files
+    Cache(CacheArgs),
 }
 
 #[derive(Clone, Debug, ValueEnum)]

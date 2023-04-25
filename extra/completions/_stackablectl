@@ -632,6 +632,70 @@ esac
     ;;
 esac
 ;;
+(cache)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+":: :_stackctl__cache_commands" \
+"*::: :->cache" \
+&& ret=0
+
+    case $state in
+    (cache)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-cache-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(clean)
+_arguments "${_arguments_options[@]}" \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+":: :_stackctl__cache__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-cache-help-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(clean)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 ":: :_stackctl__help_commands" \
@@ -820,6 +884,30 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
+(cache)
+_arguments "${_arguments_options[@]}" \
+":: :_stackctl__help__cache_commands" \
+"*::: :->cache" \
+&& ret=0
+
+    case $state in
+    (cache)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:stackctl-help-cache-command-$line[1]:"
+        case $line[1] in
+            (list)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(clean)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" \
 && ret=0
@@ -842,6 +930,7 @@ _stackctl_commands() {
 'services:Interact with deployed services of products' \
 'demo:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
 'completions:Generate shell completions for this tool' \
+'cache:Interact with locally cached files' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackctl commands' commands "$@"
@@ -860,6 +949,38 @@ _stackctl__completions__help__bash_commands() {
 _stackctl__help__completions__bash_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl help completions bash commands' commands "$@"
+}
+(( $+functions[_stackctl__cache_commands] )) ||
+_stackctl__cache_commands() {
+    local commands; commands=(
+'list:List cached files' \
+'clean:Clean cached files' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'stackctl cache commands' commands "$@"
+}
+(( $+functions[_stackctl__help__cache_commands] )) ||
+_stackctl__help__cache_commands() {
+    local commands; commands=(
+'list:List cached files' \
+'clean:Clean cached files' \
+    )
+    _describe -t commands 'stackctl help cache commands' commands "$@"
+}
+(( $+functions[_stackctl__cache__clean_commands] )) ||
+_stackctl__cache__clean_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl cache clean commands' commands "$@"
+}
+(( $+functions[_stackctl__cache__help__clean_commands] )) ||
+_stackctl__cache__help__clean_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl cache help clean commands' commands "$@"
+}
+(( $+functions[_stackctl__help__cache__clean_commands] )) ||
+_stackctl__help__cache__clean_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help cache clean commands' commands "$@"
 }
 (( $+functions[_stackctl__completions_commands] )) ||
 _stackctl__completions_commands() {
@@ -976,6 +1097,20 @@ _stackctl__help__completions__fish_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl help completions fish commands' commands "$@"
 }
+(( $+functions[_stackctl__cache__help_commands] )) ||
+_stackctl__cache__help_commands() {
+    local commands; commands=(
+'list:List cached files' \
+'clean:Clean cached files' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'stackctl cache help commands' commands "$@"
+}
+(( $+functions[_stackctl__cache__help__help_commands] )) ||
+_stackctl__cache__help__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl cache help help commands' commands "$@"
+}
 (( $+functions[_stackctl__completions__help_commands] )) ||
 _stackctl__completions__help_commands() {
     local commands; commands=(
@@ -1016,6 +1151,7 @@ _stackctl__help_commands() {
 'services:Interact with deployed services of products' \
 'demo:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
 'completions:Generate shell completions for this tool' \
+'cache:Interact with locally cached files' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackctl help commands' commands "$@"
@@ -1161,6 +1297,16 @@ _stackctl__operator__installed_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl operator installed commands' commands "$@"
 }
+(( $+functions[_stackctl__cache__help__list_commands] )) ||
+_stackctl__cache__help__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl cache help list commands' commands "$@"
+}
+(( $+functions[_stackctl__cache__list_commands] )) ||
+_stackctl__cache__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl cache list commands' commands "$@"
+}
 (( $+functions[_stackctl__demo__help__list_commands] )) ||
 _stackctl__demo__help__list_commands() {
     local commands; commands=()
@@ -1170,6 +1316,11 @@ _stackctl__demo__help__list_commands() {
 _stackctl__demo__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackctl demo list commands' commands "$@"
+}
+(( $+functions[_stackctl__help__cache__list_commands] )) ||
+_stackctl__help__cache__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackctl help cache list commands' commands "$@"
 }
 (( $+functions[_stackctl__help__demo__list_commands] )) ||
 _stackctl__help__demo__list_commands() {

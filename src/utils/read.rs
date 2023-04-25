@@ -26,7 +26,8 @@ pub enum CacheStatus<T> {
     Miss,
 }
 
-/// Reads YAML data from a remote URL or a local file and deserializes it into type `T`
+/// Reads YAML data from a remote URL or a local file and deserializes it into type `T`. A [`ReadError`] is returned
+/// when the file cannot be read or deserialization failed.
 pub async fn read_yaml_data<T>(path_or_url: impl IntoPathOrUrl) -> Result<T, ReadError>
 where
     T: for<'a> Deserialize<'a> + Sized,
@@ -39,8 +40,10 @@ where
 }
 
 /// Reads potentially cached YAML data from a local file and deserializes it into type `T`. The function checks if the
-/// provided path exists and is a file, and if yes, reads from this file. If the path doesn't exist or doesn't point
-/// to a file, [`None`] is returned. A [`ReadError`] is returned when the file cannot be read or deserialization failed.
+/// provided path exists and is a file, and if yes, reads from this file. If the cache file exists, [`CacheStatus::Hit`]
+/// is returned. If the path doesn't exist or doesn't point to a file, [`CacheStatus::Miss`] is returned. If the cached
+/// file is older then the provided max age, [`CacheStatus::Expired`] is returned. A [`ReadError`] is returned when
+/// the file cannot be read or deserialization failed.
 pub fn read_cached_yaml_data<T>(path: PathBuf) -> Result<CacheStatus<T>, ReadError>
 where
     T: for<'a> Deserialize<'a> + Sized,
@@ -58,7 +61,7 @@ where
 }
 
 /// Reads the contents of a file either by retrieving a file via HTTP(S) or by reading a local file on disk via it's
-/// file path.
+/// file path. A [`ReadError`] is returned when the file cannot be read or deserialization failed.
 pub async fn read_from_file_or_url(path_or_url: PathOrUrl) -> Result<String, ReadError> {
     match path_or_url {
         PathOrUrl::Path(path) => Ok(fs::read_to_string(path)?),

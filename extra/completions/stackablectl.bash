@@ -12,6 +12,9 @@ _stackctl() {
             ",$1")
                 cmd="stackctl"
                 ;;
+            stackctl,cache)
+                cmd="stackctl__cache"
+                ;;
             stackctl,completions)
                 cmd="stackctl__completions"
                 ;;
@@ -32,6 +35,24 @@ _stackctl() {
                 ;;
             stackctl,stack)
                 cmd="stackctl__stack"
+                ;;
+            stackctl__cache,clean)
+                cmd="stackctl__cache__clean"
+                ;;
+            stackctl__cache,help)
+                cmd="stackctl__cache__help"
+                ;;
+            stackctl__cache,list)
+                cmd="stackctl__cache__list"
+                ;;
+            stackctl__cache__help,clean)
+                cmd="stackctl__cache__help__clean"
+                ;;
+            stackctl__cache__help,help)
+                cmd="stackctl__cache__help__help"
+                ;;
+            stackctl__cache__help,list)
+                cmd="stackctl__cache__help__list"
                 ;;
             stackctl__completions,bash)
                 cmd="stackctl__completions__bash"
@@ -87,6 +108,9 @@ _stackctl() {
             stackctl__demo__help,uninstall)
                 cmd="stackctl__demo__help__uninstall"
                 ;;
+            stackctl__help,cache)
+                cmd="stackctl__help__cache"
+                ;;
             stackctl__help,completions)
                 cmd="stackctl__help__completions"
                 ;;
@@ -107,6 +131,12 @@ _stackctl() {
                 ;;
             stackctl__help,stack)
                 cmd="stackctl__help__stack"
+                ;;
+            stackctl__help__cache,clean)
+                cmd="stackctl__help__cache__clean"
+                ;;
+            stackctl__help__cache,list)
+                cmd="stackctl__help__cache__list"
                 ;;
             stackctl__help__completions,bash)
                 cmd="stackctl__help__completions__bash"
@@ -277,7 +307,7 @@ _stackctl() {
 
     case "${cmd}" in
         stackctl)
-            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --namespace --demo-file --stack-file --release-file --help --version operator release stack services demo completions help"
+            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --namespace --demo-file --stack-file --release-file --help --version operator release stack services demo completions cache help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -323,6 +353,104 @@ _stackctl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache)
+            opts="-h -V --help --version list clean help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache__clean)
+            opts="-h -V --help --version"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache__help)
+            opts="list clean help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache__help__clean)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__cache__list)
+            opts="-h -V --help --version"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
                 *)
                     COMPREPLY=()
                     ;;
@@ -655,8 +783,50 @@ _stackctl() {
             return 0
             ;;
         stackctl__help)
-            opts="operator release stack services demo completions help"
+            opts="operator release stack services demo completions cache help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__help__cache)
+            opts="list clean"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__help__cache__clean)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackctl__help__cache__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi

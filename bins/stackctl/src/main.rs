@@ -52,6 +52,7 @@ async fn main() -> Result<()> {
         Commands::Services(args) => args.run()?,
         Commands::Demo(args) => args.run(&cli).await?,
         Commands::Completions(args) => args.run()?,
+        Commands::Cache(args) => args.run()?,
     };
 
     println!("{output}");
