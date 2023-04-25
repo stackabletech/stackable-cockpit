@@ -20,7 +20,7 @@ use xdg::BaseDirectoriesError;
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     constants::{
-        CACHE_DEMO_PATH, DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_STACK_FILE,
+        CACHE_DEMO_PATH, CACHE_HOME_PATH, DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_STACK_FILE,
         STACK_FILES_ENV_KEY,
     },
 };
@@ -148,8 +148,8 @@ impl DemoArgs {
 
         let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
 
-        let cache_file_path =
-            xdg::BaseDirectories::with_prefix("stackctl")?.place_cache_file(CACHE_DEMO_PATH)?;
+        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?
+            .place_cache_file(CACHE_DEMO_PATH)?;
 
         let list = DemoList::build(
             REMOTE_DEMO_FILE,

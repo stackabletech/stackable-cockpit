@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
-stackctl = { path = "../bins/stackctl" }
+stackablectl = { path = "../bins/stackablectl" }
 clap_complete =  { workspace = true }
 anyhow = { workspace = true }
 clap = { workspace = true }

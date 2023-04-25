@@ -2,7 +2,7 @@ use anyhow::Result;
 use clap::CommandFactory;
 use clap_complete::{generate, Shell};
 use clap_mangen::Man;
-use stackctl::cli::Cli;
+use stackablectl::cli::Cli;
 
 use std::{env, fs};
 

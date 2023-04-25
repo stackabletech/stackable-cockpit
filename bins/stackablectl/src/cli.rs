@@ -19,8 +19,8 @@ pub struct Cli {
     #[arg(
         long_help = "Do not cache the remote (default) demo, stack and release files
 
-Cached files are saved at '$XDG_CACHE_HOME/stackctl', which is usually
-'$HOME/.cache/stackctl' when not explicitly set."
+Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
+'$HOME/.cache/stackablectl' when not explicitly set."
     )]
     pub no_cache: bool,
 

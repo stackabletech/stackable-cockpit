@@ -5,6 +5,8 @@ use comfy_table::Table;
 use thiserror::Error;
 use xdg::BaseDirectoriesError;
 
+use crate::constants::CACHE_HOME_PATH;
+
 #[derive(Debug, Args)]
 pub struct CacheArgs {
     #[command(subcommand)]
@@ -41,7 +43,8 @@ impl CacheArgs {
 }
 
 fn list_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix("stackctl")?.get_cache_home();
+    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
+    fs::create_dir_all(cache_dir.clone())?;
 
     let mut files = fs::read_dir(cache_dir)?
         .map(|res| {
@@ -73,7 +76,7 @@ fn list_cmd() -> Result<String, CacheCmdError> {
 }
 
 fn clean_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix("stackctl")?.get_cache_home();
+    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
     fs::remove_dir_all(cache_dir.clone())?;
     fs::create_dir_all(cache_dir)?;
 
