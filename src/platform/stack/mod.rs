@@ -110,9 +110,9 @@ pub enum StackError {
 
 impl Stack {
     #[instrument(skip_all)]
-    pub fn new_from_spec(spec: &StackSpecV2, parameters: &Vec<String>) -> Result<Self, StackError> {
+    pub fn new_from_spec(spec: &StackSpecV2, parameters: &[String]) -> Result<Self, StackError> {
         debug!("Creating stack");
-        let parameters = parameters.clone().into_params(&spec.parameters)?;
+        let parameters = parameters.to_owned().into_params(&spec.parameters)?;
 
         Ok(Self {
             manifests: spec.manifests.clone(),
