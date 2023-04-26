@@ -1,10 +1,18 @@
+use std::env;
+
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
-use stackable::constants::DEFAULT_STACKABLE_NAMESPACE;
+use stackable::{
+    constants::DEFAULT_STACKABLE_NAMESPACE,
+    utils::path::{IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError},
+};
 use tracing::Level;
 
-use crate::cmds::{
-    cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
-    release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
+use crate::{
+    cmds::{
+        cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
+        release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
+    },
+    constants::{DEMO_FILES_ENV_KEY, STACK_FILES_ENV_KEY},
 };
 
 #[derive(Debug, Parser)]
@@ -76,6 +84,32 @@ to provide multiple additional stack files.")]
     pub subcommand: Commands,
 }
 
+impl Cli {
+    pub fn get_demo_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let mut files = match env::var(DEMO_FILES_ENV_KEY) {
+            Ok(env_files) => env_files.parse_paths_or_urls()?,
+            Err(_) => vec![],
+        };
+
+        let arg_files = self.demo_files.clone().into_paths_or_urls()?;
+        files.extend(arg_files);
+
+        Ok(files)
+    }
+
+    pub fn get_stack_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let mut files = match env::var(STACK_FILES_ENV_KEY) {
+            Ok(env_files) => env_files.parse_paths_or_urls()?,
+            Err(_) => vec![],
+        };
+
+        let arg_files = self.stack_files.clone().into_paths_or_urls()?;
+        files.extend(arg_files);
+
+        Ok(files)
+    }
+}
+
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Interact with single operator instead of the full platform
@@ -103,21 +137,6 @@ pub enum Commands {
 
     /// Interact with locally cached files
     Cache(CacheArgs),
-}
-
-#[derive(Clone, Debug, ValueEnum)]
-pub enum LogLevel {
-    Error,
-    Warn,
-    Info,
-    Debug,
-    Trace,
-}
-
-impl Default for LogLevel {
-    fn default() -> Self {
-        Self::Warn
-    }
 }
 
 #[derive(Clone, Debug, ValueEnum)]

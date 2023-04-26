@@ -1,5 +1,3 @@
-use std::env;
-
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
@@ -10,12 +8,12 @@ use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         demo::DemoList,
-        stack::{Stack, StackError, StackList},
+        stack::{StackError, StackList},
     },
     utils::{
-        params::{IntoParameters, IntoParametersError},
-        path::{IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrlParseError},
-        read::ReadError,
+        params::IntoParametersError,
+        path::PathOrUrlParseError,
+        read::{CacheSettings, ReadError},
     },
 };
 use thiserror::Error;
@@ -24,8 +22,7 @@ use xdg::BaseDirectoriesError;
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     constants::{
-        CACHE_DEMOS_PATH, CACHE_HOME_PATH, CACHE_STACKS_PATH, DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE,
-        REMOTE_STACK_FILE, STACK_FILES_ENV_KEY,
+        CACHE_DEMOS_PATH, CACHE_HOME_PATH, CACHE_STACKS_PATH, REMOTE_DEMO_FILE, REMOTE_STACK_FILE,
     },
 };
 
@@ -102,7 +99,7 @@ installation on the system."
 pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Error)]
-pub enum DemoError {
+pub enum DemoCmdError {
     #[error("io error: {0}")]
     IoError(#[from] std::io::Error),
 
@@ -138,27 +135,15 @@ pub enum DemoError {
 }
 
 impl DemoArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, DemoError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-
-        let env_files = match env::var(DEMO_FILES_ENV_KEY) {
-            Ok(env_files) => env_files.parse_paths_or_urls()?,
-            Err(_) => vec![],
-        };
-
-        let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
-
+        let files = common_args.get_demo_files()?;
         let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?
             .place_cache_file(CACHE_DEMOS_PATH)?;
 
-        let list = DemoList::build(
-            REMOTE_DEMO_FILE,
-            env_files,
-            arg_files,
-            (cache_file_path, !common_args.no_cache).into(),
-        )
-        .await?;
+        let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
+        let list = DemoList::build(REMOTE_DEMO_FILE, files, cache_settings).await?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -170,7 +155,7 @@ impl DemoArgs {
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
-async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoError> {
+async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
     match args.output_type {
         OutputType::Plain => {
             let mut table = Table::new();
@@ -197,10 +182,10 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoErr
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
-async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoError> {
+async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
     let demo = list
         .get(&args.demo_name)
-        .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
+        .ok_or(DemoCmdError::NoSuchDemo(args.demo_name.clone()))?;
 
     match args.output_type {
         OutputType::Plain => {
@@ -233,27 +218,22 @@ async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
-) -> Result<String, DemoError> {
+) -> Result<String, DemoCmdError> {
     // Get the demo spec by name from the list
     let demo_spec = list
         .get(&args.demo_name)
-        .ok_or(DemoError::NoSuchDemo(args.demo_name.clone()))?;
+        .ok_or(DemoCmdError::NoSuchDemo(args.demo_name.clone()))?;
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-    let env_files = match env::var(STACK_FILES_ENV_KEY) {
-        Ok(env_files) => env_files.parse_paths_or_urls()?,
-        Err(_) => vec![],
-    };
-    let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
+    let files = common_args.get_stack_files()?;
 
     let cache_file_path =
         xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.place_cache_file(CACHE_STACKS_PATH)?;
 
     let stack_list = StackList::build(
         REMOTE_STACK_FILE,
-        env_files,
-        arg_files,
+        files,
         (cache_file_path, !common_args.no_cache).into(),
     )
     .await?;
@@ -261,20 +241,22 @@ async fn install_cmd(
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
         .get(&demo_spec.stack)
-        .ok_or(DemoError::NoSuchStack(demo_spec.stack.clone()))?;
+        .ok_or(DemoCmdError::NoSuchStack(demo_spec.stack.clone()))?;
 
-    // Create the stack based on the spec
-    // This does not yet install it. This is done via the Install method
-    let stack = Stack::new_from_spec(stack_spec, &args.stack_parameters)?;
+    // let release_spec =
 
-    // Install the stack and referenced manifests
-    let demo_parameters = args.parameters.clone().into_params(&demo_spec.parameters)?;
-    stack.install();
-    stack.install_manifests(&demo_parameters);
+    // Install the stack
+    stack_spec.install()?;
+
+    // Install stack manifests
+    stack_spec.install_stack_manifests(&args.stack_parameters)?;
+
+    // Install demo manifests
+    stack_spec.install_demo_manifests(&demo_spec.parameters, &args.parameters)?;
 
     Ok("".into())
 }
 
-fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoError> {
+fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
     todo!()
 }

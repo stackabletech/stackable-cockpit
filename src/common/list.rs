@@ -48,8 +48,7 @@ where
 {
     pub async fn build<U, T>(
         remote_url: U,
-        env_files: T,
-        arg_files: T,
+        files: T,
         cache_settings: CacheSettings,
     ) -> Result<Self, ListError>
     where
@@ -68,17 +67,9 @@ where
             map.insert(spec_name.clone(), spec.clone());
         }
 
-        // After that, we load files provided via the ENV var
-        for env_file in env_files.as_ref() {
-            let demos = read_yaml_data::<L>(env_file).await?;
-            for (demo_name, demo) in demos.inner() {
-                map.insert(demo_name.to_owned(), demo.to_owned());
-            }
-        }
-
-        // Lastly, the CLI argument --additional-demo-files is used
-        for arg_file in arg_files.as_ref() {
-            let demos = read_yaml_data::<L>(arg_file).await?;
+        // Iterate over all provided files, either from ENV var or CLI argument
+        for file in files.as_ref() {
+            let demos = read_yaml_data::<L>(file).await?;
             for (demo_name, demo) in demos.inner() {
                 map.insert(demo_name.to_owned(), demo.to_owned());
             }
