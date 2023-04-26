@@ -12,7 +12,7 @@ use crate::{
         cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
         release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
     },
-    constants::{DEMO_FILES_ENV_KEY, STACK_FILES_ENV_KEY},
+    constants::{DEMO_FILES_ENV_KEY, RELEASE_FILES_ENV_KEY, STACK_FILES_ENV_KEY},
 };
 
 #[derive(Debug, Parser)]
@@ -78,7 +78,7 @@ will be used.
 
 Use \"stackablectl -r path/to/realeases1.yaml -r path/to/realeases2.yaml [OPTIONS] <COMMAND>\"
 to provide multiple additional stack files.")]
-    pub release_file: Vec<String>,
+    pub release_files: Vec<String>,
 
     #[command(subcommand)]
     pub subcommand: Commands,
@@ -104,6 +104,18 @@ impl Cli {
         };
 
         let arg_files = self.stack_files.clone().into_paths_or_urls()?;
+        files.extend(arg_files);
+
+        Ok(files)
+    }
+
+    pub fn get_release_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let mut files = match env::var(RELEASE_FILES_ENV_KEY) {
+            Ok(env_files) => env_files.parse_paths_or_urls()?,
+            Err(_) => vec![],
+        };
+
+        let arg_files = self.release_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
 
         Ok(files)

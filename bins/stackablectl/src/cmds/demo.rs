@@ -8,6 +8,7 @@ use stackable::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         demo::DemoList,
+        release::ReleaseList,
         stack::{StackError, StackList},
     },
     utils::{
@@ -22,7 +23,8 @@ use xdg::BaseDirectoriesError;
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     constants::{
-        CACHE_DEMOS_PATH, CACHE_HOME_PATH, CACHE_STACKS_PATH, REMOTE_DEMO_FILE, REMOTE_STACK_FILE,
+        CACHE_DEMOS_PATH, CACHE_HOME_PATH, CACHE_RELEASES_PATH, CACHE_STACKS_PATH,
+        REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
     },
 };
 
@@ -227,7 +229,6 @@ async fn install_cmd(
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
     let files = common_args.get_stack_files()?;
-
     let cache_file_path =
         xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.place_cache_file(CACHE_STACKS_PATH)?;
 
@@ -243,10 +244,20 @@ async fn install_cmd(
         .get(&demo_spec.stack)
         .ok_or(DemoCmdError::NoSuchStack(demo_spec.stack.clone()))?;
 
-    // let release_spec =
+    // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
+    let files = common_args.get_stack_files()?;
+    let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?
+        .place_cache_file(CACHE_RELEASES_PATH)?;
+
+    let release_list = ReleaseList::build(
+        REMOTE_RELEASE_FILE,
+        files,
+        (cache_file_path, !common_args.no_cache).into(),
+    )
+    .await?;
 
     // Install the stack
-    stack_spec.install()?;
+    stack_spec.install(release_list)?;
 
     // Install stack manifests
     stack_spec.install_stack_manifests(&args.stack_parameters)?;

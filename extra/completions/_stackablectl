@@ -23,8 +23,8 @@ _stackablectl() {
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
-'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILES:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILES:_files' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \

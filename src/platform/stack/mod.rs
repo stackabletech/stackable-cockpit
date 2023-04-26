@@ -1,16 +1,13 @@
-use std::collections::HashMap;
-
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use tracing::{debug, info, instrument};
 
 mod spec;
 pub use spec::*;
 
 use crate::{
-    common::{List, ManifestSpec, SpecIter},
-    utils::params::{IntoParameters, IntoParametersError},
+    common::{List, SpecIter},
+    utils::params::IntoParametersError,
 };
 
 /// This struct describes a complete demos v2 file
@@ -29,43 +26,11 @@ impl SpecIter<StackSpecV2> for StacksV2 {
 
 pub type StackList = List<StacksV2, StackSpecV2>;
 
-#[derive(Debug)]
-pub struct Stack {
-    parameters: HashMap<String, String>,
-    manifests: Vec<ManifestSpec>,
-    operators: Vec<String>,
-    release: String,
-}
-
 #[derive(Debug, Error)]
 pub enum StackError {
     #[error("parameter parse error: {0}")]
     ParameterError(#[from] IntoParametersError),
-}
 
-impl Stack {
-    #[instrument(skip_all)]
-    pub fn new_from_spec(spec: &StackSpecV2, parameters: &[String]) -> Result<Self, StackError> {
-        debug!("Creating stack");
-        let parameters = parameters.to_owned().into_params(&spec.parameters)?;
-
-        Ok(Self {
-            manifests: spec.manifests.clone(),
-            operators: spec.operators.clone(),
-            release: spec.release.clone(),
-            parameters,
-        })
-    }
-
-    #[instrument(skip_all)]
-    pub fn install(&self) {
-        info!("Installing stack");
-        todo!()
-    }
-
-    #[instrument(skip_all)]
-    pub fn install_manifests(&self, demo_parameters: &HashMap<String, String>) {
-        info!("Installing stack manifests");
-        todo!()
-    }
+    #[error("no such stack")]
+    NoSuchStack,
 }

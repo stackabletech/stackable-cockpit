@@ -72,10 +72,10 @@ installation on the system."
 }
 
 #[derive(Debug, Error)]
-pub enum StackError {}
+pub enum StackCmdError {}
 
 impl StackArgs {
-    pub fn run(&self) -> Result<String, StackError> {
+    pub fn run(&self) -> Result<String, StackCmdError> {
         match &self.subcommand {
             StackCommands::List(args) => list_cmd(args),
             StackCommands::Describe(args) => describe_cmd(args),
@@ -84,14 +84,14 @@ impl StackArgs {
     }
 }
 
-fn list_cmd(args: &StackListArgs) -> Result<String, StackError> {
+fn list_cmd(args: &StackListArgs) -> Result<String, StackCmdError> {
     todo!()
 }
 
-fn describe_cmd(args: &StackDescribeArgs) -> Result<String, StackError> {
+fn describe_cmd(args: &StackDescribeArgs) -> Result<String, StackCmdError> {
     todo!()
 }
 
-fn install_cmd(args: &StackInstallArgs) -> Result<String, StackError> {
+fn install_cmd(args: &StackInstallArgs) -> Result<String, StackCmdError> {
     todo!()
 }
