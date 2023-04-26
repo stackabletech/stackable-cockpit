@@ -1,7 +1,7 @@
 use std::{fs, io, time::Duration};
 
 use clap::{Args, Subcommand};
-use comfy_table::Table;
+use comfy_table::{presets::UTF8_FULL, Table};
 use thiserror::Error;
 use xdg::BaseDirectoriesError;
 
@@ -59,7 +59,9 @@ fn list_cmd() -> Result<String, CacheCmdError> {
     }
 
     let mut table = Table::new();
-    table.set_header(vec!["FILE", "LAST SYNC"]);
+    table
+        .set_header(vec!["FILE", "LAST SYNC"])
+        .load_preset(UTF8_FULL);
 
     for (path, created) in files {
         let file_path = path.to_str().unwrap_or("Invalid UTF-8 Path").to_string();

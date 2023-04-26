@@ -1,13 +1,16 @@
 use std::env;
 
 use clap::{Args, Subcommand};
-use comfy_table::{presets::NOTHING, ContentArrangement, Row, Table};
+use comfy_table::{
+    presets::{NOTHING, UTF8_FULL},
+    ContentArrangement, Row, Table,
+};
 use stackable::{
-    common::Listed,
+    common::ListError,
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
-        demo::{DemoList, DemoListError},
-        stack::{Stack, StackError, StackList, StackListError},
+        demo::DemoList,
+        stack::{Stack, StackError, StackList},
     },
     utils::{
         params::{IntoParameters, IntoParametersError},
@@ -21,8 +24,8 @@ use xdg::BaseDirectoriesError;
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     constants::{
-        CACHE_DEMO_PATH, CACHE_HOME_PATH, DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_STACK_FILE,
-        STACK_FILES_ENV_KEY,
+        CACHE_DEMOS_PATH, CACHE_HOME_PATH, CACHE_STACKS_PATH, DEMO_FILES_ENV_KEY, REMOTE_DEMO_FILE,
+        REMOTE_STACK_FILE, STACK_FILES_ENV_KEY,
     },
 };
 
@@ -121,11 +124,8 @@ pub enum DemoError {
     #[error("failed to convert input parameters to validated parameters: {0}")]
     IntoParametersError(#[from] IntoParametersError),
 
-    #[error("demo list error: {0}")]
-    DemoListError(#[from] DemoListError),
-
-    #[error("stack list error: {0}")]
-    StackListError(#[from] StackListError),
+    #[error("list error: {0}")]
+    DemoListError(#[from] ListError),
 
     #[error("stack error: {0}")]
     StackError(#[from] StackError),
@@ -150,7 +150,7 @@ impl DemoArgs {
         let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
 
         let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?
-            .place_cache_file(CACHE_DEMO_PATH)?;
+            .place_cache_file(CACHE_DEMOS_PATH)?;
 
         let list = DemoList::build(
             REMOTE_DEMO_FILE,
@@ -178,7 +178,8 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoErr
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["NAME", "STACK", "DESCRIPTION"]);
+                .set_header(vec!["NAME", "STACK", "DESCRIPTION"])
+                .load_preset(UTF8_FULL);
 
             for (demo_name, demo_spec) in list.inner() {
                 let row = Row::from(vec![
@@ -245,9 +246,19 @@ async fn install_cmd(
         Ok(env_files) => env_files.parse_paths_or_urls()?,
         Err(_) => vec![],
     };
-
     let arg_files = common_args.demo_files.clone().into_paths_or_urls()?;
-    let stack_list = StackList::build(REMOTE_STACK_FILE, env_files, arg_files).await?;
+
+    let cache_file_path =
+        xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.place_cache_file(CACHE_STACKS_PATH)?;
+
+    let stack_list = StackList::build(
+        REMOTE_STACK_FILE,
+        env_files,
+        arg_files,
+        cache_file_path,
+        !common_args.no_cache,
+    )
+    .await?;
 
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list

@@ -8,5 +8,6 @@ pub const REMOTE_DEMO_FILE: &str =
 pub const REMOTE_STACK_FILE: &str =
     "https://raw.githubusercontent.com/stackabletech/stackablectl/main/stacks/stacks-v2.yaml";
 
+pub const CACHE_STACKS_PATH: &str = "stacks.yaml";
 pub const CACHE_HOME_PATH: &str = "stackablectl";
-pub const CACHE_DEMO_PATH: &str = "demos.yaml";
+pub const CACHE_DEMOS_PATH: &str = "demos.yaml";
