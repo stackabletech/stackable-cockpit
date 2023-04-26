@@ -125,7 +125,7 @@ pub enum DemoError {
     IntoParametersError(#[from] IntoParametersError),
 
     #[error("list error: {0}")]
-    DemoListError(#[from] ListError),
+    ListError(#[from] ListError),
 
     #[error("stack error: {0}")]
     StackError(#[from] StackError),
@@ -156,8 +156,7 @@ impl DemoArgs {
             REMOTE_DEMO_FILE,
             env_files,
             arg_files,
-            cache_file_path,
-            !common_args.no_cache,
+            (cache_file_path, !common_args.no_cache).into(),
         )
         .await?;
 
@@ -255,8 +254,7 @@ async fn install_cmd(
         REMOTE_STACK_FILE,
         env_files,
         arg_files,
-        cache_file_path,
-        !common_args.no_cache,
+        (cache_file_path, !common_args.no_cache).into(),
     )
     .await?;
 

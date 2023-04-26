@@ -7,7 +7,7 @@ use url::Url;
 
 use crate::utils::{
     path::PathOrUrl,
-    read::{read_cached_yaml_data, read_yaml_data, CacheStatus, ReadError},
+    read::{read_cached_yaml_data, read_yaml_data, CacheSettings, CacheStatus, ReadError},
 };
 
 pub trait SpecIter<S> {
@@ -50,8 +50,7 @@ where
         remote_url: U,
         env_files: T,
         arg_files: T,
-        cache_file_path: PathBuf,
-        use_cache: bool,
+        cache_settings: CacheSettings,
     ) -> Result<Self, ListError>
     where
         U: AsRef<str>,
@@ -62,7 +61,7 @@ where
 
         // First load the remote demo file. This uses the cached file if present, and if not, requests the remote file
         // and then saves the contents on disk for cached use later
-        for (spec_name, spec) in Self::get_default_file(remote_url, cache_file_path, use_cache)
+        for (spec_name, spec) in Self::get_default_file(remote_url, cache_settings)
             .await?
             .inner()
         {
@@ -106,15 +105,14 @@ where
 
     async fn get_default_file(
         remote_url: Url,
-        cache_file_path: PathBuf,
-        use_cache: bool,
+        cache_settings: CacheSettings,
     ) -> Result<L, ListError> {
-        let specs = if use_cache {
-            match read_cached_yaml_data::<L>(cache_file_path.clone())? {
+        let specs = if cache_settings.use_cache {
+            match read_cached_yaml_data::<L>(&cache_settings)? {
                 CacheStatus::Hit(demos) => demos,
                 CacheStatus::Expired | CacheStatus::Miss => {
                     let demos = read_yaml_data::<L>(remote_url).await?;
-                    fs::write(cache_file_path, serde_yaml::to_string(&demos)?)?;
+                    fs::write(cache_settings.file_path, serde_yaml::to_string(&demos)?)?;
                     demos
                 }
             }

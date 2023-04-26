@@ -49,7 +49,7 @@ fn list_cmd() -> Result<String, CacheCmdError> {
     let mut files = fs::read_dir(cache_dir)?
         .map(|res| {
             let entry = res?;
-            Ok((entry.path(), entry.metadata()?.created()?))
+            Ok((entry.path(), entry.metadata()?.modified()?))
         })
         .collect::<Result<Vec<_>, io::Error>>()?;
     files.sort();
@@ -63,15 +63,15 @@ fn list_cmd() -> Result<String, CacheCmdError> {
         .set_header(vec!["FILE", "LAST SYNC"])
         .load_preset(UTF8_FULL);
 
-    for (path, created) in files {
+    for (path, modified) in files {
         let file_path = path.to_str().unwrap_or("Invalid UTF-8 Path").to_string();
-        let created = created
+        let modified = modified
             .elapsed()
             .unwrap_or(Duration::ZERO)
             .as_secs()
             .to_string();
 
-        table.add_row(vec![file_path, format!("{created} seconds ago")]);
+        table.add_row(vec![file_path, format!("{modified} seconds ago")]);
     }
 
     Ok(table.to_string())
