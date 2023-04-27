@@ -1,24 +1,25 @@
-use std::{fs, io, path::PathBuf, time::Duration};
+use std::{
+    fs, io,
+    path::PathBuf,
+    time::{Duration, SystemTimeError},
+};
 
 use serde::Deserialize;
 use thiserror::Error;
 use url::Url;
 
-use crate::{
-    constants::DEFAULT_CACHE_MAX_AGE_IN_SECS,
-    utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
-};
+use crate::constants::DEFAULT_CACHE_MAX_AGE_IN_SECS;
 
 #[derive(Debug, Error)]
-pub enum ReadError {
-    #[error("path/url parse error: {0}")]
-    PathOrUrlParseError(#[from] PathOrUrlParseError),
+pub enum CachedReadError {
+    #[error("io error: {0}")]
+    IoError(#[from] io::Error),
+
+    #[error("system time error: {0}")]
+    SystemTimeError(#[from] SystemTimeError),
 
     #[error("local read error: {0}")]
     LocalReadError(#[from] LocalReadError),
-
-    #[error("remote read error: {0}")]
-    RemoteReadError(#[from] RemoteReadError),
 }
 
 #[derive(Debug, Error)]
@@ -37,20 +38,6 @@ pub enum LocalReadError {
 
     #[error("yaml parse error: {0}")]
     YamlError(#[from] serde_yaml::Error),
-}
-
-/// Reads YAML data from a remote URL or a local file and deserializes it into type `T`. A [`ReadError`] is returned
-/// when the file cannot be read or deserialization failed.
-pub async fn read_yaml_data<T>(path_or_url: impl IntoPathOrUrl) -> Result<T, ReadError>
-where
-    T: for<'a> Deserialize<'a> + Sized,
-{
-    let data = match path_or_url.into_path_or_url()? {
-        PathOrUrl::Path(path) => read_yaml_data_from_file(path)?,
-        PathOrUrl::Url(url) => read_yaml_data_from_remote(url).await?,
-    };
-
-    Ok(data)
 }
 
 /// Reads YAML data from a local file at `path` and deserializes it into type `T`. A [`LocalReadError`] is returned
@@ -84,7 +71,7 @@ pub enum CacheStatus<T> {
 }
 
 pub struct CacheSettings {
-    pub file_path: PathBuf,
+    pub base_path: PathBuf,
     pub max_age: Duration,
     pub use_cache: bool,
 }
@@ -92,19 +79,9 @@ pub struct CacheSettings {
 impl From<(PathBuf, Duration, bool)> for CacheSettings {
     fn from(value: (PathBuf, Duration, bool)) -> Self {
         Self {
-            file_path: value.0,
+            base_path: value.0,
             max_age: value.1,
             use_cache: value.2,
-        }
-    }
-}
-
-impl From<(PathBuf, Duration)> for CacheSettings {
-    fn from(value: (PathBuf, Duration)) -> Self {
-        Self {
-            file_path: value.0,
-            max_age: value.1,
-            use_cache: true,
         }
     }
 }
@@ -113,17 +90,17 @@ impl From<(PathBuf, bool)> for CacheSettings {
     fn from(value: (PathBuf, bool)) -> Self {
         Self {
             max_age: Duration::from_secs(DEFAULT_CACHE_MAX_AGE_IN_SECS),
-            file_path: value.0,
+            base_path: value.0,
             use_cache: value.1,
         }
     }
 }
 
-impl From<PathBuf> for CacheSettings {
-    fn from(value: PathBuf) -> Self {
+impl From<(PathBuf, Duration)> for CacheSettings {
+    fn from(value: (PathBuf, Duration)) -> Self {
         Self {
-            max_age: Duration::from_secs(DEFAULT_CACHE_MAX_AGE_IN_SECS),
-            file_path: value,
+            base_path: value.0,
+            max_age: value.1,
             use_cache: true,
         }
     }
@@ -134,22 +111,23 @@ impl From<PathBuf> for CacheSettings {
 /// is returned. If the path doesn't exist or doesn't point to a file, [`CacheStatus::Miss`] is returned. If the cached
 /// file is older then the provided max age, [`CacheStatus::Expired`] is returned. A [`ReadError`] is returned when
 /// the file cannot be read or deserialization failed.
-pub fn read_cached_yaml_data<T>(settings: &CacheSettings) -> Result<CacheStatus<T>, RemoteReadError>
+pub fn read_cached_yaml_data<T>(
+    path: PathBuf,
+    settings: &CacheSettings,
+) -> Result<CacheStatus<T>, CachedReadError>
 where
     T: for<'a> Deserialize<'a> + Sized,
 {
-    if settings.file_path.is_file() {
-        let modified = settings.file_path.metadata()?.modified()?;
+    if path.is_file() {
+        let modified = path.metadata()?.modified()?;
         let elapsed = modified.elapsed()?;
 
         if elapsed > settings.max_age {
             return Ok(CacheStatus::Expired);
         }
 
-        let data = fs::read_to_string(settings.file_path.clone())?;
-        let yaml = serde_yaml::from_str::<T>(&data)?;
-
-        return Ok(CacheStatus::Hit(yaml));
+        let data = read_yaml_data_from_file(path)?;
+        return Ok(CacheStatus::Hit(data));
     }
 
     Ok(CacheStatus::Miss)

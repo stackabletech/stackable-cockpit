@@ -1,13 +1,15 @@
-use std::{fs, marker::PhantomData, path::PathBuf};
+use std::{fs, marker::PhantomData};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use url::Url;
 
 use crate::utils::{
     path::PathOrUrl,
-    read::{read_cached_yaml_data, read_yaml_data, CacheSettings, CacheStatus, RemoteReadError},
+    read::{
+        read_cached_yaml_data, read_yaml_data_from_file, read_yaml_data_from_remote, CacheSettings,
+        CacheStatus, CachedReadError, LocalReadError, RemoteReadError,
+    },
 };
 
 pub trait SpecIter<S> {
@@ -19,14 +21,23 @@ pub enum ListError {
     #[error("io error: {0}")]
     IoError(#[from] std::io::Error),
 
-    #[error("read error: {0}")]
-    ReadError(#[from] RemoteReadError),
+    #[error("local read error: {0}")]
+    LocalReadError(#[from] LocalReadError),
+
+    #[error("remote read error: {0}")]
+    RemoteReadError(#[from] RemoteReadError),
+
+    #[error("cached read error: {0}")]
+    CachedReadError(#[from] CachedReadError),
 
     #[error("url parse error: {0}")]
     ParseUrlError(#[from] url::ParseError),
 
     #[error("yaml error: {0}")]
     YamlError(#[from] serde_yaml::Error),
+
+    #[error("invalid file url")]
+    InvalidFileUrl,
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for example demos, stacks or releases. The
@@ -46,35 +57,43 @@ where
     L: for<'a> Deserialize<'a> + Serialize + SpecIter<S>,
     S: for<'a> Deserialize<'a> + Serialize + Clone,
 {
-    pub async fn build<U, T>(files: T, cache_settings: CacheSettings) -> Result<Self, ListError>
+    pub async fn build<T>(files: T, cache_settings: CacheSettings) -> Result<Self, ListError>
     where
-        U: AsRef<str>,
         T: AsRef<[PathOrUrl]>,
     {
         let mut map = IndexMap::new();
-        // let remote_url = Url::parse(remote_url.as_ref())?;
 
         for file in files.as_ref() {
-            match file {
-                PathOrUrl::Path(path) => todo!(),
-                PathOrUrl::Url(_) => todo!(),
-            }
-        }
+            let specs = match file {
+                PathOrUrl::Path(path) => read_yaml_data_from_file::<L>(path.clone())?,
+                PathOrUrl::Url(url) => {
+                    if cache_settings.use_cache {
+                        let file_name = url
+                            .path_segments()
+                            .ok_or(ListError::InvalidFileUrl)?
+                            .last()
+                            .ok_or(ListError::InvalidFileUrl)?;
 
-        // First load the remote demo file. This uses the cached file if present, and if not, requests the remote file
-        // and then saves the contents on disk for cached use later
-        for (spec_name, spec) in Self::get_remote_or_cached_file(remote_url, cache_settings)
-            .await?
-            .inner()
-        {
-            map.insert(spec_name.clone(), spec.clone());
-        }
+                        let file_path = cache_settings.base_path.join(file_name);
 
-        // Iterate over all provided files, either from ENV var or CLI argument
-        for file in files.as_ref() {
-            let demos = read_yaml_data::<L>(file).await?;
-            for (demo_name, demo) in demos.inner() {
-                map.insert(demo_name.to_owned(), demo.to_owned());
+                        match read_cached_yaml_data::<L>(file_path.clone(), &cache_settings)? {
+                            CacheStatus::Hit(specs) => specs,
+                            CacheStatus::Expired | CacheStatus::Miss => {
+                                let data = read_yaml_data_from_remote::<L>(url.clone()).await?;
+                                let yaml = serde_yaml::to_string(&data)?;
+                                fs::write(file_path, yaml)?;
+
+                                data
+                            }
+                        }
+                    } else {
+                        read_yaml_data_from_remote::<L>(url.clone()).await?
+                    }
+                }
+            };
+
+            for (spec_name, spec) in specs.inner() {
+                map.insert(spec_name.clone(), spec.clone());
             }
         }
 
@@ -95,25 +114,5 @@ where
         T: Into<String>,
     {
         self.inner.get(&name.into())
-    }
-
-    async fn get_remote_or_cached_file(
-        remote_url: Url,
-        cache_settings: CacheSettings,
-    ) -> Result<L, ListError> {
-        let specs = if cache_settings.use_cache {
-            match read_cached_yaml_data::<L>(&cache_settings)? {
-                CacheStatus::Hit(demos) => demos,
-                CacheStatus::Expired | CacheStatus::Miss => {
-                    let demos = read_yaml_data::<L>(remote_url).await?;
-                    fs::write(cache_settings.file_path, serde_yaml::to_string(&demos)?)?;
-                    demos
-                }
-            }
-        } else {
-            read_yaml_data::<L>(remote_url).await?
-        };
-
-        Ok(specs)
     }
 }

@@ -11,21 +11,14 @@ use stackable::{
         release::ReleaseList,
         stack::{StackError, StackList},
     },
-    utils::{
-        params::IntoParametersError,
-        path::PathOrUrlParseError,
-        read::{CacheSettings, ReadError},
-    },
+    utils::{params::IntoParametersError, path::PathOrUrlParseError, read::CacheSettings},
 };
 use thiserror::Error;
 use xdg::BaseDirectoriesError;
 
 use crate::{
     cli::{Cli, ClusterType, OutputType},
-    constants::{
-        CACHE_DEMOS_PATH, CACHE_HOME_PATH, CACHE_RELEASES_PATH, CACHE_STACKS_PATH,
-        REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
-    },
+    constants::CACHE_HOME_PATH,
 };
 
 #[derive(Debug, Args)]
@@ -105,9 +98,6 @@ pub enum DemoCmdError {
     #[error("io error: {0}")]
     IoError(#[from] std::io::Error),
 
-    #[error("read error: {0}")]
-    ReadError(#[from] ReadError),
-
     #[error("yaml error: {0}")]
     YamlError(#[from] serde_yaml::Error),
 
@@ -141,11 +131,10 @@ impl DemoArgs {
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
         let files = common_args.get_demo_files()?;
-        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?
-            .place_cache_file(CACHE_DEMOS_PATH)?;
+        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
 
         let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-        let list = DemoList::build(REMOTE_DEMO_FILE, files, cache_settings).await?;
+        let list = DemoList::build(files, cache_settings).await?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -229,15 +218,10 @@ async fn install_cmd(
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
     let files = common_args.get_stack_files()?;
-    let cache_file_path =
-        xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.place_cache_file(CACHE_STACKS_PATH)?;
+    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
 
-    let stack_list = StackList::build(
-        REMOTE_STACK_FILE,
-        files,
-        (cache_file_path, !common_args.no_cache).into(),
-    )
-    .await?;
+    let stack_list =
+        StackList::build(files, (cache_home_path, !common_args.no_cache).into()).await?;
 
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
@@ -246,15 +230,10 @@ async fn install_cmd(
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args.get_stack_files()?;
-    let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?
-        .place_cache_file(CACHE_RELEASES_PATH)?;
+    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
 
-    let release_list = ReleaseList::build(
-        REMOTE_RELEASE_FILE,
-        files,
-        (cache_file_path, !common_args.no_cache).into(),
-    )
-    .await?;
+    let release_list =
+        ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into()).await?;
 
     // Install the stack
     stack_spec.install(release_list)?;
