@@ -41,10 +41,14 @@ pub struct StackSpecV2 {
 
 impl StackSpecV2 {
     #[instrument(skip_all)]
-    pub fn install(&self, list: ReleaseList) -> Result<(), StackError> {
+    pub fn install(&self, release_list: ReleaseList) -> Result<(), StackError> {
         info!("Installing stack");
 
-        let release = list.get(&self.release).ok_or(StackError::NoSuchStack)?;
+        let release = release_list
+            .get(&self.release)
+            .ok_or(StackError::NoSuchStack)?;
+
+        release.install(&self.operators, &[]);
 
         todo!()
     }
@@ -60,7 +64,7 @@ impl StackSpecV2 {
     #[instrument(skip_all)]
     pub fn install_demo_manifests(
         &self,
-        valid_demo_parameters: &Vec<DemoParameter>,
+        valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
     ) -> Result<(), StackError> {
         info!("Installing demo manifests");
