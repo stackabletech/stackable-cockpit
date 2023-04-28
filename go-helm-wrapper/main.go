@@ -4,6 +4,7 @@ import (
 	"C"
 	"context"
 	"encoding/json"
+	"fmt"
 	"time"
 
 	gohelm "github.com/mittwald/go-helm-client"
@@ -14,14 +15,23 @@ import (
 	// see https://github.com/kubernetes/client-go/issues/242
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
-import "fmt"
+
+const HELM_ERROR_PREFIX = "ERROR:"
+
+type Release struct {
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	Namespace   string `json:"namespace"`
+	Status      string `json:"status"`
+	LastUpdated string `json:"lastUpdated"`
+}
 
 func main() {
 
 }
 
 //export go_install_helm_release
-func go_install_helm_release(releaseName string, chartName string, chartVersion string, valuesYaml string, namespace string, suppressOutput bool) {
+func go_install_helm_release(releaseName string, chartName string, chartVersion string, valuesYaml string, namespace string, suppressOutput bool) *C.char {
 	helmClient := getHelmClient(namespace, suppressOutput)
 
 	timeout, _ := time.ParseDuration("10m")
@@ -37,17 +47,21 @@ func go_install_helm_release(releaseName string, chartName string, chartVersion 
 	}
 
 	if _, err := helmClient.InstallChart(context.Background(), &chartSpec, nil); err != nil {
-		panic(err)
+		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
 	}
+
+	return C.CString("")
 }
 
 //export go_uninstall_helm_release
-func go_uninstall_helm_release(releaseName string, namespace string, suppressOutput bool) {
+func go_uninstall_helm_release(releaseName string, namespace string, suppressOutput bool) *C.char {
 	helmClient := getHelmClient(namespace, suppressOutput)
 
 	if err := helmClient.UninstallReleaseByName(releaseName); err != nil {
-		panic(err)
+		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
 	}
+
+	return C.CString("")
 }
 
 //export go_helm_release_exists
@@ -56,14 +70,6 @@ func go_helm_release_exists(releaseName string, namespace string) bool {
 
 	release, _ := helmClient.GetRelease(releaseName)
 	return release != nil
-}
-
-type Release struct {
-	Name        string `json:"name"`
-	Version     string `json:"version"`
-	Namespace   string `json:"namespace"`
-	Status      string `json:"status"`
-	LastUpdated string `json:"lastUpdated"`
 }
 
 // Returning a JSON document as GoSlices (array) of objects was a nightmare to share between Go and Rust. We also
@@ -77,7 +83,7 @@ func go_helm_list_releases(namespace string) *C.char {
 	// List all releases, not only the deployed ones (e.g. include pending installations)
 	releases, err := helmClient.ListReleasesByStateMask(action.ListAll)
 	if err != nil {
-		return C.CString(fmt.Sprintf("ERROR:%s", err))
+		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
 	}
 
 	var result = make([]Release, len(releases))
@@ -93,14 +99,14 @@ func go_helm_list_releases(namespace string) *C.char {
 
 	json, err := json.Marshal(result)
 	if err != nil {
-		return C.CString(fmt.Sprintf("ERROR:%s", err))
+		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
 	}
 
 	return C.CString(string(json))
 }
 
-// Adds a Helm repo to the temporary repositories file. A non-empty result string indicates an error. The Rust code
-// treats any non-empty result as an error and aborts operations.
+// Adds a Helm repo to the temporary repositories file. We also introduce magic return values here. Any non-empty result
+// string starting with 'ERROR:' will be treated as an error by the Rust code and it will abort operations.
 //
 //export go_add_helm_repo
 func go_add_helm_repo(name string, url string) *C.char {
@@ -112,7 +118,7 @@ func go_add_helm_repo(name string, url string) *C.char {
 	}
 
 	if err := helmClient.AddOrUpdateChartRepo(chartRepo); err != nil {
-		return C.CString(err.Error())
+		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
 	}
 
 	return C.CString("")
