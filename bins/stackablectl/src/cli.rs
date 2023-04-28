@@ -3,11 +3,12 @@ use std::env;
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
 use stackable::{
     constants::DEFAULT_STACKABLE_NAMESPACE,
+    helm::{self, HelmError},
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
 };
-use tracing::Level;
+use tracing::{debug, instrument, Level};
 
 use crate::{
     cmds::{
@@ -15,8 +16,9 @@ use crate::{
         release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
     },
     constants::{
-        DEMO_FILES_ENV_KEY, RELEASE_FILES_ENV_KEY, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE,
-        REMOTE_STACK_FILE, STACK_FILES_ENV_KEY,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, HELM_REPO_NAME_DEV,
+        HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST, HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE,
+        HELM_REPO_URL_TEST, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
     },
 };
 
@@ -85,15 +87,30 @@ Use \"stackablectl -r path/to/realeases1.yaml -r path/to/realeases2.yaml [OPTION
 to provide multiple additional stack files.")]
     pub release_files: Vec<String>,
 
+    /// Provide a custom Helm stable repository URL
+    #[arg(long, value_name = "URL", value_hint = ValueHint::Url, default_value = HELM_REPO_URL_STABLE)]
+    pub helm_repo_stable: String,
+
+    /// Provide a custom Helm test repository URL
+    #[arg(long, value_name = "URL", value_hint = ValueHint::Url, default_value = HELM_REPO_URL_TEST)]
+    pub helm_repo_test: String,
+
+    /// Provide a custom Helm dev repository URL
+    #[arg(long, value_name = "URL", value_hint = ValueHint::Url, default_value = HELM_REPO_URL_DEV)]
+    pub helm_repo_dev: String,
+
     #[command(subcommand)]
     pub subcommand: Commands,
 }
 
 impl Cli {
+    /// Returns a list of demo files, consisting of entries which are either a path or URL. The list of files combines
+    /// the default demo file URL, [`REMOTE_DEMO_FILE`], files provided by the ENV variable [`ENV_KEY_DEMO_FILES`], and
+    /// lastly, files provided by the CLI argument `--demo-file`.
     pub fn get_demo_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
         let mut files: Vec<PathOrUrl> = vec![REMOTE_DEMO_FILE.into_path_or_url()?];
 
-        let env_files = match env::var(DEMO_FILES_ENV_KEY) {
+        let env_files = match env::var(ENV_KEY_DEMO_FILES) {
             Ok(env_files) => env_files.parse_paths_or_urls()?,
             Err(_) => vec![],
         };
@@ -105,10 +122,13 @@ impl Cli {
         Ok(files)
     }
 
+    /// Returns a list of stack files, consisting of entries which are either a path or URL. The list of files combines
+    /// the default stack file URL, [`REMOTE_STACK_FILE`], files provided by the ENV variable [`ENV_KEY_STACK_FILES`],
+    /// and lastly, files provided by the CLI argument `--stack-file`.
     pub fn get_stack_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
         let mut files: Vec<PathOrUrl> = vec![REMOTE_STACK_FILE.into_path_or_url()?];
 
-        let env_files = match env::var(STACK_FILES_ENV_KEY) {
+        let env_files = match env::var(ENV_KEY_STACK_FILES) {
             Ok(env_files) => env_files.parse_paths_or_urls()?,
             Err(_) => vec![],
         };
@@ -120,10 +140,13 @@ impl Cli {
         Ok(files)
     }
 
+    /// Returns a list of release files, consisting of entries which are either a path or URL. The list of files
+    /// combines the default demo file URL, [`REMOTE_RELEASE_FILE`], files provided by the ENV variable
+    /// [`ENV_KEY_RELEASE_FILES`], and lastly, files provided by the CLI argument `--release-file`.
     pub fn get_release_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
         let mut files: Vec<PathOrUrl> = vec![REMOTE_RELEASE_FILE.into_path_or_url()?];
 
-        let env_files = match env::var(RELEASE_FILES_ENV_KEY) {
+        let env_files = match env::var(ENV_KEY_RELEASE_FILES) {
             Ok(env_files) => env_files.parse_paths_or_urls()?,
             Err(_) => vec![],
         };
@@ -133,6 +156,24 @@ impl Cli {
         files.extend(arg_files);
 
         Ok(files)
+    }
+
+    /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
+    /// `go-helm-wrapper`.
+    #[instrument]
+    pub fn add_helm_repos(&self) -> Result<(), HelmError> {
+        debug!("Add Helm repos");
+
+        // Stable repository
+        helm::add_repo(HELM_REPO_NAME_STABLE, &self.helm_repo_stable)?;
+
+        // Test repository
+        helm::add_repo(HELM_REPO_NAME_TEST, &self.helm_repo_test)?;
+
+        // Dev repository
+        helm::add_repo(HELM_REPO_NAME_DEV, &self.helm_repo_dev)?;
+
+        Ok(())
     }
 }
 

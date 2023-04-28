@@ -25,6 +25,9 @@ _stackablectl() {
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILES:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILES:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \

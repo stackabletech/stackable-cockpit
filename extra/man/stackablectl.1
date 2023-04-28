@@ -4,7 +4,7 @@
 .SH NAME
 stackablectl
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 .SH OPTIONS
 .TP
@@ -56,6 +56,15 @@ will be used.
 
 Use "stackablectl \-r path/to/realeases1.yaml \-r path/to/realeases2.yaml [OPTIONS] <COMMAND>"
 to provide multiple additional stack files.
+.TP
+\fB\-\-helm\-repo\-stable\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-stable]
+Provide a custom Helm stable repository URL
+.TP
+\fB\-\-helm\-repo\-test\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-test]
+Provide a custom Helm test repository URL
+.TP
+\fB\-\-helm\-repo\-dev\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-dev]
+Provide a custom Helm dev repository URL
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Print help (see a summary with \*(Aq\-h\*(Aq)

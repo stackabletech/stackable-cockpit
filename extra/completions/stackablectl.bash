@@ -307,7 +307,7 @@ _stackablectl() {
 
     case "${cmd}" in
         stackablectl)
-            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --namespace --demo-file --stack-file --release-file --help --version operator release stack services demo completions cache help"
+            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --namespace --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack services demo completions cache help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -350,6 +350,18 @@ _stackablectl() {
                     return 0
                     ;;
                 -r)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-stable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-test)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

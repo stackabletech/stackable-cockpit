@@ -45,6 +45,9 @@ async fn main() -> Result<()> {
         }
     }
 
+    // Add Helm repos
+    cli.add_helm_repos()?;
+
     let output = match &cli.subcommand {
         Commands::Operator(args) => args.run()?,
         Commands::Release(args) => args.run()?,
