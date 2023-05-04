@@ -7,5 +7,6 @@ edition = "2021"
 axum = { workspace = true, features = ["http2", "headers"] }
 clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
+utoipa = { workspace = true }
 anyhow = { workspace = true }
 tokio = { workspace = true }
