@@ -3,18 +3,17 @@
 ## The stack
 
 Like all our software, the `stackabled` server is written in Rust. The server internally uses the `stackable` library
-and exposes functionality via a HTTP REST API. Core community provided dependencies are:
+and exposes functionality via an HTTP REST API. Core community-provided dependencies are:
 
 - [`tokio`][tokio-link], the async runtime, which ised used to handle incoming network requests over HTTP/TCP.
 - [`axum`][axum-link], a HTTP framework for building REST APIs. It is based on the `tokio` runtime.
-- [`utoipa`][utoipa-link], a proc-macro/derive based OpenAPI spec generator which nicely integrates with `axum`.
-- [`clap`][clap-link], a powerful command line argument parser which powers the CLI interface.
-- [`tracing`][tracing-link] is used for context-rich application logging. Our complete stack emits tracing events which
-  can be consumed via multiple different subscribers.
+- [`utoipa`][utoipa-link], a proc-macro/derive-based OpenAPI spec generator that nicely integrates with `axum`.
+- [`clap`][clap-link], a powerful command line argument parser that powers the CLI interface.
+- [`tracing`][tracing-link] is used for context-rich application logging. Our complete stack emits tracing events that can be consumed via multiple different subscribers.
 - [`thiserror`][thiserror-link] and [`anyhow`][anyhow-link] for easy custom error handling.
 
-The Stackable UI is bundled into the final binary during the build process. The source code for the frontend is located
-in [web](../../web). Detailed information about the frontend stack can be found the the [README](../../web/README.me).
+The Stackable UI is bundled into the final binary during the build process. The source code for the front end is located
+in [web](../../web). Detailed information about the frontend stack can be found in the [README](../../web/README.me).
 
 ## Development
 
