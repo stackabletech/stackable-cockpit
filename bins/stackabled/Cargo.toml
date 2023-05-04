@@ -1,6 +1,11 @@
 [package]
-name = "stackd"
+name = "stackabled"
 version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+axum = { workspace = true, features = ["http2", "headers"] }
+clap = { workspace = true, features = ["env"] }
+tracing = { workspace = true }
+anyhow = { workspace = true }
+tokio = { workspace = true }
