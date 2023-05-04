@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 axum = { workspace = true, features = ["http2", "headers"] }
 clap = { workspace = true, features = ["env"] }
+stackable = { path = "../../" }
 tracing = { workspace = true }
 utoipa = { workspace = true }
 anyhow = { workspace = true }
