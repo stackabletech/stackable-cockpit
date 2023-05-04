@@ -9,11 +9,13 @@ pub fn demo_router() -> Router {
 }
 
 /// Retrieves all demos.
+#[utoipa::path(get, path = "/demos/")]
 pub async fn get_demos() -> Json<Vec<DemoSpecV2>> {
     todo!()
 }
 
 /// Retrieves one demo identified by `demo_name`.
+#[utoipa::path(get, path = "/demos/{name}")]
 pub async fn get_demo(Path(demo_name): Path<String>) -> Json<DemoSpecV2> {
     todo!()
 }

@@ -4,10 +4,11 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+utoipa-swagger-ui = { workspace = true, features = ["axum"] }
 axum = { workspace = true, features = ["http2", "headers"] }
+utoipa = { workspace = true, features = ["axum_extras"] }
 stackable = { path = "../../", features = ["openapi"] }
 clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
-utoipa = { workspace = true }
 anyhow = { workspace = true }
 tokio = { workspace = true }
