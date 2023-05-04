@@ -2,10 +2,14 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use tracing::{info, instrument};
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 use crate::platform::product::ProductSpec;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ReleaseSpec {
     /// Date this released was released
     #[serde(rename = "releaseDate")]

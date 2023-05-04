@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 use crate::{
     common::ManifestSpec,
     utils::params::{Parameter, RawParameter, RawParameterParseError},
@@ -12,6 +15,7 @@ pub type DemoParameter = Parameter;
 /// This struct describes a demo with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct DemoSpecV2 {
     /// A short description of the demo
     pub description: String,

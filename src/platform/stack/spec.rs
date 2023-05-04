@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use tracing::{info, instrument};
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 use crate::{
     common::ManifestSpec,
     platform::{demo::DemoParameter, release::ReleaseList, stack::StackError},
@@ -14,6 +17,7 @@ pub type StackParameter = Parameter;
 /// This struct describes a stack with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct StackSpecV2 {
     /// A short description of the demo
     pub description: String,
