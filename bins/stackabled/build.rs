@@ -5,8 +5,8 @@ fn main() {
 
     #[cfg(feature = "ui")]
     {
-        let webui_src_dir = "web-ui";
-        let webui_out_dir = out_dir.join("web-ui");
+        let webui_src_dir = "../../web";
+        let webui_out_dir = out_dir.join("web");
         // Vite always seems to update the mtime of the project folder on each build, so track the files that we know matter individually
         for tracked_file in [
             "package.json",
@@ -46,7 +46,7 @@ fn main() {
             );
         }
         write!(
-            File::create(out_dir.join("web-ui-asset-map.rs")).unwrap(),
+            File::create(out_dir.join("web-asset-map.rs")).unwrap(),
             "{}",
             asset_map.build()
         )
