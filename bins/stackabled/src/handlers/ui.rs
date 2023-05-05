@@ -1,14 +1,10 @@
 use axum::{
     extract::Path,
-    headers::Header,
     http::{header::CONTENT_TYPE, HeaderValue},
     response::{AppendHeaders, Html, IntoResponse},
     routing::get,
     Router,
 };
-
-const INDEX_HTML: &str = include_str!(concat!(env!("OUT_DIR"), "/web-ui/index.html"));
-const ASSETS: phf::Map<&str, &[u8]> = include!(concat!(env!("OUT_DIR"), "/web-ui-asset-map.rs"));
 
 pub fn router() -> Router {
     Router::new()
@@ -18,7 +14,7 @@ pub fn router() -> Router {
 }
 
 async fn ui() -> Html<&'static str> {
-    Html(INDEX_HTML)
+    Html(stackabled_web::INDEX_HTML)
 }
 async fn asset(Path(name): Path<String>) -> impl IntoResponse {
     (
@@ -30,6 +26,6 @@ async fn asset(Path(name): Path<String>) -> impl IntoResponse {
                 _ => HeaderValue::from_static("application/octet-stream"),
             },
         )]),
-        ASSETS[&name],
+        stackabled_web::ASSETS[&name],
     )
 }
