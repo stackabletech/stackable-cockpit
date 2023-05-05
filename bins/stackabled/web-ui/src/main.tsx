@@ -64,4 +64,4 @@ const App = () => {
     </>
 };
 
-render(() => <Router><App/></Router>, document.getElementById("app")!!);
+render(() => <Router base="/ui"><App/></Router>, document.getElementById("app")!!);

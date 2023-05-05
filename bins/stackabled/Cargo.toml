@@ -3,6 +3,11 @@ name = "stackabled"
 version = "0.0.1"
 edition = "2021"
 
+[features]
+default = []
+# The UI builds slowly, so run in API-only mode during development
+ui = ["dep:phf", "dep:phf_codegen"]
+
 [dependencies]
 utoipa-swagger-ui = { workspace = true, features = ["axum"] }
 axum = { workspace = true, features = ["http2", "headers"] }
@@ -12,3 +17,7 @@ clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
 snafu = { workspace = true }
 tokio = { workspace = true }
+phf = { version = "0.11.1", optional = true }
+
+[build-dependencies]
+phf_codegen = { version = "0.11.1", optional = true }
