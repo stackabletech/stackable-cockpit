@@ -7,6 +7,9 @@ importers:
       '@solidjs/router':
         specifier: ^0.8.2
         version: 0.8.2(solid-js@1.7.4)
+      '@unocss/reset':
+        specifier: ^0.51.12
+        version: 0.51.12
       solid-js:
         specifier: ^1.7.4
         version: 1.7.4
@@ -16,7 +19,7 @@ importers:
         version: 5.0.4
       unocss:
         specifier: ^0.51.8
-        version: 0.51.8(postcss@8.4.23)(vite@4.3.4)
+        version: 0.51.8(vite@4.3.4)
       vite:
         specifier: ^4.3.2
         version: 4.3.4
@@ -770,11 +773,9 @@ packages:
       sirv: 2.0.3
     dev: true
 
-  /@unocss/postcss@0.51.8(postcss@8.4.23):
+  /@unocss/postcss@0.51.8:
     resolution: {integrity: sha512-IWwxGDfd/pqQMBjp1PKplQIeD6uwUs1qxUkJZXIf/BlGE+dMkjIw6Mp72FwYqkMn71hnjU2CMRTbX7RzkKxkmQ==}
     engines: {node: '>=14'}
-    peerDependencies:
-      postcss: ^8.4.21
     dependencies:
       '@unocss/config': 0.51.8
       '@unocss/core': 0.51.8
@@ -841,6 +842,10 @@ packages:
       '@unocss/core': 0.51.8
       '@unocss/preset-mini': 0.51.8
     dev: true
+
+  /@unocss/reset@0.51.12:
+    resolution: {integrity: sha512-VWcudNyGPGU/C+Jrfzbx8BqhFh/QENfUPkKcC8hpqxC4b5PsTJcF8zLu6KgabM0X0CzVouIvVcdZIcUCUEH77Q==}
+    dev: false
 
   /@unocss/reset@0.51.8:
     resolution: {integrity: sha512-mVUP2F/ItPKatkRh5tWBNDZG2YqG7oKxfYxQUYbNAv/hiTKPlKc3PX9T4vZKEvJarbzucTIGbYHdzwqExzG9Kw==}
@@ -1560,7 +1565,7 @@ packages:
       jiti: 1.18.2
     dev: true
 
-  /unocss@0.51.8(postcss@8.4.23)(vite@4.3.4):
+  /unocss@0.51.8(vite@4.3.4):
     resolution: {integrity: sha512-uty78ilhQ/HxvjIDLRZ0J6Kb6fSfTKv0afyP7iWQmqoG/qTBR33ambnuTmi2Dt5GzCxAY6tyCaWjK/FZ7mfEYg==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -1573,7 +1578,7 @@ packages:
       '@unocss/cli': 0.51.8
       '@unocss/core': 0.51.8
       '@unocss/extractor-arbitrary-variants': 0.51.8
-      '@unocss/postcss': 0.51.8(postcss@8.4.23)
+      '@unocss/postcss': 0.51.8
       '@unocss/preset-attributify': 0.51.8
       '@unocss/preset-icons': 0.51.8
       '@unocss/preset-mini': 0.51.8
@@ -1590,7 +1595,6 @@ packages:
       '@unocss/transformer-variant-group': 0.51.8
       '@unocss/vite': 0.51.8(vite@4.3.4)
     transitivePeerDependencies:
-      - postcss
       - rollup
       - supports-color
       - vite

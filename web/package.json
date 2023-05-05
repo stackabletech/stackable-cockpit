@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@solidjs/router": "^0.8.2",
+    "@unocss/reset": "^0.51.12",
     "solid-js": "^1.7.4"
   }
 }
