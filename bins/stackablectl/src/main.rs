@@ -1,4 +1,3 @@
-use anyhow::Result;
 use clap::Parser;
 use dotenvy::dotenv;
 use tracing::metadata::LevelFilter;
@@ -11,7 +10,7 @@ pub mod cmds;
 pub mod constants;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() {
     // Parse the CLI args and commands
     let cli = cli::Cli::parse();
 
@@ -40,24 +39,44 @@ async fn main() -> Result<()> {
         Ok(_) => {}
         Err(err) => {
             if !err.not_found() {
-                return Err(err.into());
+                println!("{err}")
             }
         }
     }
 
     // Add Helm repos
-    cli.add_helm_repos()?;
-
-    let output = match &cli.subcommand {
-        Commands::Operator(args) => args.run()?,
-        Commands::Release(args) => args.run()?,
-        Commands::Stack(args) => args.run()?,
-        Commands::Services(args) => args.run()?,
-        Commands::Demo(args) => args.run(&cli).await?,
-        Commands::Completions(args) => args.run()?,
-        Commands::Cache(args) => args.run()?,
+    if let Err(err) = cli.add_helm_repos() {
+        eprintln!("{err}")
     };
 
-    println!("{output}");
-    Ok(())
+    match &cli.subcommand {
+        Commands::Operator(args) => match args.run() {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+        Commands::Release(args) => match args.run() {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+        Commands::Stack(args) => match args.run() {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+        Commands::Services(args) => match args.run() {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+        Commands::Demo(args) => match args.run(&cli).await {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+        Commands::Completions(args) => match args.run() {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+        Commands::Cache(args) => match args.run() {
+            Ok(out) => println!("{out}"),
+            Err(err) => eprintln!("{err}"),
+        },
+    };
 }

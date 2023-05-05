@@ -39,7 +39,9 @@ impl MinikubeCluster {
             .status();
 
         if let Err(err) = minikube_cmd {
-            return Err(ClusterError::Cmd(err.to_string()));
+            return Err(ClusterError::Cmd {
+                error: err.to_string(),
+            });
         }
 
         Ok(())

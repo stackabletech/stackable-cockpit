@@ -10,5 +10,5 @@ utoipa = { workspace = true, features = ["axum_extras"] }
 stackable = { path = "../../", features = ["openapi"] }
 clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
-anyhow = { workspace = true }
+snafu = { workspace = true }
 tokio = { workspace = true }

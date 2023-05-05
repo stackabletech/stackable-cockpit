@@ -3,6 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Row, Table,
 };
+use snafu::{ResultExt, Snafu};
 use stackable::{
     common::ListError,
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
@@ -13,7 +14,6 @@ use stackable::{
     },
     utils::{params::IntoParametersError, path::PathOrUrlParseError, read::CacheSettings},
 };
-use thiserror::Error;
 use xdg::BaseDirectoriesError;
 
 use crate::{
@@ -93,48 +93,55 @@ installation on the system."
 #[derive(Debug, Args)]
 pub struct DemoUninstallArgs {}
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum DemoCmdError {
-    #[error("io error: {0}")]
-    IoError(#[from] std::io::Error),
+    #[snafu(display("io error: {source}"))]
+    IoError { source: std::io::Error },
 
-    #[error("yaml error: {0}")]
-    YamlError(#[from] serde_yaml::Error),
+    #[snafu(display("yaml error: {source}"))]
+    YamlError { source: serde_yaml::Error },
 
-    #[error("json error: {0}")]
-    JsonError(#[from] serde_json::Error),
+    #[snafu(display("json error: {source}"))]
+    JsonError { source: serde_json::Error },
 
-    #[error("no demo with name '{0}'")]
-    NoSuchDemo(String),
+    #[snafu(display("no demo with name '{name}'"))]
+    NoSuchDemo { name: String },
 
-    #[error("no stack with name '{0}'")]
-    NoSuchStack(String),
+    #[snafu(display("no stack with name '{name}'"))]
+    NoSuchStack { name: String },
 
-    #[error("failed to convert input parameters to validated parameters: {0}")]
-    IntoParametersError(#[from] IntoParametersError),
+    #[snafu(display("failed to convert input parameters to validated parameters: {source}"))]
+    IntoParametersError { source: IntoParametersError },
 
-    #[error("list error: {0}")]
-    ListError(#[from] ListError),
+    #[snafu(display("list error: {source}"))]
+    ListError { source: ListError },
 
-    #[error("stack error: {0}")]
-    StackError(#[from] StackError),
+    #[snafu(display("stack error: {source}"))]
+    StackError { source: StackError },
 
-    #[error("path/url parse error: {0}")]
-    PathOrUrlParseError(#[from] PathOrUrlParseError),
+    #[snafu(display("path/url parse error: {source}"))]
+    PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[error("xdg base directory error: {0}")]
-    XdgError(#[from] BaseDirectoriesError),
+    #[snafu(display("xdg base directory error: {source}"))]
+    XdgError { source: BaseDirectoriesError },
 }
 
 impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = common_args.get_demo_files()?;
-        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
+        let files = common_args
+            .get_demo_files()
+            .context(PathOrUrlParseSnafu {})?;
+
+        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+            .context(XdgSnafu {})?
+            .get_cache_home();
 
         let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-        let list = DemoList::build(files, cache_settings).await?;
+        let list = DemoList::build(files, cache_settings)
+            .await
+            .context(ListSnafu {})?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -167,16 +174,16 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&list.inner())?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&list.inner())?),
+        OutputType::Json => Ok(serde_json::to_string(&list.inner()).context(JsonSnafu {})?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&list.inner()).context(YamlSnafu {})?),
     }
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
-    let demo = list
-        .get(&args.demo_name)
-        .ok_or(DemoCmdError::NoSuchDemo(args.demo_name.clone()))?;
+    let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
+        name: args.demo_name.clone(),
+    })?;
 
     match args.output_type {
         OutputType::Plain => {
@@ -199,8 +206,8 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&demo)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&demo)?),
+        OutputType::Json => Ok(serde_json::to_string(&demo).context(JsonSnafu {})?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&demo).context(YamlSnafu {})?),
     }
 }
 
@@ -211,38 +218,56 @@ async fn install_cmd(
     list: DemoList,
 ) -> Result<String, DemoCmdError> {
     // Get the demo spec by name from the list
-    let demo_spec = list
-        .get(&args.demo_name)
-        .ok_or(DemoCmdError::NoSuchDemo(args.demo_name.clone()))?;
+    let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
+        name: args.demo_name.clone(),
+    })?;
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-    let files = common_args.get_stack_files()?;
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
+    let files = common_args
+        .get_stack_files()
+        .context(PathOrUrlParseSnafu {})?;
 
-    let stack_list =
-        StackList::build(files, (cache_home_path, !common_args.no_cache).into()).await?;
+    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+        .context(XdgSnafu {})?
+        .get_cache_home();
+
+    let stack_list = StackList::build(files, (cache_home_path, !common_args.no_cache).into())
+        .await
+        .context(ListSnafu {})?;
 
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
         .get(&demo_spec.stack)
-        .ok_or(DemoCmdError::NoSuchStack(demo_spec.stack.clone()))?;
+        .ok_or(DemoCmdError::NoSuchStack {
+            name: demo_spec.stack.clone(),
+        })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = common_args.get_stack_files()?;
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
+    let files = common_args
+        .get_stack_files()
+        .context(PathOrUrlParseSnafu {})?;
 
-    let release_list =
-        ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into()).await?;
+    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+        .context(XdgSnafu {})?
+        .get_cache_home();
+
+    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+        .await
+        .context(ListSnafu {})?;
 
     // Install the stack
-    stack_spec.install(release_list)?;
+    stack_spec.install(release_list).context(StackSnafu {})?;
 
     // Install stack manifests
-    stack_spec.install_stack_manifests(&args.stack_parameters)?;
+    stack_spec
+        .install_stack_manifests(&args.stack_parameters)
+        .context(StackSnafu {})?;
 
     // Install demo manifests
-    stack_spec.install_demo_manifests(&demo_spec.parameters, &args.parameters)?;
+    stack_spec
+        .install_demo_manifests(&demo_spec.parameters, &args.parameters)
+        .context(StackSnafu {})?;
 
     Ok("".into())
 }

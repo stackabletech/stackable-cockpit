@@ -1,4 +1,4 @@
-use thiserror::Error;
+use snafu::Snafu;
 
 mod kind;
 mod minikube;
@@ -6,17 +6,17 @@ mod minikube;
 pub use kind::*;
 pub use minikube::*;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum ClusterError {
-    #[error("io error: {0}")]
-    Io(#[from] std::io::Error),
+    #[snafu(display("io error: {source}"))]
+    IoError { source: std::io::Error },
 
-    #[error("stdin error")]
+    #[snafu(display("stdin error"))]
     Stdin,
 
-    #[error("command error: {0}")]
-    Cmd(String),
+    #[snafu(display("command error: {error}"))]
+    Cmd { error: String },
 
-    #[error("missing dependencies")]
+    #[snafu(display("missing dependencies"))]
     MissingDeps,
 }

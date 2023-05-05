@@ -2,7 +2,7 @@ use std::{fs, io, time::Duration};
 
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, Table};
-use thiserror::Error;
+use snafu::{ResultExt, Snafu};
 use xdg::BaseDirectoriesError;
 
 use crate::constants::CACHE_HOME_PATH;
@@ -24,13 +24,13 @@ pub enum CacheCommands {
     Clean,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum CacheCmdError {
-    #[error("io error: {0}")]
-    IoError(#[from] io::Error),
+    #[snafu(display("io error: {source}"))]
+    IoError { source: io::Error },
 
-    #[error("xdg error: {0}")]
-    XdgError(#[from] BaseDirectoriesError),
+    #[snafu(display("xdg error: {source}"))]
+    XdgError { source: BaseDirectoriesError },
 }
 
 impl CacheArgs {
@@ -43,15 +43,21 @@ impl CacheArgs {
 }
 
 fn list_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
-    fs::create_dir_all(cache_dir.clone())?;
+    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+        .context(XdgSnafu {})?
+        .get_cache_home();
 
-    let mut files = fs::read_dir(cache_dir)?
+    fs::create_dir_all(cache_dir.clone()).context(IoSnafu {})?;
+
+    let mut files = fs::read_dir(cache_dir)
+        .context(IoSnafu {})?
         .map(|res| {
             let entry = res?;
             Ok((entry.path(), entry.metadata()?.modified()?))
         })
-        .collect::<Result<Vec<_>, io::Error>>()?;
+        .collect::<Result<Vec<_>, io::Error>>()
+        .context(IoSnafu {})?;
+
     files.sort();
 
     if files.is_empty() {
@@ -78,9 +84,12 @@ fn list_cmd() -> Result<String, CacheCmdError> {
 }
 
 fn clean_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
-    fs::remove_dir_all(cache_dir.clone())?;
-    fs::create_dir_all(cache_dir)?;
+    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+        .context(XdgSnafu {})?
+        .get_cache_home();
+
+    fs::remove_dir_all(cache_dir.clone()).context(IoSnafu {})?;
+    fs::create_dir_all(cache_dir).context(IoSnafu {})?;
 
     Ok("Cleaned cached files".into())
 }

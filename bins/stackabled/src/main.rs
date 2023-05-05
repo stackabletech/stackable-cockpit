@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
 
-use anyhow::Result;
 use axum::{routing::get, Router, Server};
 use clap::Parser;
 use utoipa::OpenApi;
@@ -11,13 +10,6 @@ use crate::cli::Cli;
 mod cli;
 mod handlers;
 
-fn main() -> Result<()> {
-    let cli = Cli::parse();
-
-    // Run the server
-    run(&cli)
-}
-
 #[derive(Debug, OpenApi)]
 #[openapi(
     info(description = "Stackabled API specification"),
@@ -26,7 +18,10 @@ fn main() -> Result<()> {
 struct ApiDoc {}
 
 #[tokio::main]
-async fn run(cli: &Cli) -> Result<()> {
+async fn main() {
+    let cli = Cli::parse();
+
+    // Run the server
     let router = Router::new()
         .route("/", get(handlers::get_root))
         .nest("/demos", handlers::demo_router())
@@ -37,9 +32,10 @@ async fn run(cli: &Cli) -> Result<()> {
     // Needed in next axum version
     // let listener = TcpListener::bind("127.0.0.1:8000").await?;
 
-    Server::bind(&SocketAddr::new(cli.address, cli.port))
+    if let Err(err) = Server::bind(&SocketAddr::new(cli.address, cli.port))
         .serve(router.into_make_service())
-        .await?;
-
-    Ok(())
+        .await
+    {
+        eprintln!("{err}")
+    }
 }

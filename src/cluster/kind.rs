@@ -4,8 +4,10 @@ use std::{
     process::{Command, Stdio},
 };
 
+use snafu::ResultExt;
+
 use crate::{
-    cluster::ClusterError,
+    cluster::{ClusterError, IoSnafu},
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
     utils::check::binaries_present,
 };
@@ -58,16 +60,20 @@ impl KindCluster {
             .args(["--name", self.name.as_str()])
             .args(["--config", "-"])
             .stdin(Stdio::piped())
-            .spawn()?;
+            .spawn()
+            .context(IoSnafu {})?;
 
         kind_cmd
             .stdin
             .as_ref()
             .ok_or(ClusterError::Stdin)?
-            .write_all(config.to_string().as_bytes())?;
+            .write_all(config.to_string().as_bytes())
+            .context(IoSnafu {})?;
 
         if let Err(err) = kind_cmd.wait_with_output() {
-            return Err(ClusterError::Cmd(err.to_string()));
+            return Err(ClusterError::Cmd {
+                error: err.to_string(),
+            });
         }
 
         Ok(())

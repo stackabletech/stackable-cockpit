@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
+use snafu::Snafu;
 use stackable::{constants::DEFAULT_LOCAL_CLUSTER_NAME, platform::operator::OperatorSpec};
-use thiserror::Error;
 
 use crate::cli::{ClusterType, OutputType};
 
@@ -99,7 +99,7 @@ pub struct OperatorInstalledArgs {
     output_type: OutputType,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum OperatorError {}
 
 impl OperatorArgs {

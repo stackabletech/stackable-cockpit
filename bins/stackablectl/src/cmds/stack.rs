@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
+use snafu::Snafu;
 use stackable::constants::DEFAULT_LOCAL_CLUSTER_NAME;
-use thiserror::Error;
 
 use crate::cli::{ClusterType, OutputType};
 
@@ -71,7 +71,7 @@ installation on the system."
     cluster_name: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum StackCmdError {}
 
 impl StackArgs {

@@ -72,8 +72,9 @@ func go_helm_release_exists(releaseName string, namespace string) bool {
 	return release != nil
 }
 
-// Returning a JSON document as GoSlices (array) of objects was a nightmare to share between Go and Rust. We also
-// introduce magic return values here. Any non-empty result string starting with 'ERROR:' will be treated as an error
+// Returning a JSON document as GoSlices (array) of objects was a nightmare to
+// share between Go and Rust. We also introduce magic return values here. Any
+// non-empty result string starting with 'ERROR:' will be treated as an error
 // by the Rust code and it will abort operations.
 //
 //export go_helm_list_releases
@@ -105,8 +106,10 @@ func go_helm_list_releases(namespace string) *C.char {
 	return C.CString(string(json))
 }
 
-// Adds a Helm repo to the temporary repositories file. We also introduce magic return values here. Any non-empty result
-// string starting with 'ERROR:' will be treated as an error by the Rust code and it will abort operations.
+// Adds a Helm repo to the temporary repositories file. We also introduce
+// magic return values here. Any non-empty result string starting with
+// 'ERROR:' will be treated as an error by the Rust code and it will abort
+// operations.
 //
 //export go_add_helm_repo
 func go_add_helm_repo(name string, url string) *C.char {

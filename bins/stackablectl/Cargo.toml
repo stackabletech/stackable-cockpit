@@ -12,12 +12,11 @@ clap_complete = { workspace = true }
 lazy_static = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
-thiserror = { workspace = true }
 stackable = { path = "../../" }
 dotenvy = { workspace = true }
 reqwest = { workspace = true }
 tracing = { workspace = true }
-anyhow = { workspace = true }
+snafu = { workspace = true }
 tokio = { workspace = true }
 clap = { workspace = true }
 xdg = { workspace = true }

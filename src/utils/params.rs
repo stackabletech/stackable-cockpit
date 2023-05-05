@@ -5,7 +5,7 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use snafu::{ResultExt, Snafu};
 
 /// Parameter descibes a common parameter format. This format is used in demo and stack definitions
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -25,12 +25,12 @@ pub struct Parameter {
     pub name: String,
 }
 
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Snafu, PartialEq)]
 pub enum IntoParametersError {
-    #[error("raw parameter parse error: {0}")]
-    ParseError(#[from] RawParameterParseError),
+    #[snafu(display("raw parameter parse error"))]
+    ParseError { source: RawParameterParseError },
 
-    #[error("invalid parameter '{parameter}', expected one of {expected}")]
+    #[snafu(display("invalid parameter '{parameter}', expected one of {expected}"))]
     InvalidParameter { parameter: String, expected: String },
 }
 
@@ -42,7 +42,7 @@ pub trait IntoParameters: Sized + IntoRawParameters {
     where
         T: AsRef<[Parameter]>,
     {
-        let raw_parameters = self.into_raw_params()?;
+        let raw_parameters = self.into_raw_params().context(ParseSnafu {})?;
         let parameters = valid_parameters.as_ref();
 
         let mut parameters: HashMap<String, String> = parameters
@@ -85,18 +85,18 @@ pub struct RawParameter {
     pub name: String,
 }
 
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Snafu, PartialEq)]
 pub enum RawParameterParseError {
-    #[error("invalid equal sign count in parameter, expected one")]
+    #[snafu(display("invalid equal sign count in parameter, expected one"))]
     InvalidEqualSignCount,
 
-    #[error("invalid parameter value, cannot be empty")]
+    #[snafu(display("invalid parameter value, cannot be empty"))]
     InvalidParameterValue,
 
-    #[error("invalid parameter name, cannot be empty")]
+    #[snafu(display("invalid parameter name, cannot be empty"))]
     InvalidParameterName,
 
-    #[error("invalid (empty) parameter input")]
+    #[snafu(display("invalid (empty) parameter input"))]
     InvalidParameterInput,
 }
 

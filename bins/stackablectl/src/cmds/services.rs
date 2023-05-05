@@ -1,5 +1,5 @@
 use clap::{Args, Subcommand};
-use thiserror::Error;
+use snafu::Snafu;
 
 use crate::cli::OutputType;
 
@@ -34,7 +34,7 @@ pub struct ServiceListArgs {
     output_type: OutputType,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum ServicesError {}
 
 impl ServicesArgs {

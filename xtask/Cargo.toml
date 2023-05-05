@@ -6,6 +6,6 @@ edition = "2021"
 [dependencies]
 stackablectl = { path = "../bins/stackablectl" }
 clap_complete =  { workspace = true }
-anyhow = { workspace = true }
+snafu = { workspace = true }
 clap = { workspace = true }
 clap_mangen = "0.2.10"

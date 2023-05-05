@@ -2,7 +2,7 @@ use std::str::{self, Utf8Error};
 use std::{collections::HashMap, ffi::CStr, os::raw::c_char};
 
 use serde::Deserialize;
-use thiserror::Error;
+use snafu::{ResultExt, Snafu};
 use tracing::{debug, error, info, instrument};
 
 use crate::constants::HELM_ERROR_PREFIX;
@@ -28,57 +28,62 @@ pub struct HelmRepoEntry {
     pub version: String,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum HelmError {
-    #[error("str utf-8 error: {0}")]
-    StrUtf8Error(#[from] Utf8Error),
+    #[snafu(display("str utf-8 error"))]
+    StrUtf8Error { source: Utf8Error },
 
-    #[error("json error: {0}")]
-    JsonError(#[from] serde_json::Error),
+    #[snafu(display("json error"))]
+    JsonError { source: serde_json::Error },
 
-    #[error("failed to add Helm repo: {0}")]
-    AddRepoError(String),
+    #[snafu(display("failed to add Helm repo: {error}"))]
+    AddRepoError { error: String },
 
-    #[error("failed to list Helm releases: {0}")]
-    ListReleasesError(String),
+    #[snafu(display("failed to list Helm releases: {error}"))]
+    ListReleasesError { error: String },
 
-    #[error("failed to install Helm release: {0}")]
-    InstallReleaseError(#[from] HelmInstallReleaseError),
+    #[snafu(display("failed to install Helm release"))]
+    InstallReleaseError { source: HelmInstallReleaseError },
 
-    #[error("failed to uninstall Helm release: {0}")]
-    UninstallReleaseError(String),
+    #[snafu(display("failed to uninstall Helm release: {error}"))]
+    UninstallReleaseError { error: String },
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum HelmInstallReleaseError {
-    /// This error indicates that the Helm release was not found, instead of `check_release_exists` returning true.
-    #[error("failed to find release {0}")]
-    NoSuchRelease(String),
+    /// This error indicates that the Helm release was not found, instead of
+    /// `check_release_exists` returning true.
+    #[snafu(display("failed to find release {name}"))]
+    NoSuchRelease { name: String },
 
-    /// This error indicates that the Helm release is already installed at a different version than requested.
-    /// Installation is skipped. Existing releases should be uninstalled with 'stackablectl op un <NAME>'.
-    #[error("release {name} ({current_version}) already installed, skipping requested version {requested_version}")]
+    /// This error indicates that the Helm release is already installed at a
+    /// different version than requested. Installation is skipped. Existing
+    /// releases should be uninstalled with 'stackablectl op un <NAME>'.
+    #[snafu(display("release {name} ({current_version}) already installed, skipping requested version {requested_version}"))]
     ReleaseAlreadyInstalled {
         name: String,
         current_version: String,
         requested_version: String,
     },
 
-    /// This error indicates that there was an Helm error. The error it self is not typed, as the error is a plain
-    /// string coming directly from the FFI bindings.
-    #[error("helm error: {0}")]
-    HelmError(String),
+    /// This error indicates that there was an Helm error. The error it self
+    /// is not typed, as the error is a plain string coming directly from the
+    /// FFI bindings.
+    #[snafu(display("helm error: {error}"))]
+    HelmWrapperError { error: String },
 }
 
 #[derive(Debug)]
 pub enum HelmInstallReleaseStatus {
-    /// Indicates that a release is already installed with a different version than requested.
+    /// Indicates that a release is already installed with a different version
+    /// than requested.
     ReleaseAlreadyInstalledWithversion {
         current_version: String,
         requested_version: String,
     },
 
-    /// Indicates that a release is already installed, but no specific version was requested.
+    /// Indicates that a release is already installed, but no specific version
+    /// was requested.
     ReleaseAlreadyInstalledUnspecified(String),
 
     /// Indicates that the release was installed successfully.
@@ -134,9 +139,12 @@ pub fn install_release_from_repo(
     debug!("Install Helm release from repo");
 
     if check_release_exists(release_name, namespace)? {
-        let release = get_release(release_name, namespace)?.ok_or(
-            HelmInstallReleaseError::NoSuchRelease(release_name.to_string()),
-        )?;
+        let release =
+            get_release(release_name, namespace)?.ok_or(HelmError::InstallReleaseError {
+                source: HelmInstallReleaseError::NoSuchRelease {
+                    name: release_name.to_owned(),
+                },
+            })?;
 
         let current_version = release.version;
 
@@ -151,12 +159,13 @@ pub fn install_release_from_repo(
                     );
                     // return Ok(format!("The release {release_name} ({current_version}) is already installed, skipping."));
                 } else {
-                    return Err(HelmInstallReleaseError::ReleaseAlreadyInstalled {
-                        name: release_name.into(),
-                        current_version: current_version.into(),
-                        requested_version: chart_version.into(),
-                    }
-                    .into());
+                    return Err(HelmError::InstallReleaseError {
+                        source: HelmInstallReleaseError::ReleaseAlreadyInstalled {
+                            name: release_name.into(),
+                            current_version: current_version.into(),
+                            requested_version: chart_version.into(),
+                        },
+                    });
                 }
             }
             None => {
@@ -208,14 +217,16 @@ fn install_release(
         )
     };
 
-    let result = ptr_to_str(result)?;
+    let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
     if let Some(err) = to_helm_error(result) {
         error!(
             "Go wrapper function go_install_helm_release encountered an error: {}",
             err
         );
 
-        return Err(HelmInstallReleaseError::HelmError(err).into());
+        return Err(HelmError::InstallReleaseError {
+            source: HelmInstallReleaseError::HelmWrapperError { error: err },
+        });
     }
 
     Ok(())
@@ -235,14 +246,14 @@ pub fn uninstall_release(
             go_uninstall_helm_release(release_name.into(), namespace.into(), suppress_output)
         };
 
-        let result = ptr_to_str(result)?;
+        let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
         if let Some(err) = to_helm_error(result) {
             error!(
                 "Go wrapper function go_uninstall_helm_release encountered an error: {}",
                 err
             );
 
-            return Err(HelmError::UninstallReleaseError(err));
+            return Err(HelmError::UninstallReleaseError { error: err });
         }
     }
 
@@ -270,7 +281,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
     debug!("List Helm releases");
 
     let result = unsafe { go_helm_list_releases(namespace.into()) };
-    let result = ptr_to_str(result)?;
+    let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
 
     if let Some(err) = to_helm_error(result) {
         error!(
@@ -278,10 +289,10 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
             err
         );
 
-        return Err(HelmError::ListReleasesError(err));
+        return Err(HelmError::ListReleasesError { error: err });
     }
 
-    Ok(serde_json::from_str(result)?)
+    Ok(serde_json::from_str(result).context(JsonSnafu {})?)
 }
 
 /// Returns a single Helm release by `release_name`.
@@ -300,7 +311,7 @@ pub fn add_repo(repo_name: &str, repo_url: &str) -> Result<(), HelmError> {
     debug!("Add Helm repo");
 
     let result = unsafe { go_add_helm_repo(repo_name.into(), repo_url.into()) };
-    let result = ptr_to_str(result)?;
+    let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
 
     if let Some(err) = to_helm_error(result) {
         error!(
@@ -308,7 +319,7 @@ pub fn add_repo(repo_name: &str, repo_url: &str) -> Result<(), HelmError> {
             err
         );
 
-        return Err(HelmError::AddRepoError(err));
+        return Err(HelmError::AddRepoError { error: err });
     }
 
     Ok(())

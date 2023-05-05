@@ -10,7 +10,7 @@ and exposes functionality via an HTTP REST API. Core community-provided dependen
 - [`utoipa`][utoipa-link], a proc-macro/derive-based OpenAPI spec generator that nicely integrates with `axum`.
 - [`clap`][clap-link], a powerful command line argument parser that powers the CLI interface.
 - [`tracing`][tracing-link] is used for context-rich application logging. Our complete stack emits tracing events that can be consumed via multiple different subscribers.
-- [`thiserror`][thiserror-link] and [`anyhow`][anyhow-link] for easy custom error handling.
+- [`snafu`][snafu-link] for easy custom error handling.
 
 The Stackable UI is bundled into the final binary during the build process. The source code for the front end is located
 in [web](../../web). Detailed information about the frontend stack can be found in the [README](../../web/README.me).
@@ -31,5 +31,4 @@ cargo build -p stackabled --release # or --debug
 [utoipa-link]: https://github.com/juhaku/utoipa
 [clap-link]: https://github.com/clap-rs/clap
 [tracing-link]: https://github.com/tokio-rs/tracing
-[thiserror-link]: https://github.com/Dtolnay/thiserror
-[anyhow-link]: https://github.com/dtolnay/anyhow
+[snafu-link]: https://github.com/shepmaster/snafu

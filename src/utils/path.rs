@@ -1,6 +1,6 @@
 use std::{path::PathBuf, str::FromStr};
 
-use thiserror::Error;
+use snafu::{ResultExt, Snafu};
 use url::{ParseError, Url};
 
 #[derive(Debug, Clone)]
@@ -9,10 +9,10 @@ pub enum PathOrUrl {
     Url(Url),
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum PathOrUrlParseError {
-    #[error("url parse error: {0}")]
-    UrlParseError(#[from] ParseError),
+    #[snafu(display("url parse error"))]
+    UrlParseError { source: ParseError },
 }
 
 pub trait IntoPathOrUrl: Sized {
@@ -89,7 +89,8 @@ impl FromStr for PathOrUrl {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("https://") || s.starts_with("http://") {
-            return Ok(Self::Url(Url::parse(s)?));
+            let url = Url::parse(s).context(UrlParseSnafu {})?;
+            return Ok(Self::Url(url));
         }
 
         let path = PathBuf::from(s);

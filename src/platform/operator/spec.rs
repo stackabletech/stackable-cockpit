@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use thiserror::Error;
+use snafu::Snafu;
 use tracing::{info, instrument};
 
 pub const VALID_OPERATORS: &[&str] = &[
@@ -29,19 +29,19 @@ pub struct OperatorSpec {
     pub name: String,
 }
 
-#[derive(Debug, Error, PartialEq)]
+#[derive(Debug, Snafu, PartialEq)]
 pub enum OperatorSpecParseError {
-    #[error("invalid equal sign count in operator spec, expected one")]
+    #[snafu(display("invalid equal sign count in operator spec, expected one"))]
     InvalidEqualSignCount,
 
-    #[error("invalid spec version")]
+    #[snafu(display("invalid spec version"))]
     InvalidSpecVersion,
 
-    #[error("invalid (empty) operator spec input")]
+    #[snafu(display("invalid (empty) operator spec input"))]
     InvalidSpecInput,
 
-    #[error("invalid operator name: '{0}'")]
-    InvalidName(String),
+    #[snafu(display("invalid operator name: '{name}'"))]
+    InvalidName { name: String },
 }
 
 impl Display for OperatorSpec {
@@ -94,7 +94,9 @@ impl FromStr for OperatorSpec {
         }
 
         if !VALID_OPERATORS.contains(&parts[0]) {
-            return Err(OperatorSpecParseError::InvalidName(parts[0].to_string()));
+            return Err(OperatorSpecParseError::InvalidName {
+                name: parts[0].to_string(),
+            });
         }
 
         // There are two parts, so an operator name and version
@@ -124,7 +126,7 @@ impl TryFrom<&str> for OperatorSpec {
 impl OperatorSpec {
     pub fn new(name: String, version: Option<String>) -> Result<Self, OperatorSpecParseError> {
         if !VALID_OPERATORS.contains(&name.as_str()) {
-            return Err(OperatorSpecParseError::InvalidName(name));
+            return Err(OperatorSpecParseError::InvalidName { name });
         }
 
         Ok(Self { version, name })

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use snafu::ResultExt;
 use tracing::{info, instrument};
 
 #[cfg(feature = "openapi")]
@@ -6,7 +7,11 @@ use utoipa::ToSchema;
 
 use crate::{
     common::ManifestSpec,
-    platform::{demo::DemoParameter, release::ReleaseList, stack::StackError},
+    platform::{
+        demo::DemoParameter,
+        release::ReleaseList,
+        stack::{ParameterSnafu, StackError},
+    },
     utils::params::{IntoParameters, Parameter, RawParameter, RawParameterParseError},
 };
 
@@ -60,7 +65,10 @@ impl StackSpecV2 {
     #[instrument(skip_all)]
     pub fn install_stack_manifests(&self, parameters: &[String]) -> Result<(), StackError> {
         info!("Installing stack manifests");
-        let parameters = parameters.to_owned().into_params(&self.parameters)?;
+        let parameters = parameters
+            .to_owned()
+            .into_params(&self.parameters)
+            .context(ParameterSnafu {})?;
 
         todo!()
     }

@@ -1,6 +1,6 @@
 use clap::{Args, CommandFactory, Subcommand};
 use clap_complete::{generate, Shell};
-use thiserror::Error;
+use snafu::{ResultExt, Snafu};
 
 use crate::cli::Cli;
 
@@ -22,10 +22,10 @@ pub enum CompletionCommands {
     Zsh,
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum CompletionsError {
-    #[error("string error: {0}")]
-    StringError(#[from] std::string::FromUtf8Error),
+    #[snafu(display("string error: {source}"))]
+    StringError { source: std::string::FromUtf8Error },
 }
 
 impl CompletionsArgs {
@@ -43,5 +43,5 @@ fn generate_completions(shell: Shell) -> Result<String, CompletionsError> {
     let mut buf = Vec::new();
 
     generate(shell, &mut cmd, "stackablectl", &mut buf);
-    Ok(String::from_utf8(buf)?)
+    Ok(String::from_utf8(buf).context(StringSnafu {})?)
 }

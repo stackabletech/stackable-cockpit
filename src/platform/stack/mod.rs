@@ -1,8 +1,8 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
 
 mod spec;
+use snafu::Snafu;
 pub use spec::*;
 
 use crate::{
@@ -26,11 +26,11 @@ impl SpecIter<StackSpecV2> for StacksV2 {
 
 pub type StackList = List<StacksV2, StackSpecV2>;
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum StackError {
-    #[error("parameter parse error: {0}")]
-    ParameterError(#[from] IntoParametersError),
+    #[snafu(display("parameter parse error: {source}"))]
+    ParameterError { source: IntoParametersError },
 
-    #[error("no such stack")]
+    #[snafu(display("no such stack"))]
     NoSuchStack,
 }

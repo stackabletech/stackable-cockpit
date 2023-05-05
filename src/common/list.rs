@@ -2,7 +2,7 @@ use std::{fs, marker::PhantomData};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
-use thiserror::Error;
+use snafu::{ResultExt, Snafu};
 
 use crate::utils::{
     path::PathOrUrl,
@@ -16,27 +16,27 @@ pub trait SpecIter<S> {
     fn inner(&self) -> &IndexMap<String, S>;
 }
 
-#[derive(Debug, Error)]
+#[derive(Debug, Snafu)]
 pub enum ListError {
-    #[error("io error: {0}")]
-    IoError(#[from] std::io::Error),
+    #[snafu(display("io error: {source}"))]
+    IoError { source: std::io::Error },
 
-    #[error("local read error: {0}")]
-    LocalReadError(#[from] LocalReadError),
+    #[snafu(display("local read error: {source}"))]
+    LocalReadError { source: LocalReadError },
 
-    #[error("remote read error: {0}")]
-    RemoteReadError(#[from] RemoteReadError),
+    #[snafu(display("remote read error: {source}"))]
+    RemoteReadError { source: RemoteReadError },
 
-    #[error("cached read error: {0}")]
-    CachedReadError(#[from] CachedReadError),
+    #[snafu(display("cached read error: {source}"))]
+    CachedReadError { source: CachedReadError },
 
-    #[error("url parse error: {0}")]
-    ParseUrlError(#[from] url::ParseError),
+    #[snafu(display("url parse error: {source}"))]
+    ParseUrlError { source: url::ParseError },
 
-    #[error("yaml error: {0}")]
-    YamlError(#[from] serde_yaml::Error),
+    #[snafu(display("yaml error: {source}"))]
+    YamlError { source: serde_yaml::Error },
 
-    #[error("invalid file url")]
+    #[snafu(display("invalid file url"))]
     InvalidFileUrl,
 }
 
@@ -65,7 +65,9 @@ where
 
         for file in files.as_ref() {
             let specs = match file {
-                PathOrUrl::Path(path) => read_yaml_data_from_file::<L>(path.clone())?,
+                PathOrUrl::Path(path) => {
+                    read_yaml_data_from_file::<L>(path.clone()).context(LocalReadSnafu {})?
+                }
                 PathOrUrl::Url(url) => {
                     if cache_settings.use_cache {
                         let file_name = url
@@ -76,18 +78,25 @@ where
 
                         let file_path = cache_settings.base_path.join(file_name);
 
-                        match read_cached_yaml_data::<L>(file_path.clone(), &cache_settings)? {
+                        match read_cached_yaml_data::<L>(file_path.clone(), &cache_settings)
+                            .context(CachedReadSnafu {})?
+                        {
                             CacheStatus::Hit(specs) => specs,
                             CacheStatus::Expired | CacheStatus::Miss => {
-                                let data = read_yaml_data_from_remote::<L>(url.clone()).await?;
-                                let yaml = serde_yaml::to_string(&data)?;
-                                fs::write(file_path, yaml)?;
+                                let data = read_yaml_data_from_remote::<L>(url.clone())
+                                    .await
+                                    .context(RemoteReadSnafu {})?;
+
+                                let yaml = serde_yaml::to_string(&data).context(YamlSnafu {})?;
+                                fs::write(file_path, yaml).context(IoSnafu {})?;
 
                                 data
                             }
                         }
                     } else {
-                        read_yaml_data_from_remote::<L>(url.clone()).await?
+                        read_yaml_data_from_remote::<L>(url.clone())
+                            .await
+                            .context(RemoteReadSnafu {})?
                     }
                 }
             };
