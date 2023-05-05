@@ -1,11 +1,45 @@
 import 'virtual:uno.css';
 import { render } from 'solid-js/web';
-import { createSignal } from 'solid-js';
+import { Show, For, createResource, Switch, Match } from 'solid-js';
+import { getListeners } from './api';
 
-function MyComponent() {
-    const [counter, setCounter] = createSignal(0);
-    const increment = () => {setCounter(c => c + 1)};
-    return <div class="c-yellow">hi <button onclick={increment}>{counter()}</button></div>;
+function Listeners() {
+    const [listeners, { refetch }] = createResource(getListeners);
+    return <>
+        <button onClick={refetch}>Refresh</button>
+        <Show when={listeners.loading}>Loading...</Show>
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Namespace</th>
+                    <th>Name</th>
+                    <th>Endpoints</th>
+                    <th>Info</th>
+                </tr>
+            </thead>
+            <tbody>
+                <For each={listeners()}>{(listener) =>
+                    <tr>
+                        <td>{listener.product}</td>
+                        <td>{listener.metadata.namespace}</td>
+                        <td>{listener.metadata.name}</td>
+                        <td>
+                            <ul>
+                                <For each={listener.endpoints}>{(endpoint) =>
+                                    <li>
+                                        <Switch fallback={endpoint.path}>
+                                            <Match when={endpoint.web}><a href={endpoint.path}>{endpoint.path}</a></Match>
+                                        </Switch>
+                                    </li>
+                                }</For>
+                            </ul>
+                        </td>
+                    </tr>
+                }</For>
+            </tbody>
+        </table>
+    </>;
 }
 
-render(MyComponent, document.getElementById("app")!!);
+render(Listeners, document.getElementById("app")!!);
