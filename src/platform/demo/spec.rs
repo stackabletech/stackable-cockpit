@@ -38,5 +38,5 @@ pub struct DemoSpecV2 {
 
     /// A variable number of supported parameters
     #[serde(default)]
-    pub parameters: Vec<DemoParameter>,
+    pub parameters: Vec<Parameter>,
 }

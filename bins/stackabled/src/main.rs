@@ -2,6 +2,11 @@ use std::net::SocketAddr;
 
 use axum::{routing::get, Router, Server};
 use clap::Parser;
+use stackable::{
+    common::ManifestSpec,
+    platform::{demo::DemoSpecV2, release::ReleaseSpec},
+    utils::params::Parameter,
+};
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -13,7 +18,13 @@ mod handlers;
 #[derive(Debug, OpenApi)]
 #[openapi(
     info(description = "Stackabled API specification"),
-    paths(handlers::get_demos, handlers::get_demo)
+    paths(
+        handlers::get_demos,
+        handlers::get_demo,
+        handlers::get_releases,
+        handlers::get_release
+    ),
+    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec))
 )]
 struct ApiDoc {}
 
