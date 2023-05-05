@@ -2,8 +2,9 @@ import 'virtual:uno.css';
 import { render } from 'solid-js/web';
 import { Show, For, createResource, Switch, Match } from 'solid-js';
 import { getListeners } from './api';
+import { A, Route, Router, Routes } from '@solidjs/router';
 
-function Listeners() {
+const Listeners = () => {
     const [listeners, { refetch }] = createResource(getListeners);
     return <>
         <button onClick={refetch}>Refresh</button>
@@ -40,6 +41,27 @@ function Listeners() {
             </tbody>
         </table>
     </>;
+};
+
+const Home = () => {
+    return <>
+        lorem ipsum dolor sit amet
+    </>;
 }
 
-render(Listeners, document.getElementById("app")!!);
+const App = () => {
+    return <>
+        <h1>stackablectl, web edition</h1>
+        <nav>
+            <ul>
+                <li><A href='/listeners'>listeners</A></li>
+            </ul>
+        </nav>
+        <Routes>
+            <Route path="/listeners" component={Listeners} />
+            <Route path="/" component={Home} />
+        </Routes>
+    </>
+};
+
+render(() => <Router><App/></Router>, document.getElementById("app")!!);
