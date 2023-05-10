@@ -32,7 +32,7 @@ const GlobalNav = () => {
 }
 
 const App = () => {
-    return <div class='w-5xl ma'>
+    return <div class='max-w-5xl ma'>
         <h1>stackablectl, web edition</h1>
         <GlobalNav />
         <Routes>
