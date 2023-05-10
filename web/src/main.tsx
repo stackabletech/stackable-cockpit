@@ -3,7 +3,7 @@ import '@unocss/reset/sanitize/sanitize.css';
 import 'virtual:uno.css';
 import { render } from 'solid-js/web';
 import { A, Route, Router, Routes } from '@solidjs/router';
-import type { Component, ParentProps } from 'solid-js';
+import type { ParentProps } from 'solid-js';
 import { Listeners } from './components/listeners';
 
 const Home = () => {
@@ -12,12 +12,12 @@ const Home = () => {
   </>;
 };
 
-export interface NavItemProps {
+interface NavItemProps {
   href: string;
 }
 
 const GlobalNav = () => {
-  const NavItem: Component<ParentProps<NavItemProps>> = props =>
+  const NavItem = (props: ParentProps<NavItemProps>) =>
     <li class='inline mr-1'>
       <A href={props.href}
         class="p-1 c-white inline-block"
