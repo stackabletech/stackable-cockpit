@@ -1,11 +1,27 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
+use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
-use crate::platform::product::ProductSpec;
+use crate::{
+    helm::HelmError,
+    platform::{
+        operator::{OperatorSpec, OperatorSpecParseError},
+        product::ProductSpec,
+    },
+};
+
+#[derive(Debug, Snafu)]
+pub enum ReleaseInstallError {
+    #[snafu(display("failed to parse operator spec: {source}"))]
+    OperatorSpecParseError { source: OperatorSpecParseError },
+
+    #[snafu(display("failed with Helm error: {source}"))]
+    HelmError { source: HelmError },
+}
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -24,7 +40,11 @@ pub struct ReleaseSpec {
 
 impl ReleaseSpec {
     #[instrument(skip_all)]
-    pub fn install(&self, include_products: &[String], exclude_products: &[String]) {
+    pub fn install(
+        &self,
+        include_products: &[String],
+        exclude_products: &[String],
+    ) -> Result<(), ReleaseInstallError> {
         info!("Installing release");
 
         for (product_name, product) in &self.products {
@@ -32,11 +52,17 @@ impl ReleaseSpec {
             let excluded = exclude_products.contains(&product_name);
 
             if included && !excluded {
+                info!("Installing product {}", product_name);
+
+                // Create operator spec
+                let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
+                    .context(OperatorSpecParseSnafu {})?;
+
                 // Install operator
-                todo!()
+                operator.install().context(HelmSnafu {})?
             }
         }
 
-        todo!()
+        Ok(())
     }
 }

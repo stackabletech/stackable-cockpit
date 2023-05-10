@@ -26,6 +26,7 @@ utoipa = { workspace = true }
 snafu = { workspace = true }
 which = { workspace = true }
 serde = { workspace = true }
+tera = { workspace = true }
 url = { workspace = true }
 
 [build-dependencies]
@@ -50,6 +51,7 @@ utoipa = "3.3.0"
 axum = "0.6.18"
 snafu = "0.7.4"
 which = "4.4.0"
+tera = "1.18.1"
 url = "2.3.1"
 xdg = "2.4.1"
 phf = "0.11.1"

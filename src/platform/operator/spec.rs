@@ -3,6 +3,8 @@ use std::{fmt::Display, str::FromStr};
 use snafu::Snafu;
 use tracing::{info, instrument};
 
+use crate::helm;
+
 pub const VALID_OPERATORS: &[&str] = &[
     "airflow",
     "commons",
@@ -21,14 +23,6 @@ pub const VALID_OPERATORS: &[&str] = &[
     "zookeeper",
 ];
 
-/// OperatorSpec describes the format of an operator name with optional version number. The string format is
-/// `<OPERATOR_NAME>(=<VERSION>)`. Valid values values are: `operator`, `operator=1.2.3` or `operator=1.2.3-rc1`.
-#[derive(Clone, Debug)]
-pub struct OperatorSpec {
-    pub version: Option<String>,
-    pub name: String,
-}
-
 #[derive(Debug, Snafu, PartialEq)]
 pub enum OperatorSpecParseError {
     #[snafu(display("invalid equal sign count in operator spec, expected one"))]
@@ -42,6 +36,14 @@ pub enum OperatorSpecParseError {
 
     #[snafu(display("invalid operator name: '{name}'"))]
     InvalidName { name: String },
+}
+
+/// OperatorSpec describes the format of an operator name with optional version number. The string format is
+/// `<OPERATOR_NAME>(=<VERSION>)`. Valid values values are: `operator`, `operator=1.2.3` or `operator=1.2.3-rc1`.
+#[derive(Clone, Debug)]
+pub struct OperatorSpec {
+    pub version: Option<String>,
+    pub name: String,
 }
 
 impl Display for OperatorSpec {
@@ -124,12 +126,22 @@ impl TryFrom<&str> for OperatorSpec {
 }
 
 impl OperatorSpec {
-    pub fn new(name: String, version: Option<String>) -> Result<Self, OperatorSpecParseError> {
-        if !VALID_OPERATORS.contains(&name.as_str()) {
-            return Err(OperatorSpecParseError::InvalidName { name });
+    pub fn new<T>(name: T, version: Option<String>) -> Result<Self, OperatorSpecParseError>
+    where
+        T: AsRef<str>,
+    {
+        let name = name.as_ref();
+
+        if !VALID_OPERATORS.contains(&name) {
+            return Err(OperatorSpecParseError::InvalidName {
+                name: name.to_string(),
+            });
         }
 
-        Ok(Self { version, name })
+        Ok(Self {
+            version,
+            name: name.to_string(),
+        })
     }
 
     /// Returns the name used by Helm
@@ -151,14 +163,26 @@ impl OperatorSpec {
 
     /// Installs the operator using Helm
     #[instrument(skip_all)]
-    pub fn install(&self) {
+    pub fn install(&self) -> Result<(), helm::HelmError> {
         info!("Installing operator {}", self);
 
         let helm_name = self.helm_name();
         let helm_repo = self.helm_repo();
+        let version = match &self.version {
+            Some(version) => Some(version.as_str()),
+            None => None,
+        };
 
         // Install using Helm
-        todo!()
+        match helm::install_release_from_repo(
+            &self.name, &helm_name, &helm_repo, &helm_name, version, None, "", true,
+        ) {
+            Ok(status) => {
+                println!("{status}");
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
     }
 }
 

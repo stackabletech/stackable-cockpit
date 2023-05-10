@@ -368,7 +368,7 @@ mod test {
             Ok(validated) => {
                 assert_eq!(validated.len(), 1);
 
-                if let Some(value) = validated.get("param1".into()) {
+                if let Some(value) = validated.get(&"param1".to_string()) {
                     assert_eq!(*value, "value1".to_string());
                     return;
                 }

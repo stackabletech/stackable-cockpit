@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::str::{self, Utf8Error};
 use std::{collections::HashMap, ffi::CStr, os::raw::c_char};
 
@@ -5,7 +6,7 @@ use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, error, info, instrument};
 
-use crate::constants::HELM_ERROR_PREFIX;
+use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_ERROR_PREFIX};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -78,16 +79,34 @@ pub enum HelmInstallReleaseStatus {
     /// Indicates that a release is already installed with a different version
     /// than requested.
     ReleaseAlreadyInstalledWithversion {
+        release_name: String,
         current_version: String,
         requested_version: String,
     },
 
     /// Indicates that a release is already installed, but no specific version
     /// was requested.
-    ReleaseAlreadyInstalledUnspecified(String),
+    ReleaseAlreadyInstalledUnspecified {
+        release_name: String,
+        current_version: String,
+    },
 
     /// Indicates that the release was installed successfully.
-    Installed,
+    Installed(String),
+}
+
+impl Display for HelmInstallReleaseStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
+                release_name,
+                current_version,
+                requested_version,
+            } => write!(f, "The release {release_name} ({current_version}) is already installed (requested {requested_version}), skipping."),
+            HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified{release_name, current_version} => write!(f, "The release {release_name} ({current_version}) is already installed and no specific version was requested, skipping."),
+            HelmInstallReleaseStatus::Installed(release_name) => write!(f, "The release {release_name} was successfully installed."),
+        }
+    }
 }
 
 #[repr(C)]
@@ -153,11 +172,11 @@ pub fn install_release_from_repo(
                 if chart_version == current_version {
                     return Ok(
                         HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
+                            release_name: release_name.to_string(),
                             current_version: current_version.to_string(),
                             requested_version: chart_version.to_string(),
                         },
                     );
-                    // return Ok(format!("The release {release_name} ({current_version}) is already installed, skipping."));
                 } else {
                     return Err(HelmError::InstallReleaseError {
                         source: HelmInstallReleaseError::ReleaseAlreadyInstalled {
@@ -170,16 +189,17 @@ pub fn install_release_from_repo(
             }
             None => {
                 return Ok(
-                    HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified(
-                        current_version.into(),
-                    ),
+                    HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
+                        release_name: release_name.to_string(),
+                        current_version,
+                    },
                 )
             }
         }
     }
 
     let full_chart_name = format!("{repo_name}/{chart_name}");
-    let chart_version = chart_version.unwrap_or(">0.0.0-0"); // TODO (Techassi): Move this into a constant
+    let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
 
     debug!(
         "Installing Helm release {} ({}) from chart {}",
@@ -195,7 +215,9 @@ pub fn install_release_from_repo(
         suppress_output,
     )?;
 
-    Ok(HelmInstallReleaseStatus::Installed)
+    Ok(HelmInstallReleaseStatus::Installed(
+        release_name.to_string(),
+    ))
 }
 
 fn install_release(

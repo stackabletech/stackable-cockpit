@@ -2,13 +2,9 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 mod spec;
-use snafu::Snafu;
 pub use spec::*;
 
-use crate::{
-    common::{List, SpecIter},
-    utils::params::IntoParametersError,
-};
+use crate::common::{List, SpecIter};
 
 /// This struct describes a complete demos v2 file
 #[derive(Debug, Deserialize, Serialize)]
@@ -25,12 +21,3 @@ impl SpecIter<StackSpecV2> for StacksV2 {
 }
 
 pub type StackList = List<StacksV2, StackSpecV2>;
-
-#[derive(Debug, Snafu)]
-pub enum StackError {
-    #[snafu(display("parameter parse error: {source}"))]
-    ParameterError { source: IntoParametersError },
-
-    #[snafu(display("no such stack"))]
-    NoSuchStack,
-}

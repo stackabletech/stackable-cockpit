@@ -1,4 +1,5 @@
 use std::{
+    collections::HashMap,
     fs, io,
     path::PathBuf,
     time::{Duration, SystemTimeError},
@@ -6,9 +7,25 @@ use std::{
 
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
+use tera::{Context, Tera};
 use url::Url;
 
-use crate::constants::DEFAULT_CACHE_MAX_AGE_IN_SECS;
+use crate::{constants::DEFAULT_CACHE_MAX_AGE_IN_SECS, utils::path::PathOrUrl};
+
+#[derive(Debug, Snafu)]
+pub enum TemplatedReadError {
+    #[snafu(display("local read error: {source}"))]
+    TemplatedReadError { source: io::Error },
+
+    #[snafu(display("request error: {source}"))]
+    TemplatedRequestError { source: reqwest::Error },
+
+    #[snafu(display("templating error: {source}"))]
+    TemplatingError { source: tera::Error },
+
+    #[snafu(display("yaml error: {source}"))]
+    YamlError { source: serde_yaml::Error },
+}
 
 #[derive(Debug, Snafu)]
 pub enum CachedReadError {
@@ -146,4 +163,82 @@ where
     }
 
     Ok(CacheStatus::Miss)
+}
+
+/// Reads a local or remote (YAML) file and inserts parameter values based
+/// on templating expressions. The parameters are passed into this function as
+/// a [`HashMap<String, String>`]. The final templated result is returned as
+/// a [`String`]. A [`TemplatedReadError`] is returned when the file cannot be
+/// read, deserialization failed or the templating resulted in an error.
+pub async fn read_yaml_data_with_templating<P, T>(
+    path_or_url: P,
+    parameters: &HashMap<String, String>,
+) -> Result<T, TemplatedReadError>
+where
+    P: Into<PathOrUrl>,
+    T: for<'a> Deserialize<'a>,
+{
+    match path_or_url.into() {
+        PathOrUrl::Path(path) => read_yaml_data_from_file_with_templating(path, parameters),
+        PathOrUrl::Url(url) => read_yaml_data_from_remote_with_templating(url, parameters).await,
+    }
+}
+
+/// Reads YAML data from a local file at `path` and deserializes it into type
+/// `T`. It also inserts parameter values based on templating expressions. The
+/// parameters are passed into this function as a [`HashMap<String, String>`].
+/// A [`TemplatedReadError`] is returned when the file cannot be read,
+/// deserialization failed or the templating resulted in an error.
+pub fn read_yaml_data_from_file_with_templating<T>(
+    path: PathBuf,
+    parameters: &HashMap<String, String>,
+) -> Result<T, TemplatedReadError>
+where
+    T: for<'a> Deserialize<'a>,
+{
+    let content = fs::read_to_string(path).context(TemplatedReadSnafu {})?;
+
+    // Create templating context
+    let mut context = Context::new();
+
+    // Fill context with parameters
+    for (name, value) in parameters {
+        context.insert(name, value)
+    }
+
+    // Render template using a one-off function
+    let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
+    Ok(serde_yaml::from_str(&result).context(YamlSnafu {})?)
+}
+
+/// Reads YAML data from a remote file at `url` and deserializes it into type
+/// `T`. It also inserts parameter values based on templating expressions. The
+/// parameters are passed into this function as a [`HashMap<String, String>`].
+/// A [`TemplatedReadError`] is returned when the file cannot be read,
+/// deserialization failed or the templating resulted in an error.
+pub async fn read_yaml_data_from_remote_with_templating<T>(
+    url: Url,
+    parameters: &HashMap<String, String>,
+) -> Result<T, TemplatedReadError>
+where
+    T: for<'a> Deserialize<'a>,
+{
+    let content = reqwest::get(url)
+        .await
+        .context(TemplatedRequestSnafu {})?
+        .text()
+        .await
+        .context(TemplatedRequestSnafu {})?;
+
+    // Create templating context
+    let mut context = Context::new();
+
+    // Fill context with parameters
+    for (name, value) in parameters {
+        context.insert(name, value)
+    }
+
+    // Render template using a one-off function
+    let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
+    Ok(serde_yaml::from_str(&result).context(YamlSnafu {})?)
 }

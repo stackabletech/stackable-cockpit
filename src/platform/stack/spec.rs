@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use snafu::ResultExt;
+use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 #[cfg(feature = "openapi")]
@@ -9,15 +9,32 @@ use crate::{
     common::ManifestSpec,
     platform::{
         demo::DemoParameter,
-        release::ReleaseList,
-        stack::{ParameterSnafu, StackError},
+        release::{ReleaseInstallError, ReleaseList},
     },
-    utils::params::{IntoParameters, Parameter, RawParameter, RawParameterParseError},
+    utils::{
+        params::{
+            IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+        },
+        path::PathOrUrl,
+        read::read_yaml_data_with_templating,
+    },
 };
 
 pub type RawStackParameterParseError = RawParameterParseError;
 pub type RawStackParameter = RawParameter;
 pub type StackParameter = Parameter;
+
+#[derive(Debug, Snafu)]
+pub enum StackError {
+    #[snafu(display("parameter parse error: {source}"))]
+    ParameterError { source: IntoParametersError },
+
+    #[snafu(display("no such stack"))]
+    NoSuchStack,
+
+    #[snafu(display("release install error: {source}"))]
+    ReleaseInstallError { source: ReleaseInstallError },
+}
 
 /// This struct describes a stack with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -53,11 +70,15 @@ impl StackSpecV2 {
     pub fn install(&self, release_list: ReleaseList) -> Result<(), StackError> {
         info!("Installing stack");
 
+        // Get the release by name
         let release = release_list
             .get(&self.release)
             .ok_or(StackError::NoSuchStack)?;
 
-        release.install(&self.operators, &[]);
+        // Install the release
+        release
+            .install(&self.operators, &[])
+            .context(ReleaseInstallSnafu {})?;
 
         todo!()
     }
@@ -65,10 +86,20 @@ impl StackSpecV2 {
     #[instrument(skip_all)]
     pub fn install_stack_manifests(&self, parameters: &[String]) -> Result<(), StackError> {
         info!("Installing stack manifests");
+
         let parameters = parameters
             .to_owned()
             .into_params(&self.parameters)
             .context(ParameterSnafu {})?;
+
+        for manifest in &self.manifests {
+            match manifest {
+                ManifestSpec::HelmChart(helm_file) => {
+                    let helm_chart = read_yaml_data_with_templating(helm_file, &parameters);
+                }
+                ManifestSpec::PlainYaml(_) => todo!(),
+            }
+        }
 
         todo!()
     }

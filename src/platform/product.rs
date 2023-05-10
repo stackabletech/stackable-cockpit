@@ -4,5 +4,5 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "camelCase")]
 pub struct ProductSpec {
     #[serde(rename = "operatorVersion")]
-    version: String,
+    pub version: String,
 }
