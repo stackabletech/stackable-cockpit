@@ -5,9 +5,6 @@ export default defineConfig({
     colors: {
       stblue: '#1880bd',
     },
-    fontFamily: {
-      sans: 'Inter',
-    },
   },
   presets: [presetUno()],
 });
