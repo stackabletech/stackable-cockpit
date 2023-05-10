@@ -15,7 +15,7 @@ interface ListenerEndpoint {
 }
 
 function delay(amount: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, amount));
+  return new Promise((resolve) => setTimeout(resolve, amount));
 }
 
 export async function getListeners(): Promise<Listener[]> {
@@ -23,17 +23,17 @@ export async function getListeners(): Promise<Listener[]> {
   return [
     {
       metadata: {
-        namespace: 'default',
-        name: 'simple-nifi',
+        namespace: "default",
+        name: "simple-nifi",
       },
-      product: 'nifi',
+      product: "nifi",
       endpoints: [
         {
-          path: 'https://127.0.0.1:8443/ui',
+          path: "https://127.0.0.1:8443/ui",
           web: true,
         },
         {
-          path: 'mqtt://127.0.0.1:9999',
+          path: "mqtt://127.0.0.1:9999",
           web: false,
         },
       ],

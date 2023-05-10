@@ -1,5 +1,3 @@
 {
-  "extends": [
-    "@techassi/solid"
-  ]
+  "extends": ["@techassi/solid"]
 }
