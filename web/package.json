@@ -1,0 +1,26 @@
+{
+  "name": "web-ui",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.ts,.tsx,.jsx,.json ./src"
+  },
+  "devDependencies": {
+    "@techassi/eslint-config-solid": "^0.1.1",
+    "eslint": "^8.40.0",
+    "eslint-plugin-solid": "^0.12.1",
+    "typescript": "^5.0.2",
+    "unocss": "^0.51.8",
+    "vite": "^4.3.2",
+    "vite-plugin-solid": "^2.7.0"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.8.2",
+    "@unocss/reset": "^0.51.12",
+    "solid-js": "^1.7.4"
+  }
+}

@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use axum::{routing::get, Router, Server};
+use axum::{response::Redirect, routing::get, Router, Server};
 use clap::Parser;
 use stackable::{
     common::ManifestSpec,
@@ -33,12 +33,17 @@ async fn main() {
     let cli = Cli::parse();
 
     // Run the server
-    let router = Router::new()
+    let api = Router::new()
         .route("/", get(handlers::get_root))
         .nest("/demos", handlers::demo_router())
         .nest("/stacks", handlers::stack_router())
         .nest("/releases", handlers::release_router())
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+
+    let router = Router::new()
+        .nest("/api/", api)
+        .nest("/ui/", handlers::ui::router())
+        .route("/", get(|| async { Redirect::permanent("/ui/") }));
 
     // Needed in next axum version
     // let listener = TcpListener::bind("127.0.0.1:8000").await?;

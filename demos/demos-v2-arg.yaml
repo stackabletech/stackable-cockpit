@@ -1,0 +1,10 @@
+---
+demos:
+  local-demo-test-arg:
+    description: Test demo. Provided with the --demo-files argument
+    stackableStack: test
+    labels:
+      - test
+      - local
+    manifests:
+      - plainYaml: lol
