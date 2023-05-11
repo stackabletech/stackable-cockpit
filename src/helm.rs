@@ -18,6 +18,22 @@ pub struct HelmRelease {
     pub last_updated: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct HelmChart {
+    pub release_name: String,
+    pub name: String,
+    pub repo: HelmChartRepo,
+    pub version: String,
+    pub options: serde_yaml::Value,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct HelmChartRepo {
+    pub name: String,
+    pub url: String,
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct HelmRepo {
     pub entries: HashMap<String, Vec<HelmRepoEntry>>,

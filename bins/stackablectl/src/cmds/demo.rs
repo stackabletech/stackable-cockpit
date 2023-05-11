@@ -261,12 +261,19 @@ async fn install_cmd(
 
     // Install stack manifests
     stack_spec
-        .install_stack_manifests(&args.stack_parameters)
+        .install_stack_manifests(&args.stack_parameters, &common_args.namespace)
+        .await
         .context(StackSnafu {})?;
 
     // Install demo manifests
     stack_spec
-        .install_demo_manifests(&demo_spec.parameters, &args.parameters)
+        .install_demo_manifests(
+            &demo_spec.manifests,
+            &demo_spec.parameters,
+            &args.parameters,
+            &common_args.namespace,
+        )
+        .await
         .context(StackSnafu {})?;
 
     Ok("".into())
