@@ -4,6 +4,7 @@ use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
 use indexmap::IndexMap;
 use semver::Version;
+use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable::{
     constants::{
@@ -127,11 +128,18 @@ pub enum OperatorError {
 
     #[snafu(display("semver parse error: {source}"))]
     SemVerParseError { source: semver::Error },
+
+    #[snafu(display("yaml error: {source}"))]
+    YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("json error: {source}"))]
+    JsonError { source: serde_json::Error },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
 /// dev lines. The lines can be accessed by the globally defined constants like
 /// [`HELM_REPO_NAME_STABLE`].
+#[derive(Debug, Serialize)]
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
@@ -183,8 +191,8 @@ async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
 
             Ok(table.to_string())
         }
-        OutputType::Json => todo!(),
-        OutputType::Yaml => todo!(),
+        OutputType::Json => Ok(serde_json::to_string(&versions_list).context(JsonSnafu {})?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&versions_list).context(YamlSnafu {})?),
     }
 }
 

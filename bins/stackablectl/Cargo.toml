@@ -20,6 +20,7 @@ tracing = { workspace = true }
 semver = { workspace = true }
 snafu = { workspace = true }
 tokio = { workspace = true }
+serde = { workspace = true }
 clap = { workspace = true }
 xdg = { workspace = true }
 comfy-table = "6.1.4"
