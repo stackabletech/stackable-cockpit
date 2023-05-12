@@ -129,11 +129,10 @@ pub enum OperatorError {
     SemVerParseError { source: semver::Error },
 }
 
-pub struct OperatorVersionList {
-    stable: Vec<String>,
-    test: Vec<String>,
-    dev: Vec<String>,
-}
+/// This list contains a list of operator version grouped by stable, test and
+/// dev lines. The lines can be accessed by the globally defined constants like
+/// [`HELM_REPO_NAME_STABLE`].
+pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
     pub async fn run(&self) -> Result<String, OperatorError> {
@@ -151,6 +150,7 @@ impl OperatorArgs {
 async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
     debug!("Listing operators");
 
+    // If the user only wnats to list installed operator, use this shortcut
     if args.list_installed {
         return installed_cmd(&OperatorInstalledArgs {
             output_type: args.output_type.clone(),
@@ -158,45 +158,11 @@ async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
     }
 
     // Build map which maps Helm repo name to Helm repo URL
-    let mut helm_index_files = HashMap::new();
+    let helm_index_files = build_helm_index_file_list().await?;
 
-    for helm_repo_name in [
-        HELM_REPO_NAME_STABLE,
-        HELM_REPO_NAME_TEST,
-        HELM_REPO_NAME_DEV,
-    ] {
-        let helm_repo_url =
-            util::helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
-
-        helm_index_files.insert(
-            helm_repo_name,
-            helm::get_helm_index(helm_repo_url)
-                .await
-                .context(HelmSnafu {})?,
-        );
-    }
-
-    let mut versions_list = IndexMap::new();
-
-    for operator in VALID_OPERATORS {
-        let index_file = helm_index_files.get(HELM_REPO_NAME_STABLE).ok_or(
-            UnknownRepoNameSnafu {
-                name: HELM_REPO_NAME_STABLE.to_string(),
-            }
-            .build(),
-        )?;
-
-        let versions = list_operator_versions_from_repo(operator, index_file)?;
-
-        versions_list.insert(
-            operator.to_string(),
-            OperatorVersionList {
-                stable: versions,
-                test: vec![],
-                dev: vec![],
-            },
-        );
-    }
+    // Iterate over all valid operators and create a list of versions grouped
+    // by stable, test and dev lines
+    let versions_list = build_versions_list(&helm_index_files)?;
 
     match args.output_type {
         OutputType::Plain => {
@@ -208,7 +174,11 @@ async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
                 .load_preset(UTF8_FULL);
 
             for (operator_name, versions) in versions_list {
-                table.add_row(vec![operator_name, versions.stable.join(", ")]);
+                let versions_string = match versions.0.get(HELM_REPO_NAME_STABLE) {
+                    Some(v) => v.join(", "),
+                    None => "".into(),
+                };
+                table.add_row(vec![operator_name, versions_string]);
             }
 
             Ok(table.to_string())
@@ -236,6 +206,55 @@ fn installed_cmd(args: &OperatorInstalledArgs) -> Result<String, OperatorError> 
     todo!()
 }
 
+/// Builds a map which maps Helm repo name to Helm repo URL.
+#[instrument]
+async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, OperatorError> {
+    debug!("Building Helm index file list");
+
+    let mut helm_index_files = HashMap::new();
+
+    for helm_repo_name in [
+        HELM_REPO_NAME_STABLE,
+        HELM_REPO_NAME_TEST,
+        HELM_REPO_NAME_DEV,
+    ] {
+        let helm_repo_url =
+            util::helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
+
+        helm_index_files.insert(
+            helm_repo_name,
+            helm::get_helm_index(helm_repo_url)
+                .await
+                .context(HelmSnafu {})?,
+        );
+    }
+
+    Ok(helm_index_files)
+}
+
+/// Iterates over all valid operators and creates a list of versions grouped
+/// by stable, test and dev lines based on the list of Helm repo index files.
+#[instrument]
+fn build_versions_list(
+    helm_index_files: &HashMap<&str, HelmRepo>,
+) -> Result<IndexMap<String, OperatorVersionList>, OperatorError> {
+    debug!("Building versions list");
+
+    let mut versions_list = IndexMap::new();
+
+    for operator in VALID_OPERATORS {
+        for (helm_repo_name, helm_repo_index_file) in helm_index_files {
+            let versions = list_operator_versions_from_repo(operator, &helm_repo_index_file)?;
+            let entry = versions_list.entry(operator.to_string());
+            let entry = entry.or_insert(OperatorVersionList(HashMap::new()));
+            entry.0.insert(helm_repo_name.to_string(), versions);
+        }
+    }
+
+    Ok(versions_list)
+}
+
+/// Builds a list of operator versions based on the provided Helm repo.
 #[instrument]
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
