@@ -1,7 +1,10 @@
 use std::collections::HashMap;
 
 use clap::{Args, Subcommand};
-use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
+use comfy_table::{
+    presets::{NOTHING, UTF8_FULL},
+    ContentArrangement, Table,
+};
 use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
@@ -146,7 +149,7 @@ impl OperatorArgs {
     pub async fn run(&self) -> Result<String, OperatorError> {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args).await,
-            OperatorCommands::Describe(args) => describe_cmd(args),
+            OperatorCommands::Describe(args) => describe_cmd(args).await,
             OperatorCommands::Install(args) => install_cmd(args),
             OperatorCommands::Uninstall(args) => uninstall_cmd(args),
             OperatorCommands::Installed(args) => installed_cmd(args),
@@ -196,8 +199,47 @@ async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
     }
 }
 
-fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorError> {
-    todo!()
+async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorError> {
+    debug!("Describing operator {}", args.operator_name);
+
+    // Build map which maps Helm repo name to Helm repo URL
+    let helm_index_files = build_helm_index_file_list().await?;
+
+    // Create a list of versions for this operator
+    let versions_list = build_versions_list_for_operator(&args.operator_name, &helm_index_files)?;
+
+    match args.output_type {
+        OutputType::Plain => {
+            let stable_versions_string = match versions_list.0.get(HELM_REPO_NAME_STABLE) {
+                Some(v) => v.join(", "),
+                None => "".into(),
+            };
+
+            let test_versions_string = match versions_list.0.get(HELM_REPO_NAME_TEST) {
+                Some(v) => v.join(", "),
+                None => "".into(),
+            };
+
+            let dev_versions_string = match versions_list.0.get(HELM_REPO_NAME_DEV) {
+                Some(v) => v.join(", "),
+                None => "".into(),
+            };
+
+            let mut table = Table::new();
+
+            table
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .load_preset(NOTHING)
+                .add_row(vec!["OPERATOR", &args.operator_name.to_string()])
+                .add_row(vec!["STABLE VERSIONS", stable_versions_string.as_str()])
+                .add_row(vec!["TEST VERSIONS", test_versions_string.as_str()])
+                .add_row(vec!["DEV VERSIONS", dev_versions_string.as_str()]);
+
+            Ok(table.to_string())
+        }
+        OutputType::Json => todo!(),
+        OutputType::Yaml => todo!(),
+    }
 }
 
 fn install_cmd(args: &OperatorInstallArgs) -> Result<String, OperatorError> {
@@ -257,6 +299,32 @@ fn build_versions_list(
             let entry = entry.or_insert(OperatorVersionList(HashMap::new()));
             entry.0.insert(helm_repo_name.to_string(), versions);
         }
+    }
+
+    Ok(versions_list)
+}
+
+/// Builds a list of versions for one operator (by name) which is grouped by
+/// stable, test and dev lines based on the list of Helm repo index files.
+#[instrument]
+fn build_versions_list_for_operator<T>(
+    operator_name: T,
+    helm_index_files: &HashMap<&str, HelmRepo>,
+) -> Result<OperatorVersionList, OperatorError>
+where
+    T: AsRef<str> + std::fmt::Debug,
+{
+    debug!(
+        "Build versions list for operator {}",
+        operator_name.as_ref()
+    );
+
+    let mut versions_list = OperatorVersionList(HashMap::new());
+    let operator_name = operator_name.as_ref();
+
+    for (helm_repo_name, helm_repo_index_file) in helm_index_files {
+        let versions = list_operator_versions_from_repo(operator_name, &helm_repo_index_file)?;
+        versions_list.0.insert(helm_repo_name.to_string(), versions);
     }
 
     Ok(versions_list)
