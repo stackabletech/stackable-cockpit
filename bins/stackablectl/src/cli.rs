@@ -2,7 +2,9 @@ use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
 use stackable::{
-    constants::DEFAULT_STACKABLE_NAMESPACE,
+    constants::{
+        DEFAULT_STACKABLE_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    },
     helm::{self, HelmError},
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
@@ -16,9 +18,9 @@ use crate::{
         release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
     },
     constants::{
-        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, HELM_REPO_NAME_DEV,
-        HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST, HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE,
-        HELM_REPO_URL_TEST, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, HELM_REPO_URL_DEV,
+        HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE,
+        REMOTE_STACK_FILE,
     },
 };
 

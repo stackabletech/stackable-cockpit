@@ -5,8 +5,9 @@ use std::{collections::HashMap, ffi::CStr, os::raw::c_char};
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, error, info, instrument};
+use url::Url;
 
-use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_ERROR_PREFIX};
+use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_ERROR_PREFIX, HELM_REPO_INDEX_FILE};
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -47,11 +48,20 @@ pub struct HelmRepoEntry {
 
 #[derive(Debug, Snafu)]
 pub enum HelmError {
-    #[snafu(display("str utf-8 error"))]
+    #[snafu(display("str utf-8 error: {source}"))]
     StrUtf8Error { source: Utf8Error },
 
-    #[snafu(display("json error"))]
+    #[snafu(display("url parse error: {source}"))]
+    UrlParseError { source: url::ParseError },
+
+    #[snafu(display("json error: {source}"))]
     JsonError { source: serde_json::Error },
+
+    #[snafu(display("yaml error: {source}"))]
+    YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("request error: {source}"))]
+    RequestError { source: reqwest::Error },
 
     #[snafu(display("failed to add Helm repo: {error}"))]
     AddRepoError { error: String },
@@ -59,7 +69,7 @@ pub enum HelmError {
     #[snafu(display("failed to list Helm releases: {error}"))]
     ListReleasesError { error: String },
 
-    #[snafu(display("failed to install Helm release"))]
+    #[snafu(display("failed to install Helm release: {source}"))]
     InstallReleaseError { source: HelmInstallReleaseError },
 
     #[snafu(display("failed to uninstall Helm release: {error}"))]
@@ -361,6 +371,29 @@ pub fn add_repo(repo_name: &str, repo_url: &str) -> Result<(), HelmError> {
     }
 
     Ok(())
+}
+
+/// Retrieves the Helm index file from the repository URL.
+#[instrument]
+pub async fn get_helm_index<T>(repo_url: T) -> Result<HelmRepo, HelmError>
+where
+    T: AsRef<str> + std::fmt::Debug,
+{
+    debug!("Get Helm repo index file");
+
+    let url = Url::parse(repo_url.as_ref()).context(UrlParseSnafu {})?;
+    let url = url.join(HELM_REPO_INDEX_FILE).context(UrlParseSnafu {})?;
+
+    debug!("Using {} to retrieve Helm index file", url);
+
+    let index_file_content = reqwest::get(url)
+        .await
+        .context(RequestSnafu {})?
+        .text()
+        .await
+        .context(RequestSnafu {})?;
+
+    serde_yaml::from_str(&index_file_content).context(YamlSnafu {})
 }
 
 /// Helper function to convert raw C string pointers to &str.

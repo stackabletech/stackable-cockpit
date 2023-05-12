@@ -3,7 +3,10 @@ use std::{fmt::Display, str::FromStr};
 use snafu::Snafu;
 use tracing::{info, instrument};
 
-use crate::helm;
+use crate::{
+    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    helm,
+};
 
 pub const VALID_OPERATORS: &[&str] = &[
     "airflow",
@@ -150,15 +153,24 @@ impl OperatorSpec {
     }
 
     /// Returns the repo used by Helm based on the specified version
-    pub fn helm_repo(&self) -> String {
+    pub fn helm_repo_name(&self) -> String {
         match &self.version {
-            Some(version) if version.ends_with("-nightly") => "stackable-dev",
-            Some(version) if version.ends_with("-dev") => "stackable-dev",
-            Some(version) if version.contains("-pr") => "stackable-test",
-            Some(_) => "stackable-stable",
-            None => "stackable-dev",
+            Some(version) if version.ends_with("-nightly") => HELM_REPO_NAME_DEV,
+            Some(version) if version.ends_with("-dev") => HELM_REPO_NAME_DEV,
+            Some(version) if version.contains("-pr") => HELM_REPO_NAME_TEST,
+            Some(_) => HELM_REPO_NAME_STABLE,
+            None => HELM_REPO_NAME_DEV,
         }
         .into()
+    }
+
+    pub fn helm_repo_url<T>(&self, helm_repo_name: T) -> Result<String, helm::HelmError>
+    where
+        T: AsRef<str>,
+    {
+        let helm_name = self.helm_name();
+
+        todo!()
     }
 
     /// Installs the operator using Helm
@@ -167,7 +179,7 @@ impl OperatorSpec {
         info!("Installing operator {}", self);
 
         let helm_name = self.helm_name();
-        let helm_repo = self.helm_repo();
+        let helm_repo = self.helm_repo_name();
         let version = match &self.version {
             Some(version) => Some(version.as_str()),
             None => None,

@@ -1,8 +1,23 @@
-use clap::{Args, Subcommand};
-use snafu::Snafu;
-use stackable::{constants::DEFAULT_LOCAL_CLUSTER_NAME, platform::operator::OperatorSpec};
+use std::collections::HashMap;
 
-use crate::cli::{ClusterType, OutputType};
+use clap::{Args, Subcommand};
+use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
+use indexmap::IndexMap;
+use semver::Version;
+use snafu::{ResultExt, Snafu};
+use stackable::{
+    constants::{
+        DEFAULT_LOCAL_CLUSTER_NAME, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    },
+    helm::{self, HelmError, HelmRepo},
+    platform::operator::{OperatorSpec, VALID_OPERATORS},
+};
+use tracing::{debug, instrument};
+
+use crate::{
+    cli::{ClusterType, OutputType},
+    util::{self, InvalidRepoNameError},
+};
 
 #[derive(Debug, Args)]
 pub struct OperatorArgs {
@@ -100,12 +115,30 @@ pub struct OperatorInstalledArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum OperatorError {}
+pub enum OperatorError {
+    #[snafu(display("invalid repo name: {source}"))]
+    InvalidRepoNameError { source: InvalidRepoNameError },
+
+    #[snafu(display("unknown repo name: {name}"))]
+    UnknownRepoNameError { name: String },
+
+    #[snafu(display("Helm error: {source}"))]
+    HelmError { source: HelmError },
+
+    #[snafu(display("semver parse error: {source}"))]
+    SemVerParseError { source: semver::Error },
+}
+
+pub struct OperatorVersionList {
+    stable: Vec<String>,
+    test: Vec<String>,
+    dev: Vec<String>,
+}
 
 impl OperatorArgs {
-    pub fn run(&self) -> Result<String, OperatorError> {
+    pub async fn run(&self) -> Result<String, OperatorError> {
         match &self.subcommand {
-            OperatorCommands::List(args) => list_cmd(args),
+            OperatorCommands::List(args) => list_cmd(args).await,
             OperatorCommands::Describe(args) => describe_cmd(args),
             OperatorCommands::Install(args) => install_cmd(args),
             OperatorCommands::Uninstall(args) => uninstall_cmd(args),
@@ -114,14 +147,75 @@ impl OperatorArgs {
     }
 }
 
-fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
+#[instrument]
+async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
+    debug!("Listing operators");
+
     if args.list_installed {
         return installed_cmd(&OperatorInstalledArgs {
             output_type: args.output_type.clone(),
         });
     }
 
-    todo!()
+    // Build map which maps Helm repo name to Helm repo URL
+    let mut helm_index_files = HashMap::new();
+
+    for helm_repo_name in [
+        HELM_REPO_NAME_STABLE,
+        HELM_REPO_NAME_TEST,
+        HELM_REPO_NAME_DEV,
+    ] {
+        let helm_repo_url =
+            util::helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
+
+        helm_index_files.insert(
+            helm_repo_name,
+            helm::get_helm_index(helm_repo_url)
+                .await
+                .context(HelmSnafu {})?,
+        );
+    }
+
+    let mut versions_list = IndexMap::new();
+
+    for operator in VALID_OPERATORS {
+        let index_file = helm_index_files.get(HELM_REPO_NAME_STABLE).ok_or(
+            UnknownRepoNameSnafu {
+                name: HELM_REPO_NAME_STABLE.to_string(),
+            }
+            .build(),
+        )?;
+
+        let versions = list_operator_versions_from_repo(operator, index_file)?;
+
+        versions_list.insert(
+            operator.to_string(),
+            OperatorVersionList {
+                stable: versions,
+                test: vec![],
+                dev: vec![],
+            },
+        );
+    }
+
+    match args.output_type {
+        OutputType::Plain => {
+            let mut table = Table::new();
+
+            table
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .set_header(vec!["OPERATOR", "STABLE VERSIONS"])
+                .load_preset(UTF8_FULL);
+
+            for (operator_name, versions) in versions_list {
+                table.add_row(vec![operator_name, versions.stable.join(", ")]);
+            }
+
+            Ok(table.to_string())
+        }
+        OutputType::Json => todo!(),
+        OutputType::Yaml => todo!(),
+    }
 }
 
 fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorError> {
@@ -136,6 +230,38 @@ fn uninstall_cmd(args: &OperatorUninstallArgs) -> Result<String, OperatorError> 
     todo!()
 }
 
+#[instrument]
 fn installed_cmd(args: &OperatorInstalledArgs) -> Result<String, OperatorError> {
+    debug!("Listing installed operators");
     todo!()
+}
+
+#[instrument]
+fn list_operator_versions_from_repo<T>(
+    operator_name: T,
+    helm_repo: &HelmRepo,
+) -> Result<Vec<String>, OperatorError>
+where
+    T: AsRef<str> + std::fmt::Debug,
+{
+    debug!("Listing operator versions from repo");
+
+    let operator_name = format!("{}-operator", operator_name.as_ref());
+    match helm_repo.entries.get(&operator_name) {
+        Some(entries) => {
+            let mut versions = entries
+                .iter()
+                .map(|e| Version::parse(&e.version))
+                .map_while(|r| match r {
+                    Ok(v) => Some(v),
+                    Err(_) => None,
+                })
+                .map(|v| v.to_string())
+                .collect::<Vec<String>>();
+
+            versions.sort();
+            Ok(versions)
+        }
+        None => Ok(vec![]),
+    }
 }

@@ -8,6 +8,7 @@ use crate::cli::Commands;
 pub mod cli;
 pub mod cmds;
 pub mod constants;
+pub mod util;
 
 #[tokio::main]
 async fn main() {
@@ -50,7 +51,7 @@ async fn main() {
     };
 
     match &cli.subcommand {
-        Commands::Operator(args) => match args.run() {
+        Commands::Operator(args) => match args.run().await {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },
