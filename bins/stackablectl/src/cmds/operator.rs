@@ -10,13 +10,14 @@ use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable::{
+    cluster::KindCluster,
     constants::{
         DEFAULT_LOCAL_CLUSTER_NAME, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError, HelmRepo},
     platform::operator::{OperatorSpec, VALID_OPERATORS},
 };
-use tracing::{debug, instrument};
+use tracing::{debug, info, instrument};
 
 use crate::{
     cli::{ClusterType, OutputType},
@@ -91,18 +92,32 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
     operators: Vec<OperatorSpec>,
 
     /// Type of local cluster to use for testing
-    #[arg(short, long, value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
+    #[arg(short = 'c', long = "cluster", value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
     #[arg(
         long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
 control-plane and 3 workers) will be created for testing purposes. Currently
 'kind' and 'minikube' are supported. Both require a working Docker
 installation on the system."
     )]
-    cluster: ClusterType,
+    cluster_type: ClusterType,
 
     /// Name of the local cluster
     #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
     cluster_name: String,
+
+    /// Number of total nodes in the local cluster
+    #[arg(long, default_value_t = 3)]
+    #[arg(
+        long_help = "The number of nodes in the cluster. The number of control-plane nodes depends
+on the control plane strategy [default=only-one]. So when creating a cluster
+with four nodes in total using the 'only-one' control plane strategy, one
+control-plane node and three worker nodes are created. On the other hand,
+choosing 'balanced' would result in the creation of two control-plane nodes
+and two worker nodes."
+    )]
+    cluster_nodes: usize,
+
+    cluster_cp_strategy: ControlPlaneStrategy,
 }
 
 #[derive(Debug, Args)]
@@ -242,7 +257,18 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorErr
     }
 }
 
+#[instrument]
 fn install_cmd(args: &OperatorInstallArgs) -> Result<String, OperatorError> {
+    info!("Installing operator(s)");
+
+    match args.cluster_type {
+        ClusterType::Kind => {
+            let kind_cluster = KindCluster::new(args.cluster_nodes, None, None);
+            kind_cluster.create();
+        }
+        ClusterType::Minikube => todo!(),
+    }
+
     todo!()
 }
 

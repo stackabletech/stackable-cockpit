@@ -27,7 +27,7 @@ impl MinikubeCluster {
     pub fn create(&self) -> Result<(), ClusterError> {
         // Check if required binaries are present
         if !binaries_present(["docker", "minikube"]) {
-            return Err(ClusterError::MissingDeps);
+            return Err(ClusterError::MissingDepsError);
         }
 
         // Create local cluster via minikube
@@ -39,7 +39,7 @@ impl MinikubeCluster {
             .status();
 
         if let Err(err) = minikube_cmd {
-            return Err(ClusterError::Cmd {
+            return Err(ClusterError::CmdError {
                 error: err.to_string(),
             });
         }
