@@ -1,7 +1,6 @@
 ---
 name: reviewdog
-on:
-  pull_request
+on: pull_request
 
 permissions:
   contents: read
@@ -15,6 +14,14 @@ jobs:
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       - uses: reviewdog/action-actionlint@b6feb003955cad286985c42e7047f4567a798f3f # v1.36.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: reviewdog/action-eslint@94d539484aab48e9b2ffff6466d8866ee4e4b217 # tag=v1.18.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -45,7 +52,7 @@ jobs:
       - uses: reviewdog/action-markdownlint@97e3df02fe1573d505a7b268046a44fa5409cbc3 # tag=v0.9.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          markdownlint_flags: '-i README.md .'
+          markdownlint_flags: "-i README.md ."
 
   shellcheck:
     runs-on: ubuntu-latest
