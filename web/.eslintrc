@@ -13,6 +13,8 @@
   },
   "plugins": ["@typescript-eslint", "solid", "unicorn"],
   "rules": {
+    // Causes false positives for Solid resources
+    "@typescript-eslint/no-misused-promises": "off",
     "unicorn/prevent-abbreviations": [
       "error",
       {
