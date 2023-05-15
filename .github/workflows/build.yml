@@ -268,8 +268,8 @@ jobs:
       - run_rustfmt
       - run_rustdoc
       - run_tests
-      - check_charts
-      - check_readme
+      # - check_charts
+      # - check_readme
     runs-on: ubuntu-latest
     steps:
       - name: log
