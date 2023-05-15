@@ -9,13 +9,12 @@ use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
-// use spinoff::{spinners, Color, Spinner};
 use stackable::{
     cluster::{ClusterError, KindCluster},
     constants::{
         DEFAULT_LOCAL_CLUSTER_NAME, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
-    helm::{self, HelmError, HelmRepo},
+    helm::{self, HelmError, HelmRelease, HelmRepo},
     platform::operator::{OperatorSpec, VALID_OPERATORS},
     utils,
 };
@@ -23,7 +22,7 @@ use tracing::{debug, info, instrument};
 
 use crate::{
     cli::{Cli, ClusterType, OutputType},
-    util::{self, InvalidRepoNameError},
+    util::{self, pluralize, InvalidRepoNameError},
 };
 
 #[derive(Debug, Args)]
@@ -173,24 +172,27 @@ pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 impl OperatorArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, OperatorError> {
         match &self.subcommand {
-            OperatorCommands::List(args) => list_cmd(args).await,
+            OperatorCommands::List(args) => list_cmd(args, common_args).await,
             OperatorCommands::Describe(args) => describe_cmd(args).await,
             OperatorCommands::Install(args) => install_cmd(args, common_args),
-            OperatorCommands::Uninstall(args) => uninstall_cmd(args),
-            OperatorCommands::Installed(args) => installed_cmd(args),
+            OperatorCommands::Uninstall(args) => uninstall_cmd(args, common_args),
+            OperatorCommands::Installed(args) => installed_cmd(args, common_args),
         }
     }
 }
 
 #[instrument]
-async fn list_cmd(args: &OperatorListArgs) -> Result<String, OperatorError> {
+async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, OperatorError> {
     debug!("Listing operators");
 
     // If the user only wnats to list installed operator, use this shortcut
     if args.list_installed {
-        return installed_cmd(&OperatorInstalledArgs {
-            output_type: args.output_type.clone(),
-        });
+        return installed_cmd(
+            &OperatorInstalledArgs {
+                output_type: args.output_type.clone(),
+            },
+            common_args,
+        );
     }
 
     // Build map which maps Helm repo name to Helm repo URL
@@ -271,9 +273,9 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorErr
 fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, OperatorError> {
     info!("Installing operator(s)");
     println!(
-        "Installing {} operator{}",
+        "Installing {} {}",
         args.operators.len(),
-        if args.operators.len() == 1 { "" } else { "s" }
+        pluralize("operator", args.operators.len())
     );
 
     match args.cluster_type {
@@ -301,20 +303,79 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
     }
 
     Ok(format!(
-        "Installed {} operator{}",
+        "Installed {} {}",
         args.operators.len(),
-        if args.operators.len() == 1 { "" } else { "s" }
+        pluralize("operator", args.operators.len())
     ))
 }
 
-fn uninstall_cmd(args: &OperatorUninstallArgs) -> Result<String, OperatorError> {
-    todo!()
+fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<String, OperatorError> {
+    info!("Uninstalling operator(s)");
+
+    for operator in &args.operators {
+        operator
+            .uninstall(&common_args.namespace)
+            .context(HelmSnafu {})?;
+    }
+
+    Ok(format!(
+        "Uninstalled {} {}",
+        args.operators.len(),
+        pluralize("operator", args.operators.len())
+    ))
 }
 
 #[instrument]
-fn installed_cmd(args: &OperatorInstalledArgs) -> Result<String, OperatorError> {
+fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<String, OperatorError> {
     debug!("Listing installed operators");
-    todo!()
+
+    type ReleaseList = IndexMap<String, HelmRelease>;
+
+    let installed: ReleaseList = helm::list_releases(&common_args.namespace)
+        .context(HelmSnafu {})?
+        .into_iter()
+        .filter(|release| {
+            VALID_OPERATORS
+                .iter()
+                .any(|valid| release.name == utils::operator_name(valid))
+        })
+        .map(|release| (release.name.clone(), release))
+        .collect();
+
+    match args.output_type {
+        OutputType::Plain => {
+            if installed.is_empty() {
+                return Ok("No installed operators".into());
+            }
+
+            let mut table = Table::new();
+
+            table
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .load_preset(UTF8_FULL)
+                .set_header(vec![
+                    "OPERATOR",
+                    "VERSION",
+                    "NAMESPACE",
+                    "STATUS",
+                    "LAST UPDATED",
+                ]);
+
+            for (release_name, release) in installed {
+                table.add_row(vec![
+                    release_name,
+                    release.version,
+                    release.namespace,
+                    release.status,
+                    release.last_updated,
+                ]);
+            }
+
+            Ok(table.to_string())
+        }
+        OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonSnafu {})?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlSnafu {})?),
+    }
 }
 
 /// Builds a map which maps Helm repo name to Helm repo URL.

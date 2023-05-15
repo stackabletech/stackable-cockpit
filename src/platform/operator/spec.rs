@@ -165,7 +165,7 @@ impl OperatorSpec {
         .into()
     }
 
-    /// Installs the operator using Helm
+    /// Installs the operator using Helm.
     #[instrument(skip_all)]
     pub fn install<T>(&self, namespace: T) -> Result<(), helm::HelmError>
     where
@@ -191,6 +191,21 @@ impl OperatorSpec {
             namespace.as_ref(),
             true,
         ) {
+            Ok(status) => {
+                println!("{status}");
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    /// Uninstalls the operator using Helm.
+    #[instrument]
+    pub fn uninstall<T>(&self, namespace: T) -> Result<(), helm::HelmError>
+    where
+        T: AsRef<str> + std::fmt::Debug,
+    {
+        match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {
                 println!("{status}");
                 Ok(())

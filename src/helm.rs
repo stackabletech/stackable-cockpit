@@ -2,14 +2,14 @@ use std::fmt::Display;
 use std::str::{self, Utf8Error};
 use std::{collections::HashMap, ffi::CStr, os::raw::c_char};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, error, info, instrument};
 use url::Url;
 
 use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_ERROR_PREFIX, HELM_REPO_INDEX_FILE};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HelmRelease {
     pub name: String,
@@ -128,9 +128,58 @@ impl Display for HelmInstallReleaseStatus {
                 release_name,
                 current_version,
                 requested_version,
-            } => write!(f, "The release {release_name} ({current_version}) is already installed (requested {requested_version}), skipping."),
-            HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified{release_name, current_version} => write!(f, "The release {release_name} ({current_version}) is already installed and no specific version was requested, skipping."),
-            HelmInstallReleaseStatus::Installed(release_name) => write!(f, "The release {release_name} was successfully installed."),
+            } => {
+                write!(
+                    f,
+                    "The release {} ({}) is already installed (requested {}), skipping.",
+                    release_name, current_version, requested_version
+                )
+            }
+            HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
+                release_name,
+                current_version,
+            } => {
+                write!(
+                    f,
+                    "The release {} ({}) is already installed and no specific version was requested, skipping.",
+                    release_name,
+                    current_version
+                )
+            }
+            HelmInstallReleaseStatus::Installed(release_name) => {
+                write!(
+                    f,
+                    "The release {} was successfully installed.",
+                    release_name
+                )
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub enum HelmUninstallReleaseStatus {
+    NotInstalled(String),
+    Uninstalled(String),
+}
+
+impl Display for HelmUninstallReleaseStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            HelmUninstallReleaseStatus::NotInstalled(release_name) => {
+                write!(
+                    f,
+                    "The release {} is not installed, skipping.",
+                    release_name
+                )
+            }
+            HelmUninstallReleaseStatus::Uninstalled(release_name) => {
+                write!(
+                    f,
+                    "The releas {} was successfully uninstalled.",
+                    release_name
+                )
+            }
         }
     }
 }
@@ -286,7 +335,7 @@ pub fn uninstall_release(
     release_name: &str,
     namespace: &str,
     suppress_output: bool,
-) -> Result<(), HelmError> {
+) -> Result<HelmUninstallReleaseStatus, HelmError> {
     debug!("Uninstall Helm release");
 
     if check_release_exists(release_name, namespace)? {
@@ -303,13 +352,20 @@ pub fn uninstall_release(
 
             return Err(HelmError::UninstallReleaseError { error: err });
         }
+
+        return Ok(HelmUninstallReleaseStatus::Uninstalled(
+            release_name.to_string(),
+        ));
     }
 
     info!(
         "The Helm release {} is not installed, skipping.",
         release_name
     );
-    Ok(())
+
+    Ok(HelmUninstallReleaseStatus::NotInstalled(
+        release_name.to_string(),
+    ))
 }
 
 /// Returns if a Helm release exists

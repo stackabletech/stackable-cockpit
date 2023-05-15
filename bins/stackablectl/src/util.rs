@@ -27,3 +27,17 @@ where
         }),
     }
 }
+
+pub fn pluralize<T>(input: T, size: usize) -> String
+where
+    T: AsRef<str>,
+{
+    let input = input.as_ref();
+    let suffix = if !input.ends_with("s") && size != 1 {
+        "s"
+    } else {
+        ""
+    };
+
+    format!("{}{}", input, suffix)
+}
