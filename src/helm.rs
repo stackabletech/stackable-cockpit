@@ -59,7 +59,7 @@ pub enum HelmInstallReleaseError {
 
     /// This error indicates that the Helm release is already installed at a
     /// different version than requested. Installation is skipped. Existing
-    /// releases should be uninstalled with 'stackablectl op un <NAME>'.
+    /// releases should be uninstalled with 'stackablectl op un \<NAME\>'.
     #[snafu(display("release {name} ({current_version}) already installed, skipping requested version {requested_version}"))]
     ReleaseAlreadyInstalled {
         name: String,
