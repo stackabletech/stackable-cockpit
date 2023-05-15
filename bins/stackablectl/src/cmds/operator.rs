@@ -17,6 +17,7 @@ use stackable::{
     },
     helm::{self, HelmError, HelmRepo},
     platform::operator::{OperatorSpec, VALID_OPERATORS},
+    utils,
 };
 use tracing::{debug, info, instrument};
 
@@ -401,7 +402,8 @@ where
 {
     debug!("Listing operator versions from repo");
 
-    let operator_name = format!("{}-operator", operator_name.as_ref());
+    let operator_name = utils::operator_name(operator_name);
+
     match helm_repo.entries.get(&operator_name) {
         Some(entries) => {
             let mut versions = entries

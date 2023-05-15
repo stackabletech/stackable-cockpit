@@ -6,6 +6,7 @@ use tracing::{info, instrument};
 use crate::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
+    utils::operator_name,
 };
 
 pub const VALID_OPERATORS: &[&str] = &[
@@ -149,7 +150,7 @@ impl OperatorSpec {
 
     /// Returns the name used by Helm
     pub fn helm_name(&self) -> String {
-        format!("{}-operator", self.name)
+        operator_name(&self.name)
     }
 
     /// Returns the repo used by Helm based on the specified version
