@@ -1,5 +1,5 @@
-import { Show, For, Switch, Match, createResource } from "solid-js";
-import { getListeners } from "../api";
+import { Show, For, Switch, Match, createResource } from 'solid-js';
+import { getListeners } from '../api';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Listeners = () => {

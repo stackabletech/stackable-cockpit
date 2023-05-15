@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import "@unocss/reset/sanitize/sanitize.css";
-import "virtual:uno.css";
-import { render } from "solid-js/web";
-import { A, Route, Router, Routes } from "@solidjs/router";
-import type { ParentProps } from "solid-js";
-import { Listeners } from "./components/listeners";
+import '@unocss/reset/sanitize/sanitize.css';
+import 'virtual:uno.css';
+import { render } from 'solid-js/web';
+import { A, Route, Router, Routes } from '@solidjs/router';
+import type { ParentProps } from 'solid-js';
+import { Listeners } from './components/listeners';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -53,11 +53,11 @@ const App = () => {
   );
 };
 
-const root = document.querySelector("#app");
+const root = document.querySelector('#app');
 
 if (import.meta.env.DEV && root === undefined) {
   throw new Error(
-    "Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?",
+    'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?',
   );
 }
 
