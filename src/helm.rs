@@ -247,17 +247,17 @@ pub fn install_release_from_repo(
                 if chart_version == current_version {
                     return Ok(
                         HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
-                            release_name: release_name.to_string(),
-                            current_version: current_version.to_string(),
                             requested_version: chart_version.to_string(),
+                            release_name: release_name.to_string(),
+                            current_version,
                         },
                     );
                 } else {
                     return Err(HelmError::InstallReleaseError {
                         source: HelmInstallReleaseError::ReleaseAlreadyInstalled {
-                            name: release_name.into(),
-                            current_version: current_version.into(),
                             requested_version: chart_version.into(),
+                            name: release_name.into(),
+                            current_version,
                         },
                     });
                 }
@@ -396,7 +396,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
         return Err(HelmError::ListReleasesError { error: err });
     }
 
-    Ok(serde_json::from_str(result).context(JsonSnafu {})?)
+    serde_json::from_str(result).context(JsonSnafu {})
 }
 
 /// Returns a single Helm release by `release_name`.
@@ -455,13 +455,13 @@ where
 /// Helper function to convert raw C string pointers to &str.
 fn ptr_to_str<'a>(ptr: *const i8) -> Result<&'a str, Utf8Error> {
     let s = unsafe { CStr::from_ptr(ptr) };
-    Ok(s.to_str()?)
+    s.to_str()
 }
 
 /// Checks if the result string is an error, and if so, returns the error message as a string.
 fn to_helm_error(result: &str) -> Option<String> {
     if !result.is_empty() && result.starts_with(HELM_ERROR_PREFIX) {
-        return Some(result.replace(HELM_ERROR_PREFIX, "").to_string());
+        return Some(result.replace(HELM_ERROR_PREFIX, ""));
     }
 
     None

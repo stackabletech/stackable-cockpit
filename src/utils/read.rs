@@ -217,7 +217,7 @@ where
 
     // Render template using a one-off function
     let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
-    Ok(serde_yaml::from_str(&result).context(YamlSnafu {})?)
+    serde_yaml::from_str(&result).context(YamlSnafu {})
 }
 
 /// Reads YAML data from a remote file at `url` and deserializes it into type
@@ -249,5 +249,5 @@ where
 
     // Render template using a one-off function
     let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
-    Ok(serde_yaml::from_str(&result).context(YamlSnafu {})?)
+    serde_yaml::from_str(&result).context(YamlSnafu {})
 }

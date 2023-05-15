@@ -203,7 +203,7 @@ impl StackSpecV2 {
 
                     // Read YAML manifest and apply templating
                     let manifests =
-                        read_yaml_data_with_templating::<String, _>(path_or_url, &parameters)
+                        read_yaml_data_with_templating::<String, _>(path_or_url, parameters)
                             .await
                             .context(TemplatedReadSnafu {})?;
 

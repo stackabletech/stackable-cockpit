@@ -175,10 +175,7 @@ impl OperatorSpec {
 
         let helm_name = self.helm_name();
         let helm_repo = self.helm_repo_name();
-        let version = match &self.version {
-            Some(version) => Some(version.as_str()),
-            None => None,
-        };
+        let version = self.version.as_deref();
 
         // Install using Helm
         match helm::install_release_from_repo(
