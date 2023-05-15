@@ -38,6 +38,7 @@ repos:
     rev: v2.7.1
     hooks:
       - id: prettier
+        files: ^web/
         additional_dependencies:
           # This should match prettier devDependency in web/package.json
           - prettier@2.8.8
