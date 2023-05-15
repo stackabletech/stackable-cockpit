@@ -1,5 +1,28 @@
 {
   "extends": [
-    "@techassi/solid"
-  ]
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:solid/typescript",
+    "plugin:unicorn/recommended",
+    "prettier"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": true
+  },
+  "plugins": ["@typescript-eslint", "solid", "unicorn"],
+  "rules": {
+    // Causes false positives for Solid resources
+    "@typescript-eslint/no-misused-promises": "off",
+    "unicorn/prevent-abbreviations": [
+      "error",
+      {
+        "replacements": {
+          "props": false,
+          "env": false
+        }
+      }
+    ]
+  }
 }

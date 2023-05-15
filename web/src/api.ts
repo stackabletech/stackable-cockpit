@@ -15,7 +15,7 @@ interface ListenerEndpoint {
 }
 
 function delay(amount: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, amount));
+  return new Promise((resolve) => setTimeout(resolve, amount));
 }
 
 export async function getListeners(): Promise<Listener[]> {
