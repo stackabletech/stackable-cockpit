@@ -9,4 +9,4 @@ contact_links:
     url: https://github.com/orgs/stackabletech/discussions/new?category=general
   - name: Other issue
     about: Open an issue that doesn't fit any other category
-    url: https://github.com/stackabletech/{[ operator.name }]/issues/new
+    url: https://github.com/stackabletech/stackable/issues/new
