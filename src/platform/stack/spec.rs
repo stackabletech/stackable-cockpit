@@ -93,7 +93,10 @@ pub struct StackSpecV2 {
 
 impl StackSpecV2 {
     #[instrument(skip_all)]
-    pub fn install(&self, release_list: ReleaseList) -> Result<(), StackError> {
+    pub fn install<T>(&self, release_list: ReleaseList, namespace: T) -> Result<(), StackError>
+    where
+        T: AsRef<str>,
+    {
         info!("Installing stack");
 
         // Get the release by name
@@ -103,7 +106,7 @@ impl StackSpecV2 {
 
         // Install the release
         release
-            .install(&self.operators, &[])
+            .install(&self.operators, &[], namespace)
             .context(ReleaseInstallSnafu {})?;
 
         todo!()

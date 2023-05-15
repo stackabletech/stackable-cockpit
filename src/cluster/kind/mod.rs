@@ -7,11 +7,7 @@ use snafu::{ensure, ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use crate::{
-    cluster::{
-        check_if_docker_is_running,
-        kind::config::{ControlPlaneStrategy, KindClusterConfig},
-        DockerError,
-    },
+    cluster::{check_if_docker_is_running, kind::config::KindClusterConfig, DockerError},
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
     utils::check::binaries_present,
 };
@@ -41,6 +37,7 @@ pub enum ClusterError {
 
 #[derive(Debug)]
 pub struct KindCluster {
+    cp_node_count: usize,
     namespace: String,
     node_count: usize,
     name: String,
@@ -49,10 +46,16 @@ pub struct KindCluster {
 impl KindCluster {
     /// Create a new kind cluster. This will NOT yet create the cluster on the system, but instead will return a data
     /// structure representing the cluster. To actually create the cluster, the `create` method must be called.
-    pub fn new(node_count: usize, name: Option<String>, namespace: Option<String>) -> Self {
+    pub fn new(
+        node_count: usize,
+        cp_node_count: usize,
+        name: Option<String>,
+        namespace: Option<String>,
+    ) -> Self {
         Self {
             namespace: namespace.unwrap_or(DEFAULT_STACKABLE_NAMESPACE.into()),
             name: name.unwrap_or(DEFAULT_LOCAL_CLUSTER_NAME.into()),
+            cp_node_count,
             node_count,
         }
     }
@@ -71,18 +74,19 @@ impl KindCluster {
         check_if_docker_is_running().context(DockerSnafu {})?;
 
         debug!("Creating kind cluster config");
-        let config = KindClusterConfig::new(self.node_count, ControlPlaneStrategy::OnlyOne);
+        let config = KindClusterConfig::new(self.node_count, self.cp_node_count);
         let config_string = serde_yaml::to_string(&config).context(YamlSnafu {})?;
 
-        println!("{config_string}");
+        // println!("{config_string}");
 
         debug!("Creating kind cluster");
-        let kind_cmd = Command::new("kind")
+        let mut kind_cmd = Command::new("kind")
             .args(["create", "cluster"])
             .args(["--name", self.name.as_str()])
             .args(["--config", "-"])
             .stdin(Stdio::piped())
-            // .stdout(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
             .spawn()
             .context(IoSnafu {})?;
 
@@ -93,7 +97,7 @@ impl KindCluster {
             .write_all(config_string.as_bytes())
             .context(IoSnafu {})?;
 
-        if let Err(err) = kind_cmd.wait_with_output() {
+        if let Err(err) = kind_cmd.wait() {
             return Err(ClusterError::CmdError {
                 error: err.to_string(),
             });

@@ -740,11 +740,11 @@ _stackablectl() {
                     return 0
                     ;;
                 --cluster)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 -c)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 --cluster-name)
@@ -1363,21 +1363,29 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__install)
-            opts="-c -h -V --cluster --cluster-name --help --version <OPERATORS>..."
+            opts="-c -h -V --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --help --version <OPERATORS>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
                 --cluster)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 -c)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 --cluster-name)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-cp-nodes)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1590,11 +1598,11 @@ _stackablectl() {
                     return 0
                     ;;
                 --cluster)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 -c)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 --cluster-name)
@@ -1844,11 +1852,11 @@ _stackablectl() {
                     return 0
                     ;;
                 --cluster)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 -c)
-                    COMPREPLY=($(compgen -W "none kind minikube" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "kind minikube" -- "${cur}"))
                     return 0
                     ;;
                 --cluster-name)

@@ -40,11 +40,15 @@ pub struct ReleaseSpec {
 
 impl ReleaseSpec {
     #[instrument(skip_all)]
-    pub fn install(
+    pub fn install<T>(
         &self,
         include_products: &[String],
         exclude_products: &[String],
-    ) -> Result<(), ReleaseInstallError> {
+        namespace: T,
+    ) -> Result<(), ReleaseInstallError>
+    where
+        T: AsRef<str>,
+    {
         info!("Installing release");
 
         for (product_name, product) in &self.products {
@@ -59,7 +63,7 @@ impl ReleaseSpec {
                     .context(OperatorSpecParseSnafu {})?;
 
                 // Install operator
-                operator.install().context(HelmSnafu {})?
+                operator.install(&namespace).context(HelmSnafu {})?
             }
         }
 

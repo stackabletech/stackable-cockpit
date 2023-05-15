@@ -257,7 +257,9 @@ async fn install_cmd(
         .context(ListSnafu {})?;
 
     // Install the stack
-    stack_spec.install(release_list).context(StackSnafu {})?;
+    stack_spec
+        .install(release_list, &common_args.namespace)
+        .context(StackSnafu {})?;
 
     // Install stack manifests
     stack_spec

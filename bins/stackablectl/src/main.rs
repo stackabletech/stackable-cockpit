@@ -51,7 +51,7 @@ async fn main() {
     };
 
     match &cli.subcommand {
-        Commands::Operator(args) => match args.run().await {
+        Commands::Operator(args) => match args.run(&cli).await {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },

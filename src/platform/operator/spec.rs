@@ -164,18 +164,12 @@ impl OperatorSpec {
         .into()
     }
 
-    pub fn helm_repo_url<T>(&self, helm_repo_name: T) -> Result<String, helm::HelmError>
+    /// Installs the operator using Helm
+    #[instrument(skip_all)]
+    pub fn install<T>(&self, namespace: T) -> Result<(), helm::HelmError>
     where
         T: AsRef<str>,
     {
-        let helm_name = self.helm_name();
-
-        todo!()
-    }
-
-    /// Installs the operator using Helm
-    #[instrument(skip_all)]
-    pub fn install(&self) -> Result<(), helm::HelmError> {
         info!("Installing operator {}", self);
 
         let helm_name = self.helm_name();
@@ -187,7 +181,14 @@ impl OperatorSpec {
 
         // Install using Helm
         match helm::install_release_from_repo(
-            &self.name, &helm_name, &helm_repo, &helm_name, version, None, "", true,
+            &self.name,
+            &helm_name,
+            &helm_repo,
+            &helm_name,
+            version,
+            None,
+            namespace.as_ref(),
+            true,
         ) {
             Ok(status) => {
                 println!("{status}");

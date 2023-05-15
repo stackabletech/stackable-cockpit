@@ -229,7 +229,7 @@ pub fn install_release_from_repo(
 
     debug!(
         "Installing Helm release {} ({}) from chart {}",
-        repo_name, chart_version, full_chart_name
+        release_name, chart_version, full_chart_name
     );
 
     install_release(

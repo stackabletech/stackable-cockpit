@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::cluster::NodeRole;
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct KindClusterConfig {
@@ -24,29 +26,18 @@ pub struct KindClusterNodeConfig {
     role: NodeRole,
 }
 
-#[derive(Clone, Debug, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum NodeRole {
-    Worker,
-    ControlPlane,
-}
-
-pub enum ControlPlaneStrategy {
-    OnlyOne,
-    Balanced,
-}
-
 impl KindClusterConfig {
-    pub fn new(node_count: usize, control_plane_strategy: ControlPlaneStrategy) -> Self {
-        let control_plane_node_count = match control_plane_strategy {
-            ControlPlaneStrategy::OnlyOne => 1,
-            ControlPlaneStrategy::Balanced => node_count / 2,
-        };
+    pub fn new(node_count: usize, cp_node_count: usize) -> Self {
+        let mut cp_node_count = cp_node_count;
+
+        if cp_node_count >= node_count {
+            cp_node_count = 1;
+        }
 
         // Create control plane nodes
         let mut control_plane_nodes = Vec::new();
 
-        for _ in 0..control_plane_node_count {
+        for _ in 0..cp_node_count {
             control_plane_nodes.push(KindClusterNodeConfig {
                 role: NodeRole::ControlPlane,
             });
@@ -55,7 +46,7 @@ impl KindClusterConfig {
         // Create worker nodes
         let mut worker_nodes = Vec::new();
 
-        for _ in 0..node_count - control_plane_node_count {
+        for _ in 0..node_count - cp_node_count {
             worker_nodes.push(KindClusterNodeConfig {
                 role: NodeRole::Worker,
             })

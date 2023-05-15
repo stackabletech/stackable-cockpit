@@ -9,8 +9,9 @@ use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
+// use spinoff::{spinners, Color, Spinner};
 use stackable::{
-    cluster::KindCluster,
+    cluster::{ClusterError, KindCluster},
     constants::{
         DEFAULT_LOCAL_CLUSTER_NAME, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
@@ -20,7 +21,7 @@ use stackable::{
 use tracing::{debug, info, instrument};
 
 use crate::{
-    cli::{ClusterType, OutputType},
+    cli::{Cli, ClusterType, OutputType},
     util::{self, InvalidRepoNameError},
 };
 
@@ -107,17 +108,22 @@ installation on the system."
 
     /// Number of total nodes in the local cluster
     #[arg(long, default_value_t = 3)]
-    #[arg(
-        long_help = "The number of nodes in the cluster. The number of control-plane nodes depends
-on the control plane strategy [default=only-one]. So when creating a cluster
-with four nodes in total using the 'only-one' control plane strategy, one
-control-plane node and three worker nodes are created. On the other hand,
-choosing 'balanced' would result in the creation of two control-plane nodes
-and two worker nodes."
-    )]
+    #[arg(long_help = "Number of total nodes in the local cluster
+    
+This number specifies the total number of nodes, which combines control plane
+and worker nodes. The number of control plane nodes can be customized with the
+--cluster-cp-nodes argument. The default number of control plane nodes is '1'.
+So when specifying a total number of nodes of '4', there will be one control
+plane node and three worker nodes.")]
     cluster_nodes: usize,
 
-    cluster_cp_strategy: ControlPlaneStrategy,
+    /// Number of control plane nodes in the local cluster
+    #[arg(long, default_value_t = 1)]
+    #[arg(long_help = "Number of control plane nodes in the local cluster
+
+This number must be smaller than --cluster-nodes. If this is not the case,
+stackablectl will silently fall back to the value '1'.")]
+    cluster_cp_nodes: usize,
 }
 
 #[derive(Debug, Args)]
@@ -144,6 +150,9 @@ pub enum OperatorError {
     #[snafu(display("Helm error: {source}"))]
     HelmError { source: HelmError },
 
+    #[snafu(display("cluster error: {source}"))]
+    ClusterError { source: ClusterError },
+
     #[snafu(display("semver parse error: {source}"))]
     SemVerParseError { source: semver::Error },
 
@@ -161,11 +170,11 @@ pub enum OperatorError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self) -> Result<String, OperatorError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, OperatorError> {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args).await,
             OperatorCommands::Describe(args) => describe_cmd(args).await,
-            OperatorCommands::Install(args) => install_cmd(args),
+            OperatorCommands::Install(args) => install_cmd(args, common_args),
             OperatorCommands::Uninstall(args) => uninstall_cmd(args),
             OperatorCommands::Installed(args) => installed_cmd(args),
         }
@@ -258,18 +267,43 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorErr
 }
 
 #[instrument]
-fn install_cmd(args: &OperatorInstallArgs) -> Result<String, OperatorError> {
+fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, OperatorError> {
     info!("Installing operator(s)");
+    println!(
+        "Installing {} operator{}",
+        args.operators.len(),
+        if args.operators.len() == 1 { "" } else { "s" }
+    );
 
     match args.cluster_type {
         ClusterType::Kind => {
-            let kind_cluster = KindCluster::new(args.cluster_nodes, None, None);
-            kind_cluster.create();
+            println!("Creating local kind cluster");
+
+            let kind_cluster =
+                KindCluster::new(args.cluster_nodes, args.cluster_cp_nodes, None, None);
+            kind_cluster.create().context(ClusterSnafu {})?;
+
+            println!("Created local kind cluster");
         }
         ClusterType::Minikube => todo!(),
     }
 
-    todo!()
+    for operator in &args.operators {
+        println!("Installing {} operator", operator.name);
+
+        match operator.install(&common_args.namespace) {
+            Ok(_) => println!("Installed {} operator", operator.name),
+            Err(err) => {
+                return Err(OperatorError::HelmError { source: err });
+            }
+        };
+    }
+
+    Ok(format!(
+        "Installed {} operator{}",
+        args.operators.len(),
+        if args.operators.len() == 1 { "" } else { "s" }
+    ))
 }
 
 fn uninstall_cmd(args: &OperatorUninstallArgs) -> Result<String, OperatorError> {

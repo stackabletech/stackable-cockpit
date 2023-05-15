@@ -3,7 +3,7 @@ use std::env;
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
 use stackable::{
     constants::{
-        DEFAULT_STACKABLE_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+        DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError},
     utils::path::{
@@ -46,7 +46,7 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
     pub offline: bool,
 
     /// Namespace in the cluster used to deploy the products and operators
-    #[arg(short, long, default_value = DEFAULT_STACKABLE_NAMESPACE)]
+    #[arg(short, long, default_value = DEFAULT_NAMESPACE)]
     pub namespace: String,
 
     /// Provide one or more additional (custom) demo file(s)
