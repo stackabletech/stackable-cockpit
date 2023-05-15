@@ -21,8 +21,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd # v2.2.4
+        with:
+          version: 7.26.1
+          run_install: true
       - uses: reviewdog/action-eslint@94d539484aab48e9b2ffff6466d8866ee4e4b217 # tag=v1.18.2
         with:
+          workdir: web
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   flake8:
