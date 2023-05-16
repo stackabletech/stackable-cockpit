@@ -1419,7 +1419,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__list)
-            opts="-i -o -h -V --installed --output --help --version"
+            opts="-o -h -V --output --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

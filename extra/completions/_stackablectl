@@ -67,8 +67,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-i[List only installed operators]' \
-'--installed[List only installed operators]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \

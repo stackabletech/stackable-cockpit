@@ -60,10 +60,6 @@ pub enum OperatorCommands {
 
 #[derive(Debug, Args)]
 pub struct OperatorListArgs {
-    /// List only installed operators
-    #[arg(short = 'i', long = "installed")]
-    list_installed: bool,
-
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
 }
@@ -189,16 +185,6 @@ impl OperatorArgs {
 #[instrument]
 async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
     debug!("Listing operators");
-
-    // If the user only wnats to list installed operator, use this shortcut
-    if args.list_installed {
-        return installed_cmd(
-            &OperatorInstalledArgs {
-                output_type: args.output_type.clone(),
-            },
-            common_args,
-        );
-    }
 
     // Build map which maps Helm repo name to Helm repo URL
     let helm_index_files = build_helm_index_file_list().await?;
