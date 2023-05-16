@@ -258,12 +258,12 @@ async fn install_cmd(
 
     // Install the stack
     stack_spec
-        .install(release_list, &common_args.operators_namespace)
+        .install(release_list, &common_args.operator_namespace)
         .context(StackSnafu {})?;
 
     // Install stack manifests
     stack_spec
-        .install_stack_manifests(&args.stack_parameters, &common_args.operators_namespace)
+        .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
         .await
         .context(StackSnafu {})?;
 
@@ -273,7 +273,7 @@ async fn install_cmd(
             &demo_spec.manifests,
             &demo_spec.parameters,
             &args.parameters,
-            &common_args.operators_namespace,
+            &common_args.operator_namespace,
         )
         .await
         .context(StackSnafu {})?;

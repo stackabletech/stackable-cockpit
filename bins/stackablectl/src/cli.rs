@@ -47,7 +47,7 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
 
     /// Namespace in the cluster used to deploy the products and operators
     #[arg(short = 'n', long, default_value = DEFAULT_NAMESPACE)]
-    pub operators_namespace: String,
+    pub operator_namespace: String,
 
     /// Provide one or more additional (custom) demo file(s)
     #[arg(short, long = "demo-file", value_hint = ValueHint::FilePath)]

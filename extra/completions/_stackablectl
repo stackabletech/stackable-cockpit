@@ -17,8 +17,8 @@ _stackablectl() {
     _arguments "${_arguments_options[@]}" \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
-'-n+[Namespace in the cluster used to deploy the products and operators]:OPERATORS_NAMESPACE: ' \
-'--operators-namespace=[Namespace in the cluster used to deploy the products and operators]:OPERATORS_NAMESPACE: ' \
+'-n+[Namespace in the cluster used to deploy the products and operators]:OPERATOR_NAMESPACE: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the products and operators]:OPERATOR_NAMESPACE: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
