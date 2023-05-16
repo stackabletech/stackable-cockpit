@@ -27,7 +27,7 @@ use stackable::{
 // Local
 use crate::{
     cli::{Cli, ClusterType, OutputType},
-    util::{self, pluralize, InvalidRepoNameError},
+    util::{self, InvalidRepoNameError},
 };
 
 #[derive(Debug, Args)]
@@ -307,7 +307,11 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
     println!(
         "Installing {} {}",
         args.operators.len(),
-        pluralize("operator", args.operators.len())
+        if args.operators.len() == 1 {
+            "operator"
+        } else {
+            "operators"
+        }
     );
 
     if let Some(cluster_type) = &args.cluster_type {
@@ -339,7 +343,11 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
     Ok(format!(
         "Installed {} {}",
         args.operators.len(),
-        pluralize("operator", args.operators.len())
+        if args.operators.len() == 1 {
+            "operator"
+        } else {
+            "operators"
+        }
     ))
 }
 
@@ -359,7 +367,11 @@ fn uninstall_cmd(
     Ok(format!(
         "Uninstalled {} {}",
         args.operators.len(),
-        pluralize("operator", args.operators.len())
+        if args.operators.len() == 1 {
+            "operator"
+        } else {
+            "operators"
+        }
     ))
 }
 
