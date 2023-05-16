@@ -146,25 +146,25 @@ pub struct OperatorInstalledArgs {
 
 #[derive(Debug, Snafu)]
 pub enum OperatorCmdError {
-    #[snafu(display("invalid repo name: {source}"))]
+    #[snafu(display("invalid repo name"))]
     InvalidRepoNameError { source: InvalidRepoNameError },
 
     #[snafu(display("unknown repo name: {name}"))]
     UnknownRepoNameError { name: String },
 
-    #[snafu(display("Helm error: {source}"))]
+    #[snafu(display("Helm error"))]
     HelmError { source: HelmError },
 
-    #[snafu(display("cluster error: {source}"))]
+    #[snafu(display("cluster error"))]
     ClusterError { source: ClusterError },
 
-    #[snafu(display("semver parse error: {source}"))]
+    #[snafu(display("semver parse error"))]
     SemVerParseError { source: semver::Error },
 
-    #[snafu(display("unable to format yaml output: {source}"))]
+    #[snafu(display("unable to format yaml output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output: {source}"))]
+    #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
 }
 
