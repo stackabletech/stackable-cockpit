@@ -15,11 +15,11 @@ pub enum KubeError {
     #[snafu(display("yaml error: {source}"))]
     YamlError { source: serde_yaml::Error },
 
-    #[snafu(display("object type error: {msg}"))]
-    ObjectTypeError { msg: String },
+    #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
+    ObjectTypeError { object: DynamicObject },
 
-    #[snafu(display("discovery error: {msg}"))]
-    DiscoveryError { msg: String },
+    #[snafu(display("failed to deploy manifest because GVK {gvk:?} cannot be resolved"))]
+    DiscoveryError { gvk: GroupVersionKind },
 }
 
 pub async fn deploy_manifests(manifests: &str, namespace: &str) -> Result<(), KubeError> {
@@ -33,20 +33,15 @@ pub async fn deploy_manifests(manifests: &str, namespace: &str) -> Result<(), Ku
         let mut object = DynamicObject::deserialize(manifest).context(YamlSnafu {})?;
         let object_type = object.types.as_ref().ok_or(
             ObjectTypeSnafu {
-                msg: format!(
-                    "failed to deploy manifest because type of object {object:?} is not set"
-                ),
+                object: object.clone(),
             }
             .build(),
         )?;
 
         let gvk = gvk_of_typemeta(object_type);
-        let (resource, capabilities) = discovery.resolve_gvk(&gvk).ok_or(
-            DiscoverySnafu {
-                msg: format!("failed to deploy manifest because GVK {gvk:?} cannot be resolved."),
-            }
-            .build(),
-        )?;
+        let (resource, capabilities) = discovery
+            .resolve_gvk(&gvk)
+            .ok_or(DiscoverySnafu { gvk }.build())?;
 
         let api: Api<DynamicObject> = match capabilities.scope {
             Scope::Cluster => {

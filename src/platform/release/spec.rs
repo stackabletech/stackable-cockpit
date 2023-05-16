@@ -40,15 +40,12 @@ pub struct ReleaseSpec {
 
 impl ReleaseSpec {
     #[instrument(skip_all)]
-    pub fn install<T>(
+    pub fn install(
         &self,
         include_products: &[String],
         exclude_products: &[String],
-        namespace: T,
-    ) -> Result<(), ReleaseInstallError>
-    where
-        T: AsRef<str>,
-    {
+        namespace: &str,
+    ) -> Result<(), ReleaseInstallError> {
         info!("Installing release");
 
         for (product_name, product) in &self.products {

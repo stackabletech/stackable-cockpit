@@ -356,7 +356,7 @@ fn installed_cmd(
         .filter(|release| {
             VALID_OPERATORS
                 .iter()
-                .any(|valid| release.name == utils::operator_name(valid))
+                .any(|valid| release.name == utils::operator_chart_name(valid))
         })
         .map(|release| (release.name.clone(), release))
         .collect();
@@ -486,7 +486,7 @@ where
 {
     debug!("Listing operator versions from repo");
 
-    let operator_name = utils::operator_name(operator_name);
+    let operator_name = utils::operator_chart_name(operator_name.as_ref());
 
     match helm_repo.entries.get(&operator_name) {
         Some(entries) => {

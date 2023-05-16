@@ -66,7 +66,7 @@ impl KindCluster {
         info!("Creating local cluster using kind");
 
         // Check if required binaries are present
-        if !binaries_present(["docker", "kind"]) {
+        if !binaries_present(&["docker", "kind"]) {
             return Err(ClusterError::MissingDepsError);
         }
 

@@ -4,9 +4,6 @@ pub mod path;
 pub mod read;
 
 /// Returns the name of the operator used in the Helm repository.
-pub fn operator_name<T>(name: T) -> String
-where
-    T: AsRef<str>,
-{
-    format!("{}-operator", name.as_ref())
+pub fn operator_chart_name(name: &str) -> String {
+    format!("{}-operator", name)
 }

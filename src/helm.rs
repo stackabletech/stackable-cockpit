@@ -26,7 +26,7 @@ pub struct HelmChart {
     pub name: String,
     pub repo: HelmChartRepo,
     pub version: String,
-    pub options: serde_yaml::Value,
+    pub values: serde_yaml::Value,
 }
 
 #[derive(Debug, Deserialize)]
@@ -314,7 +314,7 @@ fn install_release(
         )
     };
 
-    let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
+    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
     if let Some(err) = to_helm_error(result) {
         error!(
             "Go wrapper function go_install_helm_release encountered an error: {}",
@@ -343,7 +343,8 @@ pub fn uninstall_release(
             go_uninstall_helm_release(release_name.into(), namespace.into(), suppress_output)
         };
 
-        let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
+        let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
+
         if let Some(err) = to_helm_error(result) {
             error!(
                 "Go wrapper function go_uninstall_helm_release encountered an error: {}",
@@ -385,7 +386,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
     debug!("List Helm releases");
 
     let result = unsafe { go_helm_list_releases(namespace.into()) };
-    let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
+    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
 
     if let Some(err) = to_helm_error(result) {
         error!(
@@ -415,7 +416,7 @@ pub fn add_repo(repo_name: &str, repo_url: &str) -> Result<(), HelmError> {
     debug!("Add Helm repo");
 
     let result = unsafe { go_add_helm_repo(repo_name.into(), repo_url.into()) };
-    let result = ptr_to_str(result).context(StrUtf8Snafu {})?;
+    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
 
     if let Some(err) = to_helm_error(result) {
         error!(
@@ -453,9 +454,8 @@ where
 }
 
 /// Helper function to convert raw C string pointers to &str.
-fn ptr_to_str<'a>(ptr: *const i8) -> Result<&'a str, Utf8Error> {
-    let s = unsafe { CStr::from_ptr(ptr) };
-    s.to_str()
+unsafe fn ptr_to_str<'a>(ptr: *const i8) -> Result<&'a str, Utf8Error> {
+    CStr::from_ptr(ptr).to_str()
 }
 
 /// Checks if the result string is an error, and if so, returns the error message as a string.

@@ -26,7 +26,7 @@ impl MinikubeCluster {
     /// Create a new local cluster by calling the minikube binary
     pub fn create(&self) -> Result<(), ClusterError> {
         // Check if required binaries are present
-        if !binaries_present(["docker", "minikube"]) {
+        if !binaries_present(&["docker", "minikube"]) {
             return Err(ClusterError::MissingDepsError);
         }
 

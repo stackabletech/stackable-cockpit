@@ -93,10 +93,7 @@ pub struct StackSpecV2 {
 
 impl StackSpecV2 {
     #[instrument(skip_all)]
-    pub fn install<T>(&self, release_list: ReleaseList, namespace: T) -> Result<(), StackError>
-    where
-        T: AsRef<str>,
-    {
+    pub fn install(&self, release_list: ReleaseList, namespace: &str) -> Result<(), StackError> {
         info!("Installing stack");
 
         // Get the release by name
@@ -113,14 +110,11 @@ impl StackSpecV2 {
     }
 
     #[instrument(skip_all)]
-    pub async fn install_stack_manifests<T>(
+    pub async fn install_stack_manifests(
         &self,
         parameters: &[String],
-        namespace: T,
-    ) -> Result<(), StackError>
-    where
-        T: AsRef<str>,
-    {
+        namespace: &str,
+    ) -> Result<(), StackError> {
         info!("Installing stack manifests");
 
         let parameters = parameters
@@ -133,16 +127,13 @@ impl StackSpecV2 {
     }
 
     #[instrument(skip_all)]
-    pub async fn install_demo_manifests<T>(
+    pub async fn install_demo_manifests(
         &self,
         manifests: &Vec<ManifestSpec>,
         valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
-        namespace: T,
-    ) -> Result<(), StackError>
-    where
-        T: AsRef<str>,
-    {
+        namespace: &str,
+    ) -> Result<(), StackError> {
         info!("Installing demo manifests");
 
         let parameters = demo_parameters
@@ -156,14 +147,11 @@ impl StackSpecV2 {
 
     /// Installs a list of templated manifests inside a namespace.
     #[instrument(skip_all)]
-    async fn install_manifests<T>(
+    async fn install_manifests(
         manifests: &Vec<ManifestSpec>,
         parameters: &HashMap<String, String>,
-        namespace: T,
-    ) -> Result<(), StackError>
-    where
-        T: AsRef<str>,
-    {
+        namespace: &str,
+    ) -> Result<(), StackError> {
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
@@ -183,7 +171,7 @@ impl StackSpecV2 {
 
                     // Serialize chart options to string
                     let values_yaml =
-                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu {})?;
+                        serde_yaml::to_string(&helm_chart.values).context(YamlSnafu {})?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(

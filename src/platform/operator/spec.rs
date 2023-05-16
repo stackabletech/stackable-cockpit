@@ -6,7 +6,7 @@ use tracing::{info, instrument};
 use crate::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
-    utils::operator_name,
+    utils::operator_chart_name,
 };
 
 pub const VALID_OPERATORS: &[&str] = &[
@@ -150,7 +150,7 @@ impl OperatorSpec {
 
     /// Returns the name used by Helm
     pub fn helm_name(&self) -> String {
-        operator_name(&self.name)
+        operator_chart_name(&self.name)
     }
 
     /// Returns the repo used by Helm based on the specified version
@@ -167,10 +167,7 @@ impl OperatorSpec {
 
     /// Installs the operator using Helm.
     #[instrument(skip_all)]
-    pub fn install<T>(&self, namespace: T) -> Result<(), helm::HelmError>
-    where
-        T: AsRef<str>,
-    {
+    pub fn install(&self, namespace: &str) -> Result<(), helm::HelmError> {
         info!("Installing operator {}", self);
 
         let helm_name = self.helm_name();
@@ -179,14 +176,7 @@ impl OperatorSpec {
 
         // Install using Helm
         match helm::install_release_from_repo(
-            &self.name,
-            &helm_name,
-            &helm_repo,
-            &helm_name,
-            version,
-            None,
-            namespace.as_ref(),
-            true,
+            &self.name, &helm_name, &helm_repo, &helm_name, version, None, namespace, true,
         ) {
             Ok(status) => {
                 println!("{status}");
