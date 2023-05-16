@@ -65,7 +65,7 @@ to provide multiple additional demo files.")]
     /// Provide one or more additional (custom) stack file(s)
     #[arg(short, long = "stack-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) stack file(s)
-    
+
 Stacks are loaded in the following order: Remote (default) stack file, custom
 stack files provided via the 'STACKABLE_STACK_FILES' environment variable, and
 lastly demo files provided via the '-s/--stack-file' argument(s). If there are
@@ -78,7 +78,7 @@ to provide multiple additional stack files.")]
     /// Provide one or more additional (custom) release file(s)
     #[arg(short, long = "release-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) release file(s)
-    
+
 Releases are loaded in the following order: Remote (default) release file,
 custom release files provided via the 'STACKABLE_RELEASE_FILES' environment
 variable, and lastly release files provided via the '-r/--release-file'
@@ -208,9 +208,10 @@ pub enum Commands {
     Cache(CacheArgs),
 }
 
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, Default, ValueEnum)]
 pub enum OutputType {
     /// Print output formatted as plain text
+    #[default]
     Plain,
 
     /// Print output formatted as JSON
@@ -220,23 +221,12 @@ pub enum OutputType {
     Yaml,
 }
 
-impl Default for OutputType {
-    fn default() -> Self {
-        Self::Plain
-    }
-}
-
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, Default, ValueEnum)]
 pub enum ClusterType {
     /// Use a kind cluster, see 'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'
+    #[default]
     Kind,
 
     /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
     Minikube,
-}
-
-impl Default for ClusterType {
-    fn default() -> Self {
-        Self::Kind
-    }
 }

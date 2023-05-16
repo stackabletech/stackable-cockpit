@@ -33,7 +33,7 @@ where
     T: AsRef<str>,
 {
     let input = input.as_ref();
-    let suffix = if !input.ends_with("s") && size != 1 {
+    let suffix = if !input.ends_with('s') && size != 1 {
         "s"
     } else {
         ""

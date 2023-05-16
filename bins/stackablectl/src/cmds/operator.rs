@@ -109,7 +109,7 @@ installation on the system."
     /// Number of total nodes in the local cluster
     #[arg(long, default_value_t = 3)]
     #[arg(long_help = "Number of total nodes in the local cluster
-    
+
 This number specifies the total number of nodes, which combines control plane
 and worker nodes. The number of control plane nodes can be customized with the
 --cluster-cp-nodes argument. The default number of control plane nodes is '1'.
@@ -416,7 +416,7 @@ fn build_versions_list(
 
     for operator in VALID_OPERATORS {
         for (helm_repo_name, helm_repo_index_file) in helm_index_files {
-            let versions = list_operator_versions_from_repo(operator, &helm_repo_index_file)?;
+            let versions = list_operator_versions_from_repo(operator, helm_repo_index_file)?;
             let entry = versions_list.entry(operator.to_string());
             let entry = entry.or_insert(OperatorVersionList(HashMap::new()));
             entry.0.insert(helm_repo_name.to_string(), versions);
@@ -445,7 +445,7 @@ where
     let operator_name = operator_name.as_ref();
 
     for (helm_repo_name, helm_repo_index_file) in helm_index_files {
-        let versions = list_operator_versions_from_repo(operator_name, &helm_repo_index_file)?;
+        let versions = list_operator_versions_from_repo(operator_name, helm_repo_index_file)?;
         versions_list.0.insert(helm_repo_name.to_string(), versions);
     }
 

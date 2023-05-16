@@ -14,6 +14,6 @@ pub async fn get_stacks() -> Json<Vec<StackSpecV2>> {
 }
 
 /// Retrieves one stack identified by `stack_name`.
-pub async fn get_stack(Path(stack_name): Path<String>) -> Json<StackSpecV2> {
+pub async fn get_stack(Path(_stack_name): Path<String>) -> Json<StackSpecV2> {
     todo!()
 }
