@@ -1,5 +1,7 @@
+// Std library
 use std::collections::HashMap;
 
+// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
@@ -9,6 +11,9 @@ use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
+use tracing::{debug, info, instrument};
+
+// Stackable library
 use stackable::{
     cluster::{ClusterError, KindCluster},
     constants::{
@@ -18,8 +23,8 @@ use stackable::{
     platform::operator::{OperatorSpec, VALID_OPERATORS},
     utils,
 };
-use tracing::{debug, info, instrument};
 
+// Local
 use crate::{
     cli::{Cli, ClusterType, OutputType},
     util::{self, pluralize, InvalidRepoNameError},
@@ -93,21 +98,21 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
     operators: Vec<OperatorSpec>,
 
     /// Type of local cluster to use for testing
-    #[arg(short = 'c', long = "cluster", value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
+    #[arg(short = 'c', long = "cluster", value_name = "CLUSTER_TYPE")]
     #[arg(
         long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
 control-plane and 3 workers) will be created for testing purposes. Currently
 'kind' and 'minikube' are supported. Both require a working Docker
 installation on the system."
     )]
-    cluster_type: ClusterType,
+    cluster_type: Option<ClusterType>,
 
     /// Name of the local cluster
     #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
     cluster_name: String,
 
     /// Number of total nodes in the local cluster
-    #[arg(long, default_value_t = 3)]
+    #[arg(long, default_value_t = 2)]
     #[arg(long_help = "Number of total nodes in the local cluster
 
 This number specifies the total number of nodes, which combines control plane
@@ -156,10 +161,10 @@ pub enum OperatorError {
     #[snafu(display("semver parse error: {source}"))]
     SemVerParseError { source: semver::Error },
 
-    #[snafu(display("yaml error: {source}"))]
+    #[snafu(display("unable to format yaml output: {source}"))]
     YamlError { source: serde_yaml::Error },
 
-    #[snafu(display("json error: {source}"))]
+    #[snafu(display("unable to format json output: {source}"))]
     JsonError { source: serde_json::Error },
 }
 
@@ -226,6 +231,7 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
     }
 }
 
+#[instrument]
 async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorError> {
     debug!("Describing operator {}", args.operator_name);
 
@@ -264,8 +270,8 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorErr
 
             Ok(table.to_string())
         }
-        OutputType::Json => todo!(),
-        OutputType::Yaml => todo!(),
+        OutputType::Json => serde_json::to_string(&versions_list).context(JsonSnafu {}),
+        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlSnafu {}),
     }
 }
 
@@ -278,17 +284,19 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
         pluralize("operator", args.operators.len())
     );
 
-    match args.cluster_type {
-        ClusterType::Kind => {
-            println!("Creating local kind cluster");
+    if let Some(cluster_type) = &args.cluster_type {
+        match cluster_type {
+            ClusterType::Kind => {
+                println!("Creating local kind cluster");
 
-            let kind_cluster =
-                KindCluster::new(args.cluster_nodes, args.cluster_cp_nodes, None, None);
-            kind_cluster.create().context(ClusterSnafu {})?;
+                let kind_cluster =
+                    KindCluster::new(args.cluster_nodes, args.cluster_cp_nodes, None, None);
+                kind_cluster.create().context(ClusterSnafu {})?;
 
-            println!("Created local kind cluster");
+                println!("Created local kind cluster");
+            }
+            ClusterType::Minikube => todo!(),
         }
-        ClusterType::Minikube => todo!(),
     }
 
     for operator in &args.operators {
@@ -309,6 +317,7 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
     ))
 }
 
+#[instrument]
 fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<String, OperatorError> {
     info!("Uninstalling operator(s)");
 
