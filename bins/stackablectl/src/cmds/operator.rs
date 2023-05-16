@@ -302,7 +302,7 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);
 
-        match operator.install(&common_args.namespace) {
+        match operator.install(&common_args.operators_namespace) {
             Ok(_) => println!("Installed {} operator", operator.name),
             Err(err) => {
                 return Err(OperatorError::HelmError { source: err });
@@ -323,7 +323,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<Stri
 
     for operator in &args.operators {
         operator
-            .uninstall(&common_args.namespace)
+            .uninstall(&common_args.operators_namespace)
             .context(HelmSnafu {})?;
     }
 
@@ -340,7 +340,7 @@ fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<Stri
 
     type ReleaseList = IndexMap<String, HelmRelease>;
 
-    let installed: ReleaseList = helm::list_releases(&common_args.namespace)
+    let installed: ReleaseList = helm::list_releases(&common_args.operators_namespace)
         .context(HelmSnafu {})?
         .into_iter()
         .filter(|release| {
