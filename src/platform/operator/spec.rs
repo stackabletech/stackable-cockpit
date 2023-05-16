@@ -229,9 +229,9 @@ mod test {
 
     #[test]
     fn version_operator_spec() {
-        match OperatorSpec::try_from("operator=1.2.3") {
+        match OperatorSpec::try_from("zookeeper=1.2.3") {
             Ok(spec) => {
-                assert_eq!(spec.name, String::from("operator"));
+                assert_eq!(spec.name, String::from("zookeeper"));
                 assert_eq!(spec.version, Some(String::from("1.2.3")));
             }
             Err(err) => panic!("{err}"),
