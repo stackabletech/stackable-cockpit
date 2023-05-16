@@ -145,7 +145,7 @@ pub struct OperatorInstalledArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum OperatorError {
+pub enum OperatorCmdError {
     #[snafu(display("invalid repo name: {source}"))]
     InvalidRepoNameError { source: InvalidRepoNameError },
 
@@ -162,10 +162,10 @@ pub enum OperatorError {
     SemVerParseError { source: semver::Error },
 
     #[snafu(display("unable to format yaml output: {source}"))]
-    YamlError { source: serde_yaml::Error },
+    YamlOutputFormatError { source: serde_yaml::Error },
 
     #[snafu(display("unable to format json output: {source}"))]
-    JsonError { source: serde_json::Error },
+    JsonOutputFormatError { source: serde_json::Error },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -175,7 +175,7 @@ pub enum OperatorError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, OperatorError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, OperatorCmdError> {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args, common_args).await,
             OperatorCommands::Describe(args) => describe_cmd(args).await,
@@ -187,7 +187,7 @@ impl OperatorArgs {
 }
 
 #[instrument]
-async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, OperatorError> {
+async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
     debug!("Listing operators");
 
     // If the user only wnats to list installed operator, use this shortcut
@@ -226,13 +226,17 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&versions_list).context(JsonSnafu {})?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&versions_list).context(YamlSnafu {})?),
+        OutputType::Json => {
+            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu {})?)
+        }
+        OutputType::Yaml => {
+            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu {})?)
+        }
     }
 }
 
 #[instrument]
-async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorError> {
+async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmdError> {
     debug!("Describing operator {}", args.operator_name);
 
     // Build map which maps Helm repo name to Helm repo URL
@@ -270,13 +274,13 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorErr
 
             Ok(table.to_string())
         }
-        OutputType::Json => serde_json::to_string(&versions_list).context(JsonSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlSnafu {}),
+        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu {}),
+        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu {}),
     }
 }
 
 #[instrument]
-fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, OperatorError> {
+fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
     info!("Installing operator(s)");
     println!(
         "Installing {} {}",
@@ -305,7 +309,7 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
         match operator.install(&common_args.operator_namespace) {
             Ok(_) => println!("Installed {} operator", operator.name),
             Err(err) => {
-                return Err(OperatorError::HelmError { source: err });
+                return Err(OperatorCmdError::HelmError { source: err });
             }
         };
     }
@@ -318,7 +322,10 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
 }
 
 #[instrument]
-fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<String, OperatorError> {
+fn uninstall_cmd(
+    args: &OperatorUninstallArgs,
+    common_args: &Cli,
+) -> Result<String, OperatorCmdError> {
     info!("Uninstalling operator(s)");
 
     for operator in &args.operators {
@@ -335,7 +342,10 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<Stri
 }
 
 #[instrument]
-fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<String, OperatorError> {
+fn installed_cmd(
+    args: &OperatorInstalledArgs,
+    common_args: &Cli,
+) -> Result<String, OperatorCmdError> {
     debug!("Listing installed operators");
 
     type ReleaseList = IndexMap<String, HelmRelease>;
@@ -382,14 +392,18 @@ fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<Stri
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonSnafu {})?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlSnafu {})?),
+        OutputType::Json => {
+            Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu {})?)
+        }
+        OutputType::Yaml => {
+            Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu {})?)
+        }
     }
 }
 
 /// Builds a map which maps Helm repo name to Helm repo URL.
 #[instrument]
-async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, OperatorError> {
+async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, OperatorCmdError> {
     debug!("Building Helm index file list");
 
     let mut helm_index_files = HashMap::new();
@@ -418,7 +432,7 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
 #[instrument]
 fn build_versions_list(
     helm_index_files: &HashMap<&str, HelmRepo>,
-) -> Result<IndexMap<String, OperatorVersionList>, OperatorError> {
+) -> Result<IndexMap<String, OperatorVersionList>, OperatorCmdError> {
     debug!("Building versions list");
 
     let mut versions_list = IndexMap::new();
@@ -441,7 +455,7 @@ fn build_versions_list(
 fn build_versions_list_for_operator<T>(
     operator_name: T,
     helm_index_files: &HashMap<&str, HelmRepo>,
-) -> Result<OperatorVersionList, OperatorError>
+) -> Result<OperatorVersionList, OperatorCmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
 {
@@ -466,7 +480,7 @@ where
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
     helm_repo: &HelmRepo,
-) -> Result<Vec<String>, OperatorError>
+) -> Result<Vec<String>, OperatorCmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
 {
