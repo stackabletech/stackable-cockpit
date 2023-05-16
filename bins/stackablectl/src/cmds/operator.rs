@@ -115,7 +115,9 @@ This number specifies the total number of nodes, which combines control plane
 and worker nodes. The number of control plane nodes can be customized with the
 --cluster-cp-nodes argument. The default number of control plane nodes is '1'.
 So when specifying a total number of nodes of '4', there will be one control
-plane node and three worker nodes.")]
+plane node and three worker nodes. The minimum total cluster node count is '2'.
+If a smaller number is supplied, stackablectl will abort cluster creation,
+operator installation and displays an error message.")]
     cluster_nodes: usize,
 
     /// Number of control plane nodes in the local cluster
@@ -123,7 +125,8 @@ plane node and three worker nodes.")]
     #[arg(long_help = "Number of control plane nodes in the local cluster
 
 This number must be smaller than --cluster-nodes. If this is not the case,
-stackablectl will silently fall back to the value '1'.")]
+stackablectl will abort cluster creation, operator installation and displays
+an error message.")]
     cluster_cp_nodes: usize,
 }
 
@@ -162,6 +165,22 @@ pub enum OperatorCmdError {
 
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
+
+    #[snafu(display("cluster node count error"))]
+    ClusterNodeCountError { source: ClusterNodeCountError },
+}
+
+#[derive(Debug, Snafu)]
+pub enum ClusterNodeCountError {
+    #[snafu(display(
+        "invalid total node count - at least two nodes in total are needed to run a local cluster"
+    ))]
+    InvalidTotalNodeCount,
+
+    #[snafu(display(
+        "invalid control-plane node count - the number of control-plane nodes needs to be lower than total node count
+    "))]
+    InvalidControlPlaneNodeCount,
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -268,6 +287,23 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmd
 #[instrument]
 fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
     info!("Installing operator(s)");
+
+    // We need at least two nodes in total (one control-plane node and one
+    // worker node)
+    if args.cluster_nodes < 2 {
+        return Err(OperatorCmdError::ClusterNodeCountError {
+            source: ClusterNodeCountError::InvalidTotalNodeCount,
+        });
+    }
+
+    // The cluster control-plane node count must be smaller than the total node
+    // count
+    if args.cluster_cp_nodes >= args.cluster_nodes {
+        return Err(OperatorCmdError::ClusterNodeCountError {
+            source: ClusterNodeCountError::InvalidControlPlaneNodeCount,
+        });
+    }
+
     println!(
         "Installing {} {}",
         args.operators.len(),
