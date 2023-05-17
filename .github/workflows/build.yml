@@ -39,6 +39,10 @@ jobs:
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@1.68.2
+      - uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd # v2.2.4
+        with:
+          version: 7.26.1
+          run_install: true
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: udeps
