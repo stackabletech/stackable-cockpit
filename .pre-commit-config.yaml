@@ -42,3 +42,16 @@ repos:
         additional_dependencies:
           # This should match prettier devDependency in web/package.json
           - prettier@2.8.8
+
+  - repo: local
+    hooks:
+      - id: gen-man
+        name: gen-man
+        language: system
+        entry: cargo xtask gen-man
+        stages: [commit, merge-commit, manual]
+      - id: gen-comp
+        name: gen-comp
+        language: system
+        entry: cargo xtask gen-comp
+        stages: [commit, merge-commit, manual]
