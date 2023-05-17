@@ -50,7 +50,7 @@ async fn main() {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },
-        Commands::Release(args) => match args.run() {
+        Commands::Release(args) => match args.run(&cli).await {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },

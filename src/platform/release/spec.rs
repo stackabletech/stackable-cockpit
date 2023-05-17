@@ -7,7 +7,7 @@ use tracing::{info, instrument};
 use utoipa::ToSchema;
 
 use crate::{
-    helm::HelmError,
+    helm::{self, HelmError},
     platform::{
         operator::{OperatorSpec, OperatorSpecParseError},
         product::ProductSpec,
@@ -23,22 +23,29 @@ pub enum ReleaseInstallError {
     HelmError { source: HelmError },
 }
 
+#[derive(Debug, Snafu)]
+pub enum ReleaseUninstallError {
+    #[snafu(display("failed with Helm error: {source}"))]
+    HelmUninstallError { source: HelmError },
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ReleaseSpec {
     /// Date this released was released
     #[serde(rename = "releaseDate")]
-    date: String,
+    pub date: String,
 
     /// A short description of this release
-    description: String,
+    pub description: String,
 
     /// List of products and their version in this release
-    products: IndexMap<String, ProductSpec>,
+    pub products: IndexMap<String, ProductSpec>,
 }
 
 impl ReleaseSpec {
+    /// Installs a release by installing individual operators.
     #[instrument(skip_all)]
     pub fn install(
         &self,
@@ -48,22 +55,42 @@ impl ReleaseSpec {
     ) -> Result<(), ReleaseInstallError> {
         info!("Installing release");
 
+        for (product_name, product) in self.filter_products(include_products, exclude_products) {
+            info!("Installing product {}", product_name);
+
+            // Create operator spec
+            let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
+                .context(OperatorSpecParseSnafu {})?;
+
+            // Install operator
+            operator.install(namespace).context(HelmSnafu {})?
+        }
+        Ok(())
+    }
+
+    pub fn uninstall<T>(&self, namespace: T) -> Result<(), ReleaseUninstallError>
+    where
+        T: AsRef<str>,
+    {
         for (product_name, product) in &self.products {
-            let included = include_products.is_empty() || include_products.contains(product_name);
-            let excluded = exclude_products.contains(product_name);
-
-            if included && !excluded {
-                info!("Installing product {}", product_name);
-
-                // Create operator spec
-                let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
-                    .context(OperatorSpecParseSnafu {})?;
-
-                // Install operator
-                operator.install(namespace).context(HelmSnafu {})?
-            }
+            helm::uninstall_release(&product_name, namespace.as_ref(), true)
+                .context(HelmUninstallSnafu {})?;
         }
 
         Ok(())
+    }
+
+    /// Filters out products based on if they are included or excluded.
+    pub fn filter_products(
+        &self,
+        include_products: &[String],
+        exclude_products: &[String],
+    ) -> Vec<(String, ProductSpec)> {
+        self.products
+            .iter()
+            .filter(|(name, _)| include_products.is_empty() || include_products.contains(name))
+            .filter(|(name, _)| !exclude_products.contains(name))
+            .map(|(name, product)| (name.clone(), product.clone()))
+            .collect()
     }
 }

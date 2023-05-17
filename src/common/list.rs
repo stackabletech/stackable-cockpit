@@ -43,6 +43,7 @@ pub enum ListError {
 /// A [`List`] describes a list of specs. The list can contain any specs, for example demos, stacks or releases. The
 /// generic parameter `L` represents the initial type of the spec list, directly deserialized from YAML. This type has
 /// to implement [`SpecIter`], which returns a map of specs of type `S`.
+#[derive(Debug, Serialize)]
 pub struct List<L, S>
 where
     L: for<'a> Deserialize<'a> + Serialize + SpecIter<S>,
