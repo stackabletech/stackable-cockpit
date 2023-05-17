@@ -10,15 +10,15 @@ use xdg::BaseDirectoriesError;
 
 // Stackable Library
 use stackable::{
+    cluster::ClusterError,
     common::ListError,
-    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
 };
 
 // Local
 use crate::{
-    cli::{Cli, ClusterType, OutputType},
+    cli::{Cli, CommonClusterArgs, OutputType},
     constants::CACHE_HOME_PATH,
 };
 
@@ -64,6 +64,7 @@ pub struct ReleaseDescribeArgs {
 
 #[derive(Debug, Args)]
 pub struct ReleaseInstallArgs {
+    /// Release to install
     #[arg(name = "RELEASE")]
     release: String,
 
@@ -75,38 +76,8 @@ pub struct ReleaseInstallArgs {
     #[arg(short, long = "exclude", group = "products")]
     excluded_products: Vec<String>,
 
-    /// Type of local cluster to use for testing
-    #[arg(short = 'c', long = "cluster", value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
-    #[arg(
-        long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
-control-plane and 3 workers) will be created for testing purposes. Currently
-'kind' and 'minikube' are supported. Both require a working Docker
-installation on the system."
-    )]
-    cluster_type: ClusterType,
-
-    /// Name of the local cluster
-    #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
-    cluster_name: String,
-
-    /// Number of total nodes in the local cluster
-    #[arg(long, default_value_t = 3)]
-    #[arg(long_help = "Number of total nodes in the local cluster
-
-This number specifies the total number of nodes, which combines control plane
-and worker nodes. The number of control plane nodes can be customized with the
---cluster-cp-nodes argument. The default number of control plane nodes is '1'.
-So when specifying a total number of nodes of '4', there will be one control
-plane node and three worker nodes.")]
-    cluster_nodes: usize,
-
-    /// Number of control plane nodes in the local cluster
-    #[arg(long, default_value_t = 1)]
-    #[arg(long_help = "Number of control plane nodes in the local cluster
-
-This number must be smaller than --cluster-nodes. If this is not the case,
-stackablectl will silently fall back to the value '1'.")]
-    cluster_cp_nodes: usize,
+    #[command(flatten)]
+    local_cluster: CommonClusterArgs,
 }
 
 #[derive(Debug, Args)]
@@ -138,6 +109,9 @@ pub enum ReleaseCmdError {
 
     #[snafu(display("release uninstall error: {source}"))]
     ReleaseUninstallError { source: ReleaseUninstallError },
+
+    #[snafu(display("cluster error"))]
+    ClusterError { source: ClusterError },
 }
 
 impl ReleaseArgs {
@@ -278,6 +252,12 @@ async fn install_cmd(
     if release_list.inner().is_empty() {
         return Ok("No releases".into());
     }
+
+    // Install local cluster if needed
+    args.local_cluster
+        .install_if_needed(None, None)
+        .await
+        .context(ClusterSnafu {})?;
 
     match release_list.get(&args.release) {
         Some(release) => {

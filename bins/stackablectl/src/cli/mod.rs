@@ -24,6 +24,10 @@ use crate::{
     },
 };
 
+mod cluster_args;
+
+pub use cluster_args::*;
+
 #[derive(Debug, Parser)]
 #[command(author, version, about, propagate_version = true)]
 pub struct Cli {
@@ -219,14 +223,4 @@ pub enum OutputType {
 
     /// Print output formatted as YAML
     Yaml,
-}
-
-#[derive(Clone, Debug, Default, ValueEnum)]
-pub enum ClusterType {
-    /// Use a kind cluster, see 'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'
-    #[default]
-    Kind,
-
-    /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
-    Minikube,
 }
