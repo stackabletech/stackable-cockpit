@@ -139,7 +139,7 @@ impl DemoArgs {
             .get_cache_home();
 
         let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-        let list = DemoList::build(files, cache_settings)
+        let list = DemoList::build(&files, cache_settings)
             .await
             .context(ListSnafu {})?;
 
@@ -232,7 +232,7 @@ async fn install_cmd(
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let stack_list = StackList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let stack_list = StackList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
 
@@ -252,7 +252,7 @@ async fn install_cmd(
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
 

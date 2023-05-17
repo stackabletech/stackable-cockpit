@@ -163,7 +163,7 @@ async fn list_cmd(args: &ReleaseListArgs, common_args: &Cli) -> Result<String, R
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
 
@@ -210,7 +210,7 @@ async fn describe_cmd(
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
 
@@ -271,7 +271,7 @@ async fn install_cmd(
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
 
@@ -309,7 +309,7 @@ async fn uninstall_cmd(
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
 

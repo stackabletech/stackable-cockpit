@@ -58,10 +58,10 @@ where
     L: for<'a> Deserialize<'a> + Serialize + SpecIter<S>,
     S: for<'a> Deserialize<'a> + Serialize + Clone,
 {
-    pub async fn build<T>(files: T, cache_settings: CacheSettings) -> Result<Self, ListError>
-    where
-        T: AsRef<[PathOrUrl]>,
-    {
+    pub async fn build(
+        files: &[PathOrUrl],
+        cache_settings: CacheSettings,
+    ) -> Result<Self, ListError> {
         let mut map = IndexMap::new();
 
         for file in files.as_ref() {
