@@ -218,14 +218,22 @@ extern "C" {
     fn go_add_helm_repo(name: GoString, url: GoString) -> *const c_char;
 }
 
+pub struct ChartVersion<'a> {
+    pub repo_name: &'a str,
+    pub chart_name: &'a str,
+    pub chart_version: Option<&'a str>,
+}
+
 /// Installs a Helm release
 #[instrument]
 pub fn install_release_from_repo(
     operator_name: &str,
     release_name: &str,
-    repo_name: &str,
-    chart_name: &str,
-    chart_version: Option<&str>,
+    ChartVersion {
+        repo_name,
+        chart_name,
+        chart_version,
+    }: ChartVersion,
     values_yaml: Option<&str>,
     namespace: &str,
     suppress_output: bool,
