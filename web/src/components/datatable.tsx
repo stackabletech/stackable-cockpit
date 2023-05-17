@@ -28,15 +28,16 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   });
   return (
     <>
-      <table>
-        <thead>
+      <table class="font-sans border-collapse text-left w-full">
+        <thead class="text-xs uppercase text-gray-400 bg-gray-700">
           <tr>
             <For each={props.columns}>
               {(col) => (
-                <th>
+                <th class="px-4 py-3">
                   <Show when={col.sortable} fallback={col.label}>
                     <a
-                      href="#"
+                      class="text-gray-400"
+                      href="javascript:void()"
                       onClick={() =>
                         setSortComparator(() =>
                           col.sortable
@@ -58,9 +59,13 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
         <tbody>
           <For each={sortedItems()}>
             {(item) => (
-              <tr>
+              <tr class="bg-gray-800 border-b border-b-style-solid border-gray-700">
                 <For each={props.columns}>
-                  {(col) => <td>{col.get(item)}</td>}
+                  {(col) => (
+                    <td class="px-4 py-3 font-medium text-gray-400">
+                      {col.get(item)}
+                    </td>
+                  )}
                 </For>
               </tr>
             )}
