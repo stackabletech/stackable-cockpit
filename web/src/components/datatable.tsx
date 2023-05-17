@@ -3,10 +3,7 @@ import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
 export interface DataTableColumn<T> {
   label: string;
   get: (x: T) => JSX.Element;
-  /// The key value that this column should be sorted by
-  /// true => use `get`
-  /// undefined => this column is not sortable
-  sortable?: ((x: T) => any) | true;
+  sortBy?: (x: T) => string;
 }
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
@@ -14,16 +11,16 @@ export interface DataTableProps<T> {
 }
 export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   const [sortComparator, setSortComparator] = createSignal<
-    ((x: T, y: T) => number) | null
-  >(null);
+    ((x: T, y: T) => number) | undefined
+  >();
   const sortedItems = createMemo(() => {
-    const currSortComparator = sortComparator();
-    if (currSortComparator != null) {
-      const items = [...props.items];
-      items.sort(currSortComparator);
-      return items;
-    } else {
+    const currentSortComparator = sortComparator();
+    if (currentSortComparator == undefined) {
       return props.items;
+    } else {
+      const items = [...props.items];
+      items.sort(currentSortComparator);
+      return items;
     }
   });
   return (
@@ -34,19 +31,16 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
             <For each={props.columns}>
               {(col) => (
                 <th class="px-4 py-3">
-                  <Show when={col.sortable} fallback={col.label}>
+                  <Show when={col.sortBy} fallback={col.label}>
                     <a
+                      href=""
                       class="text-gray-400"
-                      href="javascript:void()"
-                      onClick={() =>
+                      onClick={(event) => {
+                        event.preventDefault();
                         setSortComparator(() =>
-                          col.sortable
-                            ? keyComparator(
-                                col.sortable === true ? col.get : col.sortable,
-                              )
-                            : null,
-                        )
-                      }
+                          col.sortBy ? keyComparator(col.sortBy) : undefined,
+                        );
+                      }}
                     >
                       {col.label}
                     </a>
@@ -78,6 +72,6 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
 
 const collator = new Intl.Collator();
 
-function keyComparator<T>(key: (x: T) => any): (x: T, y: T) => number {
+function keyComparator<T>(key: (x: T) => string): (x: T, y: T) => number {
   return (x, y) => collator.compare(key(x), key(y));
 }

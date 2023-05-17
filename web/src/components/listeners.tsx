@@ -14,17 +14,17 @@ export const Listeners = () => {
           {
             label: 'Product',
             get: (listener) => listener.product,
-            sortable: true,
+            sortBy: (listener) => listener.product,
           },
           {
             label: 'Namespace',
             get: (listener) => listener.metadata.namespace,
-            sortable: true,
+            sortBy: (listener) => listener.metadata.namespace,
           },
           {
             label: 'Name',
             get: (listener) => listener.metadata.name,
-            sortable: true,
+            sortBy: (listener) => listener.metadata.name,
           },
           {
             label: 'Endpoints',
@@ -44,7 +44,7 @@ export const Listeners = () => {
               </ul>
             ),
           },
-          { label: 'Info', get: (_) => '' },
+          { label: 'Info', get: () => '' },
         ]}
       />
     </>
