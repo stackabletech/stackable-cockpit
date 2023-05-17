@@ -3,9 +3,6 @@ name = "stackablectl"
 version = "0.0.1"
 edition = "2021"
 
-[lib]
-path = "src/main.rs"
-
 [dependencies]
 tracing-subscriber = { workspace = true }
 clap_complete = { workspace = true }
