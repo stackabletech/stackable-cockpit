@@ -1,5 +1,5 @@
 status = [
-    'All tests passed'
+    'All tests passed',
     'Web frontend built'
 ]
 delete_merged_branches = true
