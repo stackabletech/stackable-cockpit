@@ -13,7 +13,7 @@ pub fn binary_present<T: AsRef<OsStr>>(name: T) -> bool {
 pub fn binaries_present(names: &[impl AsRef<OsStr> + std::fmt::Debug]) -> bool {
     debug!("Checking if required binaries are present on the system");
 
-    for name in names.as_ref() {
+    for name in names {
         if !binary_present(name) {
             return false;
         }

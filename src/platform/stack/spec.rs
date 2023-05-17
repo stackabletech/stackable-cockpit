@@ -181,7 +181,7 @@ impl StackSpecV2 {
                         &helm_chart.name,
                         Some(&helm_chart.version),
                         Some(&values_yaml),
-                        namespace.as_ref(),
+                        namespace,
                         false,
                     )
                     .context(HelmSnafu {})?;
@@ -195,7 +195,7 @@ impl StackSpecV2 {
                             .await
                             .context(TemplatedReadSnafu {})?;
 
-                    kube::deploy_manifests(&manifests, namespace.as_ref())
+                    kube::deploy_manifests(&manifests, namespace)
                         .await
                         .context(KubeSnafu {})?;
                 }

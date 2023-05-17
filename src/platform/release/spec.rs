@@ -60,7 +60,7 @@ impl ReleaseSpec {
                     .context(OperatorSpecParseSnafu {})?;
 
                 // Install operator
-                operator.install(&namespace).context(HelmSnafu {})?
+                operator.install(namespace).context(HelmSnafu {})?
             }
         }
 
