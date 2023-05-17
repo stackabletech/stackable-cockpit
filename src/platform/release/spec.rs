@@ -68,12 +68,9 @@ impl ReleaseSpec {
         Ok(())
     }
 
-    pub fn uninstall<T>(&self, namespace: T) -> Result<(), ReleaseUninstallError>
-    where
-        T: AsRef<str>,
-    {
-        for (product_name, product) in &self.products {
-            helm::uninstall_release(&product_name, namespace.as_ref(), true)
+    pub fn uninstall(&self, namespace: &str) -> Result<(), ReleaseUninstallError> {
+        for (product_name, _) in &self.products {
+            helm::uninstall_release(product_name, namespace, true)
                 .context(HelmUninstallSnafu {})?;
         }
 
