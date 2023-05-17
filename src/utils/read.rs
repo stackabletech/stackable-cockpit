@@ -10,7 +10,10 @@ use snafu::{ResultExt, Snafu};
 use tera::{Context, Tera};
 use url::Url;
 
-use crate::{constants::DEFAULT_CACHE_MAX_AGE_IN_SECS, utils::path::PathOrUrl};
+use crate::{
+    constants::DEFAULT_CACHE_MAX_AGE_IN_SECS,
+    utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
+};
 
 #[derive(Debug, Snafu)]
 pub enum TemplatedReadError {
@@ -25,6 +28,9 @@ pub enum TemplatedReadError {
 
     #[snafu(display("yaml error: {source}"))]
     YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("path/url parse error: {source}"))]
+    PathOrUrlParseError { source: PathOrUrlParseError },
 }
 
 #[derive(Debug, Snafu)]
@@ -170,15 +176,18 @@ where
 /// a [`HashMap<String, String>`]. The final templated result is returned as
 /// a [`String`]. A [`TemplatedReadError`] is returned when the file cannot be
 /// read, deserialization failed or the templating resulted in an error.
-pub async fn read_yaml_data_with_templating<P, T>(
+pub async fn read_yaml_data_with_templating<T, P>(
     path_or_url: P,
     parameters: &HashMap<String, String>,
 ) -> Result<T, TemplatedReadError>
 where
-    P: Into<PathOrUrl>,
     T: for<'a> Deserialize<'a>,
+    P: IntoPathOrUrl,
 {
-    match path_or_url.into() {
+    match path_or_url
+        .into_path_or_url()
+        .context(PathOrUrlParseSnafu {})?
+    {
         PathOrUrl::Path(path) => read_yaml_data_from_file_with_templating(path, parameters),
         PathOrUrl::Url(url) => read_yaml_data_from_remote_with_templating(url, parameters).await,
     }
@@ -208,7 +217,7 @@ where
 
     // Render template using a one-off function
     let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
-    Ok(serde_yaml::from_str(&result).context(YamlSnafu {})?)
+    serde_yaml::from_str(&result).context(YamlSnafu {})
 }
 
 /// Reads YAML data from a remote file at `url` and deserializes it into type
@@ -240,5 +249,5 @@ where
 
     // Render template using a one-off function
     let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
-    Ok(serde_yaml::from_str(&result).context(YamlSnafu {})?)
+    serde_yaml::from_str(&result).context(YamlSnafu {})
 }

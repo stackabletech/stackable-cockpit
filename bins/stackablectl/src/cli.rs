@@ -2,7 +2,9 @@ use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
 use stackable::{
-    constants::DEFAULT_STACKABLE_NAMESPACE,
+    constants::{
+        DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    },
     helm::{self, HelmError},
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
@@ -16,9 +18,9 @@ use crate::{
         release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
     },
     constants::{
-        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, HELM_REPO_NAME_DEV,
-        HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST, HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE,
-        HELM_REPO_URL_TEST, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, HELM_REPO_URL_DEV,
+        HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE,
+        REMOTE_STACK_FILE,
     },
 };
 
@@ -44,8 +46,8 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
     pub offline: bool,
 
     /// Namespace in the cluster used to deploy the products and operators
-    #[arg(short, long, default_value = DEFAULT_STACKABLE_NAMESPACE)]
-    pub namespace: String,
+    #[arg(short = 'n', long, default_value = DEFAULT_NAMESPACE)]
+    pub operator_namespace: String,
 
     /// Provide one or more additional (custom) demo file(s)
     #[arg(short, long = "demo-file", value_hint = ValueHint::FilePath)]
@@ -63,7 +65,7 @@ to provide multiple additional demo files.")]
     /// Provide one or more additional (custom) stack file(s)
     #[arg(short, long = "stack-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) stack file(s)
-    
+
 Stacks are loaded in the following order: Remote (default) stack file, custom
 stack files provided via the 'STACKABLE_STACK_FILES' environment variable, and
 lastly demo files provided via the '-s/--stack-file' argument(s). If there are
@@ -76,7 +78,7 @@ to provide multiple additional stack files.")]
     /// Provide one or more additional (custom) release file(s)
     #[arg(short, long = "release-file", value_hint = ValueHint::FilePath)]
     #[arg(long_help = "Provide one or more additional (custom) release file(s)
-    
+
 Releases are loaded in the following order: Remote (default) release file,
 custom release files provided via the 'STACKABLE_RELEASE_FILES' environment
 variable, and lastly release files provided via the '-r/--release-file'
@@ -206,9 +208,10 @@ pub enum Commands {
     Cache(CacheArgs),
 }
 
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, Default, ValueEnum)]
 pub enum OutputType {
     /// Print output formatted as plain text
+    #[default]
     Plain,
 
     /// Print output formatted as JSON
@@ -218,26 +221,12 @@ pub enum OutputType {
     Yaml,
 }
 
-impl Default for OutputType {
-    fn default() -> Self {
-        Self::Plain
-    }
-}
-
-#[derive(Clone, Debug, ValueEnum)]
+#[derive(Clone, Debug, Default, ValueEnum)]
 pub enum ClusterType {
-    /// Don't use any local cluster
-    None,
-
     /// Use a kind cluster, see 'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'
+    #[default]
     Kind,
 
     /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
     Minikube,
-}
-
-impl Default for ClusterType {
-    fn default() -> Self {
-        Self::None
-    }
 }

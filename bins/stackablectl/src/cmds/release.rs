@@ -86,18 +86,18 @@ impl ReleaseArgs {
     }
 }
 
-fn list_cmd(args: &ReleaseListArgs) -> Result<String, ReleaseError> {
+fn list_cmd(_args: &ReleaseListArgs) -> Result<String, ReleaseError> {
     todo!()
 }
 
-fn describe_cmd(args: &ReleaseDescribeArgs) -> Result<String, ReleaseError> {
+fn describe_cmd(_args: &ReleaseDescribeArgs) -> Result<String, ReleaseError> {
     todo!()
 }
 
-fn install_cmd(args: &ReleaseInstallArgs) -> Result<String, ReleaseError> {
+fn install_cmd(_args: &ReleaseInstallArgs) -> Result<String, ReleaseError> {
     todo!()
 }
 
-fn uninstall_cmd(args: &ReleaseUninstallArgs) -> Result<String, ReleaseError> {
+fn uninstall_cmd(_args: &ReleaseUninstallArgs) -> Result<String, ReleaseError> {
     todo!()
 }

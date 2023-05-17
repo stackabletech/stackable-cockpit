@@ -22,10 +22,5 @@ impl SpecIter<ReleaseSpec> for Releases {
 
 pub type ReleaseList = List<Releases, ReleaseSpec>;
 
+#[derive(Default)]
 pub struct Release {}
-
-impl Release {
-    pub fn new() -> Self {
-        Self {}
-    }
-}

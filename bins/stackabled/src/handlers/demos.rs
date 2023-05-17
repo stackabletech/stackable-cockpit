@@ -22,6 +22,6 @@ pub async fn get_demos() -> Json<Vec<DemoSpecV2>> {
     (status = 200, description = "Retrieving the demo with 'name' succeeded", body = DemoSpecV2),
     (status = 404, description = "Retrieving the demo with 'name' failed")
 ))]
-pub async fn get_demo(Path(name): Path<String>) -> Json<DemoSpecV2> {
+pub async fn get_demo(Path(_name): Path<String>) -> Json<DemoSpecV2> {
     todo!()
 }
