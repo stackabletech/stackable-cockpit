@@ -71,7 +71,7 @@ where
     ) -> Result<Self, ListError> {
         let mut map = IndexMap::new();
 
-        for file in files.as_ref() {
+        for file in files {
             let specs = match file {
                 PathOrUrl::Path(path) => {
                     read_yaml_data_from_file::<L>(path.clone()).context(LocalReadSnafu {})?
