@@ -1,4 +1,4 @@
-use std::process::Command;
+use tokio::process::Command;
 
 use crate::{
     cluster::ClusterError,
@@ -24,7 +24,7 @@ impl MinikubeCluster {
     }
 
     /// Create a new local cluster by calling the minikube binary
-    pub fn create(&self) -> Result<(), ClusterError> {
+    pub async fn create(&self) -> Result<(), ClusterError> {
         // Check if required binaries are present
         if !binaries_present(&["docker", "minikube"]) {
             return Err(ClusterError::MissingDepsError);
@@ -36,7 +36,8 @@ impl MinikubeCluster {
             .args(["--nodes", self.node_count.to_string().as_str()])
             .args(["--namespace", self.namespace.as_str()])
             .args(["-p", self.name.as_str()])
-            .status();
+            .status()
+            .await;
 
         if let Err(err) = minikube_cmd {
             return Err(ClusterError::CmdError {

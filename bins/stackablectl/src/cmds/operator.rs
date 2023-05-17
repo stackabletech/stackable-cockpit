@@ -194,7 +194,7 @@ impl OperatorArgs {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args, common_args).await,
             OperatorCommands::Describe(args) => describe_cmd(args).await,
-            OperatorCommands::Install(args) => install_cmd(args, common_args),
+            OperatorCommands::Install(args) => install_cmd(args, common_args).await,
             OperatorCommands::Uninstall(args) => uninstall_cmd(args, common_args),
             OperatorCommands::Installed(args) => installed_cmd(args, common_args),
         }
@@ -285,7 +285,10 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmd
 }
 
 #[instrument]
-fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
+async fn install_cmd(
+    args: &OperatorInstallArgs,
+    common_args: &Cli,
+) -> Result<String, OperatorCmdError> {
     info!("Installing operator(s)");
 
     // We need at least two nodes in total (one control-plane node and one
@@ -321,7 +324,7 @@ fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, 
 
                 let kind_cluster =
                     KindCluster::new(args.cluster_nodes, args.cluster_cp_nodes, None, None);
-                kind_cluster.create().context(ClusterSnafu {})?;
+                kind_cluster.create().await.context(ClusterSnafu {})?;
 
                 println!("Created local kind cluster");
             }

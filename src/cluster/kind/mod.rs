@@ -1,9 +1,7 @@
-use std::{
-    io::Write,
-    process::{Command, Stdio},
-};
+use std::process::Stdio;
 
 use snafu::{ensure, ResultExt, Snafu};
+use tokio::{io::AsyncWriteExt, process::Command};
 use tracing::{debug, info, instrument};
 
 use crate::{
@@ -44,8 +42,10 @@ pub struct KindCluster {
 }
 
 impl KindCluster {
-    /// Create a new kind cluster. This will NOT yet create the cluster on the system, but instead will return a data
-    /// structure representing the cluster. To actually create the cluster, the `create` method must be called.
+    /// Create a new kind cluster. This will NOT yet create the cluster on the
+    /// system, but instead will return a data structure representing the
+    /// cluster. To actually create the cluster, the `create` method must be
+    /// called.
     pub fn new(
         node_count: usize,
         cp_node_count: usize,
@@ -62,7 +62,7 @@ impl KindCluster {
 
     /// Create a new local cluster by calling the kind binary.
     #[instrument]
-    pub fn create(&self) -> Result<(), ClusterError> {
+    pub async fn create(&self) -> Result<(), ClusterError> {
         info!("Creating local cluster using kind");
 
         // Check if required binaries are present
@@ -71,13 +71,11 @@ impl KindCluster {
         }
 
         // Check if Docker is running
-        check_if_docker_is_running().context(DockerSnafu {})?;
+        check_if_docker_is_running().await.context(DockerSnafu {})?;
 
         debug!("Creating kind cluster config");
         let config = KindClusterConfig::new(self.node_count, self.cp_node_count);
         let config_string = serde_yaml::to_string(&config).context(YamlSnafu {})?;
-
-        // println!("{config_string}");
 
         debug!("Creating kind cluster");
         let mut kind_cmd = Command::new("kind")
@@ -90,14 +88,21 @@ impl KindCluster {
             .spawn()
             .context(IoSnafu {})?;
 
-        kind_cmd
-            .stdin
-            .as_ref()
-            .ok_or(ClusterError::StdinError)?
-            .write_all(config_string.as_bytes())
-            .context(IoSnafu {})?;
+        let mut stdin = kind_cmd.stdin.take().unwrap();
+        tokio::spawn(async move {
+            stdin.write_all(config_string.as_bytes()).await.unwrap();
+            drop(stdin);
+        });
 
-        if let Err(err) = kind_cmd.wait() {
+        // kind_cmd
+        //     .stdin
+        //     // .as_ref()
+        //     .ok_or(ClusterError::StdinError)?
+        //     .write_all(config_string.as_bytes())
+        //     .await
+        //     .context(IoSnafu {})?;
+
+        if let Err(err) = kind_cmd.wait().await {
             return Err(ClusterError::CmdError {
                 error: err.to_string(),
             });
@@ -108,14 +113,14 @@ impl KindCluster {
 
     /// Creates a kind cluster if it doesn't exist already.
     #[instrument]
-    pub fn create_if_not_exists(&self) -> Result<(), ClusterError> {
+    pub async fn create_if_not_exists(&self) -> Result<(), ClusterError> {
         info!("Creating cluster if it doesn't exist using kind");
 
-        if Self::check_if_cluster_exists(&self.name)? {
+        if Self::check_if_cluster_exists(&self.name).await? {
             return Ok(());
         }
 
-        self.create()
+        self.create().await
     }
 
     /// Retrieve the cluster namespace
@@ -135,7 +140,7 @@ impl KindCluster {
 
     /// Cheack if a kind cluster with the provided name already exists.
     #[instrument]
-    fn check_if_cluster_exists<T>(cluster_name: T) -> Result<bool, ClusterError>
+    async fn check_if_cluster_exists<T>(cluster_name: T) -> Result<bool, ClusterError>
     where
         T: AsRef<str> + std::fmt::Debug,
     {
@@ -144,6 +149,7 @@ impl KindCluster {
         let output = Command::new("kind")
             .args(["get", "clusters"])
             .output()
+            .await
             .context(IoSnafu {})?;
 
         ensure!(
