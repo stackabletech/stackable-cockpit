@@ -11,12 +11,21 @@ export const Listeners = () => {
       <DataTable
         items={listeners() || []}
         columns={[
-          { label: 'Product', get: (listener) => listener.product },
+          {
+            label: 'Product',
+            get: (listener) => listener.product,
+            sortable: true,
+          },
           {
             label: 'Namespace',
             get: (listener) => listener.metadata.namespace,
+            sortable: true,
           },
-          { label: 'Name', get: (listener) => listener.metadata.name },
+          {
+            label: 'Name',
+            get: (listener) => listener.metadata.name,
+            sortable: true,
+          },
           {
             label: 'Endpoints',
             get: (listener) => (
