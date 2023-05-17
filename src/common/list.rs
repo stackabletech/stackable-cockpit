@@ -40,9 +40,11 @@ pub enum ListError {
     InvalidFileUrl,
 }
 
-/// A [`List`] describes a list of specs. The list can contain any specs, for example demos, stacks or releases. The
-/// generic parameter `L` represents the initial type of the spec list, directly deserialized from YAML. This type has
-/// to implement [`SpecIter`], which returns a map of specs of type `S`.
+/// A [`List`] describes a list of specs. The list can contain any specs, for
+/// example demos, stacks or releases. The generic parameter `L` represents
+/// the initial type of the spec list, directly deserialized from YAML. This
+/// type has to implement [`SpecIter`], which returns a map of specs of type
+/// `S`.
 #[derive(Debug, Serialize)]
 pub struct List<L, S>
 where
@@ -58,6 +60,11 @@ where
     L: for<'a> Deserialize<'a> + Serialize + SpecIter<S>,
     S: for<'a> Deserialize<'a> + Serialize + Clone,
 {
+    /// Builds a list of specs of type `S` based on a list of files. These files
+    /// can be located locally (on disk) or remotely. Remote files will get
+    /// downloaded once and then will be cached locally for a specified amount
+    /// of time. The cache time, cache base path and wether to use the cache at
+    /// all are specified using the [`CacheSettings`].
     pub async fn build(
         files: &[PathOrUrl],
         cache_settings: CacheSettings,
