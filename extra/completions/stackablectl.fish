@@ -1,5 +1,5 @@
 complete -c stackablectl -n "__fish_use_subcommand" -s l -l log-level -d 'Log level this application uses' -r
-complete -c stackablectl -n "__fish_use_subcommand" -s n -l namespace -d 'Namespace in the cluster used to deploy the products and operators' -r
+complete -c stackablectl -n "__fish_use_subcommand" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the products and operators' -r
 complete -c stackablectl -n "__fish_use_subcommand" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_use_subcommand" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_use_subcommand" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
@@ -27,14 +27,15 @@ complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fis
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -f -a "installed" -d 'List installed operator (same as list -i)'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "{plain	Print output formatted as plain text,json	Print output formatted as JSON,yaml	Print output formatted as YAML}"
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s i -l installed -d 'List only installed operators'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s o -l output -r -f -a "{plain	Print output formatted as plain text,json	Print output formatted as JSON,yaml	Print output formatted as YAML}"
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{none	Don\'t use any local cluster,kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l cluster-cp-nodes -d 'Number of control plane nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help'
@@ -63,7 +64,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_see
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s i -l include -d 'Whitelist of product operators to install' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s e -l exclude -d 'Blacklist of product operators to install' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{none	Don\'t use any local cluster,kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
@@ -87,7 +88,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s p -l parameters -d 'List of parameters to use when installing the stack' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{none	Don\'t use any local cluster,kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
@@ -122,7 +123,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_s
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s s -l stack-parameters -d 'List of parameters to use when installing the stack' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s p -l parameters -d 'List of parameters to use when installing the demo' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{none	Don\'t use any local cluster,kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'

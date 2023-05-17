@@ -45,6 +45,6 @@ impl ServicesArgs {
     }
 }
 
-fn list_cmd(args: &ServiceListArgs) -> Result<String, ServicesError> {
+fn list_cmd(_args: &ServiceListArgs) -> Result<String, ServicesError> {
     todo!()
 }

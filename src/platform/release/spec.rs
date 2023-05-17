@@ -44,12 +44,13 @@ impl ReleaseSpec {
         &self,
         include_products: &[String],
         exclude_products: &[String],
+        namespace: &str,
     ) -> Result<(), ReleaseInstallError> {
         info!("Installing release");
 
         for (product_name, product) in &self.products {
-            let included = include_products.is_empty() || include_products.contains(&product_name);
-            let excluded = exclude_products.contains(&product_name);
+            let included = include_products.is_empty() || include_products.contains(product_name);
+            let excluded = exclude_products.contains(product_name);
 
             if included && !excluded {
                 info!("Installing product {}", product_name);
@@ -59,7 +60,7 @@ impl ReleaseSpec {
                     .context(OperatorSpecParseSnafu {})?;
 
                 // Install operator
-                operator.install().context(HelmSnafu {})?
+                operator.install(namespace).context(HelmSnafu {})?
             }
         }
 

@@ -84,14 +84,14 @@ impl StackArgs {
     }
 }
 
-fn list_cmd(args: &StackListArgs) -> Result<String, StackCmdError> {
+fn list_cmd(_args: &StackListArgs) -> Result<String, StackCmdError> {
     todo!()
 }
 
-fn describe_cmd(args: &StackDescribeArgs) -> Result<String, StackCmdError> {
+fn describe_cmd(_args: &StackDescribeArgs) -> Result<String, StackCmdError> {
     todo!()
 }
 
-fn install_cmd(args: &StackInstallArgs) -> Result<String, StackCmdError> {
+fn install_cmd(_args: &StackInstallArgs) -> Result<String, StackCmdError> {
     todo!()
 }

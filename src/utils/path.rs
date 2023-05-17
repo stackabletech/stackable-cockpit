@@ -19,22 +19,6 @@ pub trait IntoPathOrUrl: Sized {
     fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError>;
 }
 
-impl TryFrom<&str> for PathOrUrl {
-    type Error = PathOrUrlParseError;
-
-    fn try_from(value: &str) -> Result<Self, Self::Error> {
-        PathOrUrl::from_str(value)
-    }
-}
-
-impl TryFrom<String> for PathOrUrl {
-    type Error = PathOrUrlParseError;
-
-    fn try_from(value: String) -> Result<Self, Self::Error> {
-        PathOrUrl::from_str(value.as_str())
-    }
-}
-
 impl<T: AsRef<str>> IntoPathOrUrl for T {
     fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
         PathOrUrl::from_str(self.as_ref())
