@@ -43,5 +43,5 @@ fn generate_completions(shell: Shell) -> Result<String, CompletionsError> {
     let mut buf = Vec::new();
 
     generate(shell, &mut cmd, "stackablectl", &mut buf);
-    Ok(String::from_utf8(buf).context(StringSnafu {})?)
+    String::from_utf8(buf).context(StringSnafu {})
 }

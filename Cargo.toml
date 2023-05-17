@@ -10,29 +10,34 @@ members = [
 name = "stackable"
 version = "0.1.0"
 edition = "2021"
+publish = false
 
 [features]
 full = ["openapi"]
-openapi = []
+openapi = ["dep:utoipa"]
 
 [dependencies]
-async-trait = { workspace = true }
+tokio = { workspace = true, features = ["process"] }
+k8s-openapi = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
 indexmap = { workspace = true }
 reqwest = { workspace = true }
 tracing = { workspace = true }
-utoipa = { workspace = true }
+utoipa = { workspace = true, optional = true }
 snafu = { workspace = true }
 which = { workspace = true }
 serde = { workspace = true }
 tera = { workspace = true }
+kube = { workspace = true }
 url = { workspace = true }
 
 [build-dependencies]
 gobuild = "0.1.0-alpha.1"
 
 [workspace.dependencies]
+kube = { version = "0.82.2", default-features = false, features = ["client", "openssl-tls"] }
+k8s-openapi = { version = "0.18.0", default-features = false, features = ["v1_26"] }
 tokio = { version = "1.27.0", features = ["rt-multi-thread", "macros"] }
 reqwest = { version = "0.11.16", features = ["native-tls"] }
 serde = { version = "1.0.160", features = ["derive"] }
@@ -41,18 +46,19 @@ clap = { version = "4.2.1", features = ["derive"] }
 tracing-subscriber = "0.3.17"
 utoipa-swagger-ui = "3.1.3"
 clap_complete = "4.2.0"
+phf_codegen = "0.11.1"
 async-trait = "0.1.68"
 lazy_static = "1.4.0"
 serde_json = "1.0.96"
 serde_yaml = "0.9.21"
 dotenvy = "0.15.7"
 tracing = "0.1.37"
+semver = "1.0.17"
 utoipa = "3.3.0"
 axum = "0.6.18"
 snafu = "0.7.4"
 which = "4.4.0"
 tera = "1.18.1"
+phf = "0.11.1"
 url = "2.3.1"
 xdg = "2.4.1"
-phf = "0.11.1"
-phf_codegen = "0.11.1"

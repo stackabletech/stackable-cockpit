@@ -1,22 +1,16 @@
-use snafu::Snafu;
+use serde::Serialize;
 
+mod docker;
 mod kind;
 mod minikube;
 
+pub use docker::*;
 pub use kind::*;
 pub use minikube::*;
 
-#[derive(Debug, Snafu)]
-pub enum ClusterError {
-    #[snafu(display("io error: {source}"))]
-    IoError { source: std::io::Error },
-
-    #[snafu(display("stdin error"))]
-    Stdin,
-
-    #[snafu(display("command error: {error}"))]
-    Cmd { error: String },
-
-    #[snafu(display("missing dependencies"))]
-    MissingDeps,
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum NodeRole {
+    Worker,
+    ControlPlane,
 }

@@ -4,7 +4,7 @@
 .SH NAME
 stackablectl
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-n\fR|\fB\-\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-n\fR|\fB\-\-operator\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 .SH OPTIONS
 .TP
@@ -20,7 +20,7 @@ Cached files are saved at \*(Aq$XDG_CACHE_HOME/stackablectl\*(Aq, which is usual
 \fB\-\-offline\fR
 Do not request any remote files via the network
 .TP
-\fB\-n\fR, \fB\-\-namespace\fR=\fINAMESPACE\fR [default: stackable]
+\fB\-n\fR, \fB\-\-operator\-namespace\fR=\fIOPERATOR_NAMESPACE\fR [default: default]
 Namespace in the cluster used to deploy the products and operators
 .TP
 \fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILES\fR
@@ -36,7 +36,7 @@ to provide multiple additional demo files.
 .TP
 \fB\-s\fR, \fB\-\-stack\-file\fR=\fISTACK_FILES\fR
 Provide one or more additional (custom) stack file(s)
-    
+
 Stacks are loaded in the following order: Remote (default) stack file, custom
 stack files provided via the \*(AqSTACKABLE_STACK_FILES\*(Aq environment variable, and
 lastly demo files provided via the \*(Aq\-s/\-\-stack\-file\*(Aq argument(s). If there are
@@ -47,7 +47,7 @@ to provide multiple additional stack files.
 .TP
 \fB\-r\fR, \fB\-\-release\-file\fR=\fIRELEASE_FILES\fR
 Provide one or more additional (custom) release file(s)
-    
+
 Releases are loaded in the following order: Remote (default) release file,
 custom release files provided via the \*(AqSTACKABLE_RELEASE_FILES\*(Aq environment
 variable, and lastly release files provided via the \*(Aq\-r/\-\-release\-file\*(Aq
@@ -57,13 +57,13 @@ will be used.
 Use "stackablectl \-r path/to/realeases1.yaml \-r path/to/realeases2.yaml [OPTIONS] <COMMAND>"
 to provide multiple additional stack files.
 .TP
-\fB\-\-helm\-repo\-stable\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-stable]
+\fB\-\-helm\-repo\-stable\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-stable/]
 Provide a custom Helm stable repository URL
 .TP
-\fB\-\-helm\-repo\-test\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-test]
+\fB\-\-helm\-repo\-test\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-test/]
 Provide a custom Helm test repository URL
 .TP
-\fB\-\-helm\-repo\-dev\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-dev]
+\fB\-\-helm\-repo\-dev\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-dev/]
 Provide a custom Helm dev repository URL
 .TP
 \fB\-h\fR, \fB\-\-help\fR

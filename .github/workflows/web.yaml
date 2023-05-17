@@ -1,0 +1,41 @@
+---
+name: web
+on:
+  push:
+    branches:
+      - main
+      - staging
+      - trying
+      - "renovate/**"
+    tags:
+      - '[0-9][0-9].[0-9]+.[0-9]+'
+  pull_request:
+
+jobs:
+  build-web:
+    name: Web frontend built
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd # v2.2.4
+        with:
+          version: 7.26.1
+          run_install: true
+      - run: pnpm --filter web-ui run build
+
+  prettier:
+    name: Validate web formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - uses: pnpm/action-setup@c3b53f6a16e57305370b4ae5a540c2077a1d50dd # v2.2.4
+        with:
+          version: 7.26.1
+          run_install: true
+      - run: pnpm --filter web-ui run format --check
+      - name: Git Diff showed uncommitted changes
+        if: ${{ failure() }}
+        uses: actions/github-script@d556feaca394842dc55e4734bf3bb9f685482fa0 # v6
+        with:
+          script: |
+            core.setFailed('web/ contains unformatted code, run `pnpm prettier . --write` and re-commit!')

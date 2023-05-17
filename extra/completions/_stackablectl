@@ -17,8 +17,8 @@ _stackablectl() {
     _arguments "${_arguments_options[@]}" \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
-'-n+[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
-'--namespace=[Namespace in the cluster used to deploy the products and operators]:NAMESPACE: ' \
+'-n+[Namespace in the cluster used to deploy the products and operators]:OPERATOR_NAMESPACE: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the products and operators]:OPERATOR_NAMESPACE: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
@@ -67,8 +67,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-i[List only installed operators]' \
-'--installed[List only installed operators]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -92,13 +90,13 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
-'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
-'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -223,11 +221,9 @@ _arguments "${_arguments_options[@]}" \
 '*--include=[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
 '*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
 '*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
-'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
-'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -334,11 +330,9 @@ yaml\:"Print output formatted as YAML"))' \
 _arguments "${_arguments_options[@]}" \
 '*-p+[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the stack]:PARAMETERS: ' \
-'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
-'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -497,11 +491,9 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
 '*-p+[List of parameters to use when installing the demo]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the demo]:PARAMETERS: ' \
-'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
-'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((none\:"Don'\''t use any local cluster"
-kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
+'--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '-h[Print help (see more with '\''--help'\'')]' \

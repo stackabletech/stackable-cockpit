@@ -3,11 +3,7 @@ use dotenvy::dotenv;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
-use crate::cli::Commands;
-
-pub mod cli;
-pub mod cmds;
-pub mod constants;
+use stackablectl::cli::{self, Commands};
 
 #[tokio::main]
 async fn main() {
@@ -50,7 +46,7 @@ async fn main() {
     };
 
     match &cli.subcommand {
-        Commands::Operator(args) => match args.run() {
+        Commands::Operator(args) => match args.run(&cli).await {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },

@@ -3,7 +3,11 @@ use std::{fmt::Display, str::FromStr};
 use snafu::Snafu;
 use tracing::{info, instrument};
 
-use crate::helm;
+use crate::{
+    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    helm,
+    utils::operator_chart_name,
+};
 
 pub const VALID_OPERATORS: &[&str] = &[
     "airflow",
@@ -146,37 +150,58 @@ impl OperatorSpec {
 
     /// Returns the name used by Helm
     pub fn helm_name(&self) -> String {
-        format!("{}-operator", self.name)
+        operator_chart_name(&self.name)
     }
 
     /// Returns the repo used by Helm based on the specified version
-    pub fn helm_repo(&self) -> String {
+    pub fn helm_repo_name(&self) -> String {
         match &self.version {
-            Some(version) if version.ends_with("-nightly") => "stackable-dev",
-            Some(version) if version.ends_with("-dev") => "stackable-dev",
-            Some(version) if version.contains("-pr") => "stackable-test",
-            Some(_) => "stackable-stable",
-            None => "stackable-dev",
+            Some(version) if version.ends_with("-nightly") => HELM_REPO_NAME_DEV,
+            Some(version) if version.ends_with("-dev") => HELM_REPO_NAME_DEV,
+            Some(version) if version.contains("-pr") => HELM_REPO_NAME_TEST,
+            Some(_) => HELM_REPO_NAME_STABLE,
+            None => HELM_REPO_NAME_DEV,
         }
         .into()
     }
 
-    /// Installs the operator using Helm
+    /// Installs the operator using Helm.
     #[instrument(skip_all)]
-    pub fn install(&self) -> Result<(), helm::HelmError> {
+    pub fn install(&self, namespace: &str) -> Result<(), helm::HelmError> {
         info!("Installing operator {}", self);
 
         let helm_name = self.helm_name();
-        let helm_repo = self.helm_repo();
-        let version = match &self.version {
-            Some(version) => Some(version.as_str()),
-            None => None,
-        };
+        let helm_repo = self.helm_repo_name();
+        let version = self.version.as_deref();
 
         // Install using Helm
         match helm::install_release_from_repo(
-            &self.name, &helm_name, &helm_repo, &helm_name, version, None, "", true,
+            &self.name,
+            &helm_name,
+            helm::ChartVersion {
+                repo_name: &helm_repo,
+                chart_name: &helm_name,
+                chart_version: version,
+            },
+            None,
+            namespace,
+            true,
         ) {
+            Ok(status) => {
+                println!("{status}");
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }
+    }
+
+    /// Uninstalls the operator using Helm.
+    #[instrument]
+    pub fn uninstall<T>(&self, namespace: T) -> Result<(), helm::HelmError>
+    where
+        T: AsRef<str> + std::fmt::Debug,
+    {
+        match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {
                 println!("{status}");
                 Ok(())
@@ -203,9 +228,9 @@ mod test {
 
     #[test]
     fn version_operator_spec() {
-        match OperatorSpec::try_from("operator=1.2.3") {
+        match OperatorSpec::try_from("zookeeper=1.2.3") {
             Ok(spec) => {
-                assert_eq!(spec.name, String::from("operator"));
+                assert_eq!(spec.name, String::from("zookeeper"));
                 assert_eq!(spec.version, Some(String::from("1.2.3")));
             }
             Err(err) => panic!("{err}"),

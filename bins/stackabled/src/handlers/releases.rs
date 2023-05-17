@@ -19,6 +19,6 @@ pub async fn get_releases() -> Json<Vec<ReleaseSpec>> {
 
 /// Retrieves one release identified by `name`.
 #[utoipa::path(get, path = "/releases/{name}")]
-pub async fn get_release(Path(name): Path<String>) -> Json<ReleaseSpec> {
+pub async fn get_release(Path(_name): Path<String>) -> Json<ReleaseSpec> {
     todo!()
 }
