@@ -176,7 +176,16 @@ impl OperatorSpec {
 
         // Install using Helm
         match helm::install_release_from_repo(
-            &self.name, &helm_name, &helm_repo, &helm_name, version, None, namespace, true,
+            &self.name,
+            &helm_name,
+            helm::ChartVersion {
+                repo_name: &helm_repo,
+                chart_name: &helm_name,
+                chart_version: version,
+            },
+            None,
+            namespace,
+            true,
         ) {
             Ok(status) => {
                 println!("{status}");

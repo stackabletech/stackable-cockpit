@@ -177,9 +177,11 @@ impl StackSpecV2 {
                     helm::install_release_from_repo(
                         &helm_chart.release_name,
                         &helm_chart.release_name,
-                        &helm_chart.repo.name,
-                        &helm_chart.name,
-                        Some(&helm_chart.version),
+                        helm::ChartVersion {
+                            repo_name: &helm_chart.repo.name,
+                            chart_name: &helm_chart.name,
+                            chart_version: Some(&helm_chart.version),
+                        },
                         Some(&values_yaml),
                         namespace,
                         false,

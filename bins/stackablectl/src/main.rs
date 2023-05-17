@@ -3,12 +3,7 @@ use dotenvy::dotenv;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
-use crate::cli::Commands;
-
-pub mod cli;
-pub mod cmds;
-pub mod constants;
-pub mod util;
+use stackablectl::cli::{self, Commands};
 
 #[tokio::main]
 async fn main() {
