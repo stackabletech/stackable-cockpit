@@ -4,7 +4,7 @@ import 'virtual:uno.css';
 import { render } from 'solid-js/web';
 import { A, Route, Router, Routes } from '@solidjs/router';
 import type { ParentProps } from 'solid-js';
-import { Listeners } from './components/listeners';
+import { Listeners } from './pages/listeners';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
