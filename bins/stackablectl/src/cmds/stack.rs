@@ -1,8 +1,18 @@
 use clap::{Args, Subcommand};
-use snafu::Snafu;
-use stackable::constants::DEFAULT_LOCAL_CLUSTER_NAME;
+use snafu::{ResultExt, Snafu};
+use xdg::BaseDirectoriesError;
 
-use crate::cli::{ClusterType, OutputType};
+use stackable::{
+    common::ListError,
+    constants::DEFAULT_LOCAL_CLUSTER_NAME,
+    platform::stack::StackList,
+    utils::{path::PathOrUrlParseError, read::CacheSettings},
+};
+
+use crate::{
+    cli::{Cli, ClusterType, OutputType},
+    constants::CACHE_HOME_PATH,
+};
 
 #[derive(Debug, Args)]
 pub struct StackArgs {
@@ -72,19 +82,41 @@ installation on the system."
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackCmdError {}
+pub enum StackCmdError {
+    #[snafu(display("path/url parse error"))]
+    PathOrUrlParseError { source: PathOrUrlParseError },
+
+    #[snafu(display("xdg base directory error"))]
+    XdgError { source: BaseDirectoriesError },
+
+    #[snafu(display("list error"))]
+    ListError { source: ListError },
+}
 
 impl StackArgs {
-    pub fn run(&self) -> Result<String, StackCmdError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
+        let files = common_args
+            .get_stack_files()
+            .context(PathOrUrlParseSnafu {})?;
+
+        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+            .context(XdgSnafu {})?
+            .get_cache_home();
+
+        let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
+        let list = StackList::build(files, cache_settings)
+            .await
+            .context(ListSnafu {})?;
+
         match &self.subcommand {
-            StackCommands::List(args) => list_cmd(args),
+            StackCommands::List(args) => list_cmd(args, list),
             StackCommands::Describe(args) => describe_cmd(args),
             StackCommands::Install(args) => install_cmd(args),
         }
     }
 }
 
-fn list_cmd(_args: &StackListArgs) -> Result<String, StackCmdError> {
+fn list_cmd(args: &StackListArgs, stacks: StackList) -> Result<String, StackCmdError> {
     todo!()
 }
 
