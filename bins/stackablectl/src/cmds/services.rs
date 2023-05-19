@@ -35,16 +35,16 @@ pub struct ServiceListArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum ServicesError {}
+pub enum ServicesCmdError {}
 
 impl ServicesArgs {
-    pub fn run(&self) -> Result<String, ServicesError> {
+    pub fn run(&self) -> Result<String, ServicesCmdError> {
         match &self.subcommand {
             ServiceCommands::List(args) => list_cmd(args),
         }
     }
 }
 
-fn list_cmd(_args: &ServiceListArgs) -> Result<String, ServicesError> {
+fn list_cmd(_args: &ServiceListArgs) -> Result<String, ServicesCmdError> {
     todo!()
 }
