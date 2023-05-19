@@ -57,7 +57,8 @@ const Field = (props: FieldProps) => {
       <Match when={props.type == 'url'}>
         <a href={props.value}>{props.label}</a>
       </Match>
-      <Match when={props.type == 'blob'}>
+      {/* Fall back to rendering as blob if unknown */}
+      <Match when={props.type == 'blob' || true}>
         <label class='block' for={dataFieldId}>
           {props.label}
         </label>
