@@ -54,18 +54,17 @@ const App = () => {
 };
 
 const root = document.querySelector('#app');
-
-if (import.meta.env.DEV && root === undefined) {
+if (root == undefined) {
   throw new Error(
     'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?',
   );
+} else {
+  render(
+    () => (
+      <Router base="/ui">
+        <App />
+      </Router>
+    ),
+    root,
+  );
 }
-
-render(
-  () => (
-    <Router base="/ui">
-      <App />
-    </Router>
-  ),
-  root!,
-);
