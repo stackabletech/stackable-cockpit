@@ -72,7 +72,13 @@ installation on the system."
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackCmdError {}
+pub enum StackCmdError {
+    #[snafu(display("unable to format yaml output:: {source}"))]
+    YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("unable to format json output:: {source}"))]
+    JsonError { source: serde_json::Error },
+}
 
 impl StackArgs {
     pub fn run(&self) -> Result<String, StackCmdError> {
