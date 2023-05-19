@@ -116,30 +116,40 @@ pub enum ReleaseCmdError {
 
 impl ReleaseArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, ReleaseCmdError> {
+        let files = common_args
+            .get_release_files()
+            .context(PathOrUrlParseSnafu {})?;
+
+        let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+            .context(XdgSnafu {})?
+            .get_cache_home();
+
+        let release_list =
+            ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
+                .await
+                .context(ListSnafu {})?;
+
+        if release_list.inner().is_empty() {
+            return Ok("No releases".into());
+        }
+
         match &self.subcommand {
-            ReleaseCommands::List(args) => list_cmd(args, common_args).await,
-            ReleaseCommands::Describe(args) => describe_cmd(args, common_args).await,
-            ReleaseCommands::Install(args) => install_cmd(args, common_args).await,
-            ReleaseCommands::Uninstall(args) => uninstall_cmd(args, common_args).await,
+            ReleaseCommands::List(args) => list_cmd(args, release_list).await,
+            ReleaseCommands::Describe(args) => describe_cmd(args, release_list).await,
+            ReleaseCommands::Install(args) => install_cmd(args, common_args, release_list).await,
+            ReleaseCommands::Uninstall(args) => {
+                uninstall_cmd(args, common_args, release_list).await
+            }
         }
     }
 }
 
 #[instrument]
-async fn list_cmd(args: &ReleaseListArgs, common_args: &Cli) -> Result<String, ReleaseCmdError> {
+async fn list_cmd(
+    args: &ReleaseListArgs,
+    release_list: ReleaseList,
+) -> Result<String, ReleaseCmdError> {
     info!("Listing releases");
-
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
-
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
-    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
-        .await
-        .context(ListSnafu {})?;
 
     match args.output_type {
         OutputType::Plain => {
@@ -172,25 +182,9 @@ async fn list_cmd(args: &ReleaseListArgs, common_args: &Cli) -> Result<String, R
 #[instrument]
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
-    common_args: &Cli,
+    release_list: ReleaseList,
 ) -> Result<String, ReleaseCmdError> {
     info!("Describing release");
-
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
-
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
-    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
-        .await
-        .context(ListSnafu {})?;
-
-    if release_list.inner().is_empty() {
-        return Ok("No releases".into());
-    }
 
     let release = release_list.get(&args.release);
 
@@ -234,24 +228,9 @@ async fn describe_cmd(
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     common_args: &Cli,
+    release_list: ReleaseList,
 ) -> Result<String, ReleaseCmdError> {
     info!("Installing release");
-
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
-
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
-    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
-        .await
-        .context(ListSnafu {})?;
-
-    if release_list.inner().is_empty() {
-        return Ok("No releases".into());
-    }
 
     // Install local cluster if needed
     args.local_cluster
@@ -278,24 +257,9 @@ async fn install_cmd(
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     common_args: &Cli,
+    release_list: ReleaseList,
 ) -> Result<String, ReleaseCmdError> {
     info!("Installing release");
-
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
-
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
-    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
-        .await
-        .context(ListSnafu {})?;
-
-    if release_list.inner().is_empty() {
-        return Ok("No releases".into());
-    }
 
     match release_list.get(&args.release) {
         Some(release) => {
