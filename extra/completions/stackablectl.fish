@@ -127,6 +127,8 @@ complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_s
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s p -l parameters -d 'List of parameters to use when installing the demo' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see \'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind\',minikube	Use a minikube cluster (CURRENTLY UNSUPPORTED)}"
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-cp-nodes -d 'Number of control plane nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help'
