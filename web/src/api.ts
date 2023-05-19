@@ -87,12 +87,18 @@ export async function getProductClusters(): Promise<ProductCluster[]> {
       metadata: { namespace: 'default', name: 'simple-nifi' },
       product: 'nifi',
     },
+    {
+      metadata: { namespace: 'default', name: 'simple-hdfs' },
+      product: 'hdfs',
+    },
   ];
 }
 
+export type DiscoveryFieldType = 'url' | 'blob';
 interface ProductClusterDiscovery {
   metadata: ObjectMeta;
   data: { [x: string]: string };
+  fieldTypes: { [x: string]: DiscoveryFieldType };
 }
 
 export async function getProductClusterDiscovery(
@@ -103,7 +109,17 @@ export async function getProductClusterDiscovery(
   if (namespace == 'default' && discoveryConfigMapName == 'simple-nifi') {
     return {
       metadata: { namespace, name: discoveryConfigMapName },
-      data: { url: 'https://foo.com' },
+      data: { NIFI_URL: 'https://foo.com' },
+      fieldTypes: { NIFI_URL: 'url' },
+    };
+  } else if (
+    namespace == 'default' &&
+    discoveryConfigMapName == 'simple-hdfs'
+  ) {
+    return {
+      metadata: { namespace, name: discoveryConfigMapName },
+      data: { 'hdfs-config.xml': '<?xml>config goes here' },
+      fieldTypes: {},
     };
   } else {
     return undefined;

@@ -1,22 +1,31 @@
-import { For, Show, createResource, createUniqueId } from 'solid-js';
-import { getProductClusterDiscovery } from '../../api';
+import {
+  For,
+  Match,
+  Show,
+  Switch,
+  createResource,
+  createUniqueId,
+} from 'solid-js';
+import { DiscoveryFieldType, getProductClusterDiscovery } from '../../api';
 import { Params, useParams } from '@solidjs/router';
 
-interface ProductClusterConnectionDetailsProps extends Params {
+interface ProductClusterConnectionDetailsParams extends Params {
   namespace: string;
   name: string;
 }
 
 export const ProductClusterConnectionDetails = () => {
-  const params = useParams<ProductClusterConnectionDetailsProps>();
+  const params = useParams<ProductClusterConnectionDetailsParams>();
   const [discoveryConfig, { refetch }] = createResource(() =>
     getProductClusterDiscovery(params.namespace, params.name),
   );
   const configParams = () => {
-    const data = discoveryConfig()?.data || {};
+    const currentDiscoveryConfig = discoveryConfig();
+    const data = currentDiscoveryConfig?.data || {};
+    const types = currentDiscoveryConfig?.fieldTypes || {};
     return Object.keys(data)
       .sort()
-      .map((key) => ({ key, value: data[key] }));
+      .map((key) => ({ key, value: data[key], type: types[key] || 'blob' }));
   };
   return (
     <>
@@ -24,21 +33,38 @@ export const ProductClusterConnectionDetails = () => {
       <Show when={discoveryConfig.loading}>Loading...</Show>
       <ul>
         <For each={configParams()}>
-          {(item) => {
-            const textareaId = createUniqueId();
-            return (
-              <li>
-                <label class='block' for={textareaId}>
-                  {item.key}
-                </label>
-                <textarea class='block' id={textareaId} readonly>
-                  {item.value}
-                </textarea>
-              </li>
-            );
-          }}
+          {(item) => (
+            <li>
+              <Field label={item.key} value={item.value} type={item.type} />
+            </li>
+          )}
         </For>
       </ul>
     </>
+  );
+};
+
+interface FieldProps {
+  label: string;
+  value: string;
+  type: DiscoveryFieldType;
+}
+
+const Field = (props: FieldProps) => {
+  const dataFieldId = createUniqueId();
+  return (
+    <Switch>
+      <Match when={props.type == 'url'}>
+        <a href={props.value}>{props.label}</a>
+      </Match>
+      <Match when={props.type == 'blob'}>
+        <label class='block' for={dataFieldId}>
+          {props.label}
+        </label>
+        <textarea class='block' id={dataFieldId} readonly>
+          {props.value}
+        </textarea>
+      </Match>
+    </Switch>
   );
 };
