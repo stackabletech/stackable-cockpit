@@ -15,7 +15,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   const [sortComparator, setSortComparator] = createSignal<
     ((x: T, y: T) => number) | undefined
   >();
-  
+
   const sortedItems = createMemo(() => {
     const currentSortComparator = sortComparator();
     if (currentSortComparator == undefined) {
@@ -26,26 +26,29 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
       return items;
     }
   });
+
+  const sortByColumn = (event: Event, column: DataTableColumn<T>) => {
+    event.preventDefault();
+    setSortComparator(() =>
+      column.sortBy ? keyComparator(column.sortBy) : undefined,
+    );
+  };
+
   return (
     <>
       <table class="font-sans border-collapse text-left w-full">
         <thead class="text-xs uppercase text-gray-400 bg-gray-700">
           <tr>
             <For each={props.columns}>
-              {(col) => (
+              {(column) => (
                 <th class="px-4 py-3">
-                  <Show when={col.sortBy} fallback={col.label}>
+                  <Show when={column.sortBy} fallback={column.label}>
                     <a
                       href=""
                       class="text-gray-400"
-                      onClick={(event) => {
-                        event.preventDefault();
-                        setSortComparator(() =>
-                          col.sortBy ? keyComparator(col.sortBy) : undefined,
-                        );
-                      }}
+                      onClick={(event) => sortByColumn(event, column)}
                     >
-                      {col.label}
+                      {column.label}
                     </a>
                   </Show>
                 </th>
