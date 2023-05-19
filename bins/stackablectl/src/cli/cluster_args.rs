@@ -1,12 +1,13 @@
 use clap::{Args, ValueEnum};
 use snafu::{ensure, Snafu};
+
 use stackable::{
     cluster::{ClusterError, KindCluster},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
 };
 
 #[derive(Debug, Snafu)]
-pub enum CommonClusterArgValidationError {
+pub enum ClusterArgsValidationError {
     #[snafu(display(
         "invalid total node count - at least two nodes in total are needed to run a local cluster"
     ))]
@@ -58,7 +59,7 @@ an error message.")]
 }
 
 impl CommonClusterArgs {
-    pub fn validate(&self) -> Result<(), CommonClusterArgValidationError> {
+    pub fn validate(&self) -> Result<(), ClusterArgsValidationError> {
         // We need at least two nodes in total (one control-plane node and one
         // worker node)
         ensure!(self.cluster_nodes >= 2, InvalidTotalNodeCountSnafu {});
@@ -88,7 +89,11 @@ impl CommonClusterArgs {
                         namespace,
                     );
 
-                    Ok(kind_cluster.create().await?)
+                    // Seems like we cannot propagate the error directly using ?
+                    match kind_cluster.create().await {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(ClusterError::KindClusterError { source: err }),
+                    }
                 }
                 ClusterType::Minikube => todo!(),
             },
