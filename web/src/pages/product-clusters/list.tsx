@@ -30,9 +30,10 @@ export const ProductClusters = () => {
           {
             label: 'Actions',
             get: (cluster) => (
-              <ul>
-                <li>
+              <ul class='m-0 p-0'>
+                <li class='inline-block mx-1 p-1 bg-gray'>
                   <A
+                    class='color-black'
                     href={`/product-clusters/${cluster.metadata.namespace}/${cluster.metadata.name}/connect`}
                   >
                     Connect
