@@ -74,3 +74,38 @@ export async function getListeners(): Promise<Listener[]> {
     },
   ];
 }
+
+interface ProductCluster {
+  metadata: ObjectMeta;
+  product: string;
+}
+
+export async function getProductClusters(): Promise<ProductCluster[]> {
+  await delay(200);
+  return [
+    {
+      metadata: { namespace: 'default', name: 'simple-nifi' },
+      product: 'nifi',
+    },
+  ];
+}
+
+interface ProductClusterDiscovery {
+  metadata: ObjectMeta;
+  data: { [x: string]: string };
+}
+
+export async function getProductClusterDiscovery(
+  namespace: string,
+  discoveryConfigMapName: string,
+): Promise<ProductClusterDiscovery | undefined> {
+  await delay(200);
+  if (namespace == 'default' && discoveryConfigMapName == 'simple-nifi') {
+    return {
+      metadata: { namespace, name: discoveryConfigMapName },
+      data: { url: 'https://foo.com' },
+    };
+  } else {
+    return undefined;
+  }
+}

@@ -5,6 +5,8 @@ import { render } from 'solid-js/web';
 import { A, Route, Router, Routes } from '@solidjs/router';
 import type { ParentProps } from 'solid-js';
 import { Listeners } from './pages/listeners';
+import { ProductClusters } from './pages/product-clusters/list';
+import { ProductClusterConnectionDetails } from './pages/product-clusters/connect';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -16,12 +18,12 @@ interface NavItemProps {
 
 const GlobalNav = () => {
   const NavItem = (props: ParentProps<NavItemProps>) => (
-    <li class="inline mr-1">
+    <li class='inline mr-1'>
       <A
         href={props.href}
-        class="p-1 c-white inline-block"
-        activeClass="bg-stblue"
-        inactiveClass="bg-stblue bg-opacity-50 hover:bg-opacity-80"
+        class='p-1 c-white inline-block'
+        activeClass='bg-stblue'
+        inactiveClass='bg-stblue bg-opacity-50 hover:bg-opacity-80'
       >
         {props.children}
       </A>
@@ -30,10 +32,11 @@ const GlobalNav = () => {
 
   return (
     <>
-      <nav class="bg-gray">
-        <ul class="m-0 p-0">
-          <NavItem href="/listeners">listeners</NavItem>
-          <NavItem href="/stacks">stacks</NavItem>
+      <nav class='bg-gray'>
+        <ul class='m-0 p-0'>
+          <NavItem href='/product-clusters'>product clusters</NavItem>
+          <NavItem href='/listeners'>listeners</NavItem>
+          <NavItem href='/stacks'>stacks</NavItem>
         </ul>
       </nav>
     </>
@@ -42,12 +45,17 @@ const GlobalNav = () => {
 
 const App = () => {
   return (
-    <div class="max-w-5xl ma">
+    <div class='max-w-5xl ma'>
       <h1>stackablectl, web edition</h1>
       <GlobalNav />
       <Routes>
-        <Route path="/listeners" component={Listeners} />
-        <Route path="/" component={Home} />
+        <Route
+          path='/product-clusters/:namespace/:name/connect'
+          component={ProductClusterConnectionDetails}
+        />
+        <Route path='/product-clusters' component={ProductClusters} />
+        <Route path='/listeners' component={Listeners} />
+        <Route path='/' component={Home} />
       </Routes>
     </div>
   );
@@ -61,7 +69,7 @@ if (root == undefined) {
 } else {
   render(
     () => (
-      <Router base="/ui">
+      <Router base='/ui'>
         <App />
       </Router>
     ),
