@@ -5,14 +5,17 @@ export interface DataTableColumn<T> {
   get: (x: T) => JSX.Element;
   sortBy?: (x: T) => string;
 }
+
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   items: T[];
 }
+
 export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   const [sortComparator, setSortComparator] = createSignal<
     ((x: T, y: T) => number) | undefined
   >();
+  
   const sortedItems = createMemo(() => {
     const currentSortComparator = sortComparator();
     if (currentSortComparator == undefined) {
