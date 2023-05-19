@@ -1,23 +1,9 @@
 use clap::{Args, ValueEnum};
-use snafu::{ensure, Snafu};
 
 use stackable::{
     cluster::{ClusterError, KindCluster},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
 };
-
-#[derive(Debug, Snafu)]
-pub enum ClusterArgsValidationError {
-    #[snafu(display(
-        "invalid total node count - at least two nodes in total are needed to run a local cluster"
-    ))]
-    InvalidTotalNodeCount,
-
-    #[snafu(display(
-        "invalid control-plane node count - the number of control-plane nodes needs to be lower than total node count
-    "))]
-    InvalidControlPlaneNodeCount,
-}
 
 #[derive(Debug, Args)]
 pub struct CommonClusterArgs {
@@ -59,46 +45,56 @@ an error message.")]
 }
 
 impl CommonClusterArgs {
-    pub fn validate(&self) -> Result<(), ClusterArgsValidationError> {
-        // We need at least two nodes in total (one control-plane node and one
-        // worker node)
-        ensure!(self.cluster_nodes >= 2, InvalidTotalNodeCountSnafu {});
-
-        // The cluster control-plane node count must be smaller than the total
-        // node count
-        ensure!(
-            self.cluster_cp_nodes < self.cluster_nodes,
-            InvalidControlPlaneNodeCountSnafu {}
-        );
-
-        Ok(())
-    }
-
+    /// Installs a local cluster with `name` in `namespace` if needed. The user
+    /// has the option to not install any local cluster. If the user chooses so
+    /// the function skips creation of the local cluster. If a cluster needs to
+    /// be created, the function first validates cluster node counts. If this
+    /// validation fails, an error is returned.
     pub async fn install_if_needed(
         &self,
         name: Option<String>,
         namespace: Option<String>,
     ) -> Result<(), ClusterError> {
         match &self.cluster_type {
-            Some(cluster_type) => match cluster_type {
-                ClusterType::Kind => {
-                    let kind_cluster = KindCluster::new(
-                        self.cluster_nodes,
-                        self.cluster_cp_nodes,
-                        name,
-                        namespace,
-                    );
+            Some(cluster_type) => {
+                self.validate()?;
 
-                    // Seems like we cannot propagate the error directly using ?
-                    match kind_cluster.create().await {
-                        Ok(_) => Ok(()),
-                        Err(err) => Err(ClusterError::KindClusterError { source: err }),
+                match cluster_type {
+                    ClusterType::Kind => {
+                        let kind_cluster = KindCluster::new(
+                            self.cluster_nodes,
+                            self.cluster_cp_nodes,
+                            name,
+                            namespace,
+                        );
+
+                        // Seems like we cannot propagate the error directly using ?
+                        match kind_cluster.create().await {
+                            Ok(_) => Ok(()),
+                            Err(err) => Err(ClusterError::KindClusterError { source: err }),
+                        }
                     }
+                    ClusterType::Minikube => todo!(),
                 }
-                ClusterType::Minikube => todo!(),
-            },
+            }
             None => Ok(()),
         }
+    }
+
+    fn validate(&self) -> Result<(), ClusterError> {
+        // We need at least two nodes in total (one control-plane node and one
+        // worker node)
+        if self.cluster_nodes < 2 {
+            return Err(ClusterError::InvalidTotalNodeCountError);
+        }
+
+        // The cluster control-plane node count must be smaller than the total
+        // node count
+        if self.cluster_cp_nodes >= self.cluster_nodes {
+            return Err(ClusterError::InvalidControlPlaneNodeCountError);
+        }
+
+        Ok(())
     }
 }
 

@@ -1,12 +1,16 @@
+// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
+use xdg::BaseDirectoriesError;
+
+// Stackable library
 use stackable::{
+    cluster::ClusterError,
     common::ListError,
-    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         demo::DemoList,
         release::ReleaseList,
@@ -14,10 +18,10 @@ use stackable::{
     },
     utils::{params::IntoParametersError, path::PathOrUrlParseError, read::CacheSettings},
 };
-use xdg::BaseDirectoriesError;
 
+// Local
 use crate::{
-    cli::{Cli, ClusterType, OutputType},
+    cli::{Cli, CommonClusterArgs, OutputType},
     constants::CACHE_HOME_PATH,
 };
 
@@ -75,19 +79,8 @@ pub struct DemoInstallArgs {
     #[arg(short, long)]
     parameters: Vec<String>,
 
-    /// Type of local cluster to use for testing
-    #[arg(short, long, value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
-    #[arg(
-        long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
-control-plane and 3 workers) will be created for testing purposes. Currently
-'kind' and 'minikube' are supported. Both require a working Docker
-installation on the system."
-    )]
-    cluster: ClusterType,
-
-    /// Name of the local cluster
-    #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
-    cluster_name: String,
+    #[command(flatten)]
+    local_cluster: CommonClusterArgs,
 }
 
 #[derive(Debug, Args)]
@@ -124,6 +117,9 @@ pub enum DemoCmdError {
 
     #[snafu(display("xdg base directory error: {source}"))]
     XdgError { source: BaseDirectoriesError },
+
+    #[snafu(display("cluster error"))]
+    ClusterError { source: ClusterError },
 }
 
 impl DemoArgs {
@@ -255,6 +251,12 @@ async fn install_cmd(
     let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
         .await
         .context(ListSnafu {})?;
+
+    // Install local cluster if needed
+    args.local_cluster
+        .install_if_needed(None, None)
+        .await
+        .context(ClusterSnafu {})?;
 
     // Install the stack
     stack_spec

@@ -16,6 +16,16 @@ pub enum ClusterError {
 
     #[snafu(display("minikube cluster error"))]
     MinikubeClusterError { source: MinikubeClusterError },
+
+    #[snafu(display(
+        "invalid total node count - at least two nodes in total are needed to run a local cluster"
+    ))]
+    InvalidTotalNodeCountError,
+
+    #[snafu(display(
+        "invalid control-plane node count - the number of control-plane nodes needs to be lower than total node count
+    "))]
+    InvalidControlPlaneNodeCountError,
 }
 
 #[derive(Clone, Debug, Serialize)]

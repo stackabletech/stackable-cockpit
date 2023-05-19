@@ -8,7 +8,7 @@ use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 use xdg::BaseDirectoriesError;
 
-// Stackable Library
+// Stackable library
 use stackable::{
     cluster::ClusterError,
     common::ListError,
@@ -18,7 +18,7 @@ use stackable::{
 
 // Local
 use crate::{
-    cli::{Cli, ClusterArgsValidationError, CommonClusterArgs, OutputType},
+    cli::{Cli, CommonClusterArgs, OutputType},
     constants::CACHE_HOME_PATH,
 };
 
@@ -112,9 +112,6 @@ pub enum ReleaseCmdError {
 
     #[snafu(display("cluster error"))]
     ClusterError { source: ClusterError },
-
-    #[snafu(display("cluster arguments validation error"))]
-    ClusterArgsValidationError { source: ClusterArgsValidationError },
 }
 
 impl ReleaseArgs {
@@ -255,10 +252,6 @@ async fn install_cmd(
     if release_list.inner().is_empty() {
         return Ok("No releases".into());
     }
-
-    args.local_cluster
-        .validate()
-        .context(ClusterArgsValidationSnafu {})?;
 
     // Install local cluster if needed
     args.local_cluster

@@ -24,7 +24,7 @@ use stackable::{
 
 // Local
 use crate::{
-    cli::{Cli, ClusterArgsValidationError, CommonClusterArgs, OutputType},
+    cli::{Cli, CommonClusterArgs, OutputType},
     util::{self, InvalidRepoNameError},
 };
 
@@ -130,9 +130,6 @@ pub enum OperatorCmdError {
 
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
-
-    #[snafu(display("cluster arguments validation error"))]
-    ClusterArgsValidationError { source: ClusterArgsValidationError },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -242,10 +239,6 @@ async fn install_cmd(
     common_args: &Cli,
 ) -> Result<String, OperatorCmdError> {
     info!("Installing operator(s)");
-
-    args.local_cluster
-        .validate()
-        .context(ClusterArgsValidationSnafu {})?;
 
     println!(
         "Installing {} {}",
