@@ -59,7 +59,7 @@ mod test {
     use snafu::Snafu;
 
     #[test]
-    fn basic_tabled_output() {
+    fn basic_output() {
         #[derive(Debug, Serialize)]
         struct Data {
             foo: String,
@@ -97,6 +97,27 @@ mod test {
             }
         }
 
-        println!("{}", d.result_output(OutputType::Plain).unwrap())
+        // Table output
+        let expected = "
+┌──────┬───────────┐
+│ NAME ┆ VALUE     │
+╞══════╪═══════════╡
+│ foo  ┆ foo value │
+├╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┤
+│ bar  ┆ bar value │
+└──────┴───────────┘";
+
+        assert_eq!(
+            "\n".to_string() + &d.result_output(OutputType::Plain).unwrap(),
+            expected
+        );
+
+        // JSON output
+        let expected = "{\"foo\":\"foo value\",\"bar\":\"bar value\"}";
+        assert_eq!(d.result_output(OutputType::Json).unwrap(), expected);
+
+        // YAML output
+        let expected = "foo: foo value\nbar: bar value\n";
+        assert_eq!(d.result_output(OutputType::Yaml).unwrap(), expected);
     }
 }
