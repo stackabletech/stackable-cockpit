@@ -58,7 +58,7 @@ async fn main() {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },
-        Commands::Services(args) => match args.run() {
+        Commands::Services(args) => match args.run(&cli) {
             Ok(out) => println!("{out}"),
             Err(err) => eprintln!("{err}"),
         },

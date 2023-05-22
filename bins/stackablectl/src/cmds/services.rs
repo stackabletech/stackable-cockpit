@@ -1,7 +1,13 @@
+// External crates
 use clap::{Args, Subcommand};
-use snafu::Snafu;
+use snafu::{ResultExt, Snafu};
 
-use crate::cli::OutputType;
+// Stackable library
+use stackable::platform::service::{list_services, ServiceError, ServiceListOptions};
+use tracing::{info, instrument};
+
+// Local
+use crate::cli::{Cli, OutputType};
 
 #[derive(Debug, Args)]
 pub struct ServicesArgs {
@@ -35,16 +41,38 @@ pub struct ServiceListArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum ServicesError {}
+pub enum ServicesCmdError {
+    #[snafu(display("service list error"))]
+    ServiceListError { source: ServiceError },
+}
 
 impl ServicesArgs {
-    pub fn run(&self) -> Result<String, ServicesError> {
+    pub fn run(&self, common_args: &Cli) -> Result<String, ServicesCmdError> {
         match &self.subcommand {
-            ServiceCommands::List(args) => list_cmd(args),
+            ServiceCommands::List(args) => list_cmd(args, common_args),
         }
     }
 }
 
-fn list_cmd(_args: &ServiceListArgs) -> Result<String, ServicesError> {
-    todo!()
+#[instrument]
+fn list_cmd(args: &ServiceListArgs, common_args: &Cli) -> Result<String, ServicesCmdError> {
+    info!("Listing installed services");
+
+    // If the user wants to list services from all namespaces, we use `None`.
+    // `None` indicates that don't want to list services scoped to only ONE
+    // namespace.
+    let namespace = if args.all_namespaces {
+        None
+    } else {
+        Some(common_args.operator_namespace.as_str())
+    };
+
+    let services =
+        list_services(namespace, ServiceListOptions::default()).context(ServiceListSnafu {})?;
+
+    match args.output_type {
+        OutputType::Plain => todo!(),
+        OutputType::Json => todo!(),
+        OutputType::Yaml => todo!(),
+    }
 }
