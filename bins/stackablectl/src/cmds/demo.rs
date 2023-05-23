@@ -88,13 +88,13 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
 pub enum DemoCmdError {
-    #[snafu(display("io error: {source}"))]
+    #[snafu(display("io error"))]
     IoError { source: std::io::Error },
 
-    #[snafu(display("yaml error: {source}"))]
+    #[snafu(display("unable to format yaml output"))]
     YamlError { source: serde_yaml::Error },
 
-    #[snafu(display("json error: {source}"))]
+    #[snafu(display("unable to format json output"))]
     JsonError { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
@@ -106,16 +106,16 @@ pub enum DemoCmdError {
     #[snafu(display("failed to convert input parameters to validated parameters: {source}"))]
     IntoParametersError { source: IntoParametersError },
 
-    #[snafu(display("list error: {source}"))]
+    #[snafu(display("list error"))]
     ListError { source: ListError },
 
-    #[snafu(display("stack error: {source}"))]
+    #[snafu(display("stack error"))]
     StackError { source: StackError },
 
-    #[snafu(display("path/url parse error: {source}"))]
+    #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("xdg base directory error: {source}"))]
+    #[snafu(display("xdg base directory error"))]
     XdgError { source: BaseDirectoriesError },
 
     #[snafu(display("cluster error"))]

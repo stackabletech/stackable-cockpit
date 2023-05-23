@@ -89,25 +89,25 @@ pub struct ReleaseUninstallArgs {
 
 #[derive(Debug, Snafu)]
 pub enum ReleaseCmdError {
-    #[snafu(display("unable to format yaml output:: {source}"))]
+    #[snafu(display("unable to format yaml output"))]
     YamlError { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output:: {source}"))]
+    #[snafu(display("unable to format json output"))]
     JsonError { source: serde_json::Error },
 
-    #[snafu(display("path/url parse error: {source}"))]
+    #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("xdg base directory error: {source}"))]
+    #[snafu(display("xdg base directory error"))]
     XdgError { source: BaseDirectoriesError },
 
-    #[snafu(display("list error: {source}"))]
+    #[snafu(display("list error"))]
     ListError { source: ListError },
 
-    #[snafu(display("release install error: {source}"))]
+    #[snafu(display("release install error"))]
     ReleaseInstallError { source: ReleaseInstallError },
 
-    #[snafu(display("release uninstall error: {source}"))]
+    #[snafu(display("release uninstall error"))]
     ReleaseUninstallError { source: ReleaseUninstallError },
 
     #[snafu(display("cluster error"))]

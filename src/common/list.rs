@@ -3,6 +3,7 @@ use std::{fs, marker::PhantomData};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
+use xdg::BaseDirectoriesError;
 
 use crate::utils::{
     path::PathOrUrl,
@@ -18,23 +19,26 @@ pub trait SpecIter<S> {
 
 #[derive(Debug, Snafu)]
 pub enum ListError {
-    #[snafu(display("io error: {source}"))]
+    #[snafu(display("io error"))]
     IoError { source: std::io::Error },
 
-    #[snafu(display("local read error: {source}"))]
+    #[snafu(display("local read error"))]
     LocalReadError { source: LocalReadError },
 
-    #[snafu(display("remote read error: {source}"))]
+    #[snafu(display("remote read error"))]
     RemoteReadError { source: RemoteReadError },
 
-    #[snafu(display("cached read error: {source}"))]
+    #[snafu(display("cached read error"))]
     CachedReadError { source: CachedReadError },
 
-    #[snafu(display("url parse error: {source}"))]
+    #[snafu(display("url parse error"))]
     ParseUrlError { source: url::ParseError },
 
-    #[snafu(display("yaml error: {source}"))]
+    #[snafu(display("yaml error"))]
     YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("xdg base directory error"))]
+    XdgError { source: BaseDirectoriesError },
 
     #[snafu(display("invalid file url"))]
     InvalidFileUrl,
