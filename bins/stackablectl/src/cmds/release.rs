@@ -6,7 +6,6 @@ use comfy_table::{
 };
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
-use xdg::BaseDirectoriesError;
 
 // Stackable library
 use stackable::{
@@ -17,10 +16,7 @@ use stackable::{
 };
 
 // Local
-use crate::{
-    cli::{Cli, CommonClusterArgs, OutputType},
-    constants::CACHE_HOME_PATH,
-};
+use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, OutputType};
 
 #[derive(Debug, Args)]
 pub struct ReleaseArgs {
@@ -98,8 +94,8 @@ pub enum ReleaseCmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("xdg base directory error"))]
-    XdgError { source: BaseDirectoriesError },
+    #[snafu(display("cache settings resolution error"), context(false))]
+    CacheSettingsError { source: CacheSettingsError },
 
     #[snafu(display("list error"))]
     ListError { source: ListError },
@@ -120,7 +116,7 @@ impl ReleaseArgs {
             .get_release_files()
             .context(PathOrUrlParseSnafu {})?;
 
-        let release_list = ReleaseList::build(&files, CACHE_HOME_PATH, !common_args.no_cache)
+        let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
             .await
             .context(ListSnafu {})?;
 

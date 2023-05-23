@@ -3,13 +3,12 @@ use std::{fs, marker::PhantomData, path::Path};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use xdg::BaseDirectoriesError;
 
 use crate::utils::{
     path::PathOrUrl,
     read::{
-        read_cached_yaml_data, read_yaml_data_from_file, read_yaml_data_from_remote, CacheSettings,
-        CacheStatus, CachedReadError, LocalReadError, RemoteReadError,
+        read_cached_yaml_data, read_yaml_data_from_file, read_yaml_data_from_remote, CacheBackend,
+        CacheSettings, CacheStatus, CachedReadError, LocalReadError, RemoteReadError,
     },
 };
 
@@ -36,9 +35,6 @@ pub enum ListError {
 
     #[snafu(display("yaml error"))]
     YamlError { source: serde_yaml::Error },
-
-    #[snafu(display("xdg base directory error"))]
-    XdgError { source: BaseDirectoriesError },
 
     #[snafu(display("invalid file url"))]
     InvalidFileUrl,
@@ -71,7 +67,7 @@ where
     /// all are specified using the [`CacheSettings`].
     pub async fn build_raw(
         files: &[PathOrUrl],
-        cache_settings: CacheSettings,
+        cache_settings: &CacheSettings,
     ) -> Result<Self, ListError> {
         let mut map = IndexMap::new();
 
@@ -80,17 +76,22 @@ where
                 PathOrUrl::Path(path) => {
                     read_yaml_data_from_file::<L>(path.clone()).context(LocalReadSnafu {})?
                 }
-                PathOrUrl::Url(url) => {
-                    if cache_settings.use_cache {
+                PathOrUrl::Url(url) => match &cache_settings.backend {
+                    CacheBackend::Disabled => read_yaml_data_from_remote::<L>(url.clone())
+                        .await
+                        .context(RemoteReadSnafu {})?,
+                    CacheBackend::Disk {
+                        base_path: cache_base_path,
+                    } => {
                         let file_name = url
                             .path_segments()
                             .ok_or(ListError::InvalidFileUrl)?
                             .last()
                             .ok_or(ListError::InvalidFileUrl)?;
 
-                        let file_path = cache_settings.base_path.join(file_name);
+                        let file_path = cache_base_path.join(file_name);
 
-                        match read_cached_yaml_data::<L>(file_path.clone(), &cache_settings)
+                        match read_cached_yaml_data::<L>(file_path.clone(), cache_settings)
                             .context(CachedReadSnafu {})?
                         {
                             CacheStatus::Hit(specs) => specs,
@@ -105,12 +106,8 @@ where
                                 data
                             }
                         }
-                    } else {
-                        read_yaml_data_from_remote::<L>(url.clone())
-                            .await
-                            .context(RemoteReadSnafu {})?
                     }
-                }
+                },
             };
 
             for (spec_name, spec) in specs.inner() {

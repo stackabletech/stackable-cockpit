@@ -11,7 +11,7 @@ use tera::{Context, Tera};
 use url::Url;
 
 use crate::{
-    constants::DEFAULT_CACHE_MAX_AGE_IN_SECS,
+    constants::DEFAULT_CACHE_MAX_AGE,
     utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
 };
 
@@ -101,25 +101,33 @@ pub enum CacheStatus<T> {
 }
 
 pub struct CacheSettings {
-    pub base_path: PathBuf,
+    pub backend: CacheBackend,
     pub max_age: Duration,
-    pub use_cache: bool,
+}
+
+pub enum CacheBackend {
+    Disk { base_path: PathBuf },
+    Disabled,
 }
 
 impl CacheSettings {
-    pub fn new(base_path: PathBuf, max_age: Duration, use_cache: bool) -> Self {
-        Self {
-            base_path,
-            max_age,
-            use_cache,
+    pub fn disk(base_path: impl Into<PathBuf>) -> Self {
+        CacheBackend::Disk {
+            base_path: base_path.into(),
         }
+        .into()
     }
 
-    pub fn new_from_path_and_enabled(base_path: PathBuf, use_cache: bool) -> Self {
+    pub fn disabled() -> Self {
+        CacheBackend::Disabled.into()
+    }
+}
+
+impl From<CacheBackend> for CacheSettings {
+    fn from(backend: CacheBackend) -> Self {
         Self {
-            max_age: Duration::from_secs(DEFAULT_CACHE_MAX_AGE_IN_SECS),
-            base_path,
-            use_cache,
+            max_age: DEFAULT_CACHE_MAX_AGE,
+            backend,
         }
     }
 }
