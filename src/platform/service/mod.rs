@@ -4,7 +4,7 @@ use snafu::Snafu;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Service {
+pub struct InstalledProduct {
     /// Name of the service.
     pub name: String,
 
@@ -45,13 +45,15 @@ impl Default for ServiceListOptions {
     }
 }
 
+pub type ServiceList = IndexMap<String, Vec<InstalledProduct>>;
+
 /// Lists all installed services. If `namespace` is [`None`], services from ALL
 /// namespaces are returned. If `namespace` is [`Some`], only services installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
 pub fn list_services(
-    namespace: Option<&str>,
-    options: ServiceListOptions,
-) -> Result<Vec<Service>, ServiceError> {
-    Ok(vec![])
+    _namespace: Option<&str>,
+    _options: ServiceListOptions,
+) -> Result<ServiceList, ServiceError> {
+    Ok(IndexMap::new())
 }

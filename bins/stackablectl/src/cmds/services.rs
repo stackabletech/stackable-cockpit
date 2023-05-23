@@ -1,5 +1,6 @@
 // External crates
 use clap::{Args, Subcommand};
+use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
 use snafu::{ResultExt, Snafu};
 
 // Stackable library
@@ -44,6 +45,12 @@ pub struct ServiceListArgs {
 pub enum ServicesCmdError {
     #[snafu(display("service list error"))]
     ServiceListError { source: ServiceError },
+
+    #[snafu(display("unable to format yaml output"))]
+    YamlOutputFormatError { source: serde_yaml::Error },
+
+    #[snafu(display("unable to format json output"))]
+    JsonOutputFormatError { source: serde_json::Error },
 }
 
 impl ServicesArgs {
@@ -71,7 +78,24 @@ fn list_cmd(args: &ServiceListArgs, common_args: &Cli) -> Result<String, Service
         list_services(namespace, ServiceListOptions::default()).context(ServiceListSnafu {})?;
 
     match args.output_type {
-        OutputType::Plain => todo!(),
+        OutputType::Plain => {
+            let mut table = Table::new();
+
+            table
+                .set_header(vec!["PRODUCT", "NAME", "NAMESPACE", "ENDPOINTS", "INFO"])
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .load_preset(UTF8_FULL);
+
+            for (_product_name, _installed_products) in services {
+                // table.add_row(vec![
+                //     product_name,
+                //     installed_products.name,
+                //     installed_products.namespace.unwrap_or_default(),
+                // ]);
+            }
+
+            Ok(table.to_string())
+        }
         OutputType::Json => todo!(),
         OutputType::Yaml => todo!(),
     }
