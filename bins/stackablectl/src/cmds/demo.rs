@@ -5,7 +5,6 @@ use comfy_table::{
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
-use xdg::BaseDirectoriesError;
 
 // Stackable library
 use stackable::{
@@ -16,14 +15,11 @@ use stackable::{
         release::ReleaseList,
         stack::{StackError, StackList},
     },
-    utils::{params::IntoParametersError, path::PathOrUrlParseError, read::CacheSettings},
+    utils::{params::IntoParametersError, path::PathOrUrlParseError},
 };
 
 // Local
-use crate::{
-    cli::{Cli, CommonClusterArgs, OutputType},
-    constants::CACHE_HOME_PATH,
-};
+use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, OutputType};
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -115,8 +111,8 @@ pub enum DemoCmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("xdg base directory error"))]
-    XdgError { source: BaseDirectoriesError },
+    #[snafu(display("cache settings resolution error"), context(false))]
+    CacheSettingsError { source: CacheSettingsError },
 
     #[snafu(display("cluster error"))]
     ClusterError { source: ClusterError },
@@ -130,12 +126,7 @@ impl DemoArgs {
             .get_demo_files()
             .context(PathOrUrlParseSnafu {})?;
 
-        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-            .context(XdgSnafu {})?
-            .get_cache_home();
-
-        let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-        let list = DemoList::build(&files, cache_settings)
+        let list = DemoList::build(&files, &common_args.cache_settings()?)
             .await
             .context(ListSnafu {})?;
 
@@ -224,11 +215,9 @@ async fn install_cmd(
         .get_stack_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
+    let cache_settings = common_args.cache_settings()?;
 
-    let stack_list = StackList::build(&files, (cache_home_path, !common_args.no_cache).into())
+    let stack_list = StackList::build(&files, &cache_settings)
         .await
         .context(ListSnafu {})?;
 
@@ -244,11 +233,7 @@ async fn install_cmd(
         .get_stack_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
-    let release_list = ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, &cache_settings)
         .await
         .context(ListSnafu {})?;
 
