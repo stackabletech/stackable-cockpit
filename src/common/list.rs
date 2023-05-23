@@ -1,4 +1,4 @@
-use std::{fs, marker::PhantomData, path::Path};
+use std::{fs, marker::PhantomData};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -65,7 +65,7 @@ where
     /// downloaded once and then will be cached locally for a specified amount
     /// of time. The cache time, cache base path and whether to use the cache at
     /// all are specified using the [`CacheSettings`].
-    pub async fn build_raw(
+    pub async fn build(
         files: &[PathOrUrl],
         cache_settings: &CacheSettings,
     ) -> Result<Self, ListError> {
@@ -119,38 +119,6 @@ where
             list_type: PhantomData,
             inner: map,
         })
-    }
-
-    /// Builds a list of specs of type `S` based on a list of files. These files
-    /// can be located locally (on disk) or remotely. Remote files will get
-    /// downloaded once and then will be cached locally for a specified amount
-    /// of time.
-    ///
-    /// `cache_dir_prefix` is a unique directory under `XDG_CACHE_HOME`.
-    /// Files will get stored at `$HOME/.cache/stackablectl` for example.
-    ///
-    /// `use_cache` specifies if the cache should be used.
-    ///
-    /// This function is a shortcut and uses some predefined paths, durations
-    /// and settings. Full control over the cache settings is available with
-    /// [`Self::build_raw()`].
-    pub async fn build<P>(
-        files: &[PathOrUrl],
-        cache_dir_prefix: P,
-        use_cache: bool,
-    ) -> Result<Self, ListError>
-    where
-        P: AsRef<Path>,
-    {
-        let cache_home_path = xdg::BaseDirectories::with_prefix(cache_dir_prefix)
-            .context(XdgSnafu {})?
-            .get_cache_home();
-
-        Self::build_raw(
-            files,
-            CacheSettings::new_from_path_and_enabled(cache_home_path, use_cache),
-        )
-        .await
     }
 
     /// Returns a reference to the inner [`IndexMap`]

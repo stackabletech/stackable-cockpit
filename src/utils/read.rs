@@ -105,9 +105,13 @@ pub struct CacheSettings {
     pub max_age: Duration,
 }
 
-pub enum CacheBackend {
-    Disk { base_path: PathBuf },
-    Disabled,
+impl From<CacheBackend> for CacheSettings {
+    fn from(backend: CacheBackend) -> Self {
+        Self {
+            max_age: DEFAULT_CACHE_MAX_AGE,
+            backend,
+        }
+    }
 }
 
 impl CacheSettings {
@@ -123,13 +127,9 @@ impl CacheSettings {
     }
 }
 
-impl From<CacheBackend> for CacheSettings {
-    fn from(backend: CacheBackend) -> Self {
-        Self {
-            max_age: DEFAULT_CACHE_MAX_AGE,
-            backend,
-        }
-    }
+pub enum CacheBackend {
+    Disk { base_path: PathBuf },
+    Disabled,
 }
 
 /// Reads potentially cached YAML data from a local file and deserializes it
