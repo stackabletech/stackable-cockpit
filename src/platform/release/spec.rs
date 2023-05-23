@@ -25,7 +25,7 @@ pub enum ReleaseInstallError {
 
 #[derive(Debug, Snafu)]
 pub enum ReleaseUninstallError {
-    #[snafu(display("failed with Helm error: {source}"))]
+    #[snafu(display("failed with Helm error"))]
     HelmUninstallError { source: HelmError },
 }
 
