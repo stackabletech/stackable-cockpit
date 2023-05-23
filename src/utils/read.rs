@@ -106,32 +106,20 @@ pub struct CacheSettings {
     pub use_cache: bool,
 }
 
-impl From<(PathBuf, Duration, bool)> for CacheSettings {
-    fn from(value: (PathBuf, Duration, bool)) -> Self {
+impl CacheSettings {
+    pub fn new(base_path: PathBuf, max_age: Duration, use_cache: bool) -> Self {
         Self {
-            base_path: value.0,
-            max_age: value.1,
-            use_cache: value.2,
+            base_path,
+            max_age,
+            use_cache,
         }
     }
-}
 
-impl From<(PathBuf, bool)> for CacheSettings {
-    fn from(value: (PathBuf, bool)) -> Self {
+    pub fn new_from_path_and_enabled(base_path: PathBuf, use_cache: bool) -> Self {
         Self {
             max_age: Duration::from_secs(DEFAULT_CACHE_MAX_AGE_IN_SECS),
-            base_path: value.0,
-            use_cache: value.1,
-        }
-    }
-}
-
-impl From<(PathBuf, Duration)> for CacheSettings {
-    fn from(value: (PathBuf, Duration)) -> Self {
-        Self {
-            base_path: value.0,
-            max_age: value.1,
-            use_cache: true,
+            base_path,
+            use_cache,
         }
     }
 }

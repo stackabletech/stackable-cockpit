@@ -120,14 +120,9 @@ impl ReleaseArgs {
             .get_release_files()
             .context(PathOrUrlParseSnafu {})?;
 
-        let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-            .context(XdgSnafu {})?
-            .get_cache_home();
-
-        let release_list =
-            ReleaseList::build(&files, (cache_home_path, !common_args.no_cache).into())
-                .await
-                .context(ListSnafu {})?;
+        let release_list = ReleaseList::build(&files, CACHE_HOME_PATH, !common_args.no_cache)
+            .await
+            .context(ListSnafu {})?;
 
         if release_list.inner().is_empty() {
             return Ok("No releases".into());

@@ -31,6 +31,7 @@ serde = { workspace = true }
 tera = { workspace = true }
 kube = { workspace = true }
 url = { workspace = true }
+xdg = { workspace = true }
 
 [build-dependencies]
 gobuild = "0.1.0-alpha.1"
