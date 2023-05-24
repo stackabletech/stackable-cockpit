@@ -1,7 +1,5 @@
-// Std library
 use std::collections::HashMap;
 
-// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
@@ -13,7 +11,6 @@ use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
-// Stackable library
 use stackable::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm::{self, HelmError, HelmRelease, HelmRepo},
@@ -21,7 +18,6 @@ use stackable::{
     utils,
 };
 
-// Local
 use crate::{
     cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
     util::{self, InvalidRepoNameError},

@@ -1,4 +1,3 @@
-// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
@@ -7,14 +6,12 @@ use comfy_table::{
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
-// Stackable library
 use stackable::{
     common::ListError,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
 };
 
-// Local
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
 #[derive(Debug, Args)]
