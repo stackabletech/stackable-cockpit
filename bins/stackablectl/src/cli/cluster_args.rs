@@ -1,9 +1,29 @@
 use clap::{Args, ValueEnum};
+use snafu::{ensure, ResultExt, Snafu};
 
 use stackable::{
-    cluster::{ClusterError, KindCluster},
+    cluster::{KindCluster, KindClusterError, MinikubeClusterError},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
 };
+
+#[derive(Debug, Snafu)]
+pub enum CommonClusterArgsError {
+    #[snafu(display("failed to create kind cluster"))]
+    KindClusterError { source: KindClusterError },
+
+    #[snafu(display("minikube cluster error"))]
+    MinikubeClusterError { source: MinikubeClusterError },
+
+    #[snafu(display(
+        "invalid total node count - at least two nodes in total are needed to run a local cluster"
+    ))]
+    InvalidTotalNodeCountError,
+
+    #[snafu(display(
+        "invalid control-plane node count - the number of control-plane nodes needs to be lower than total node count
+    "))]
+    InvalidControlPlaneNodeCountError,
+}
 
 #[derive(Debug, Args)]
 pub struct CommonClusterArgs {
@@ -54,7 +74,7 @@ impl CommonClusterArgs {
         &self,
         name: Option<String>,
         namespace: Option<String>,
-    ) -> Result<(), ClusterError> {
+    ) -> Result<(), CommonClusterArgsError> {
         match &self.cluster_type {
             Some(cluster_type) => {
                 self.validate()?;
@@ -69,10 +89,7 @@ impl CommonClusterArgs {
                         );
 
                         // Seems like we cannot propagate the error directly using ?
-                        match kind_cluster.create().await {
-                            Ok(_) => Ok(()),
-                            Err(err) => Err(ClusterError::KindClusterError { source: err }),
-                        }
+                        kind_cluster.create().await.context(KindClusterSnafu {})
                     }
                     ClusterType::Minikube => todo!(),
                 }
@@ -81,18 +98,17 @@ impl CommonClusterArgs {
         }
     }
 
-    fn validate(&self) -> Result<(), ClusterError> {
+    fn validate(&self) -> Result<(), CommonClusterArgsError> {
         // We need at least two nodes in total (one control-plane node and one
         // worker node)
-        if self.cluster_nodes < 2 {
-            return Err(ClusterError::InvalidTotalNodeCountError);
-        }
+        ensure!(self.cluster_nodes >= 2, InvalidTotalNodeCountSnafu {});
 
         // The cluster control-plane node count must be smaller than the total
         // node count
-        if self.cluster_cp_nodes >= self.cluster_nodes {
-            return Err(ClusterError::InvalidControlPlaneNodeCountError);
-        }
+        ensure!(
+            self.cluster_cp_nodes < self.cluster_nodes,
+            InvalidControlPlaneNodeCountSnafu {}
+        );
 
         Ok(())
     }

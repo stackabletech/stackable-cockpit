@@ -15,7 +15,6 @@ use tracing::{debug, info, instrument};
 
 // Stackable library
 use stackable::{
-    cluster::ClusterError,
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm::{self, HelmError, HelmRelease, HelmRepo},
     platform::operator::{OperatorSpec, VALID_OPERATORS},
@@ -24,7 +23,7 @@ use stackable::{
 
 // Local
 use crate::{
-    cli::{Cli, CommonClusterArgs, OutputType},
+    cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
     util::{self, InvalidRepoNameError},
 };
 
@@ -119,8 +118,8 @@ pub enum OperatorCmdError {
     #[snafu(display("Helm error"))]
     HelmError { source: HelmError },
 
-    #[snafu(display("cluster error"))]
-    ClusterError { source: ClusterError },
+    #[snafu(display("cluster argument error"))]
+    CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("semver parse error"))]
     SemVerParseError { source: semver::Error },
@@ -253,7 +252,7 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(ClusterSnafu {})?;
+        .context(CommonClusterArgsSnafu {})?;
 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);

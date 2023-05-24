@@ -9,14 +9,13 @@ use tracing::{info, instrument};
 
 // Stackable library
 use stackable::{
-    cluster::ClusterError,
     common::ListError,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
 };
 
 // Local
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, OutputType};
+use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
 #[derive(Debug, Args)]
 pub struct ReleaseArgs {
@@ -106,8 +105,8 @@ pub enum ReleaseCmdError {
     #[snafu(display("release uninstall error"))]
     ReleaseUninstallError { source: ReleaseUninstallError },
 
-    #[snafu(display("cluster error"))]
-    ClusterError { source: ClusterError },
+    #[snafu(display("cluster argument error"))]
+    CommonClusterArgsError { source: CommonClusterArgsError },
 }
 
 impl ReleaseArgs {
@@ -227,7 +226,7 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(ClusterSnafu {})?;
+        .context(CommonClusterArgsSnafu {})?;
 
     match release_list.get(&args.release) {
         Some(release) => {

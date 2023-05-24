@@ -8,7 +8,6 @@ use snafu::{ResultExt, Snafu};
 
 // Stackable library
 use stackable::{
-    cluster::ClusterError,
     common::ListError,
     platform::{
         demo::DemoList,
@@ -19,7 +18,7 @@ use stackable::{
 };
 
 // Local
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, OutputType};
+use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -114,8 +113,8 @@ pub enum DemoCmdError {
     #[snafu(display("cache settings resolution error"), context(false))]
     CacheSettingsError { source: CacheSettingsError },
 
-    #[snafu(display("cluster error"))]
-    ClusterError { source: ClusterError },
+    #[snafu(display("cluster argument error"))]
+    CommonClusterArgsError { source: CommonClusterArgsError },
 }
 
 impl DemoArgs {
@@ -241,7 +240,7 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(ClusterSnafu {})?;
+        .context(CommonClusterArgsSnafu {})?;
 
     // Install the stack
     stack_spec
