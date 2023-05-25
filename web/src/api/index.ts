@@ -83,10 +83,10 @@ export async function getListeners(): Promise<Listener[]> {
 type Stacklet = components['schemas']['Stacklet'];
 export async function getStacklets(): Promise<Stacklet[]> {
   const { data } = await client.get('/stacklets', {});
-  if (data !== undefined) {
-    return data;
-  } else {
+  if (data === undefined) {
     throw new Error('No data returned by API');
+  } else {
+    return data;
   }
 }
 
