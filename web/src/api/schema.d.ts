@@ -3,52 +3,47 @@
  * Do not make direct changes to the file.
  */
 
+
 /** OneOf type helpers */
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
-type XOR<T, U> = T | U extends object
-  ? (Without<T, U> & U) | (Without<U, T> & T)
-  : T | U;
-type OneOf<T extends any[]> = T extends [infer Only]
-  ? Only
-  : T extends [infer A, infer B, ...infer Rest]
-  ? OneOf<[XOR<A, B>, ...Rest]>
-  : never;
+type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U;
+type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A, infer B, ...infer Rest] ? OneOf<[XOR<A, B>, ...Rest]> : never;
 
 export interface paths {
-  '/demos': {
+  "/demos": {
     /**
-     * Retrieves all demos.
+     * Retrieves all demos. 
      * @description Retrieves all demos.
      */
-    get: operations['get_demos'];
+    get: operations["get_demos"];
   };
-  '/demos/{name}': {
+  "/demos/{name}": {
     /**
-     * Retrieves one demo identified by `name`.
+     * Retrieves one demo identified by `name`. 
      * @description Retrieves one demo identified by `name`.
      */
-    get: operations['get_demo'];
+    get: operations["get_demo"];
   };
-  '/releases': {
+  "/releases": {
     /**
-     * Retrieves all releases.
+     * Retrieves all releases. 
      * @description Retrieves all releases.
      */
-    get: operations['get_releases'];
+    get: operations["get_releases"];
   };
-  '/releases/{name}': {
+  "/releases/{name}": {
     /**
-     * Retrieves one release identified by `name`.
+     * Retrieves one release identified by `name`. 
      * @description Retrieves one release identified by `name`.
      */
-    get: operations['get_release'];
+    get: operations["get_release"];
   };
-  '/stacklets': {
+  "/stacklets": {
     /**
-     * Retrieves all stacklets.
+     * Retrieves all stacklets. 
      * @description Retrieves all stacklets.
      */
-    get: operations['get_stacklets'];
+    get: operations["get_stacklets"];
   };
 }
 
@@ -63,24 +58,19 @@ export interface components {
       /** @description An optional link to a documentation page */
       documentation?: string | null;
       /** @description A variable number of labels (tags) */
-      labels?: string[];
+      labels?: (string)[];
       /** @description A variable number of Helm or YAML manifests */
-      manifests?: components['schemas']['ManifestSpec'][];
+      manifests?: (components["schemas"]["ManifestSpec"])[];
       /** @description A variable number of supported parameters */
-      parameters?: components['schemas']['Parameter'][];
+      parameters?: (components["schemas"]["Parameter"])[];
       /** @description The name of the underlying stack */
       stackableStack: string;
     };
-    ManifestSpec: OneOf<
-      [
-        {
-          helmChart: string;
-        },
-        {
-          plainYaml: string;
-        },
-      ]
-    >;
+    ManifestSpec: OneOf<[{
+      helmChart: string;
+    }, {
+      plainYaml: string;
+    }]>;
     /** @description Parameter descibes a common parameter format. This format is used in demo and stack definitions */
     Parameter: {
       /** @description Parameter default value */
@@ -93,12 +83,12 @@ export interface components {
     ReleaseSpec: {
       /** @description A short description of this release */
       description: string;
-      products: components['schemas']['IndexMap'];
+      products: components["schemas"]["IndexMap"];
       /** @description Date this released was released */
       releaseDate: string;
     };
     Stacklet: {
-      metadata: components['schemas']['ObjectMeta'];
+      metadata: components["schemas"]["ObjectMeta"];
       product: string;
     };
   };
@@ -112,8 +102,9 @@ export interface components {
 export type external = Record<string, never>;
 
 export interface operations {
+
   /**
-   * Retrieves all demos.
+   * Retrieves all demos. 
    * @description Retrieves all demos.
    */
   get_demos: {
@@ -121,7 +112,7 @@ export interface operations {
       /** @description Retrieving a list of demos succeeded */
       200: {
         content: {
-          'application/json': components['schemas']['DemoSpecV2'][];
+          "application/json": (components["schemas"]["DemoSpecV2"])[];
         };
       };
       /** @description Retrieving a list of demos failed */
@@ -129,7 +120,7 @@ export interface operations {
     };
   };
   /**
-   * Retrieves one demo identified by `name`.
+   * Retrieves one demo identified by `name`. 
    * @description Retrieves one demo identified by `name`.
    */
   get_demo: {
@@ -142,7 +133,7 @@ export interface operations {
       /** @description Retrieving the demo with 'name' succeeded */
       200: {
         content: {
-          'application/json': components['schemas']['DemoSpecV2'];
+          "application/json": components["schemas"]["DemoSpecV2"];
         };
       };
       /** @description Retrieving the demo with 'name' failed */
@@ -150,7 +141,7 @@ export interface operations {
     };
   };
   /**
-   * Retrieves all releases.
+   * Retrieves all releases. 
    * @description Retrieves all releases.
    */
   get_releases: {
@@ -158,7 +149,7 @@ export interface operations {
       /** @description Retrieving a list of releases succeeded */
       200: {
         content: {
-          'application/json': components['schemas']['ReleaseSpec'][];
+          "application/json": (components["schemas"]["ReleaseSpec"])[];
         };
       };
       /** @description Retrieving a list of releases failed */
@@ -166,7 +157,7 @@ export interface operations {
     };
   };
   /**
-   * Retrieves one release identified by `name`.
+   * Retrieves one release identified by `name`. 
    * @description Retrieves one release identified by `name`.
    */
   get_release: {
@@ -175,17 +166,18 @@ export interface operations {
         _name: string;
       };
     };
-    responses: {};
+    responses: {
+    };
   };
   /**
-   * Retrieves all stacklets.
+   * Retrieves all stacklets. 
    * @description Retrieves all stacklets.
    */
   get_stacklets: {
     responses: {
-      200: {
+      201: {
         content: {
-          'application/json': components['schemas']['Stacklet'][];
+          "application/json": (components["schemas"]["Stacklet"])[];
         };
       };
     };
