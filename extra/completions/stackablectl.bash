@@ -1853,7 +1853,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-s -p -c -h -V --stack-parameters --parameters --cluster --cluster-name --help --version <STACK_NAME>"
+            opts="-s -p -c -h -V --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1884,6 +1884,14 @@ _stackablectl() {
                     return 0
                     ;;
                 --cluster-name)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-cp-nodes)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

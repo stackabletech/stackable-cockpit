@@ -1,4 +1,3 @@
-// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
@@ -8,10 +7,8 @@ use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 use xdg::BaseDirectoriesError;
 
-// Stackable library
 use stackable::{
     common::ListError,
-    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         release::ReleaseList,
         stack::{StackError, StackList},
@@ -19,11 +16,7 @@ use stackable::{
     utils::path::PathOrUrlParseError,
 };
 
-// Local
-use crate::{
-    cli::{CacheSettingsError, Cli, ClusterType, OutputType},
-    constants::CACHE_HOME_PATH,
-};
+use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
 #[derive(Debug, Args)]
 pub struct StackArgs {
@@ -84,19 +77,8 @@ can be specified and are space separated. Valid parameters are:
 Use \"stackablectl stack describe <STACK>\" to list available parameters for each stack.")]
     parameters: Vec<String>,
 
-    /// Type of local cluster to use for testing
-    #[arg(short, long, value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
-    #[arg(
-        long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
-control-plane and 3 workers) will be created for testing purposes. Currently
-'kind' and 'minikube' are supported. Both require a working Docker
-installation on the system."
-    )]
-    cluster: ClusterType,
-
-    /// Name of the local cluster
-    #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
-    cluster_name: String,
+    #[command(flatten)]
+    local_cluster: CommonClusterArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -121,6 +103,9 @@ pub enum StackCmdError {
 
     #[snafu(display("cache settings resolution error"), context(false))]
     CacheSettingsError { source: CacheSettingsError },
+
+    #[snafu(display("cluster argument error"))]
+    CommonClusterArgsError { source: CommonClusterArgsError },
 }
 
 impl StackArgs {
@@ -128,10 +113,6 @@ impl StackArgs {
         let files = common_args
             .get_stack_files()
             .context(PathOrUrlParseSnafu {})?;
-
-        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-            .context(XdgSnafu {})?
-            .get_cache_home();
 
         let stack_list = StackList::build(&files, &common_args.cache_settings()?)
             .await
@@ -232,20 +213,19 @@ async fn install_cmd(
 ) -> Result<String, StackCmdError> {
     info!("Installing stack");
 
-    // TODO (Techassi): Use common cluster args which will be introduced in PR 22
-    // https://github.com/stackabletech/stackable/pull/22
-
     let files = common_args
         .get_release_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
     let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
         .await
         .context(ListSnafu {})?;
+
+    // Install local cluster if needed
+    args.local_cluster
+        .install_if_needed(None, None)
+        .await
+        .context(CommonClusterArgsSnafu {})?;
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
