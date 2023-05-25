@@ -18,6 +18,7 @@ mod handlers;
 #[derive(Debug, OpenApi)]
 #[openapi(
     info(description = "Stackabled API specification"),
+    servers((url = "/api")),
     paths(
         handlers::get_demos,
         handlers::get_demo,
@@ -37,12 +38,12 @@ async fn main() {
         .route("/", get(handlers::get_root))
         .nest("/demos", handlers::demo_router())
         .nest("/stacks", handlers::stack_router())
-        .nest("/releases", handlers::release_router())
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+        .nest("/releases", handlers::release_router());
 
     let router = Router::new()
         .nest("/api/", api)
         .nest("/ui/", handlers::ui::router())
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .route("/", get(|| async { Redirect::permanent("/ui/") }));
 
     // Needed in next axum version

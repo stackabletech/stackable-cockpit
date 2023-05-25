@@ -9,7 +9,7 @@ pub fn demo_router() -> Router {
 }
 
 /// Retrieves all demos.
-#[utoipa::path(get, path = "/demos/", responses(
+#[utoipa::path(get, path = "/demos", responses(
     (status = 200, description = "Retrieving a list of demos succeeded", body = [DemoSpecV2]),
     (status = 404, description = "Retrieving a list of demos failed")
 ))]

@@ -9,7 +9,7 @@ pub fn release_router() -> Router {
 }
 
 /// Retrieves all releases.
-#[utoipa::path(get, path = "/releases/", responses(
+#[utoipa::path(get, path = "/releases", responses(
     (status = 200, description = "Retrieving a list of releases succeeded", body = [ReleaseSpec]),
     (status = 404, description = "Retrieving a list of releases failed")
 ))]
