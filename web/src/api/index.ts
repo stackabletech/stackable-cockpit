@@ -83,7 +83,11 @@ export async function getListeners(): Promise<Listener[]> {
 type Stacklet = components['schemas']['Stacklet'];
 export async function getStacklets(): Promise<Stacklet[]> {
   const { data } = await client.get('/stacklets', {});
-  return data!;
+  if (data !== undefined) {
+    return data;
+  } else {
+    throw new Error('No data returned by API');
+  }
 }
 
 export type DiscoveryFieldType = 'url' | 'blob';
