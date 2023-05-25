@@ -85,7 +85,6 @@ export async function getStacklets(): Promise<Stacklet[]> {
   const { data } = await client.get('/stacklets', {});
   return data!;
 }
-export { getStacklets as getProductClusters };
 
 export type DiscoveryFieldType = 'url' | 'blob';
 interface ProductClusterDiscovery {
@@ -94,7 +93,7 @@ interface ProductClusterDiscovery {
   fieldTypes: { [x: string]: DiscoveryFieldType };
 }
 
-export async function getProductClusterDiscovery(
+export async function getStackletDiscovery(
   namespace: string,
   discoveryConfigMapName: string,
 ): Promise<ProductClusterDiscovery | undefined> {
