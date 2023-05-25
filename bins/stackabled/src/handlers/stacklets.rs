@@ -17,7 +17,7 @@ pub fn stacklet_router() -> Router {
 
 /// Retrieves all stacklets.
 #[utoipa::path(get, path = "/stacklets", responses(
-    (status = 201, body = Vec<Stacklet>),
+    (status = 200, body = Vec<Stacklet>),
 ))]
 pub async fn get_stacklets() -> Json<Vec<Stacklet>> {
     Json(vec![

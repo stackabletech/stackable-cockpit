@@ -175,7 +175,7 @@ export interface operations {
    */
   get_stacklets: {
     responses: {
-      201: {
+      200: {
         content: {
           "application/json": (components["schemas"]["Stacklet"])[];
         };
