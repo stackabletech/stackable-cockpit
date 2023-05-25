@@ -3,20 +3,23 @@ use clap_complete::{generate, Shell};
 use clap_mangen::Man;
 use snafu::{ResultExt, Snafu};
 use stackablectl::cli::Cli;
+use stackabled::api_doc::{ApiDoc, OpenApi};
 
 use std::{env, fs};
 
 #[derive(Debug, Snafu)]
 enum TaskError {
-    #[snafu(display("io error: {source}"))]
-    IoError { source: std::io::Error },
+    #[snafu(display("io error"))]
+    Io { source: std::io::Error },
+    #[snafu(display("error serializing openapi"))]
+    SerializeOpenApi { source: serde_json::Error },
 }
 
 fn main() -> Result<(), TaskError> {
     let task = env::args().nth(1);
 
     match task {
-        None => println!("No task specified, available commands: 'gen-man' and 'gen-comp'"),
+        None => eprintln!("No task specified, available commands: 'gen-man' and 'gen-comp'"),
         Some(t) => match t.as_str() {
             "gen-man" => {
                 let cmd = Cli::command();
@@ -47,6 +50,10 @@ fn main() -> Result<(), TaskError> {
                 let mut f =
                     fs::File::create("extra/completions/_stackablectl").context(IoSnafu {})?;
                 generate(Shell::Zsh, &mut cmd, name, &mut f);
+            }
+            "gen-openapi" => {
+                let openapi_json = ApiDoc::openapi().to_json().context(SerializeOpenApiSnafu)?;
+                println!("{openapi_json}");
             }
             _ => panic!("Invalid task"),
         },
