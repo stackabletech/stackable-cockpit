@@ -3,6 +3,7 @@ mod releases;
 mod root;
 mod stacklets;
 mod stacks;
+mod utoipa_synthetic;
 
 #[cfg(feature = "ui")]
 pub mod ui;
@@ -15,3 +16,4 @@ pub use releases::*;
 pub use root::*;
 pub use stacklets::*;
 pub use stacks::*;
+pub use utoipa_synthetic::*;

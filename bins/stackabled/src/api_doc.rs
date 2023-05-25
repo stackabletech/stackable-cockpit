@@ -18,6 +18,6 @@ use crate::handlers;
         handlers::get_release,
         handlers::get_stacklets
     ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::Stacklet))
+    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::Stacklet, handlers::ObjectMeta))
 )]
 pub struct ApiDoc {}

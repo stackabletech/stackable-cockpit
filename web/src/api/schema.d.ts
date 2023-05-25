@@ -71,6 +71,11 @@ export interface components {
     }, {
       plainYaml: string;
     }]>;
+    /** @description Synthetic types that are used to generate type definitions for foreign types. */
+    ObjectMeta: {
+      name: string;
+      namespace: string;
+    };
     /** @description Parameter descibes a common parameter format. This format is used in demo and stack definitions */
     Parameter: {
       /** @description Parameter default value */
