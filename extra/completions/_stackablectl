@@ -213,6 +213,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
+':RELEASE:' \
 && ret=0
 ;;
 (install)
@@ -226,10 +227,13 @@ minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
+':RELEASE -- Release to install:' \
 && ret=0
 ;;
 (uninstall)
@@ -238,7 +242,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':release_name -- Name of the release to uninstall:' \
+':RELEASE -- Name of the release to uninstall:' \
 && ret=0
 ;;
 (help)
@@ -328,6 +332,8 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
+'*-s+[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
+'*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
 '*-p+[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
@@ -339,6 +345,7 @@ minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
+':stack_name -- Name of the stack to describe:' \
 && ret=0
 ;;
 (help)
@@ -496,6 +503,8 @@ minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
 minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \

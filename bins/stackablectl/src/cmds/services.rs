@@ -35,16 +35,22 @@ pub struct ServiceListArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum ServicesError {}
+pub enum ServicesCmdError {
+    #[snafu(display("unable to format yaml output:: {source}"))]
+    YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("unable to format json output:: {source}"))]
+    JsonError { source: serde_json::Error },
+}
 
 impl ServicesArgs {
-    pub fn run(&self) -> Result<String, ServicesError> {
+    pub fn run(&self) -> Result<String, ServicesCmdError> {
         match &self.subcommand {
             ServiceCommands::List(args) => list_cmd(args),
         }
     }
 }
 
-fn list_cmd(_args: &ServiceListArgs) -> Result<String, ServicesError> {
+fn list_cmd(_args: &ServiceListArgs) -> Result<String, ServicesCmdError> {
     todo!()
 }

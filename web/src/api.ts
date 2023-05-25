@@ -74,3 +74,54 @@ export async function getListeners(): Promise<Listener[]> {
     },
   ];
 }
+
+interface ProductCluster {
+  metadata: ObjectMeta;
+  product: string;
+}
+
+export async function getProductClusters(): Promise<ProductCluster[]> {
+  await delay(200);
+  return [
+    {
+      metadata: { namespace: 'default', name: 'simple-nifi' },
+      product: 'nifi',
+    },
+    {
+      metadata: { namespace: 'default', name: 'simple-hdfs' },
+      product: 'hdfs',
+    },
+  ];
+}
+
+export type DiscoveryFieldType = 'url' | 'blob';
+interface ProductClusterDiscovery {
+  metadata: ObjectMeta;
+  data: { [x: string]: string };
+  fieldTypes: { [x: string]: DiscoveryFieldType };
+}
+
+export async function getProductClusterDiscovery(
+  namespace: string,
+  discoveryConfigMapName: string,
+): Promise<ProductClusterDiscovery | undefined> {
+  await delay(200);
+  if (namespace == 'default' && discoveryConfigMapName == 'simple-nifi') {
+    return {
+      metadata: { namespace, name: discoveryConfigMapName },
+      data: { NIFI_URL: 'https://foo.com' },
+      fieldTypes: { NIFI_URL: 'url' },
+    };
+  } else if (
+    namespace == 'default' &&
+    discoveryConfigMapName == 'simple-hdfs'
+  ) {
+    return {
+      metadata: { namespace, name: discoveryConfigMapName },
+      data: { 'hdfs-config.xml': '<?xml>config goes here' },
+      fieldTypes: {},
+    };
+  } else {
+    return undefined;
+  }
+}

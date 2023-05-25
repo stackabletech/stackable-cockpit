@@ -16,12 +16,12 @@ use stackable::{
         release::ReleaseList,
         stack::{StackError, StackList},
     },
-    utils::{path::PathOrUrlParseError, read::CacheSettings},
+    utils::path::PathOrUrlParseError,
 };
 
 // Local
 use crate::{
-    cli::{Cli, ClusterType, OutputType},
+    cli::{CacheSettingsError, Cli, ClusterType, OutputType},
     constants::CACHE_HOME_PATH,
 };
 
@@ -118,6 +118,9 @@ pub enum StackCmdError {
 
     #[snafu(display("list error"))]
     ListError { source: ListError },
+
+    #[snafu(display("cache settings resolution error"), context(false))]
+    CacheSettingsError { source: CacheSettingsError },
 }
 
 impl StackArgs {
@@ -130,8 +133,7 @@ impl StackArgs {
             .context(XdgSnafu {})?
             .get_cache_home();
 
-        let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-        let stack_list = StackList::build(files, cache_settings)
+        let stack_list = StackList::build(&files, &common_args.cache_settings()?)
             .await
             .context(ListSnafu {})?;
 
@@ -241,8 +243,7 @@ async fn install_cmd(
         .context(XdgSnafu {})?
         .get_cache_home();
 
-    let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-    let release_list = ReleaseList::build(files, cache_settings)
+    let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
         .await
         .context(ListSnafu {})?;
 
