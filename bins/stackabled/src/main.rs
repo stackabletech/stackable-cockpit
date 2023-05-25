@@ -23,9 +23,10 @@ mod handlers;
         handlers::get_demos,
         handlers::get_demo,
         handlers::get_releases,
-        handlers::get_release
+        handlers::get_release,
+        handlers::get_stacklets
     ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec))
+    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::Stacklet))
 )]
 struct ApiDoc {}
 
@@ -38,7 +39,8 @@ async fn main() {
         .route("/", get(handlers::get_root))
         .nest("/demos", handlers::demo_router())
         .nest("/stacks", handlers::stack_router())
-        .nest("/releases", handlers::release_router());
+        .nest("/releases", handlers::release_router())
+        .nest("/stacklets", handlers::stacklet_router());
 
     let router = Router::new()
         .nest("/api/", api)

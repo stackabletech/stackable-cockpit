@@ -43,6 +43,13 @@ export interface paths {
      */
     get: operations['get_release'];
   };
+  '/stacklets': {
+    /**
+     * Retrieves all stacklets.
+     * @description Retrieves all stacklets.
+     */
+    get: operations['get_stacklets'];
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -89,6 +96,10 @@ export interface components {
       products: components['schemas']['IndexMap'];
       /** @description Date this released was released */
       releaseDate: string;
+    };
+    Stacklet: {
+      metadata: components['schemas']['ObjectMeta'];
+      product: string;
     };
   };
   responses: never;
@@ -165,5 +176,18 @@ export interface operations {
       };
     };
     responses: {};
+  };
+  /**
+   * Retrieves all stacklets.
+   * @description Retrieves all stacklets.
+   */
+  get_stacklets: {
+    responses: {
+      200: {
+        content: {
+          'application/json': components['schemas']['Stacklet'][];
+        };
+      };
+    };
   };
 }
