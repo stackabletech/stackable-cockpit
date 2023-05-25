@@ -1,5 +1,5 @@
 import { Show, createResource } from 'solid-js';
-import { getProductClusters } from '../../api';
+import { getProductClusters } from '../../api/index';
 import { DataTable } from '../../components/datatable';
 import { A } from '@solidjs/router';
 

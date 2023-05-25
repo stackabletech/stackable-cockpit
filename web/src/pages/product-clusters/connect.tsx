@@ -6,7 +6,10 @@ import {
   createResource,
   createUniqueId,
 } from 'solid-js';
-import { DiscoveryFieldType, getProductClusterDiscovery } from '../../api';
+import {
+  DiscoveryFieldType,
+  getProductClusterDiscovery,
+} from '../../api/index';
 import { Params, useParams } from '@solidjs/router';
 
 interface ProductClusterConnectionDetailsParams extends Params {

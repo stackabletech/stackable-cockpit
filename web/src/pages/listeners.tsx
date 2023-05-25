@@ -1,5 +1,5 @@
 import { Show, For, Switch, Match, createResource } from 'solid-js';
-import { getListeners } from '../api';
+import { getListeners } from '../api/index';
 import { DataTable } from '../components/datatable';
 
 export const Listeners = () => {
