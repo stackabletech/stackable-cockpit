@@ -1,15 +1,17 @@
+/* eslint-disable unicorn/prevent-abbreviations */
 import { None, Option, Some } from './option';
+import { ToString } from './utils';
 
-export const Ok = <O, E = never>(value: O) => {
+export const Ok = <O, E extends ToString = never>(value: O) => {
   return new Result<O, E>(false, value);
 };
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-export const Err = <E, O = never>(error: E) => {
+export const Err = <E extends ToString, O = never>(error: E) => {
   return new Result<O, E>(true, error);
 };
 
-export class Result<O, E> {
+export class Result<O, E extends ToString> {
   private is_error: boolean;
   private value: O | E;
 
@@ -22,16 +24,16 @@ export class Result<O, E> {
     return !this.is_error;
   }
 
-  isOkAnd(op: (value: O) => boolean): this is Result<O, never> {
-    return this.isOk() && op(this.value);
+  isOkAnd(fn: (value: O) => boolean): this is Result<O, never> {
+    return this.isOk() && fn(this.value);
   }
 
   isErr(): this is Result<never, E> {
     return this.is_error;
   }
 
-  isErrAnd(op: (error: E) => boolean): this is Result<never, E> {
-    return this.isErr() && op(this.value);
+  isErrAnd(fn: (error: E) => boolean): this is Result<never, E> {
+    return this.isErr() && fn(this.value);
   }
 
   match<T, K>(matcher: { ok: (value: O) => T; err: (error: E) => K }): T | K {
@@ -41,12 +43,7 @@ export class Result<O, E> {
   }
 
   unwrap(): O {
-    return this.match({
-      ok: (value) => value,
-      err: () => {
-        throw new Error('tried to unwrap result value but found error');
-      },
-    });
+    return this.expect('tried to unwrap result value but found error');
   }
 
   unwrapOr(defaultValue: O): O {
@@ -56,10 +53,10 @@ export class Result<O, E> {
     });
   }
 
-  unwrapOrElse(op: (error: E) => O): O {
+  unwrapOrElse(fn: (error: E) => O): O {
     return this.match({
       ok: (value) => value,
-      err: (error) => op(error),
+      err: (error) => fn(error),
     });
   }
 
@@ -67,6 +64,50 @@ export class Result<O, E> {
     return this.match({
       ok: (value) => Some(value),
       err: () => None(),
+    });
+  }
+
+  err(): Option<E> {
+    return this.match({
+      ok: () => None(),
+      err: (error) => Some(error),
+    });
+  }
+
+  map<T>(fn: (value: O) => T): Result<T, E> {
+    return this.match({
+      ok: (value) => Ok(fn(value)),
+      err: (error) => Err(error),
+    });
+  }
+
+  mapOr<T>(defaultValue: T, fn: (value: O) => T): T {
+    return this.match({
+      ok: (value) => fn(value),
+      err: () => defaultValue,
+    });
+  }
+
+  mapOrElse<T>(defaultFn: (error: E) => T, fn: (value: O) => T): T {
+    return this.match({
+      ok: (value) => fn(value),
+      err: (error) => defaultFn(error),
+    });
+  }
+
+  mapErr<T extends string>(fn: (error: E) => T): Result<O, T> {
+    return this.match({
+      ok: (value) => Ok(value),
+      err: (error) => Err(fn(error)),
+    });
+  }
+
+  expect(msg: string): O {
+    return this.match({
+      ok: (value) => value,
+      err: (error) => {
+        throw new Error(`${msg}: ${error.toString()}`);
+      },
     });
   }
 }
