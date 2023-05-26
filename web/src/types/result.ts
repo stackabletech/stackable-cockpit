@@ -2,16 +2,20 @@
 import { None, Option, Some } from './option';
 import { ToString } from './utils';
 
-export const Ok = <O, E extends ToString = never>(value: O) => {
+export const Ok = <O extends ToString, E extends ToString = never>(
+  value: O,
+) => {
   return new Result<O, E>(false, value);
 };
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-export const Err = <E extends ToString, O = never>(error: E) => {
+export const Err = <E extends ToString, O extends ToString = never>(
+  error: E,
+) => {
   return new Result<O, E>(true, error);
 };
 
-export class Result<O, E extends ToString> {
+export class Result<O extends ToString, E extends ToString> {
   private is_error: boolean;
   private value: O | E;
 
@@ -43,7 +47,11 @@ export class Result<O, E extends ToString> {
   }
 
   unwrap(): O {
-    return this.expect('tried to unwrap result value but found error');
+    return this.expect('called `Result.unwrap()` on an `Err` value');
+  }
+
+  unwrapErr(): E {
+    return this.expectErr('called Result.unwrapErr() on an `Ok` value');
   }
 
   unwrapOr(defaultValue: O): O {
@@ -74,7 +82,7 @@ export class Result<O, E extends ToString> {
     });
   }
 
-  map<T>(fn: (value: O) => T): Result<T, E> {
+  map<T extends ToString>(fn: (value: O) => T): Result<T, E> {
     return this.match({
       ok: (value) => Ok(fn(value)),
       err: (error) => Err(error),
@@ -108,6 +116,15 @@ export class Result<O, E extends ToString> {
       err: (error) => {
         throw new Error(`${msg}: ${error.toString()}`);
       },
+    });
+  }
+
+  expectErr(msg: string): E {
+    return this.match({
+      ok: (value) => {
+        throw new Error(`${msg}: ${value.toString()}`);
+      },
+      err: (error) => error,
     });
   }
 }
