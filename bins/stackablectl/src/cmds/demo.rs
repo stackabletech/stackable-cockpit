@@ -4,22 +4,18 @@ use comfy_table::{
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
+
 use stackable::{
     common::ListError,
-    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     platform::{
         demo::DemoList,
         release::ReleaseList,
         stack::{StackError, StackList},
     },
-    utils::{params::IntoParametersError, path::PathOrUrlParseError, read::CacheSettings},
+    utils::{params::IntoParametersError, path::PathOrUrlParseError},
 };
-use xdg::BaseDirectoriesError;
 
-use crate::{
-    cli::{Cli, ClusterType, OutputType},
-    constants::CACHE_HOME_PATH,
-};
+use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -75,19 +71,8 @@ pub struct DemoInstallArgs {
     #[arg(short, long)]
     parameters: Vec<String>,
 
-    /// Type of local cluster to use for testing
-    #[arg(short, long, value_enum, value_name = "CLUSTER_TYPE", default_value_t = ClusterType::default())]
-    #[arg(
-        long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
-control-plane and 3 workers) will be created for testing purposes. Currently
-'kind' and 'minikube' are supported. Both require a working Docker
-installation on the system."
-    )]
-    cluster: ClusterType,
-
-    /// Name of the local cluster
-    #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
-    cluster_name: String,
+    #[command(flatten)]
+    local_cluster: CommonClusterArgs,
 }
 
 #[derive(Debug, Args)]
@@ -95,13 +80,13 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
 pub enum DemoCmdError {
-    #[snafu(display("io error: {source}"))]
+    #[snafu(display("io error"))]
     IoError { source: std::io::Error },
 
-    #[snafu(display("yaml error: {source}"))]
+    #[snafu(display("unable to format yaml output"))]
     YamlError { source: serde_yaml::Error },
 
-    #[snafu(display("json error: {source}"))]
+    #[snafu(display("unable to format json output"))]
     JsonError { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
@@ -113,17 +98,20 @@ pub enum DemoCmdError {
     #[snafu(display("failed to convert input parameters to validated parameters: {source}"))]
     IntoParametersError { source: IntoParametersError },
 
-    #[snafu(display("list error: {source}"))]
+    #[snafu(display("list error"))]
     ListError { source: ListError },
 
-    #[snafu(display("stack error: {source}"))]
+    #[snafu(display("stack error"))]
     StackError { source: StackError },
 
-    #[snafu(display("path/url parse error: {source}"))]
+    #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("xdg base directory error: {source}"))]
-    XdgError { source: BaseDirectoriesError },
+    #[snafu(display("cache settings resolution error"), context(false))]
+    CacheSettingsError { source: CacheSettingsError },
+
+    #[snafu(display("cluster argument error"))]
+    CommonClusterArgsError { source: CommonClusterArgsError },
 }
 
 impl DemoArgs {
@@ -134,12 +122,7 @@ impl DemoArgs {
             .get_demo_files()
             .context(PathOrUrlParseSnafu {})?;
 
-        let cache_file_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-            .context(XdgSnafu {})?
-            .get_cache_home();
-
-        let cache_settings = CacheSettings::from((cache_file_path, !common_args.no_cache));
-        let list = DemoList::build(files, cache_settings)
+        let list = DemoList::build(&files, &common_args.cache_settings()?)
             .await
             .context(ListSnafu {})?;
 
@@ -228,11 +211,9 @@ async fn install_cmd(
         .get_stack_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
+    let cache_settings = common_args.cache_settings()?;
 
-    let stack_list = StackList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let stack_list = StackList::build(&files, &cache_settings)
         .await
         .context(ListSnafu {})?;
 
@@ -248,13 +229,15 @@ async fn install_cmd(
         .get_stack_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let cache_home_path = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
-        .get_cache_home();
-
-    let release_list = ReleaseList::build(files, (cache_home_path, !common_args.no_cache).into())
+    let release_list = ReleaseList::build(&files, &cache_settings)
         .await
         .context(ListSnafu {})?;
+
+    // Install local cluster if needed
+    args.local_cluster
+        .install_if_needed(None, None)
+        .await
+        .context(CommonClusterArgsSnafu {})?;
 
     // Install the stack
     stack_spec

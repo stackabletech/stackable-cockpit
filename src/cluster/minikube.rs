@@ -1,10 +1,19 @@
+use snafu::Snafu;
 use tokio::process::Command;
 
 use crate::{
-    cluster::ClusterError,
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
     utils::check::binaries_present,
 };
+
+#[derive(Debug, Snafu)]
+pub enum MinikubeClusterError {
+    #[snafu(display("missing dependencies"))]
+    MissingDepsError,
+
+    #[snafu(display("command error: {error}"))]
+    CmdError { error: String },
+}
 
 pub struct MinikubeCluster {
     namespace: String,
@@ -24,10 +33,10 @@ impl MinikubeCluster {
     }
 
     /// Create a new local cluster by calling the minikube binary
-    pub async fn create(&self) -> Result<(), ClusterError> {
+    pub async fn create(&self) -> Result<(), MinikubeClusterError> {
         // Check if required binaries are present
         if !binaries_present(&["docker", "minikube"]) {
-            return Err(ClusterError::MissingDepsError);
+            return Err(MinikubeClusterError::MissingDepsError);
         }
 
         // Create local cluster via minikube
@@ -40,7 +49,7 @@ impl MinikubeCluster {
             .await;
 
         if let Err(err) = minikube_cmd {
-            return Err(ClusterError::CmdError {
+            return Err(MinikubeClusterError::CmdError {
                 error: err.to_string(),
             });
         }

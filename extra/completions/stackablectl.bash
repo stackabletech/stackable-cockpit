@@ -717,7 +717,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__install)
-            opts="-s -p -c -h -V --stack-parameters --parameters --cluster --cluster-name --help --version <DEMO>"
+            opts="-s -p -c -h -V --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -748,6 +748,14 @@ _stackablectl() {
                     return 0
                     ;;
                 --cluster-name)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-cp-nodes)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1469,7 +1477,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__describe)
-            opts="-o -h -V --output --help --version"
+            opts="-o -h -V --output --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1575,7 +1583,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__install)
-            opts="-i -e -c -h -V --include --exclude --cluster --cluster-name --help --version"
+            opts="-i -e -c -h -V --include --exclude --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1609,6 +1617,14 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --cluster-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-cp-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1639,7 +1655,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__uninstall)
-            opts="-h -V --help --version <RELEASE_NAME>"
+            opts="-h -V --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

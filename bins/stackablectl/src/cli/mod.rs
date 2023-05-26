@@ -1,28 +1,39 @@
+// Std library
 use std::env;
 
+// External crates
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
+use snafu::{ResultExt, Snafu};
+use tracing::{debug, instrument, Level};
+
+// Stackable library
 use stackable::{
     constants::{
         DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError},
-    utils::path::{
-        IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
+    utils::{
+        path::{IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError},
+        read::CacheSettings,
     },
 };
-use tracing::{debug, instrument, Level};
 
+// Local
 use crate::{
     cmds::{
         cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
         release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
     },
     constants::{
-        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, HELM_REPO_URL_DEV,
-        HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST, REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE,
-        REMOTE_STACK_FILE,
+        CACHE_HOME_PATH, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
+        HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST, REMOTE_DEMO_FILE,
+        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
     },
 };
+
+mod cluster_args;
+
+pub use cluster_args::*;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, propagate_version = true)]
@@ -177,6 +188,17 @@ impl Cli {
 
         Ok(())
     }
+
+    #[instrument]
+    pub fn cache_settings(&self) -> Result<CacheSettings, CacheSettingsError> {
+        if self.no_cache {
+            Ok(CacheSettings::disabled())
+        } else {
+            let xdg = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
+                .context(cache_settings_error::XdgSnafu)?;
+            Ok(CacheSettings::disk(xdg.get_cache_home()))
+        }
+    }
 }
 
 #[derive(Debug, Subcommand)]
@@ -221,12 +243,9 @@ pub enum OutputType {
     Yaml,
 }
 
-#[derive(Clone, Debug, Default, ValueEnum)]
-pub enum ClusterType {
-    /// Use a kind cluster, see 'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'
-    #[default]
-    Kind,
-
-    /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
-    Minikube,
+#[derive(Debug, Snafu)]
+#[snafu(module)]
+pub enum CacheSettingsError {
+    #[snafu(display("unable to resolve XDG directories"))]
+    Xdg { source: xdg::BaseDirectoriesError },
 }
