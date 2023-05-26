@@ -19,8 +19,10 @@
       "error",
       {
         "replacements": {
+          "env": false,
+          // props and params are distinct solidjs concepts
           "props": false,
-          "env": false
+          "params": false
         }
       }
     ]

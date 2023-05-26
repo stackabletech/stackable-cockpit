@@ -36,16 +36,16 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
 
   return (
     <>
-      <table class="font-sans border-collapse text-left w-full">
-        <thead class="text-xs uppercase text-gray-400 bg-gray-700">
+      <table class='font-sans border-collapse text-left w-full'>
+        <thead class='text-xs uppercase text-gray-400 bg-gray-700'>
           <tr>
             <For each={props.columns}>
               {(column) => (
-                <th class="px-4 py-3">
+                <th class='px-4 py-3'>
                   <Show when={column.sortBy} fallback={column.label}>
                     <a
-                      href=""
-                      class="text-gray-400"
+                      href=''
+                      class='text-gray-400'
                       onClick={(event) => sortByColumn(event, column)}
                     >
                       {column.label}
@@ -59,10 +59,10 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
         <tbody>
           <For each={sortedItems()}>
             {(item) => (
-              <tr class="bg-gray-800 border-b border-b-style-solid border-gray-700">
+              <tr class='bg-gray-800 border-b border-b-style-solid border-gray-700'>
                 <For each={props.columns}>
                   {(col) => (
-                    <td class="px-4 py-3 font-medium text-gray-400">
+                    <td class='px-4 py-3 font-medium text-gray-400'>
                       {col.get(item)}
                     </td>
                   )}

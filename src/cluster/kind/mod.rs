@@ -13,7 +13,7 @@ use crate::{
 mod config;
 
 #[derive(Debug, Snafu)]
-pub enum ClusterError {
+pub enum KindClusterError {
     #[snafu(display("io error: {source}"))]
     IoError { source: std::io::Error },
 
@@ -62,12 +62,12 @@ impl KindCluster {
 
     /// Create a new local cluster by calling the kind binary.
     #[instrument]
-    pub async fn create(&self) -> Result<(), ClusterError> {
+    pub async fn create(&self) -> Result<(), KindClusterError> {
         info!("Creating local cluster using kind");
 
         // Check if required binaries are present
         if !binaries_present(&["docker", "kind"]) {
-            return Err(ClusterError::MissingDepsError);
+            return Err(KindClusterError::MissingDepsError);
         }
 
         // Check if Docker is running
@@ -103,7 +103,7 @@ impl KindCluster {
         //     .context(IoSnafu {})?;
 
         if let Err(err) = kind_cmd.wait().await {
-            return Err(ClusterError::CmdError {
+            return Err(KindClusterError::CmdError {
                 error: err.to_string(),
             });
         }
@@ -113,7 +113,7 @@ impl KindCluster {
 
     /// Creates a kind cluster if it doesn't exist already.
     #[instrument]
-    pub async fn create_if_not_exists(&self) -> Result<(), ClusterError> {
+    pub async fn create_if_not_exists(&self) -> Result<(), KindClusterError> {
         info!("Creating cluster if it doesn't exist using kind");
 
         if Self::check_if_cluster_exists(&self.name).await? {
@@ -140,7 +140,7 @@ impl KindCluster {
 
     /// Cheack if a kind cluster with the provided name already exists.
     #[instrument]
-    async fn check_if_cluster_exists<T>(cluster_name: T) -> Result<bool, ClusterError>
+    async fn check_if_cluster_exists<T>(cluster_name: T) -> Result<bool, KindClusterError>
     where
         T: AsRef<str> + std::fmt::Debug,
     {

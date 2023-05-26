@@ -11,7 +11,7 @@ use tera::{Context, Tera};
 use url::Url;
 
 use crate::{
-    constants::DEFAULT_CACHE_MAX_AGE_IN_SECS,
+    constants::DEFAULT_CACHE_MAX_AGE,
     utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
 };
 
@@ -101,39 +101,35 @@ pub enum CacheStatus<T> {
 }
 
 pub struct CacheSettings {
-    pub base_path: PathBuf,
+    pub backend: CacheBackend,
     pub max_age: Duration,
-    pub use_cache: bool,
 }
 
-impl From<(PathBuf, Duration, bool)> for CacheSettings {
-    fn from(value: (PathBuf, Duration, bool)) -> Self {
+impl From<CacheBackend> for CacheSettings {
+    fn from(backend: CacheBackend) -> Self {
         Self {
-            base_path: value.0,
-            max_age: value.1,
-            use_cache: value.2,
+            max_age: DEFAULT_CACHE_MAX_AGE,
+            backend,
         }
     }
 }
 
-impl From<(PathBuf, bool)> for CacheSettings {
-    fn from(value: (PathBuf, bool)) -> Self {
-        Self {
-            max_age: Duration::from_secs(DEFAULT_CACHE_MAX_AGE_IN_SECS),
-            base_path: value.0,
-            use_cache: value.1,
+impl CacheSettings {
+    pub fn disk(base_path: impl Into<PathBuf>) -> Self {
+        CacheBackend::Disk {
+            base_path: base_path.into(),
         }
+        .into()
+    }
+
+    pub fn disabled() -> Self {
+        CacheBackend::Disabled.into()
     }
 }
 
-impl From<(PathBuf, Duration)> for CacheSettings {
-    fn from(value: (PathBuf, Duration)) -> Self {
-        Self {
-            base_path: value.0,
-            max_age: value.1,
-            use_cache: true,
-        }
-    }
+pub enum CacheBackend {
+    Disk { base_path: PathBuf },
+    Disabled,
 }
 
 /// Reads potentially cached YAML data from a local file and deserializes it
