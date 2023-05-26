@@ -1,6 +1,7 @@
 use clap::Parser;
 use dotenvy::dotenv;
 use snafu::{ResultExt, Snafu};
+use snafu::{ResultExt, Snafu};
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
