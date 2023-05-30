@@ -28,7 +28,7 @@ export class Result<O extends ToString, E extends ToString> {
     return !this.is_error;
   }
 
-  isOkAnd(fn: (value: O) => boolean): this is Result<O, never> {
+  isOkAnd(fn: (value: Readonly<O>) => boolean): this is Result<O, never> {
     return this.isOk() && fn(this.value);
   }
 
@@ -36,11 +36,14 @@ export class Result<O extends ToString, E extends ToString> {
     return this.is_error;
   }
 
-  isErrAnd(fn: (error: E) => boolean): this is Result<never, E> {
+  isErrAnd(fn: (error: Readonly<E>) => boolean): this is Result<never, E> {
     return this.isErr() && fn(this.value);
   }
 
-  match<T, K>(matcher: { ok: (value: O) => T; err: (error: E) => K }): T | K {
+  match<T, K>(matcher: {
+    ok: (value: Readonly<O>) => T;
+    err: (error: Readonly<E>) => K;
+  }): T | K {
     return this.is_error
       ? matcher.err(this.value as E)
       : matcher.ok(this.value as O);
@@ -61,7 +64,7 @@ export class Result<O extends ToString, E extends ToString> {
     });
   }
 
-  unwrapOrElse(fn: (error: E) => O): O {
+  unwrapOrElse(fn: (error: Readonly<E>) => O): O {
     return this.match({
       ok: (value) => value,
       err: (error) => fn(error),
@@ -77,33 +80,36 @@ export class Result<O extends ToString, E extends ToString> {
 
   err(): Option<E> {
     return this.match({
-      ok: () => None(),
+      ok: None,
       err: (error) => Some(error),
     });
   }
 
-  map<T extends ToString>(fn: (value: O) => T): Result<T, E> {
+  map<T extends ToString>(fn: (value: Readonly<O>) => T): Result<T, E> {
     return this.match({
       ok: (value) => Ok(fn(value)),
       err: (error) => Err(error),
     });
   }
 
-  mapOr<T>(defaultValue: T, fn: (value: O) => T): T {
+  mapOr<T>(defaultValue: T, fn: (value: Readonly<O>) => T): T {
     return this.match({
       ok: (value) => fn(value),
       err: () => defaultValue,
     });
   }
 
-  mapOrElse<T>(defaultFn: (error: E) => T, fn: (value: O) => T): T {
+  mapOrElse<T>(
+    defaultFn: (error: Readonly<E>) => T,
+    fn: (value: Readonly<O>) => T,
+  ): T {
     return this.match({
       ok: (value) => fn(value),
       err: (error) => defaultFn(error),
     });
   }
 
-  mapErr<T extends string>(fn: (error: E) => T): Result<O, T> {
+  mapErr<T extends string>(fn: (error: Readonly<E>) => T): Result<O, T> {
     return this.match({
       ok: (value) => Ok(value),
       err: (error) => Err(fn(error)),
