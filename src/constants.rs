@@ -14,3 +14,5 @@ pub const HELM_REPO_INDEX_FILE: &str = "index.yaml";
 
 pub const HELM_DEFAULT_CHART_VERSION: &str = ">0.0.0-0";
 pub const HELM_ERROR_PREFIX: &str = "ERROR:";
+
+pub const PASSWORD_LEN: usize = 30;

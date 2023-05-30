@@ -2,7 +2,7 @@ use clap::{Args, ValueEnum};
 use snafu::{ensure, ResultExt, Snafu};
 
 use stackable::{
-    cluster::{KindCluster, KindClusterError, MinikubeClusterError},
+    cluster::{KindCluster, KindClusterError, MinikubeCluster, MinikubeClusterError},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
 };
 
@@ -39,6 +39,10 @@ installation on the system."
 
     /// Name of the local cluster
     #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
+    #[arg(long_help = "Name of the local cluster
+
+- When using 'kind' this is the context name
+- When using 'minikube' this is the profile name")]
     cluster_name: String,
 
     /// Number of total nodes in the local cluster
@@ -60,7 +64,8 @@ operator installation and displays an error message.")]
 
 This number must be smaller than --cluster-nodes. If this is not the case,
 stackablectl will abort cluster creation, operator installation and displays
-an error message.")]
+an error message. This argument does not apply when using 'minikube' and will
+always use '1'.")]
     cluster_cp_nodes: usize,
 }
 
@@ -88,10 +93,20 @@ impl CommonClusterArgs {
                             namespace,
                         );
 
-                        // Seems like we cannot propagate the error directly using ?
-                        kind_cluster.create().await.context(KindClusterSnafu {})
+                        kind_cluster
+                            .create_if_not_exists()
+                            .await
+                            .context(KindClusterSnafu {})
                     }
-                    ClusterType::Minikube => todo!(),
+                    ClusterType::Minikube => {
+                        let minikube_cluster =
+                            MinikubeCluster::new(self.cluster_nodes, name, namespace);
+
+                        minikube_cluster
+                            .create_if_not_exists()
+                            .await
+                            .context(MinikubeClusterSnafu {})
+                    }
                 }
             }
             None => Ok(()),

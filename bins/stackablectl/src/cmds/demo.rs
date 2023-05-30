@@ -14,6 +14,7 @@ use stackable::{
     },
     utils::{params::IntoParametersError, path::PathOrUrlParseError},
 };
+use tracing::{debug, info, instrument};
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
@@ -115,7 +116,10 @@ pub enum DemoCmdError {
 }
 
 impl DemoArgs {
+    #[instrument]
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
+        debug!("Handle demo args");
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
         let files = common_args
@@ -136,7 +140,10 @@ impl DemoArgs {
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
+#[instrument]
 async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
+    info!("Listing demos");
+
     match args.output_type {
         OutputType::Plain => {
             let mut table = Table::new();
@@ -163,7 +170,10 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
+#[instrument]
 async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
+    info!("Describing demo");
+
     let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
@@ -195,15 +205,23 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 }
 
 /// Install a specific demo
+#[instrument]
 async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
 ) -> Result<String, DemoCmdError> {
+    info!("Installing demo");
+
     // Get the demo spec by name from the list
     let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
+
+    args.local_cluster
+        .install_if_needed(None, None)
+        .await
+        .context(CommonClusterArgsSnafu {})?;
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
@@ -226,7 +244,7 @@ async fn install_cmd(
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args
-        .get_stack_files()
+        .get_release_files()
         .context(PathOrUrlParseSnafu {})?;
 
     let release_list = ReleaseList::build(&files, &cache_settings)

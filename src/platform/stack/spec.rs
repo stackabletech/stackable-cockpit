@@ -106,7 +106,7 @@ impl StackSpecV2 {
             .install(&self.operators, &[], namespace)
             .context(ReleaseInstallSnafu {})?;
 
-        todo!()
+        Ok(())
     }
 
     #[instrument(skip_all)]

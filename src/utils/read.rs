@@ -7,12 +7,14 @@ use std::{
 
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
-use tera::{Context, Tera};
 use url::Url;
 
 use crate::{
     constants::DEFAULT_CACHE_MAX_AGE,
-    utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
+    utils::{
+        path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
+        templating,
+    },
 };
 
 #[derive(Debug, Snafu)]
@@ -203,16 +205,8 @@ where
 {
     let content = fs::read_to_string(path).context(TemplatedReadSnafu {})?;
 
-    // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
-
-    // Render template using a one-off function
-    let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
+    // Render template
+    let result = templating::render(&content, parameters).context(TemplatingSnafu {})?;
     serde_yaml::from_str(&result).context(YamlSnafu {})
 }
 
@@ -235,15 +229,7 @@ where
         .await
         .context(TemplatedRequestSnafu {})?;
 
-    // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
-
-    // Render template using a one-off function
-    let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
+    // Render template
+    let result = templating::render(&content, parameters).context(TemplatingSnafu {})?;
     serde_yaml::from_str(&result).context(YamlSnafu {})
 }

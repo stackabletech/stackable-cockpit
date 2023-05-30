@@ -14,7 +14,7 @@ mod config;
 
 #[derive(Debug, Snafu)]
 pub enum KindClusterError {
-    #[snafu(display("io error: {source}"))]
+    #[snafu(display("io error"))]
     IoError { source: std::io::Error },
 
     #[snafu(display("stdin error"))]
@@ -26,10 +26,10 @@ pub enum KindClusterError {
     #[snafu(display("missing dependencies"))]
     MissingDepsError,
 
-    #[snafu(display("Docker error: {source}"))]
+    #[snafu(display("Docker error"))]
     DockerError { source: DockerError },
 
-    #[snafu(display("yaml error: {source}"))]
+    #[snafu(display("yaml error"))]
     YamlError { source: serde_yaml::Error },
 }
 
@@ -89,18 +89,7 @@ impl KindCluster {
             .context(IoSnafu {})?;
 
         let mut stdin = kind_cmd.stdin.take().unwrap();
-        tokio::spawn(async move {
-            stdin.write_all(config_string.as_bytes()).await.unwrap();
-            drop(stdin);
-        });
-
-        // kind_cmd
-        //     .stdin
-        //     // .as_ref()
-        //     .ok_or(ClusterError::StdinError)?
-        //     .write_all(config_string.as_bytes())
-        //     .await
-        //     .context(IoSnafu {})?;
+        stdin.write_all(config_string.as_bytes()).await.unwrap();
 
         if let Err(err) = kind_cmd.wait().await {
             return Err(KindClusterError::CmdError {
@@ -138,13 +127,10 @@ impl KindCluster {
         &self.name
     }
 
-    /// Cheack if a kind cluster with the provided name already exists.
+    /// Check if a kind cluster with the provided name already exists.
     #[instrument]
-    async fn check_if_cluster_exists<T>(cluster_name: T) -> Result<bool, KindClusterError>
-    where
-        T: AsRef<str> + std::fmt::Debug,
-    {
-        debug!("Cheacking if kind cluster exists");
+    async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool, KindClusterError> {
+        debug!("Checking if kind cluster exists");
 
         let output = Command::new("kind")
             .args(["get", "clusters"])
@@ -160,6 +146,6 @@ impl KindCluster {
         );
 
         let output = String::from_utf8_lossy(&output.stdout);
-        Ok(output.lines().any(|name| name == cluster_name.as_ref()))
+        Ok(output.lines().any(|name| name == cluster_name))
     }
 }
