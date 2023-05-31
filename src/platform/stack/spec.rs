@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -152,9 +152,13 @@ impl StackSpecV2 {
         parameters: &HashMap<String, String>,
         namespace: &str,
     ) -> Result<(), StackError> {
+        debug!("Installing manifests");
+
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
+                    debug!("Installing manifest from Helm chart {}", helm_file);
+
                     // Read Helm chart YAML and apply templating
                     let helm_chart =
                         read_yaml_data_with_templating::<HelmChart, _>(helm_file, parameters)
@@ -171,7 +175,7 @@ impl StackSpecV2 {
 
                     // Serialize chart options to string
                     let values_yaml =
-                        serde_yaml::to_string(&helm_chart.values).context(YamlSnafu {})?;
+                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu {})?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
@@ -189,7 +193,7 @@ impl StackSpecV2 {
                     .context(HelmSnafu {})?;
                 }
                 ManifestSpec::PlainYaml(path_or_url) => {
-                    info!("Installing YAML manifest from {}", path_or_url);
+                    debug!("Installing YAML manifest from {}", path_or_url);
 
                     // Read YAML manifest and apply templating
                     let manifests =

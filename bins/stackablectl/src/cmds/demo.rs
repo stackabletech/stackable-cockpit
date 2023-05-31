@@ -205,7 +205,7 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 }
 
 /// Install a specific demo
-#[instrument]
+#[instrument(skip(list))]
 async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
@@ -283,5 +283,5 @@ async fn install_cmd(
 }
 
 fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
-    todo!()
+    Ok("Currently not implemented".into())
 }

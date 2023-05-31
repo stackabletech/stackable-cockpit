@@ -7,7 +7,7 @@ use tracing::{debug, info, instrument};
 use crate::{
     cluster::{check_if_docker_is_running, kind::config::KindClusterConfig, DockerError},
     constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
-    utils::check::binaries_present,
+    utils::check::binaries_present_with_name,
 };
 
 mod config;
@@ -17,19 +17,19 @@ pub enum KindClusterError {
     #[snafu(display("io error"))]
     IoError { source: std::io::Error },
 
-    #[snafu(display("stdin error"))]
+    #[snafu(display("no stdin error"))]
     StdinError,
 
-    #[snafu(display("command error: {error}"))]
-    CmdError { error: String },
+    #[snafu(display("kind command error: {error}"))]
+    KindCommandError { error: String },
 
-    #[snafu(display("missing dependencies"))]
-    MissingDepsError,
+    #[snafu(display("missing required binary: {binary}"))]
+    MissingBinaryError { binary: String },
 
-    #[snafu(display("Docker error"))]
+    #[snafu(display("docker error"))]
     DockerError { source: DockerError },
 
-    #[snafu(display("yaml error"))]
+    #[snafu(display("failed to covert kind config to yaml"))]
     YamlError { source: serde_yaml::Error },
 }
 
@@ -66,8 +66,8 @@ impl KindCluster {
         info!("Creating local cluster using kind");
 
         // Check if required binaries are present
-        if !binaries_present(&["docker", "kind"]) {
-            return Err(KindClusterError::MissingDepsError);
+        if let Some(binary) = binaries_present_with_name(&["docker", "kind"]) {
+            return Err(KindClusterError::MissingBinaryError { binary });
         }
 
         // Check if Docker is running
@@ -83,16 +83,24 @@ impl KindCluster {
             .args(["--name", self.name.as_str()])
             .args(["--config", "-"])
             .stdin(Stdio::piped())
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
+            // .stdout(Stdio::null())
+            // .stderr(Stdio::null())
             .spawn()
             .context(IoSnafu {})?;
 
-        let mut stdin = kind_cmd.stdin.take().unwrap();
-        stdin.write_all(config_string.as_bytes()).await.unwrap();
+        // Pipe in config
+        let mut stdin = kind_cmd.stdin.take().ok_or(KindClusterError::StdinError)?;
+        stdin
+            .write_all(config_string.as_bytes())
+            .await
+            .context(IoSnafu {})?;
+
+        // Write the piped in data
+        stdin.flush().await.context(IoSnafu {})?;
+        drop(stdin);
 
         if let Err(err) = kind_cmd.wait().await {
-            return Err(KindClusterError::CmdError {
+            return Err(KindClusterError::KindCommandError {
                 error: err.to_string(),
             });
         }
@@ -140,7 +148,7 @@ impl KindCluster {
 
         ensure!(
             output.status.success(),
-            CmdSnafu {
+            KindCommandSnafu {
                 error: String::from_utf8_lossy(&output.stderr)
             }
         );
