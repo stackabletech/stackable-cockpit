@@ -1,4 +1,4 @@
-# stackable-ui
+# stackabled-web
 
 ## The stack
 
