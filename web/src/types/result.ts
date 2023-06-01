@@ -109,7 +109,7 @@ export class Result<O extends ToString, E extends ToString> {
     });
   }
 
-  mapErr<T extends string>(fn: (error: Readonly<E>) => T): Result<O, T> {
+  mapErr<T extends ToString>(fn: (error: Readonly<E>) => T): Result<O, T> {
     return this.match({
       ok: (value) => Ok(value),
       err: (error) => Err(fn(error)),
