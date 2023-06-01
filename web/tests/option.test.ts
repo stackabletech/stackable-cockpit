@@ -6,31 +6,23 @@ describe('option tests', () => {
   it('option isSome', () => {
     const option = Some('foo');
 
-    assert.equal(option.isSome(), true);
-    assert.equal(option.isNone(), false);
+    assert.isTrue(option.isSome());
+    assert.isFalse(option.isNone());
   });
 
   it('option isSomeAnd', () => {
     const option = Some('foo');
 
-    assert.equal(
-      option.isSomeAnd((value) => value.length === 3),
-      true,
-    );
-
-    assert.equal(
-      option.isSomeAnd((value) => value.length === 2),
-      false,
-    );
-
-    assert.equal(option.isNone(), false);
+    assert.isTrue(option.isSomeAnd((value) => value.length === 3));
+    assert.isFalse(option.isSomeAnd((value) => value.length === 2));
+    assert.isFalse(option.isNone());
   });
 
   it('option isNone', () => {
     const option = None();
 
-    assert.equal(option.isSome(), false);
-    assert.equal(option.isNone(), true);
+    assert.isFalse(option.isSome());
+    assert.isTrue(option.isNone());
   });
 
   it('option map', () => {
@@ -148,6 +140,126 @@ describe('option tests', () => {
     assert.deepEqual(
       optionC.filter(() => true),
       None(),
+    );
+  });
+
+  it('option or', () => {
+    const optionA = Some('foo');
+    const optionAOr = optionA.or(Some('bar'));
+
+    assert.deepEqual(optionAOr, Some('foo'));
+
+    const optionB = None();
+    const optionBOr = optionB.or(Some('bar'));
+
+    assert.deepEqual(optionBOr, Some('bar'));
+  });
+
+  it('option orElse', () => {
+    const optionA = Some('foo');
+    const optionAOr = optionA.orElse(() => Some('bar'));
+
+    assert.deepEqual(optionAOr, Some('foo'));
+
+    const optionB = None();
+    const optionBOr = optionB.orElse(() => Some('bar'));
+
+    assert.deepEqual(optionBOr, Some('bar'));
+  });
+
+  it('option xor', () => {
+    const optionA = Some('foo');
+    const someA = optionA.xor(None());
+    const noneA = optionA.xor(Some('bar'));
+
+    assert.deepEqual(someA, Some('foo'));
+    assert.deepEqual(noneA, None());
+
+    const optionB = None();
+    const noneB = optionB.xor(None());
+    const someB = optionB.xor(Some('bar'));
+
+    assert.deepEqual(noneB, None());
+    assert.deepEqual(someB, Some('bar'));
+  });
+
+  it('option take', () => {
+    const optionA = Some('foo');
+    const valueA = optionA.take();
+
+    assert.deepEqual(optionA, None());
+    assert.deepEqual(valueA, Some('foo'));
+
+    const optionB = None();
+    const valueB = optionA.take();
+
+    assert.deepEqual(optionB, None());
+    assert.deepEqual(valueB, None());
+  });
+
+  it('option replace', () => {
+    const optionA = Some('foo');
+    const oldA = optionA.replace('bar');
+
+    assert.deepEqual(optionA, Some('bar'));
+    assert.deepEqual(oldA, Some('foo'));
+
+    // FIXME (Techassi): Replacing on None is impossible
+  });
+
+  it('option contains', () => {
+    const optionA = Some('foo');
+    assert.isTrue(optionA.contains('foo'));
+
+    const optionB = Some('foo');
+    assert.isFalse(optionB.contains('bar'));
+  });
+
+  it('option zip', () => {
+    const option = Some('foo');
+    const zipped = option.zip(Some(3));
+    assert.deepEqual(zipped, Some(['foo', 3]));
+
+    const zippedNone = option.zip(None());
+    assert.deepEqual(zippedNone, None());
+  });
+
+  it('option zipWith', () => {
+    const option = Some('foo');
+    const zipped = option.zipWith(Some(3), (str, num) => str.repeat(num));
+    assert.deepEqual(zipped, Some('foofoofoo'));
+
+    const zippedNone = option.zipWith(None(), () => 'bar');
+    assert.deepEqual(zippedNone, None());
+  });
+
+  it('option unwrap', () => {
+    const option = Some('foo');
+    assert.equal(option.unwrap(), 'foo');
+
+    const optionNone = None();
+    assert.throw(() => optionNone.unwrap());
+  });
+
+  it('option unwrapOr', () => {
+    const optionA = Some('foo');
+    assert.equal(optionA.unwrapOr('bar'), 'foo');
+
+    const optionB = None();
+    assert.equal(optionB.unwrapOr(3), 3);
+  });
+
+  it('option unwrapOrElse', () => {
+    const optionA = Some('foo');
+    assert.equal(
+      optionA.unwrapOrElse(() => 3),
+      'foo',
+    );
+
+    const optionB = None();
+    assert.equal(
+      optionB.unwrapOrElse(() => 3),
+      3,
     );
   });
 });

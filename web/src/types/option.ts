@@ -97,21 +97,21 @@ export class Option<S extends ToString> {
     });
   }
 
-  or(other: Option<S>): Option<S> {
+  or<T extends ToString>(other: Option<S | T>): Option<S | T> {
     return this.match({
       some: (value) => Some(value),
       none: () => other,
     });
   }
 
-  orElse(fn: () => Option<S>): Option<S> {
+  orElse<T extends ToString>(fn: () => Option<S | T>): Option<S | T> {
     return this.match({
       some: (value) => Some(value),
       none: fn,
     });
   }
 
-  xor(other: Option<S>): Option<S> {
+  xor<T extends ToString>(other: Option<S | T>): Option<S | T> {
     if (this.isSome() && other.isNone()) {
       return this;
     } else if (this.isNone() && other.isSome()) {
@@ -135,9 +135,9 @@ export class Option<S extends ToString> {
 
   replace(value: S): Option<S> {
     return this.match({
-      some: (value) => {
+      some: (oldValue) => {
         this.value = value;
-        return Some(value);
+        return Some(oldValue);
       },
       none: () => {
         this.value = value;
@@ -174,14 +174,14 @@ export class Option<S extends ToString> {
     return this.expect('called `Option::unwrap()` on a `None` value');
   }
 
-  unwrapOr(defaultValue: S): S {
+  unwrapOr<T extends ToString>(defaultValue: S | T): S | T {
     return this.match({
       some: (value) => value,
       none: () => defaultValue,
     });
   }
 
-  unwrapOrElse(fn: () => S): S {
+  unwrapOrElse<T extends ToString>(fn: () => S | T): S | T {
     return this.match({
       some: (value) => value,
       none: fn,
