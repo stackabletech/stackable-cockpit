@@ -175,13 +175,11 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
                 .load_preset(NOTHING)
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .add_row(vec!["DEMO", &args.demo_name])
-                .add_row(vec!["DESCRIPTION", &demo.description]);
-
-            if let Some(documentation) = &demo.documentation {
-                table.add_row(vec!["DOCUMENTATION", documentation]);
-            }
-
-            table
+                .add_row(vec!["DESCRIPTION", &demo.description])
+                .add_row_if(
+                    |_, _| demo.documentation.is_some(),
+                    vec!["DOCUMENTATION", demo.documentation.as_ref().unwrap()],
+                )
                 .add_row(vec!["STACK", &demo.stack])
                 .add_row(vec!["LABELS", &demo.labels.join(", ")]);
 
