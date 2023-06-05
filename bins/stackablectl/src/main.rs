@@ -1,7 +1,6 @@
 use clap::Parser;
 use dotenvy::dotenv;
 use snafu::{ResultExt, Snafu};
-use snafu::{ResultExt, Snafu};
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
@@ -82,7 +81,7 @@ async fn main() -> Result<(), CliError> {
     let output = match &cli.subcommand {
         Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu {})?,
         Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu {})?,
-        Commands::Stack(args) => args.run().context(StackCmdSnafu {})?,
+        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu {})?,
         Commands::Services(args) => args.run(&cli).context(ServicesCmdSnafu {})?,
         Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu {})?,
         Commands::Completions(args) => args.run().context(CompletionsCmdSnafu {})?,
