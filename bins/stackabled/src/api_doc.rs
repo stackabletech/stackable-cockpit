@@ -18,6 +18,18 @@ use crate::handlers;
         handlers::releases::get_release,
         handlers::stacklets::get_stacklets
     ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, handlers::utoipa_synthetic::ObjectMeta))
+    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, synthetic_types::ObjectMeta))
 )]
 pub struct ApiDoc {}
+
+/// Synthetic types that are used to generate type definitions for foreign types.
+mod synthetic_types {
+
+    use utoipa::ToSchema;
+
+    #[derive(ToSchema)]
+    pub struct ObjectMeta {
+        pub name: String,
+        pub namespace: String,
+    }
+}
