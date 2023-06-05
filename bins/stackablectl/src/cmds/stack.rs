@@ -5,7 +5,6 @@ use comfy_table::{
 };
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
-use xdg::BaseDirectoriesError;
 
 use stackable::{
     common::ListError,
