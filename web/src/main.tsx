@@ -50,7 +50,7 @@ const App = () => {
       <GlobalNav />
       <Routes>
         <Route
-          path='/product-clusters/:namespace/:name/connect'
+          path='/stacklets/:namespace/:name/connect'
           component={StackletConnectionDetails}
         />
         <Route path='/stacklets' component={Stacklets} />

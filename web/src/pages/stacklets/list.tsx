@@ -24,8 +24,8 @@ export const Stacklets = () => {
           },
           {
             label: 'Name',
-            get: (cluster) => cluster.metadata.name,
-            sortBy: (cluster) => cluster.metadata.name,
+            get: (x) => x.metadata.name,
+            sortBy: (x) => x.metadata.name,
           },
           {
             label: 'Actions',
@@ -34,7 +34,7 @@ export const Stacklets = () => {
                 <li class='inline-block mx-1 p-1 bg-gray'>
                   <A
                     class='color-black'
-                    href={`/product-clusters/${x.metadata.namespace}/${x.metadata.name}/connect`}
+                    href={`/stacklets/${x.metadata.namespace}/${x.metadata.name}/connect`}
                   >
                     Connect
                   </A>
