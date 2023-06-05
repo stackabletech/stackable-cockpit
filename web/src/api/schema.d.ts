@@ -71,7 +71,6 @@ export interface components {
     }, {
       plainYaml: string;
     }]>;
-    /** @description Synthetic types that are used to generate type definitions for foreign types. */
     ObjectMeta: {
       name: string;
       namespace: string;
