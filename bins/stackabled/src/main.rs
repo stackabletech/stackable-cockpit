@@ -18,11 +18,11 @@ async fn main() {
 
     // Run the server
     let api = Router::new()
-        .route("/", get(handlers::get_root))
-        .nest("/demos", handlers::demo_router())
-        .nest("/stacks", handlers::stack_router())
-        .nest("/releases", handlers::release_router())
-        .nest("/stacklets", handlers::stacklet_router());
+        .route("/", get(handlers::root::get_root))
+        .nest("/demos", handlers::demos::router())
+        .nest("/stacks", handlers::stacks::router())
+        .nest("/releases", handlers::releases::router())
+        .nest("/stacklets", handlers::stacklets::router());
 
     let router = Router::new()
         .nest("/api/", api)

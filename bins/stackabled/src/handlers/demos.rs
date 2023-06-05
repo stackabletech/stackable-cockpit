@@ -2,7 +2,7 @@ use axum::{extract::Path, routing::get, Json, Router};
 use stackable::platform::demo::DemoSpecV2;
 
 /// Creates the demo sub-router.
-pub fn demo_router() -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/", get(get_demos))
         .route("/:name", get(get_demo))

@@ -1,8 +1,8 @@
-mod demos;
-mod releases;
-mod root;
-mod stacklets;
-mod stacks;
+pub mod demos;
+pub mod releases;
+pub mod root;
+pub mod stacklets;
+pub mod stacks;
 pub mod utoipa_synthetic;
 
 #[cfg(feature = "ui")]
@@ -10,9 +10,3 @@ pub mod ui;
 #[cfg(not(feature = "ui"))]
 #[path = "ui_disabled.rs"]
 pub mod ui;
-
-pub use demos::*;
-pub use releases::*;
-pub use root::*;
-pub use stacklets::*;
-pub use stacks::*;

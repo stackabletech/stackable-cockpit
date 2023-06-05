@@ -12,12 +12,12 @@ use crate::handlers;
     info(description = "Stackabled API specification"),
     servers((url = "/api")),
     paths(
-        handlers::get_demos,
-        handlers::get_demo,
-        handlers::get_releases,
-        handlers::get_release,
-        handlers::get_stacklets
+        handlers::demos::get_demos,
+        handlers::demos::get_demo,
+        handlers::releases::get_releases,
+        handlers::releases::get_release,
+        handlers::stacklets::get_stacklets
     ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::Stacklet, handlers::utoipa_synthetic::ObjectMeta))
+    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, handlers::utoipa_synthetic::ObjectMeta))
 )]
 pub struct ApiDoc {}

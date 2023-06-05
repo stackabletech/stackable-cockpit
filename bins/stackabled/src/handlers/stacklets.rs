@@ -10,7 +10,7 @@ pub struct Stacklet {
 }
 
 /// Creates the stack sub-router.
-pub fn stacklet_router() -> Router {
+pub fn router() -> Router {
     Router::new().route("/", get(get_stacklets))
 }
 

@@ -2,7 +2,7 @@ use axum::{extract::Path, routing::get, Json, Router};
 use stackable::platform::release::ReleaseSpec;
 
 /// Creates the release sub-router.
-pub fn release_router() -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/", get(get_releases))
         .route("/:name", get(get_release))
