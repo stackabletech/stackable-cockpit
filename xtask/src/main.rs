@@ -23,12 +23,16 @@ enum XtaskCli {
 enum TaskError {
     #[snafu(display("io error"))]
     Io { source: std::io::Error },
+    
     #[snafu(display("error serializing openapi"))]
     SerializeOpenApi { source: serde_json::Error },
+    
     #[snafu(display("error running importing openapi schema importer"))]
     ImportOpenapiSchemaRun { source: std::io::Error },
+    
     #[snafu(display("openapi schema importer failed with error code {error_code:?}"))]
     ImportOpenapiSchema { error_code: Option<i32> },
+    
     #[snafu(display("error writing openapi schema into importer"))]
     WriteOpenapiSchema { source: std::io::Error },
 }
