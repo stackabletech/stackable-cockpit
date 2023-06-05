@@ -13,7 +13,7 @@ use std::{
 
 #[derive(clap::Parser)]
 #[allow(clippy::enum_variant_names)]
-enum XtaskCli {
+enum XtaskCommand {
     GenMan,
     GenComp,
     GenOpenapi,
@@ -39,8 +39,8 @@ enum TaskError {
 
 #[snafu::report]
 fn main() -> Result<(), TaskError> {
-    match XtaskCli::parse() {
-        XtaskCli::GenMan => {
+    match XtaskCommand::parse() {
+        XtaskCommand::GenMan => {
             let cmd = Cli::command();
 
             fs::create_dir_all("extra/man").context(IoSnafu {})?;
@@ -49,7 +49,7 @@ fn main() -> Result<(), TaskError> {
             let man = Man::new(cmd);
             man.render(&mut f).context(IoSnafu {})?
         }
-        XtaskCli::GenComp => {
+        XtaskCommand::GenComp => {
             let mut cmd = Cli::command();
             let name = cmd.get_name().to_string();
 
@@ -69,7 +69,7 @@ fn main() -> Result<(), TaskError> {
             let mut f = fs::File::create("extra/completions/_stackablectl").context(IoSnafu {})?;
             generate(Shell::Zsh, &mut cmd, name, &mut f);
         }
-        XtaskCli::GenOpenapi => {
+        XtaskCommand::GenOpenapi => {
             let openapi_json = ApiDoc::openapi().to_json().context(SerializeOpenApiSnafu)?;
             let mut codegen = Command::new("pnpm")
                 .args(["--filter", "web-ui", "run", "openapi-codegen"])
