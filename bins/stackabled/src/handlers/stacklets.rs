@@ -1,4 +1,4 @@
-use axum::{extract::Path, routing::get, Json, Router};
+use axum::{routing::get, Json, Router};
 use serde::Serialize;
 use stackable::kube::k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use utoipa::ToSchema;
