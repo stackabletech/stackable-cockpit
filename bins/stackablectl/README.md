@@ -9,7 +9,7 @@ The documentation of `stackablectl` can be found in the [documentation of the St
 The `stackablectl` binary provides extensive help and usage information. This help can be displayed for the root as well
 as any subcommands using the `--help` flag.
 
-```
+```plain
 Usage: stackablectl [OPTIONS] <COMMAND>
 
 Commands:
