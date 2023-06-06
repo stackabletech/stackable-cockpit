@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import { None, Option, Some } from './option';
 import { ToString } from './utils';
 
@@ -6,7 +5,6 @@ export const Ok = <O, E extends ToString = never>(value: O) => {
   return new Result<O, E>(false, value);
 };
 
-// eslint-disable-next-line unicorn/prevent-abbreviations
 export const Err = <E extends ToString, O = never>(error: E) => {
   return new Result<O, E>(true, error);
 };
@@ -112,19 +110,19 @@ export class Result<O, E extends ToString> {
     });
   }
 
-  expect(msg: string): O {
+  expect(message: string): O {
     return this.match({
       ok: (value) => value,
       err: (error) => {
-        throw new Error(`${msg}: ${error.toString()}`);
+        throw new Error(`${message}: ${error.toString()}`);
       },
     });
   }
 
-  expectErr(msg: string): E {
+  expectErr(message: string): E {
     return this.match({
       ok: () => {
-        throw new Error(`${msg}`);
+        throw new Error(`${message}`);
       },
       err: (error) => error,
     });
