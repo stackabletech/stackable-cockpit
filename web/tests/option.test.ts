@@ -194,7 +194,7 @@ describe('option tests', () => {
   it('option zip', () => {
     const option = Some('foo');
     const zipped = option.zip(Some(3));
-    assert.deepEqual(zipped, Some(['foo', 3]));
+    assert.deepEqual(zipped.unwrap(), ['foo', 3]);
 
     const zippedNone = option.zip(None);
     assert.deepEqual(zippedNone, None);
