@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prevent-abbreviations */
 import { ToString } from './utils';
 import { Err, Ok, Result } from './result';
 
