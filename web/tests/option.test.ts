@@ -19,7 +19,7 @@ describe('option tests', () => {
   });
 
   it('option isNone', () => {
-    const option = None();
+    const option = None;
 
     assert.isFalse(option.isSome());
     assert.isTrue(option.isNone());
@@ -32,10 +32,10 @@ describe('option tests', () => {
       Some(3),
     );
 
-    const optionB = None();
+    const optionB = None;
     assert.deepEqual(
       optionB.map(() => 3),
-      None(),
+      None,
     );
   });
 
@@ -46,7 +46,7 @@ describe('option tests', () => {
       3,
     );
 
-    const optionB = None();
+    const optionB = None;
     assert.equal(
       optionB.mapOr(2, () => 3),
       2,
@@ -63,7 +63,7 @@ describe('option tests', () => {
       3,
     );
 
-    const optionB = None();
+    const optionB = None;
     assert.equal(
       optionB.mapOrElse(
         () => 2,
@@ -77,7 +77,7 @@ describe('option tests', () => {
     const optionA = Some('foo');
     assert.deepEqual(optionA.okOr('Error'), Ok('foo'));
 
-    const optionB = None();
+    const optionB = None;
     assert.deepEqual(optionB.okOr('Error'), Err('Error'));
   });
 
@@ -88,7 +88,7 @@ describe('option tests', () => {
       Ok('foo'),
     );
 
-    const optionB = None();
+    const optionB = None;
     assert.deepEqual(
       optionB.okOrElse(() => 'Error'),
       Err('Error'),
@@ -99,8 +99,8 @@ describe('option tests', () => {
     const optionA = Some('foo');
     assert.deepEqual(optionA.and(Some('bar')), Some('bar'));
 
-    const optionB = None();
-    assert.deepEqual(optionB.and(Some('var')), None());
+    const optionB = None;
+    assert.deepEqual(optionB.and(Some('var')), None);
   });
 
   it('option andThen', () => {
@@ -112,14 +112,14 @@ describe('option tests', () => {
 
     const optionB = Some('foo');
     assert.deepEqual(
-      optionB.andThen(() => None()),
-      None(),
+      optionB.andThen(() => None),
+      None,
     );
 
-    const optionC = None();
+    const optionC = None;
     assert.deepEqual(
       optionC.andThen(() => Some(3)),
-      None(),
+      None,
     );
   });
 
@@ -133,13 +133,13 @@ describe('option tests', () => {
     const optionB = Some('foo');
     assert.deepEqual(
       optionB.filter((value) => value.length === 2),
-      None(),
+      None,
     );
 
-    const optionC = None();
+    const optionC = None;
     assert.deepEqual(
       optionC.filter(() => true),
-      None(),
+      None,
     );
   });
 
@@ -149,7 +149,7 @@ describe('option tests', () => {
 
     assert.deepEqual(optionAOr, Some('foo'));
 
-    const optionB = None();
+    const optionB = None;
     const optionBOr = optionB.or(Some('bar'));
 
     assert.deepEqual(optionBOr, Some('bar'));
@@ -161,7 +161,7 @@ describe('option tests', () => {
 
     assert.deepEqual(optionAOr, Some('foo'));
 
-    const optionB = None();
+    const optionB = None;
     const optionBOr = optionB.orElse(() => Some('bar'));
 
     assert.deepEqual(optionBOr, Some('bar'));
@@ -169,42 +169,18 @@ describe('option tests', () => {
 
   it('option xor', () => {
     const optionA = Some('foo');
-    const someA = optionA.xor(None());
+    const someA = optionA.xor(None);
     const noneA = optionA.xor(Some('bar'));
 
     assert.deepEqual(someA, Some('foo'));
-    assert.deepEqual(noneA, None());
+    assert.deepEqual(noneA, None);
 
-    const optionB = None();
-    const noneB = optionB.xor(None());
+    const optionB = None;
+    const noneB = optionB.xor(None);
     const someB = optionB.xor(Some('bar'));
 
-    assert.deepEqual(noneB, None());
+    assert.deepEqual(noneB, None);
     assert.deepEqual(someB, Some('bar'));
-  });
-
-  it('option take', () => {
-    const optionA = Some('foo');
-    const valueA = optionA.take();
-
-    assert.deepEqual(optionA, None());
-    assert.deepEqual(valueA, Some('foo'));
-
-    const optionB = None();
-    const valueB = optionA.take();
-
-    assert.deepEqual(optionB, None());
-    assert.deepEqual(valueB, None());
-  });
-
-  it('option replace', () => {
-    const optionA = Some('foo');
-    const oldA = optionA.replace('bar');
-
-    assert.deepEqual(optionA, Some('bar'));
-    assert.deepEqual(oldA, Some('foo'));
-
-    // FIXME (Techassi): Replacing on None is impossible
   });
 
   it('option contains', () => {
@@ -220,8 +196,8 @@ describe('option tests', () => {
     const zipped = option.zip(Some(3));
     assert.deepEqual(zipped, Some(['foo', 3]));
 
-    const zippedNone = option.zip(None());
-    assert.deepEqual(zippedNone, None());
+    const zippedNone = option.zip(None);
+    assert.deepEqual(zippedNone, None);
   });
 
   it('option zipWith', () => {
@@ -229,15 +205,15 @@ describe('option tests', () => {
     const zipped = option.zipWith(Some(3), (str, num) => str.repeat(num));
     assert.deepEqual(zipped, Some('foofoofoo'));
 
-    const zippedNone = option.zipWith(None(), () => 'bar');
-    assert.deepEqual(zippedNone, None());
+    const zippedNone = option.zipWith(None, () => 'bar');
+    assert.deepEqual(zippedNone, None);
   });
 
   it('option unwrap', () => {
     const option = Some('foo');
     assert.equal(option.unwrap(), 'foo');
 
-    const optionNone = None();
+    const optionNone = None;
     assert.throw(() => optionNone.unwrap());
   });
 
@@ -245,7 +221,7 @@ describe('option tests', () => {
     const optionA = Some('foo');
     assert.equal(optionA.unwrapOr('bar'), 'foo');
 
-    const optionB = None();
+    const optionB = None;
     assert.equal(optionB.unwrapOr(3), 3);
   });
 
@@ -256,7 +232,7 @@ describe('option tests', () => {
       'foo',
     );
 
-    const optionB = None();
+    const optionB = None;
     assert.equal(
       optionB.unwrapOrElse(() => 3),
       3,

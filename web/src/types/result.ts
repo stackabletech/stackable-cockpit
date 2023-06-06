@@ -2,20 +2,16 @@
 import { None, Option, Some } from './option';
 import { ToString } from './utils';
 
-export const Ok = <O extends ToString, E extends ToString = never>(
-  value: O,
-) => {
+export const Ok = <O, E extends ToString = never>(value: O) => {
   return new Result<O, E>(false, value);
 };
 
 // eslint-disable-next-line unicorn/prevent-abbreviations
-export const Err = <E extends ToString, O extends ToString = never>(
-  error: E,
-) => {
+export const Err = <E extends ToString, O = never>(error: E) => {
   return new Result<O, E>(true, error);
 };
 
-export class Result<O extends ToString, E extends ToString> {
+export class Result<O, E extends ToString> {
   private is_error: boolean;
   private value: O | E;
 
@@ -74,13 +70,13 @@ export class Result<O extends ToString, E extends ToString> {
   ok(): Option<O> {
     return this.match({
       ok: (value) => Some(value),
-      err: () => None(),
+      err: () => None,
     });
   }
 
   err(): Option<E> {
     return this.match({
-      ok: None,
+      ok: () => None,
       err: (error) => Some(error),
     });
   }
@@ -127,8 +123,8 @@ export class Result<O extends ToString, E extends ToString> {
 
   expectErr(msg: string): E {
     return this.match({
-      ok: (value) => {
-        throw new Error(`${msg}: ${value.toString()}`);
+      ok: () => {
+        throw new Error(`${msg}`);
       },
       err: (error) => error,
     });

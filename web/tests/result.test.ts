@@ -28,7 +28,7 @@ describe('result tests', () => {
     const result = Ok('foo');
 
     assert.deepEqual(result.ok(), Some('foo'));
-    assert.deepEqual(result.err(), None());
+    assert.deepEqual(result.err(), None);
   });
 
   it('result map', () => {
@@ -62,7 +62,7 @@ describe('result tests', () => {
     const result = Err('foo');
 
     assert.deepEqual(result.err(), Some('foo'));
-    assert.deepEqual(result.ok(), None());
+    assert.deepEqual(result.ok(), None);
   });
 
   it('result map', () => {
