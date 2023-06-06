@@ -54,7 +54,7 @@ export class Result<O extends ToString, E extends ToString> {
   }
 
   unwrapErr(): E {
-    return this.expectErr('called Result.unwrapErr() on an `Ok` value');
+    return this.expectErr('called `Result.unwrapErr()` on an `Ok` value');
   }
 
   unwrapOr(defaultValue: O): O {
