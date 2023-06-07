@@ -11,7 +11,7 @@ Stackable library powering the `stackablectl` CLI tool and `stackabled` API serv
   - `demo`: Demo related functions and types
   - `operator`: Module containing operator related types and functions to install these components using Helm
   - `release`: Module containing the `ReleaseSpec` and installation methods which install individual operators
-  - `stack`: Stacks describe commonly used collections of operators, provides methods to install complete stacks
+  - `stack`: Stacks describe commonly used collections of data tools, provides methods to install complete stacks
 - `utils`: Various utility functions and helper types like `PathOrUrl` or `read_yaml_data_from_remote`
 - `constants`: Constants used across the codebase
 - `helm`: A wrapper around the Go Helm library. Provides all Helm-related functions for example for installation of
