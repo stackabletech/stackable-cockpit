@@ -38,7 +38,7 @@ dependencies in the `node_modules` folder.
 Each component can be build separately like this:
 
 ```shell
-cargo build --release -p stackablectl             # Builds the stackablectl
+cargo build --release -p stackablectl             # Builds stackablectl
 cargo build --release -p stackabled               # Builds the Stackable API server
 cargo build --release -p stackabled --features ui # Builds the Stackable API server bundled with the admin UI
 cd web && pnpm build && cd -                      # Builds the admin UI
