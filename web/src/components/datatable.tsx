@@ -41,9 +41,11 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
     <div class='bg-gray-800 rounded-2 overflow-clip'>
       <div class='p-4 flex'>
         <div class='flex-grow' />
-        {/* <Show when={props.refresh}> */}
-        <Button onclick={() => (props.refresh || (() => {}))()}>Refresh</Button>
-        {/* </Show> */}
+        <Show when={props.refresh}>
+          <Button onclick={() => (props.refresh || (() => {}))()}>
+            Refresh
+          </Button>
+        </Show>
       </div>
       <table class='font-sans border-collapse text-left w-full'>
         <thead class='text-xs uppercase text-gray-400 bg-gray-700'>
