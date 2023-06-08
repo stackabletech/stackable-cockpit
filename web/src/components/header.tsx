@@ -10,7 +10,7 @@ const NavItem = (props: ParentProps<NavItemProps>) => (
   <li class='block h-auto ml-4'>
     <A
       href={props.href}
-      class='p-4 c-white flex flex-items-center h-full decoration-none bg-gray-800'
+      class='p-4 c-white flex flex-items-center h-full decoration-none bg-gray-900'
       inactiveClass='bg-opacity-30 hover:bg-opacity-50'
     >
       {props.children}

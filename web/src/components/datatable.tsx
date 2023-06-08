@@ -1,4 +1,5 @@
 import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
+import { Button } from './button';
 
 export interface DataTableColumn<T> {
   label: string;
@@ -9,6 +10,8 @@ export interface DataTableColumn<T> {
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   items: T[];
+
+  refresh?: () => void;
 }
 
 export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
@@ -35,7 +38,13 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   };
 
   return (
-    <>
+    <div class='bg-gray-800 rounded-2 overflow-clip'>
+      <div class='p-4 flex'>
+        <div class='flex-grow' />
+        {/* <Show when={props.refresh}> */}
+        <Button onclick={() => (props.refresh || (() => {}))()}>Refresh</Button>
+        {/* </Show> */}
+      </div>
       <table class='font-sans border-collapse text-left w-full'>
         <thead class='text-xs uppercase text-gray-400 bg-gray-700'>
           <tr>
@@ -59,10 +68,10 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
         <tbody>
           <For each={sortedItems()}>
             {(item) => (
-              <tr class='bg-gray-800 border-b border-b-style-solid border-gray-700'>
+              <tr class='border-t border-t-style-solid border-gray-700'>
                 <For each={props.columns}>
                   {(col) => (
-                    <td class='px-4 py-3 font-medium text-gray-400'>
+                    <td class='px-4 py-3 font-medium text-white'>
                       {col.get(item)}
                     </td>
                   )}
@@ -72,7 +81,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
           </For>
         </tbody>
       </table>
-    </>
+    </div>
   );
 }
 
