@@ -20,11 +20,11 @@ export const Listeners = () => {
   });
   return (
     <>
-      <Show when={listeners.loading}>Loading...</Show>
       <DataTable
         items={filteredListeners() || []}
         searchQuery={searchQuery()}
         setSearchQuery={setSearchQuery}
+        isLoading={listeners.loading}
         columns={[
           {
             label: 'Product',

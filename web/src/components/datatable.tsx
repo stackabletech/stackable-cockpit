@@ -1,6 +1,7 @@
 import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
 import { Button } from './button';
 import { SearchInput } from './form/search';
+import { LoadingBar } from './loading';
 
 export interface DataTableColumn<T> {
   label: string;
@@ -16,6 +17,7 @@ export interface DataTableProps<T> {
   setSearchQuery?: (query: string) => void;
 
   refresh?: () => void;
+  isLoading?: boolean;
 }
 
 export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
@@ -76,6 +78,13 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
               )}
             </For>
           </tr>
+          <Show when={props.isLoading}>
+            <tr>
+              <th class='m-0 p-0' colspan={props.columns.length}>
+                <LoadingBar />
+              </th>
+            </tr>
+          </Show>
         </thead>
         <tbody>
           <For each={sortedItems()}>
