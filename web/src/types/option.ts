@@ -7,7 +7,7 @@ interface BaseOption<S> {
    *
    * @returns boolean
    */
-  isSome(): this is Option<S>;
+  isSome(): this is Some<S>;
 
   /**
    * Returns true if the option is a `Some` and the value inside of it matches
@@ -16,19 +16,16 @@ interface BaseOption<S> {
    * @param fn Predicate to match
    * @returns boolean
    */
-  isSomeAnd(fn: (value: Readonly<S>) => boolean): this is Option<S>;
+  isSomeAnd(fn: (value: Readonly<S>) => boolean): this is Some<S>;
 
   /**
    * Returns true if the option is a `None` value.
    *
    * @returns boolean
    */
-  isNone(): this is Option<never>;
+  isNone(): this is None;
 
-  match<T, K>(matcher: {
-    some: (value: Readonly<S>) => T;
-    none: () => K;
-  }): T | K;
+  match<T>(matcher: { some: (value: Readonly<S>) => T; none: () => T }): T;
 
   /**
    * Maps an `Option<S>` to `Option<T>` by applying a function to a contained
@@ -211,122 +208,80 @@ interface BaseOption<S> {
 }
 
 class NoneImpl implements BaseOption<never> {
-  isSome(): this is Option<never> {
+  isSome(): this is Some<never> {
     return false;
   }
 
-  isSomeAnd(fn: (value: never) => boolean): this is Option<never> {
-    return this.match({
-      some: (value) => fn(value),
-      none: () => false,
-    });
+  isSomeAnd(_fn: (value: never) => boolean): this is Some<never> {
+    return false;
   }
 
-  isNone(): this is Option<never> {
-    return !this.isSome();
+  isNone(): this is None {
+    return true;
   }
 
-  match<T, K>(matcher: { some: (value: never) => T; none: () => K }): T | K {
+  match<T>(matcher: { none: () => T }): T {
     return matcher.none();
   }
 
-  map<T>(fn: (value: never) => T): Option<T> {
-    return this.match({
-      some: (value) => Some(fn(value)),
-      none: () => None,
-    });
+  map<T>(_fn: (value: never) => T): None {
+    return None;
   }
 
-  mapOr<T>(defaultValue: T, fn: (value: never) => T): T {
-    return this.match({
-      some: (value) => fn(value),
-      none: () => defaultValue,
-    });
+  mapOr<T>(defaultValue: T, _fn: (value: never) => T): T {
+    return defaultValue;
   }
 
-  mapOrElse<T>(defaultFn: () => T, fn: (value: never) => T): T {
-    return this.match({
-      some: (value) => fn(value),
-      none: defaultFn,
-    });
+  mapOrElse<T>(defaultFn: () => T, _fn: (value: never) => T): T {
+    return defaultFn();
   }
 
   okOr<E extends ToString>(error: E): Result<never, E> {
-    return this.match({
-      some: (value) => Ok(value),
-      none: () => Err(error),
-    });
+    return Err(error);
   }
 
   okOrElse<E extends ToString>(err: () => E): Result<never, E> {
-    return this.match({
-      some: (value) => Ok(value),
-      none: () => Err(err()),
-    });
+    return Err(err());
   }
 
-  and<T>(other: Option<T>): Option<T> {
-    return this.match({
-      some: () => other,
-      none: () => None,
-    });
+  and<T>(_other: Option<T>): None {
+    return None;
   }
 
-  andThen<T>(fn: (value: never) => Option<T>): Option<T> {
-    return this.match({
-      some: (value) => fn(value),
-      none: () => None,
-    });
+  andThen<T>(_fn: (value: never) => Option<T>): None {
+    return None;
   }
 
-  filter(predicate: (value: never) => boolean): Option<never> {
-    return this.match({
-      some: (value) => (predicate(value) ? Some(value) : None),
-      none: () => None,
-    });
+  filter(_predicate: (value: never) => boolean): None {
+    return None;
   }
 
   or<T>(other: Option<T>): Option<T> {
-    return this.match({
-      some: (value) => Some(value),
-      none: () => other,
-    });
+    return other;
   }
 
   orElse<T>(fn: () => Option<T>): Option<T> {
-    return this.match({
-      some: (value) => Some(value),
-      none: fn,
-    });
+    return fn();
   }
 
   xor<T>(other: Option<T>): Option<T> {
-    if (this.isSome() && other.isNone()) {
-      return this;
-    } else if (this.isNone() && other.isSome()) {
+    if (other.isSome()) {
       return other;
     } else {
       return None;
     }
   }
 
-  contains(value: never): boolean {
-    return this.match({
-      some: (inner) => inner === value,
-      none: () => false,
-    });
+  contains(_value: never): false {
+    return false;
   }
 
-  zip<T>(other: Option<T>): Option<[never, T]> {
-    return this.isSome() && other.isSome()
-      ? Some([this.unwrap(), other.unwrap()])
-      : None;
+  zip<T>(_other: Option<T>): None {
+    return None;
   }
 
-  zipWith<T, K>(other: Option<T>, fn: (self: never, other: T) => K): Option<K> {
-    return this.isSome() && other.isSome()
-      ? Some(fn(this.unwrap(), other.unwrap()))
-      : None;
+  zipWith<T, K>(_other: Option<T>, _fn: (self: never, other: T) => K): None {
+    return None;
   }
 
   unwrap(): never {
@@ -334,26 +289,15 @@ class NoneImpl implements BaseOption<never> {
   }
 
   unwrapOr<T>(defaultValue: T): T {
-    return this.match({
-      some: (value) => value,
-      none: () => defaultValue,
-    });
+    return defaultValue;
   }
 
   unwrapOrElse<T>(fn: () => T): T {
-    return this.match({
-      some: (value) => value,
-      none: fn,
-    });
+    return fn();
   }
 
   expect(message: string): never {
-    return this.match({
-      some: (value) => value,
-      none: () => {
-        throw new Error(message);
-      },
-    });
+    throw new Error(message);
   }
 }
 
@@ -368,150 +312,96 @@ class SomeImpl<S> implements BaseOption<S> {
     this.value = value;
   }
 
-  isSome(): this is Option<S> {
+  isSome(): this is Some<S> {
     return true;
   }
 
-  isSomeAnd(op: (value: Readonly<S>) => boolean): this is Option<S> {
-    return this.isSome() && op(this.value);
+  isSomeAnd(op: (value: Readonly<S>) => boolean): this is Some<S> {
+    return op(this.value);
   }
 
-  isNone(): this is Option<never> {
-    return !this.isSome();
+  isNone(): this is None {
+    return false;
   }
 
-  match<T, K>(matcher: {
-    some: (value: Readonly<S>) => T;
-    none: () => K;
-  }): T | K {
-    // eslint-disable-next-line unicorn/no-array-callback-reference
+  match<T>(matcher: { some: (value: Readonly<S>) => T }): T {
     return matcher.some(this.value);
   }
 
-  map<T>(fn: (value: Readonly<S>) => T): Option<T> {
-    return this.match({
-      some: (value) => Some(fn(value)),
-      none: () => None,
-    });
+  map<T>(fn: (value: Readonly<S>) => T): Some<T> {
+    return Some(fn(this.value));
   }
 
-  mapOr<T>(defaultValue: T, fn: (value: Readonly<S>) => T): T {
-    return this.match({
-      some: (value) => fn(value),
-      none: () => defaultValue,
-    });
+  mapOr<T>(_defaultValue: T, fn: (value: Readonly<S>) => T): T {
+    return fn(this.value);
   }
 
-  mapOrElse<T>(defaultFn: () => T, fn: (value: Readonly<S>) => T): T {
-    return this.match({
-      some: (value) => fn(value),
-      none: defaultFn,
-    });
+  mapOrElse<T>(_defaultFn: () => T, fn: (value: Readonly<S>) => T): T {
+    return fn(this.value);
   }
 
-  okOr<E extends ToString>(error: E): Result<S, E> {
-    return this.match({
-      some: (value) => Ok(value),
-      none: () => Err(error),
-    });
+  okOr<E extends ToString>(_error: E): Result<S, never> {
+    return Ok(this.value);
   }
 
-  okOrElse<E extends ToString>(err: () => E): Result<S, E> {
-    return this.match({
-      some: (value) => Ok(value),
-      none: () => Err(err()),
-    });
+  okOrElse<E extends ToString>(_err: () => E): Result<S, never> {
+    return Ok(this.value);
   }
 
-  and<T>(other: Option<T>): Option<T> {
-    return this.match({
-      some: () => other,
-      none: () => None,
-    });
+  and<T>(other: Option<T>): typeof other {
+    return other;
   }
 
   andThen<T>(fn: (value: Readonly<S>) => Option<T>): Option<T> {
-    return this.match({
-      some: (value) => fn(value),
-      none: () => None,
-    });
+    return fn(this.value);
   }
 
   filter(predicate: (value: Readonly<S>) => boolean): Option<S> {
-    return this.match({
-      some: (value) => (predicate(value) ? Some(value) : None),
-      none: () => None,
-    });
+    return predicate(this.value) ? this : None;
   }
 
-  or<T>(other: Option<S | T>): Option<S | T> {
-    return this.match({
-      some: (value) => Some(value),
-      none: () => other,
-    });
+  or<T>(_other: Option<T>): Some<S> {
+    return this;
   }
 
-  orElse<T>(fn: () => Option<S | T>): Option<S | T> {
-    return this.match({
-      some: (value) => Some(value),
-      none: fn,
-    });
+  orElse<T>(_fn: () => Option<T>): Some<S> {
+    return this;
   }
 
-  xor<T>(other: Option<S | T>): Option<S | T> {
-    if (this.isSome() && other.isNone()) {
+  xor<T>(other: Option<T>): Option<S> {
+    if (other.isNone()) {
       return this;
-    } else if (this.isNone() && other.isSome()) {
-      return other;
     } else {
       return None;
     }
   }
 
   contains(value: S): boolean {
-    return this.match({
-      some: (inner) => inner === value,
-      none: () => false,
-    });
+    return this.value === value;
   }
 
   zip<T>(other: Option<T>): Option<[S, T]> {
-    return this.isSome() && other.isSome()
-      ? Some([this.unwrap(), other.unwrap()])
-      : None;
+    return other.map((otherValue) => [this.value, otherValue]);
   }
 
   zipWith<T, K>(other: Option<T>, fn: (self: S, other: T) => K): Option<K> {
-    return this.isSome() && other.isSome()
-      ? Some(fn(this.unwrap(), other.unwrap()))
-      : None;
+    return other.map((otherValue) => fn(this.value, otherValue));
   }
 
   unwrap(): S {
-    return this.expect('called `Option::unwrap()` on a `None` value');
+    return this.value;
   }
 
-  unwrapOr<T>(defaultValue: S | T): S | T {
-    return this.match({
-      some: (value) => value,
-      none: () => defaultValue,
-    });
+  unwrapOr<T>(_defaultValue: T): S {
+    return this.value;
   }
 
-  unwrapOrElse<T>(fn: () => S | T): S | T {
-    return this.match({
-      some: (value) => value,
-      none: fn,
-    });
+  unwrapOrElse<T>(_fn: () => T): S {
+    return this.value;
   }
 
-  expect(message: string): S {
-    return this.match({
-      some: (value) => value,
-      none: () => {
-        throw new Error(message);
-      },
-    });
+  expect(_message: string): S {
+    return this.value;
   }
 }
 
