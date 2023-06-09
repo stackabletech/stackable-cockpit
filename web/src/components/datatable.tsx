@@ -1,5 +1,6 @@
 import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
 import { Button } from './button';
+import { SearchInput } from './form/search';
 
 export interface DataTableColumn<T> {
   label: string;
@@ -10,6 +11,9 @@ export interface DataTableColumn<T> {
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   items: T[];
+
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
 
   refresh?: () => void;
 }
@@ -40,6 +44,12 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   return (
     <div class='bg-gray-800 rounded-2 overflow-clip'>
       <div class='p-4 flex'>
+        <Show when={props.searchQuery !== undefined}>
+          <SearchInput
+            query={props.searchQuery || ''}
+            setQuery={props.setSearchQuery || (() => {})}
+          />
+        </Show>
         <div class='flex-grow' />
         <Show when={props.refresh}>
           <Button onclick={() => (props.refresh || (() => {}))()}>

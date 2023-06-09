@@ -1,14 +1,30 @@
-import { Show, For, Switch, Match, createResource } from 'solid-js';
+import {
+  Show,
+  For,
+  Switch,
+  Match,
+  createResource,
+  createSignal,
+  createMemo,
+} from 'solid-js';
 import { getListeners } from '../api';
 import { DataTable } from '../components/datatable';
 
 export const Listeners = () => {
   const [listeners, { refetch }] = createResource(getListeners);
+  const [searchQuery, setSearchQuery] = createSignal('');
+  const filteredListeners = createMemo(() => {
+    const query = searchQuery();
+    // TODO: Placeholder search logic
+    return listeners()?.filter((x) => x.metadata.name.includes(query));
+  });
   return (
     <>
       <Show when={listeners.loading}>Loading...</Show>
       <DataTable
-        items={listeners() || []}
+        items={filteredListeners() || []}
+        searchQuery={searchQuery()}
+        setSearchQuery={setSearchQuery}
         columns={[
           {
             label: 'Product',
