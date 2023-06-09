@@ -1,5 +1,4 @@
 import {
-  Show,
   For,
   Switch,
   Match,
@@ -9,6 +8,7 @@ import {
 } from 'solid-js';
 import { getListeners } from '../api';
 import { DataTable } from '../components/datatable';
+import { Title } from '../components/title';
 
 export const Listeners = () => {
   const [listeners, { refetch }] = createResource(getListeners);
@@ -20,6 +20,7 @@ export const Listeners = () => {
   });
   return (
     <>
+      <Title>Listeners</Title>
       <DataTable
         items={filteredListeners() || []}
         searchQuery={searchQuery()}
