@@ -7,8 +7,6 @@ use kube::{
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
 
-pub use k8s_openapi;
-
 #[derive(Debug, Snafu)]
 pub enum KubeError {
     #[snafu(display("kube error: {source}"))]

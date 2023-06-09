@@ -1,6 +1,6 @@
 use axum::{routing::get, Json, Router};
+use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use serde::Serialize;
-use stackable::kube::k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
 use utoipa::ToSchema;
 
 #[derive(ToSchema, Serialize)]

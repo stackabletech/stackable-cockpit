@@ -19,3 +19,4 @@ snafu = { workspace = true }
 tokio = { workspace = true }
 stackabled-web = { path = "../../web", optional = true }
 serde.workspace = true
+k8s-openapi.workspace = true

@@ -2094,6 +2094,7 @@ version = "0.0.1"
 dependencies = [
  "axum",
  "clap",
+ "k8s-openapi",
  "serde",
  "snafu",
  "stackable",
