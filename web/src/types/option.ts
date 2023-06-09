@@ -107,7 +107,7 @@ interface BaseOption<S> {
    * @param other The `other` option if `None`.
    * @returns Either this or `other`.
    */
-  or<T>(other: Option<S | T>): Option<S | T>;
+  or<T>(other: Option<T>): Option<S | T>;
 
   /**
    * Returns the option if it contains a value, otherwise calls `fn` and returns
@@ -116,7 +116,7 @@ interface BaseOption<S> {
    * @param fn Function to compute the other option.
    * @returns Either this or the other computed option.
    */
-  orElse<T>(fn: () => Option<S | T>): Option<S | T>;
+  orElse<T>(fn: () => Option<T>): Option<S | T>;
 
   /**
    * Returns `Some` if exactly one of self, `other` is `Some`, otherwise returns
@@ -124,7 +124,7 @@ interface BaseOption<S> {
    *
    * @param other The other option.
    */
-  xor<T>(other: Option<S | T>): Option<S | T>;
+  xor<T>(other: Option<T>): Option<S | T>;
 
   /**
    * Returns true if the option is a `Some` value containing the given `value`.
@@ -176,14 +176,14 @@ interface BaseOption<S> {
    * @param defaultValue Default value returned when `None`.
    * @returns Either contained `Some` value of `defaultValue`.
    */
-  unwrapOr<T>(defaultValue: S | T): S | T;
+  unwrapOr<T>(defaultValue: T): S | T;
 
   /**
    * Returns the contained `Some` value or computes it from a closure.
    *
    * @param fn Closure to compute default value.
    */
-  unwrapOrElse<T>(fn: () => S | T): S | T;
+  unwrapOrElse<T>(fn: () => T): S | T;
 
   /**
    * Returns the contained Some value
