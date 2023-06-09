@@ -306,11 +306,7 @@ export type None = NoneImpl;
 Object.freeze(None);
 
 class SomeImpl<S> implements BaseOption<S> {
-  private value!: S;
-
-  constructor(value: S) {
-    this.value = value;
-  }
+  constructor(public value: S) {}
 
   isSome(): this is Some<S> {
     return true;
