@@ -8,8 +8,8 @@ use stackablectl::{
     cli::{self, Commands},
     cmds::{
         cache::CacheCmdError, completions::CompletionsCmdError, demo::DemoCmdError,
-        operator::OperatorCmdError, release::ReleaseCmdError, services::ServicesCmdError,
-        stack::StackCmdError,
+        operator::OperatorCmdError, release::ReleaseCmdError, stack::StackCmdError,
+        stacklets::StackletsCmdError,
     },
 };
 
@@ -25,7 +25,7 @@ enum CliError {
     StackCmdError { source: StackCmdError },
 
     #[snafu(display("services command error"))]
-    ServicesCmdError { source: ServicesCmdError },
+    StackletsCmdError { source: StackletsCmdError },
 
     #[snafu(display("demo command error"))]
     DemoCmdError { source: DemoCmdError },
@@ -82,7 +82,7 @@ async fn main() -> Result<(), CliError> {
         Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu {})?,
         Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu {})?,
         Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu {})?,
-        Commands::Services(args) => args.run(&cli).context(ServicesCmdSnafu {})?,
+        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsCmdSnafu {})?,
         Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu {})?,
         Commands::Completions(args) => args.run().context(CompletionsCmdSnafu {})?,
         Commands::Cache(args) => args.run().context(CacheCmdSnafu {})?,

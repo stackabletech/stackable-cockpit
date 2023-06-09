@@ -22,7 +22,7 @@ use stackable::{
 use crate::{
     cmds::{
         cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
-        release::ReleaseArgs, services::ServicesArgs, stack::StackArgs,
+        release::ReleaseArgs, stack::StackArgs, stacklets::StackletsArgs,
     },
     constants::{
         CACHE_HOME_PATH, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
@@ -215,9 +215,9 @@ pub enum Commands {
     #[command(alias("st"))]
     Stack(StackArgs),
 
-    /// Interact with deployed services of products
+    /// Interact with deployed stacklets
     #[command(alias("svc"))]
-    Services(ServicesArgs),
+    Stacklets(StackletsArgs),
 
     /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
     Demo(DemoArgs),

@@ -197,9 +197,11 @@ impl StackSpecV2 {
                             .await
                             .context(TemplatedReadSnafu {})?;
 
-                    kube::deploy_manifests(&manifests, namespace)
+                    let kube_client = kube::KubeClient::new().await.context(KubeSnafu {})?;
+                    kube_client
+                        .deploy_manifests(&manifests, namespace)
                         .await
-                        .context(KubeSnafu {})?;
+                        .context(KubeSnafu {})?
                 }
             }
         }

@@ -6,6 +6,7 @@ repos:
     rev: v4.2.0
     hooks:
       - id: trailing-whitespace
+        exclude: "extra/man/stackablectl.1"
       - id: end-of-file-fixer
       - id: detect-aws-credentials
         args: ["--allow-missing-credentials"]
