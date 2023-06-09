@@ -265,11 +265,7 @@ class NoneImpl implements BaseOption<never> {
   }
 
   xor<T>(other: Option<T>): Option<T> {
-    if (other.isSome()) {
-      return other;
-    } else {
-      return None;
-    }
+    return other.isSome() ? other : None;
   }
 
   contains(_value: never): false {
@@ -321,6 +317,12 @@ class SomeImpl<S> implements BaseOption<S> {
   }
 
   match<T>(matcher: { some: (value: Readonly<S>) => T }): T {
+    // See
+    // - https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1947
+    // - https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1946
+    // - https://github.com/sindresorhus/eslint-plugin-unicorn/issues/1940
+
+    // eslint-disable-next-line unicorn/no-array-callback-reference
     return matcher.some(this.value);
   }
 
@@ -365,11 +367,7 @@ class SomeImpl<S> implements BaseOption<S> {
   }
 
   xor<T>(other: Option<T>): Option<S> {
-    if (other.isNone()) {
-      return this;
-    } else {
-      return None;
-    }
+    return other.isNone() ? this : None;
   }
 
   contains(value: S): boolean {
