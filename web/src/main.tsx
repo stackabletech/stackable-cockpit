@@ -2,8 +2,7 @@
 import '@unocss/reset/sanitize/sanitize.css';
 import 'virtual:uno.css';
 import { render } from 'solid-js/web';
-import { A, Route, Router, Routes } from '@solidjs/router';
-import type { ParentProps } from 'solid-js';
+import { Route, Router, Routes } from '@solidjs/router';
 import { Listeners } from './pages/listeners';
 import { ProductClusters } from './pages/product-clusters/list';
 import { ProductClusterConnectionDetails } from './pages/product-clusters/connect';
