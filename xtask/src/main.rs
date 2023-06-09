@@ -1,7 +1,7 @@
 use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Shell};
 use clap_mangen::Man;
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, ResultExt, Snafu};
 use stackablectl::cli::Cli;
 use stackabled::api_doc::{ApiDoc, OpenApi};
 
@@ -83,12 +83,12 @@ fn main() -> Result<(), TaskError> {
                 .write_all(openapi_json.as_bytes())
                 .context(WriteOpenapiSchemaSnafu)?;
             let status = codegen.wait().context(ImportOpenapiSchemaRunSnafu)?;
-            if !status.success() {
-                return ImportOpenapiSchemaSnafu {
-                    error_code: status.code(),
+            ensure!(
+                status.success(),
+                ImportOpenapiSchemaSnafu {
+                    error_code: status.code()
                 }
-                .fail();
-            }
+            );
         }
     }
 
