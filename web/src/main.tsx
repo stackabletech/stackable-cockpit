@@ -15,7 +15,7 @@ const Home = () => {
 
 const App = () => {
   return (
-    <div class='bg-gray-900 min-h-screen'>
+    <div class='bg-gray-900 min-h-screen c-white'>
       <Header />
       <div class='max-w-5xl mx-a mt-16'>
         <Routes>

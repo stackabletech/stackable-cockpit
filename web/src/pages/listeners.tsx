@@ -6,7 +6,6 @@ export const Listeners = () => {
   const [listeners, { refetch }] = createResource(getListeners);
   return (
     <>
-      <button onClick={refetch}>Refresh</button>
       <Show when={listeners.loading}>Loading...</Show>
       <DataTable
         items={listeners() || []}
@@ -46,6 +45,7 @@ export const Listeners = () => {
           },
           { label: 'Info', get: () => '' },
         ]}
+        refresh={refetch}
       />
     </>
   );
