@@ -5,8 +5,8 @@ import { render } from 'solid-js/web';
 import { A, Route, Router, Routes } from '@solidjs/router';
 import type { ParentProps } from 'solid-js';
 import { Listeners } from './pages/listeners';
-import { ProductClusters } from './pages/product-clusters/list';
-import { ProductClusterConnectionDetails } from './pages/product-clusters/connect';
+import { Stacklets } from './pages/stacklets/list';
+import { StackletConnectionDetails } from './pages/stacklets/connect';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -34,7 +34,7 @@ const GlobalNav = () => {
     <>
       <nav class='bg-gray'>
         <ul class='m-0 p-0'>
-          <NavItem href='/product-clusters'>product clusters</NavItem>
+          <NavItem href='/stacklets'>stacklets</NavItem>
           <NavItem href='/listeners'>listeners</NavItem>
           <NavItem href='/stacks'>stacks</NavItem>
         </ul>
@@ -50,10 +50,10 @@ const App = () => {
       <GlobalNav />
       <Routes>
         <Route
-          path='/product-clusters/:namespace/:name/connect'
-          component={ProductClusterConnectionDetails}
+          path='/stacklets/:namespace/:name/connect'
+          component={StackletConnectionDetails}
         />
-        <Route path='/product-clusters' component={ProductClusters} />
+        <Route path='/stacklets' component={Stacklets} />
         <Route path='/listeners' component={Listeners} />
         <Route path='/' component={Home} />
       </Routes>
