@@ -1,8 +1,7 @@
-import { Show, createResource } from 'solid-js';
+import { createResource } from 'solid-js';
 import { getStacklets } from '../../api';
 import { DataTable } from '../../components/datatable';
-import { A } from '@solidjs/router';
-import { Button, ButtonLink } from '../../components/button';
+import { ButtonLink } from '../../components/button';
 import { AddSymbol } from '../../components/symbols';
 
 export const Stacklets = () => {

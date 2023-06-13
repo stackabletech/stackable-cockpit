@@ -10,22 +10,24 @@ export interface VisualButtonProps {
 }
 
 const buttonProps = (props: VisualButtonProps) => {
-  const roleClasses = () =>
+  const roleClasses =
+    // buttonProps is only called within a reactive scope
+    // eslint-disable-next-line solid/reactivity
     props.role === 'primary'
       ? 'bg-stbluelight hover-bg-stbluedark active-stbluedark border-stbluedark'
       : 'bg-gray-700 hover-bg-gray-600 active-bg-gray-500 border-gray-600';
 
   return {
-    class: `p-2 text-size-4 c-white rounded border-1 border-solid  cursor-pointer decoration-none ${roleClasses()}`,
+    class: `p-2 text-size-4 c-white rounded border-1 border-solid  cursor-pointer decoration-none ${roleClasses}`,
   };
 };
 
 export interface ButtonProps extends VisualButtonProps {
-  onclick: () => void;
+  onClick: () => void;
 }
 
 export const Button = (props: ButtonProps) => (
-  <button {...buttonProps(props)} onclick={props.onclick}>
+  <button {...buttonProps(props)} onClick={() => props.onClick()}>
     {props.children}
   </button>
 );

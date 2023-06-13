@@ -14,7 +14,7 @@ export const SearchInput = (props: SearchInputProps) => {
         class='inline flex-grow h-full b-none bg-transparent c-gray-200'
         placeholder='Search'
         value={props.query}
-        oninput={(event) => props.setQuery(event.currentTarget.value)}
+        onInput={(event) => props.setQuery(event.currentTarget.value)}
       />
     </label>
   );

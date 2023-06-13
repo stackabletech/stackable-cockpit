@@ -51,15 +51,13 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
         <Show when={props.searchQuery !== undefined}>
           <SearchInput
             query={props.searchQuery || ''}
-            setQuery={props.setSearchQuery || (() => {})}
+            setQuery={(q) => props.setSearchQuery?.(q)}
           />
         </Show>
         <div class='flex-grow' />
         {props.extraButtons}
         <Show when={props.refresh}>
-          <Button onclick={() => (props.refresh || (() => {}))()}>
-            Refresh
-          </Button>
+          <Button onClick={() => props.refresh?.()}>Refresh</Button>
         </Show>
       </div>
       <table class='font-sans border-collapse text-left w-full'>
