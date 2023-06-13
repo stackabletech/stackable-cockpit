@@ -25,7 +25,6 @@ export const Listeners = () => {
         items={filteredListeners() || []}
         searchQuery={searchQuery()}
         setSearchQuery={setSearchQuery}
-        isLoading={listeners.loading}
         columns={[
           {
             label: 'Product',
@@ -63,6 +62,7 @@ export const Listeners = () => {
           { label: 'Info', get: () => '' },
         ]}
         refresh={refetch}
+        isLoading={listeners.loading}
       />
     </>
   );

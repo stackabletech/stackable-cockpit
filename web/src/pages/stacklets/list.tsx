@@ -7,8 +7,6 @@ export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
   return (
     <>
-      <button onClick={refetch}>Refresh</button>
-      <Show when={stacklets.loading}>Loading...</Show>
       <DataTable
         items={stacklets() || []}
         columns={[
@@ -43,6 +41,8 @@ export const Stacklets = () => {
             ),
           },
         ]}
+        refresh={refetch}
+        isLoading={stacklets.loading}
       />
     </>
   );
