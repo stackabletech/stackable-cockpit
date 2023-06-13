@@ -32,7 +32,7 @@ export const Header = () => {
         </A>
       </h1>
       <ul class='flex-auto m-0 p-0 flex'>
-        <NavItem href='/product-clusters'>Product Clusters</NavItem>
+        <NavItem href='/stacklets'>Stacklets</NavItem>
         <NavItem href='/listeners'>Listeners</NavItem>
         <NavItem href='/stacks'>Stacks</NavItem>
       </ul>

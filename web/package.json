@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.ts,.tsx,.jsx,.json ./src",
+    "openapi-codegen": "openapi-typescript -o src/api/schema.d.ts",
     "format": "prettier ."
   },
   "devDependencies": {
@@ -17,6 +18,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-solid": "^0.12.1",
     "eslint-plugin-unicorn": "^47.0.0",
+    "openapi-typescript": "^6.2.5",
     "prettier": "^2.8.8",
     "typescript": "^5.0.2",
     "unocss": "^0.51.8",
@@ -26,6 +28,7 @@
   "dependencies": {
     "@solidjs/router": "^0.8.2",
     "@unocss/reset": "^0.51.12",
+    "openapi-fetch": "^0.2.0",
     "solid-js": "^1.7.4"
   }
 }

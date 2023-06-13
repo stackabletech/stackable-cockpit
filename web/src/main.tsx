@@ -4,9 +4,9 @@ import 'virtual:uno.css';
 import { render } from 'solid-js/web';
 import { Route, Router, Routes } from '@solidjs/router';
 import { Listeners } from './pages/listeners';
-import { ProductClusters } from './pages/product-clusters/list';
-import { ProductClusterConnectionDetails } from './pages/product-clusters/connect';
 import { Header } from './components/header';
+import { StackletConnectionDetails } from './pages/stacklets/connect';
+import { Stacklets } from './pages/stacklets/list';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -19,10 +19,10 @@ const App = () => {
       <div class='max-w-5xl mx-a mt-16'>
         <Routes>
           <Route
-            path='/product-clusters/:namespace/:name/connect'
-            component={ProductClusterConnectionDetails}
+            path='/stacklets/:namespace/:name/connect'
+            component={StackletConnectionDetails}
           />
-          <Route path='/product-clusters' component={ProductClusters} />
+          <Route path='/stacklets' component={Stacklets} />
           <Route path='/listeners' component={Listeners} />
           <Route path='/' component={Home} />
         </Routes>
