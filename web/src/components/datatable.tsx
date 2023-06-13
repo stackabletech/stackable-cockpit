@@ -78,13 +78,13 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
               )}
             </For>
           </tr>
-          <Show when={props.isLoading}>
-            <tr>
-              <th class='m-0 p-0' colspan={props.columns.length}>
+          <tr>
+            <th class='line-height-0 m-0 p-0' colspan={props.columns.length}>
+              <div classList={{ invisible: !props.isLoading }}>
                 <LoadingBar />
-              </th>
-            </tr>
-          </Show>
+              </div>
+            </th>
+          </tr>
         </thead>
         <tbody>
           <For each={sortedItems()}>
