@@ -16,6 +16,8 @@ export interface DataTableProps<T> {
   searchQuery?: string;
   setSearchQuery?: (query: string) => void;
 
+  extraButtons?: JSX.Element;
+
   refresh?: () => void;
   isLoading?: boolean;
 }
@@ -45,7 +47,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
 
   return (
     <div class='bg-gray-800 rounded-2 overflow-clip'>
-      <div class='p-4 flex'>
+      <div class='p-4 flex flex-gap-4'>
         <Show when={props.searchQuery !== undefined}>
           <SearchInput
             query={props.searchQuery || ''}
@@ -53,6 +55,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
           />
         </Show>
         <div class='flex-grow' />
+        {props.extraButtons}
         <Show when={props.refresh}>
           <Button onclick={() => (props.refresh || (() => {}))()}>
             Refresh
