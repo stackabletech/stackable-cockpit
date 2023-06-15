@@ -42,7 +42,9 @@ rec {
       };
     };
   };
-  build = cargo.workspaceMembers.stackabled.build;
+  build = cargo.workspaceMembers.stackabled.build.override {
+    features = [ "ui" ];
+  };
   entrypoint = build+"/bin/stackabled";
   # crds = pkgs.runCommand "${meta.operator.name}-crds.yaml" {}
   # ''
