@@ -2,7 +2,7 @@ use axum::{extract::Path, routing::get, Json, Router};
 use stackable::platform::stack::StackSpecV2;
 
 /// Creates the stack sub-router.
-pub fn stack_router() -> Router {
+pub fn router() -> Router {
     Router::new()
         .route("/", get(get_stacks))
         .route("/:stack_name", get(get_stack))

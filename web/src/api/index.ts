@@ -1,3 +1,8 @@
+import createClient from 'openapi-fetch';
+import { components, paths } from './schema';
+
+const client = createClient<paths>({ baseUrl: '/api' });
+
 interface ObjectMeta {
   namespace: string;
   name: string;
@@ -75,23 +80,14 @@ export async function getListeners(): Promise<Listener[]> {
   ];
 }
 
-interface ProductCluster {
-  metadata: ObjectMeta;
-  product: string;
-}
-
-export async function getProductClusters(): Promise<ProductCluster[]> {
-  await delay(200);
-  return [
-    {
-      metadata: { namespace: 'default', name: 'simple-nifi' },
-      product: 'nifi',
-    },
-    {
-      metadata: { namespace: 'default', name: 'simple-hdfs' },
-      product: 'hdfs',
-    },
-  ];
+type Stacklet = components['schemas']['Stacklet'];
+export async function getStacklets(): Promise<Stacklet[]> {
+  const { data } = await client.get('/stacklets', {});
+  if (data === undefined) {
+    throw new Error('No data returned by API');
+  } else {
+    return data;
+  }
 }
 
 export type DiscoveryFieldType = 'url' | 'blob';
@@ -101,7 +97,7 @@ interface ProductClusterDiscovery {
   fieldTypes: { [x: string]: DiscoveryFieldType };
 }
 
-export async function getProductClusterDiscovery(
+export async function getStackletDiscovery(
   namespace: string,
   discoveryConfigMapName: string,
 ): Promise<ProductClusterDiscovery | undefined> {

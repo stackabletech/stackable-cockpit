@@ -6,18 +6,18 @@ import {
   createResource,
   createUniqueId,
 } from 'solid-js';
-import { DiscoveryFieldType, getProductClusterDiscovery } from '../../api';
+import { DiscoveryFieldType, getStackletDiscovery } from '../../api';
 import { Params, useParams } from '@solidjs/router';
 
-interface ProductClusterConnectionDetailsParams extends Params {
+interface StackletConnectionDetailsParams extends Params {
   namespace: string;
   name: string;
 }
 
-export const ProductClusterConnectionDetails = () => {
-  const params = useParams<ProductClusterConnectionDetailsParams>();
+export const StackletConnectionDetails = () => {
+  const params = useParams<StackletConnectionDetailsParams>();
   const [discoveryConfig, { refetch }] = createResource(() =>
-    getProductClusterDiscovery(params.namespace, params.name),
+    getStackletDiscovery(params.namespace, params.name),
   );
   const configParams = () => {
     const currentDiscoveryConfig = discoveryConfig();
