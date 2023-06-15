@@ -76,39 +76,29 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .await
         .context(StackletListSnafu {})?;
 
-    println!("{:?}", stacklets);
-
     match args.output_type {
         OutputType::Plain => {
             let mut table = Table::new();
 
             table
-                .set_header(vec!["PRODUCT", "NAME", "NAMESPACE", "ENDPOINTS", "INFO"])
+                .set_header(vec!["PRODUCT", "NAME", "NAMESPACE", "STATUS"])
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL);
 
             for (product_name, products) in stacklets {
                 for product in products {
-                    let endpoints = product
-                        .endpoints
+                    let status = product
+                        .conditions
                         .iter()
-                        .map(|(name, url)| format!("{name}:{url}"))
-                        .collect::<Vec<String>>()
-                        .join("\n");
-
-                    let additional_information = product
-                        .additional_information
-                        .iter()
-                        .map(|(key, value)| format!("{key}:{value}"))
-                        .collect::<Vec<String>>()
+                        .map(|c| format!("{:?}: {:?}", c.type_, c.status))
+                        .collect::<Vec<_>>()
                         .join("\n");
 
                     table.add_row(vec![
                         product_name.clone(),
                         product.name,
                         product.namespace.unwrap_or_default(),
-                        endpoints,
-                        additional_information,
+                        status,
                     ]);
                 }
             }
