@@ -11,18 +11,6 @@
         "url": "https://github.com/kolloch/crate2nix/archive/1b042dab3928aaa37421a83d4e1023e7a79527e2.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
-    "dream2nix": {
-        "branch": "main",
-        "description": "Automate reproducible packaging for various language ecosystems [maintainer=@DavHau]",
-        "homepage": "https://nix-community.github.io/dream2nix",
-        "owner": "nix-community",
-        "repo": "dream2nix",
-        "rev": "0c064fa9dd025069cc215b0a8b4eb5ea734aceb0",
-        "sha256": "1imlh9hf3r9xlziqg03wlym4vqp56ppjfk244rvfn3ig9qx6samb",
-        "type": "tarball",
-        "url": "https://github.com/nix-community/dream2nix/archive/0c064fa9dd025069cc215b0a8b4eb5ea734aceb0.tar.gz",
-        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
-    },
     "gomod2nix": {
         "branch": "master",
         "description": "Convert applications using Go modules to Nix expressions [maintainer=@adisbladis]",
