@@ -30,5 +30,34 @@
     "@unocss/reset": "^0.51.12",
     "openapi-fetch": "^0.2.0",
     "solid-js": "^1.7.4"
+  },
+  "js2nix": {
+    "overlay": {
+      "@babel/helper-create-class-features-plugin": {
+        "addDependencies": [
+          "@babel/core"
+        ]
+      },
+      "@babel/plugin-transform-typescript": {
+        "addDependencies": [
+          "@babel/core"
+        ]
+      },
+      "@babel/plugin-transform-modules-commonjs": {
+        "addDependencies": [
+          "@babel/core"
+        ]
+      },
+      "vite-plugin-solid": {
+        "addDependencies": [
+          "vite"
+        ]
+      },
+      "@solidjs/router": {
+        "addDependencies": [
+          "solid-js"
+        ]
+      }
+    }
   }
 }

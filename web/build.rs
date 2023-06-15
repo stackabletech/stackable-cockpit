@@ -7,7 +7,7 @@ fn main() {
     // Vite always seems to update the mtime of the project folder on each build, so track the files that we know matter individually
     for tracked_file in [
         "package.json",
-        "node_modules",
+        "../yarn.lock",
         "index.html",
         "public",
         "src",
@@ -16,7 +16,7 @@ fn main() {
     ] {
         println!("cargo:rerun-if-changed={tracked_file}");
     }
-    let vite_status = Command::new("pnpm")
+    let vite_status = Command::new("yarn")
         .arg("run")
         .arg("build")
         .arg("--outDir")
