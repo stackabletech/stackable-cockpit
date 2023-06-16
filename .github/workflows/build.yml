@@ -231,38 +231,38 @@ jobs:
   # as we'd otherwise have to build these in CI and commit them back to the PR, which
   # creates all kinds of problems.
   # This failsafe simply aborts anything that has not had charts rebuilt before pushing.
-  # check_charts:
-  #   name: Check if committed Helm charts are up to date
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Install host dependencies
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install protobuf-compiler krb5-user libkrb5-dev libclang-dev liblzma-dev libssl-dev pkg-config
-  #     - name: Checkout
-  #       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-  #       with:
-  #         submodules: recursive
-  #     - name: Set up Helm
-  #       uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
-  #       with:
-  #         version: v3.6.2
-  #     - name: Set up cargo
-  #       uses: dtolnay/rust-toolchain@1.68.2
-  #     - name: Set up rust-cache
-  #       uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
-  #       with:
-  #         key: charts
-  #     - name: Regenerate charts
-  #       run: make regenerate-charts
-  #     - name: Check if committed charts were up to date
-  #       run: git diff --exit-code
-  #     - name: Git Diff showed uncommitted changes
-  #       if: ${{ failure() }}
-  #       uses: actions/github-script@d556feaca394842dc55e4734bf3bb9f685482fa0 # v6
-  #       with:
-  #         script: |
-  #           core.setFailed('Committed charts were not up to date, please regenerate and re-commit!')
+  check_charts:
+    name: Check if committed Helm charts are up to date
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install protobuf-compiler krb5-user libkrb5-dev libclang-dev liblzma-dev libssl-dev pkg-config
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+      - name: Set up Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+        with:
+          version: v3.6.2
+      - name: Set up cargo
+        uses: dtolnay/rust-toolchain@1.68.2
+      - name: Set up rust-cache
+        uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+        with:
+          key: charts
+      # - name: Regenerate charts
+      #   run: make regenerate-charts
+      - name: Check if committed charts were up to date
+        run: git diff --exit-code
+      - name: Git Diff showed uncommitted changes
+        if: ${{ failure() }}
+        uses: actions/github-script@d556feaca394842dc55e4734bf3bb9f685482fa0 # v6
+        with:
+          script: |
+            core.setFailed('Committed charts were not up to date, please regenerate and re-commit!')
 
   tests_passed:
     name: All tests passed
@@ -273,72 +273,72 @@ jobs:
       - run_rustfmt
       - run_rustdoc
       - run_tests
-      # - check_charts
+      - check_charts
       # - check_readme
     runs-on: ubuntu-latest
     steps:
       - name: log
         run: echo All tests have passed!
 
-  # package_and_publish:
-  #   name: Package Charts, Build Docker Image and publish them
-  #   needs:
-  #     - tests_passed
-  #     - select_helm_repo
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
-  #     HELM_REPO: ${{ needs.select_helm_repo.outputs.helm_repository }}
-  #   if: needs.select_helm_repo.outputs.helm_repository != 'skip'
-  #   outputs:
-  #     IMAGE_TAG: ${{ steps.printtag.outputs.IMAGE_TAG }}
-  #   steps:
-  #     - name: Install host dependencies
-  #       run: |
-  #         sudo apt-get update
-  #         sudo apt-get install protobuf-compiler krb5-user libkrb5-dev libclang-dev liblzma-dev libssl-dev pkg-config
-  #     - name: Checkout
-  #       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-  #       with:
-  #         submodules: recursive
-  #     - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4
-  #       if: ${{ github.event_name == 'pull_request' }}
-  #     - uses: dtolnay/rust-toolchain@1.68.2
-  #       with:
-  #         components: rustfmt
-  #     - name: Install requirements for version tool
-  #       if: ${{ github.event_name == 'pull_request' }}
-  #       run: pip install -r python/requirements.txt
+  package_and_publish:
+    name: Package Charts, Build Docker Image and publish them
+    needs:
+      - tests_passed
+      - select_helm_repo
+    runs-on: ubuntu-latest
+    env:
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      HELM_REPO: ${{ needs.select_helm_repo.outputs.helm_repository }}
+    if: needs.select_helm_repo.outputs.helm_repository != 'skip'
+    outputs:
+      IMAGE_TAG: ${{ steps.printtag.outputs.IMAGE_TAG }}
+    steps:
+      - name: Install host dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install protobuf-compiler krb5-user libkrb5-dev libclang-dev liblzma-dev libssl-dev pkg-config
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+      - uses: actions/setup-python@d27e3f3d7c64b4bbf8e4abfb9b63b83e846e0435 # v4
+        if: ${{ github.event_name == 'pull_request' }}
+      - uses: dtolnay/rust-toolchain@1.68.2
+        with:
+          components: rustfmt
+      - name: Install requirements for version tool
+        if: ${{ github.event_name == 'pull_request' }}
+        run: pip install -r python/requirements.txt
 
-  #       # This step checks if the current run was triggered by a push to a pr (or a pr being created).
-  #       # If this is the case it changes the version of this project in all Cargo.toml files to include the suffix
-  #       # "-pr<prnumber>" so that the published artifacts can be linked to this PR.
-  #     - name: Update version if PR
-  #       if: ${{ github.event_name == 'pull_request' }}
-  #       run: python/cargo_version.py -m pr${{ github.event.pull_request.number }}
+        # This step checks if the current run was triggered by a push to a pr (or a pr being created).
+        # If this is the case it changes the version of this project in all Cargo.toml files to include the suffix
+        # "-pr<prnumber>" so that the published artifacts can be linked to this PR.
+      - name: Update version if PR
+        if: ${{ github.event_name == 'pull_request' }}
+        run: python/cargo_version.py -m pr${{ github.event.pull_request.number }}
 
-  #       # Recreate charts and publish charts and docker image. The "-e" is needed as we want to override the
-  #       # default value in the makefile if called from this action, but not otherwise (i.e. when called locally).
-  #       # This is needed for the HELM_REPO variable.
-  #     - name: Publish Docker image and Helm chart
-  #       run: make -e publish
-  #       # Output the name of the published image to the Job output for later use
-  #     - id: printtag
-  #       name: Output image name and tag
-  #       run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> $GITHUB_OUTPUT
-  # openshift_preflight:
-  #   name: Run the OpenShift Preflight check on the published images
-  #   needs:
-  #     - package_and_publish
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     IMAGE_TAG: ${{ needs.package_and_publish.outputs.IMAGE_TAG }}
-  #   steps:
-  #     - name: Install preflight
-  #       run: |
-  #         wget https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/latest/download/preflight-linux-amd64
-  #         chmod +x preflight-linux-amd64
-  #     - name: Check container
-  #       run: ./preflight-linux-amd64 check container "$IMAGE_TAG" > preflight.out
-  #     - name: "Passed?"
-  #       run: '[ "$(./preflight-linux-amd64 check container "$IMAGE_TAG" | jq -r .passed)" == true ]'
+        # Recreate charts and publish charts and docker image. The "-e" is needed as we want to override the
+        # default value in the makefile if called from this action, but not otherwise (i.e. when called locally).
+        # This is needed for the HELM_REPO variable.
+      - name: Publish Docker image and Helm chart
+        run: make -e publish
+        # Output the name of the published image to the Job output for later use
+      - id: printtag
+        name: Output image name and tag
+        run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> $GITHUB_OUTPUT
+  openshift_preflight:
+    name: Run the OpenShift Preflight check on the published images
+    needs:
+      - package_and_publish
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ needs.package_and_publish.outputs.IMAGE_TAG }}
+    steps:
+      - name: Install preflight
+        run: |
+          wget https://github.com/redhat-openshift-ecosystem/openshift-preflight/releases/latest/download/preflight-linux-amd64
+          chmod +x preflight-linux-amd64
+      - name: Check container
+        run: ./preflight-linux-amd64 check container "$IMAGE_TAG" > preflight.out
+      - name: "Passed?"
+        run: '[ "$(./preflight-linux-amd64 check container "$IMAGE_TAG" | jq -r .passed)" == true ]'
