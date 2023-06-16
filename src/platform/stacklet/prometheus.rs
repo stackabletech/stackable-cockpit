@@ -13,7 +13,12 @@ pub(super) async fn list_products(
     let mut products = Vec::new();
 
     let services = kube_client
-        .list_services(namespace, "opensearch-dashboards", None, ProductLabel::Name)
+        .list_services(
+            namespace,
+            "kube-prometheus-stack-prometheus",
+            Some("prometheus"),
+            ProductLabel::App,
+        )
         .await
         .context(KubeSnafu {})?;
 

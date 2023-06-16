@@ -37,6 +37,11 @@ pub enum KubeError {
     MissingServiceNamespace { service: String },
 }
 
+pub enum ProductLabel {
+    Name,
+    App,
+}
+
 pub struct KubeClient {
     client: Client,
     discovery: Discovery,
@@ -124,15 +129,28 @@ impl KubeClient {
 
     pub async fn list_services(
         &self,
-        namespace: &str,
+        namespace: Option<&str>,
         product_name: &str,
-        object_name: &str,
+        instance_name: Option<&str>,
+        product_label: ProductLabel,
     ) -> Result<ObjectList<Service>, KubeError> {
-        let service_api: Api<Service> = Api::namespaced(self.client.clone(), namespace);
+        let service_api: Api<Service> = match namespace {
+            Some(namespace) => Api::namespaced(self.client.clone(), namespace),
+            None => Api::all(self.client.clone()),
+        };
 
-        let service_list_params = ListParams::default()
-            .labels(format!("app.kubernetes.io/name={product_name}").as_str())
-            .labels(format!("app.kubernetes.io/instance={object_name}").as_str());
+        let product_name_label = match product_label {
+            ProductLabel::Name => format!("app.kubernetes.io/name={product_name}"),
+            ProductLabel::App => format!("app.kubernetes.io/app={product_name}"),
+        };
+
+        let mut service_list_params = ListParams::default().labels(product_name_label.as_str());
+
+        if let Some(instance_name) = instance_name {
+            // NOTE (Techassi): This bothers me a little, but .labels consumes self
+            service_list_params = service_list_params
+                .labels(format!("app.kubernetes.io/instance={instance_name}").as_str());
+        }
 
         let services = service_api
             .list(&service_list_params)

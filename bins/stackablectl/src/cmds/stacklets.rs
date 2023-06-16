@@ -4,7 +4,7 @@ use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
 use snafu::{ResultExt, Snafu};
 
 // Stackable library
-use stackable::platform::stacklet::{list_stacklets, StackletError, StackletListOptions};
+use stackable::platform::stacklet::{list_stacklets, StackletError};
 use tracing::{info, instrument};
 
 // Local
@@ -72,7 +72,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .all_namespaces
         .then_some(common_args.operator_namespace.as_str());
 
-    let stacklets = list_stacklets(namespace, StackletListOptions::default())
+    let stacklets = list_stacklets(namespace)
         .await
         .context(StackletListSnafu {})?;
 

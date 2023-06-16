@@ -13,7 +13,7 @@ pub(super) async fn list_products(
     let mut products = Vec::new();
 
     let services = kube_client
-        .list_services(namespace, "opensearch-dashboards", None, ProductLabel::Name)
+        .list_services(namespace, "grafana", None, ProductLabel::Name)
         .await
         .context(KubeSnafu {})?;
 

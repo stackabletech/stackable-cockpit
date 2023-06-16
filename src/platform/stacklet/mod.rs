@@ -11,6 +11,11 @@ use crate::{
     utils::string::Casing,
 };
 
+mod grafana;
+mod minio;
+mod opensearch;
+mod prometheus;
+
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Product {
@@ -36,41 +41,46 @@ pub enum StackletError {
     JsonError { source: serde_json::Error },
 }
 
-/// [`StackletListOptions`] describes available options when listing deployed
-/// services.
-pub struct StackletListOptions {
-    /// Toggle wether to show credentials / secrets in the output. This defaults
-    /// to `false` because of security reasons. Users need to explicitly tell
-    /// the ctl or the web UI to show these credentials.
-    pub show_credentials: bool,
-
-    /// Toggle wether to show product versions in the output. This defaults to
-    /// `true`.
-    pub show_versions: bool,
-}
-
-impl Default for StackletListOptions {
-    fn default() -> Self {
-        Self {
-            show_credentials: false,
-            show_versions: true,
-        }
-    }
-}
-
 pub type StackletList = IndexMap<String, Vec<Product>>;
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list_stacklets(
-    namespace: Option<&str>,
-    options: StackletListOptions,
-) -> Result<StackletList, StackletError> {
+pub async fn list_stacklets(namespace: Option<&str>) -> Result<StackletList, StackletError> {
     let kube_client = KubeClient::new().await.context(KubeSnafu {})?;
-    let products = build_products_gvk_list(PRODUCT_NAMES);
 
+    let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
+
+    let grafana_products = grafana::list_products(&kube_client, namespace).await?;
+    if !grafana_products.is_empty() {
+        stacklets.insert("grafana".into(), grafana_products);
+    }
+
+    // TODO (Techassi): MinIO
+    let minio_products = minio::list_products().await?;
+    if !minio_products.is_empty() {
+        stacklets.insert("minio".into(), minio_products);
+    }
+
+    let opensearch_products = opensearch::list_products(&kube_client, namespace).await?;
+    if !opensearch_products.is_empty() {
+        stacklets.insert("opensearch-dashboards".into(), opensearch_products);
+    }
+
+    let prometheus_products = prometheus::list_products(&kube_client, namespace).await?;
+    if !prometheus_products.is_empty() {
+        stacklets.insert("prometheus".into(), prometheus_products);
+    }
+
+    Ok(stacklets)
+}
+
+async fn list_stackable_stacklets(
+    kube_client: &KubeClient,
+    namespace: Option<&str>,
+) -> Result<StackletList, StackletError> {
+    let products = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = StackletList::new();
 
     for (product_name, product_gvk) in products {
@@ -119,8 +129,6 @@ pub async fn list_stacklets(
 
     Ok(stacklets)
 }
-
-fn list_stackable_stacklets(kube_client: &KubeClient, namespace: Option<&str>) {}
 
 fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, GroupVersionKind> {
     let mut map = IndexMap::new();
