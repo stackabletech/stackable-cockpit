@@ -10,7 +10,7 @@ operator_name = meta['operator']['name']
 
 custom_build(
     registry + '/' + operator_name,
-    'nix shell -f . regenerateNixLockfiles && nix-build . -A docker --argstr dockerName "${EXPECTED_REGISTRY}/' + operator_name + '" && ./result/load-image | docker load',
+    'nix run -f . regenerateNixLockfiles && nix-build . -A docker --argstr dockerName "${EXPECTED_REGISTRY}/' + operator_name + '" && ./result/load-image | docker load',
     deps=[
       # Rust
       'src', 'bins', 'Cargo.toml', 'Cargo.lock', 'build.rs', 'vendor',
