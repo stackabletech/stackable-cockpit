@@ -1,8 +1,8 @@
-use kube::ResourceExt;
+use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
 use crate::{
-    kube::{KubeClient, ProductLabel},
+    kube::{KubeClient, ListParamsExt, ProductLabel},
     platform::stacklet::{KubeSnafu, Product, StackletError},
 };
 
@@ -12,8 +12,9 @@ pub(super) async fn list_products(
 ) -> Result<Vec<Product>, StackletError> {
     let mut products = Vec::new();
 
+    let params = ListParams::from_product("grafana", None, ProductLabel::Name);
     let services = kube_client
-        .list_services(namespace, "grafana", None, ProductLabel::Name)
+        .list_services(namespace, &params)
         .await
         .context(KubeSnafu {})?;
 

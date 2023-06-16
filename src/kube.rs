@@ -1,7 +1,9 @@
 use std::string::FromUtf8Error;
 
-use indexmap::IndexMap;
-use k8s_openapi::api::core::v1::{Endpoints, Secret, Service};
+use k8s_openapi::api::{
+    apps::v1::{Deployment, StatefulSet},
+    core::v1::{Secret, Service},
+};
 use kube::{
     api::{ListParams, Patch, PatchParams},
     core::{DynamicObject, GroupVersionKind, ObjectList, TypeMeta},
@@ -14,7 +16,7 @@ use snafu::{ResultExt, Snafu};
 use crate::constants::REDACTED_PASSWORD;
 
 #[derive(Debug, Snafu)]
-pub enum KubeError {
+pub enum KubeClientError {
     #[snafu(display("kube error: {source}"))]
     KubeError { source: kube::error::Error },
 
@@ -38,6 +40,7 @@ pub enum KubeError {
 }
 
 pub enum ProductLabel {
+    Both,
     Name,
     App,
 }
@@ -48,7 +51,9 @@ pub struct KubeClient {
 }
 
 impl KubeClient {
-    pub async fn new() -> Result<Self, KubeError> {
+    /// Tries to create a new default Kubernetes client and immediately runs
+    /// a discovery.
+    pub async fn new() -> Result<Self, KubeClientError> {
         let client = Client::try_default().await.context(KubeSnafu {})?;
         let discovery = Discovery::new(client.clone())
             .run()
@@ -58,11 +63,14 @@ impl KubeClient {
         Ok(Self { client, discovery })
     }
 
+    /// Deploys manifests defined the in raw `manifests` YAML string. This
+    /// method will fail if it is unable to parse the manifests, unable to
+    /// resolve GVKs or unable to patch the dynamic objects.
     pub async fn deploy_manifests(
         &self,
         manifests: &str,
         namespace: &str,
-    ) -> Result<(), KubeError> {
+    ) -> Result<(), KubeClientError> {
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
             let mut object = DynamicObject::deserialize(manifest).context(YamlSnafu {})?;
             let object_type = object.types.as_ref().ok_or(
@@ -100,11 +108,15 @@ impl KubeClient {
         Ok(())
     }
 
+    /// List objects by looking up a GVK via the discovery. It returns an
+    /// optional list of dynamic objects. The method returns [`Ok(None)`]
+    /// if the client was unable to resolve the GVK. An error is returned
+    /// when the client failed to list the objects.
     pub async fn list_objects(
         &self,
         gvk: &GroupVersionKind,
         namespace: Option<&str>,
-    ) -> Result<Option<ObjectList<DynamicObject>>, KubeError> {
+    ) -> Result<Option<ObjectList<DynamicObject>>, KubeClientError> {
         let object_api_resource = match self.discovery.resolve_gvk(gvk) {
             Some((object_api_resource, _)) => object_api_resource,
             None => {
@@ -127,70 +139,35 @@ impl KubeClient {
         Ok(Some(objects))
     }
 
+    /// List services by matching labels. The services can me matched by the
+    /// product labels. [`ListParamsExt`] provides a utility function to
+    /// create [`ListParams`] based on a product name and optional instance
+    /// name.
     pub async fn list_services(
         &self,
         namespace: Option<&str>,
-        product_name: &str,
-        instance_name: Option<&str>,
-        product_label: ProductLabel,
-    ) -> Result<ObjectList<Service>, KubeError> {
+        list_params: &ListParams,
+    ) -> Result<ObjectList<Service>, KubeClientError> {
         let service_api: Api<Service> = match namespace {
             Some(namespace) => Api::namespaced(self.client.clone(), namespace),
             None => Api::all(self.client.clone()),
         };
 
-        let product_name_label = match product_label {
-            ProductLabel::Name => format!("app.kubernetes.io/name={product_name}"),
-            ProductLabel::App => format!("app.kubernetes.io/app={product_name}"),
-        };
-
-        let mut service_list_params = ListParams::default().labels(product_name_label.as_str());
-
-        if let Some(instance_name) = instance_name {
-            // NOTE (Techassi): This bothers me a little, but .labels consumes self
-            service_list_params = service_list_params
-                .labels(format!("app.kubernetes.io/instance={instance_name}").as_str());
-        }
-
-        let services = service_api
-            .list(&service_list_params)
-            .await
-            .context(KubeSnafu {})?;
-
+        let services = service_api.list(list_params).await.context(KubeSnafu {})?;
         Ok(services)
     }
 
-    pub async fn list_service_endpoints(
-        &self,
-        service: &Service,
-        _object_name: &str,
-    ) -> Result<IndexMap<String, String>, KubeError> {
-        let namespace = service.namespace().ok_or(
-            MissingServiceNamespaceSnafu {
-                service: service.name_any(),
-            }
-            .build(),
-        )?;
-
-        // TODO (Techassi): Get rid of this potential panic
-        let service_name = service.name_unchecked();
-
-        let endpoints_api: Api<Endpoints> = Api::namespaced(self.client.clone(), &namespace);
-        let _endpoints = endpoints_api
-            .get(&service_name)
-            .await
-            .context(KubeSnafu {})?;
-
-        todo!()
-    }
-
+    /// Retrieves user credentials consisting of username and password from a
+    /// secret identified by `secret_name` inside the `secret_namespace`. If
+    /// either one of the values is missing, [`Ok(None)`] is returned. An error
+    /// is returned if the client failed to get the secret.
     pub async fn get_credentials_from_secret(
         &self,
         secret_name: &str,
         secret_namespace: &str,
         username_key: &str,
         password_key: Option<&str>,
-    ) -> Result<Option<(String, String)>, KubeError> {
+    ) -> Result<Option<(String, String)>, KubeClientError> {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
         let secret = secret_api.get(secret_name).await.context(KubeSnafu {})?;
@@ -216,10 +193,87 @@ impl KubeClient {
         Ok(Some((username, password)))
     }
 
+    pub async fn list_deployments(
+        &self,
+        namespace: Option<&str>,
+        list_params: &ListParams,
+    ) -> Result<ObjectList<Deployment>, KubeClientError> {
+        let deployment_api: Api<Deployment> = match namespace {
+            Some(namespace) => Api::namespaced(self.client.clone(), namespace),
+            None => Api::all(self.client.clone()),
+        };
+
+        let deployments = deployment_api
+            .list(list_params)
+            .await
+            .context(KubeSnafu {})?;
+
+        Ok(deployments)
+    }
+
+    pub async fn list_stateful_sets(
+        &self,
+        namespace: Option<&str>,
+        list_params: &ListParams,
+    ) -> Result<ObjectList<StatefulSet>, KubeClientError> {
+        let stateful_set_api: Api<StatefulSet> = match namespace {
+            Some(namespace) => Api::namespaced(self.client.clone(), namespace),
+            None => Api::all(self.client.clone()),
+        };
+
+        let stateful_sets = stateful_set_api
+            .list(list_params)
+            .await
+            .context(KubeSnafu {})?;
+
+        Ok(stateful_sets)
+    }
+
+    /// Extracts the GVK from [`TypeMeta`].
     fn gvk_of_typemeta(type_meta: &TypeMeta) -> GroupVersionKind {
         match type_meta.api_version.split_once('/') {
             Some((group, version)) => GroupVersionKind::gvk(group, version, &type_meta.kind),
             None => GroupVersionKind::gvk("", &type_meta.api_version, &type_meta.kind),
+        }
+    }
+}
+
+pub trait ListParamsExt {
+    fn from_product(
+        product_name: &str,
+        instance_name: Option<&str>,
+        product_label: ProductLabel,
+    ) -> ListParams {
+        let mut params = ListParams::default();
+
+        match product_label {
+            ProductLabel::Both => {
+                params.add_label(format!("app.kubernetes.io/name={product_name}"));
+                params.add_label(format!("app.kubernetes.io/app={product_name}"));
+            }
+            ProductLabel::Name => {
+                params.add_label(format!("app.kubernetes.io/name={product_name}"))
+            }
+            ProductLabel::App => params.add_label(format!("app.kubernetes.io/app={product_name}")),
+        };
+
+        if let Some(instance_name) = instance_name {
+            // NOTE (Techassi): This bothers me a little, but .labels consumes self
+            params.add_label(format!("app.kubernetes.io/instance={instance_name}"));
+        }
+
+        params
+    }
+
+    /// Adds a label to the label selectors.
+    fn add_label(&mut self, label: impl Into<String>);
+}
+
+impl ListParamsExt for ListParams {
+    fn add_label(&mut self, label: impl Into<String>) {
+        match self.label_selector.as_mut() {
+            Some(labels) => labels.push_str(format!(",{}", label.into()).as_str()),
+            None => self.label_selector = Some(label.into()),
         }
     }
 }

@@ -10,7 +10,7 @@ use utoipa::ToSchema;
 use crate::{
     common::ManifestSpec,
     helm::{self, HelmChart, HelmError},
-    kube::{self, KubeError},
+    kube::{self, KubeClientError},
     platform::{
         demo::DemoParameter,
         release::{ReleaseInstallError, ReleaseList},
@@ -55,7 +55,7 @@ pub enum StackError {
     HelmError { source: HelmError },
 
     #[snafu(display("kube error: {source}"))]
-    KubeError { source: KubeError },
+    KubeError { source: KubeClientError },
 
     /// This error indicates a YAML error occurred.
     #[snafu(display("yaml error: {source}"))]

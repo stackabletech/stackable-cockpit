@@ -7,7 +7,7 @@ use tracing::warn;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    kube::{KubeClient, KubeError},
+    kube::{KubeClient, KubeClientError},
     utils::string::Casing,
 };
 
@@ -32,7 +32,7 @@ pub struct Product {
 #[derive(Debug, Snafu)]
 pub enum StackletError {
     #[snafu(display("kubernetes error"))]
-    KubeError { source: KubeError },
+    KubeError { source: KubeClientError },
 
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
     CustomCrdNamespaceError { crd_name: String },
