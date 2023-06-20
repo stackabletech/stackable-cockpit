@@ -1,8 +1,11 @@
 use std::string::FromUtf8Error;
 
-use k8s_openapi::api::{
-    apps::v1::{Deployment, StatefulSet},
-    core::v1::{Secret, Service},
+use k8s_openapi::{
+    api::{
+        apps::v1::{Deployment, DeploymentCondition, StatefulSet, StatefulSetCondition},
+        core::v1::{Secret, Service},
+    },
+    apimachinery::pkg::apis::meta::v1::Condition,
 };
 use kube::{
     api::{ListParams, Patch, PatchParams},
@@ -12,6 +15,7 @@ use kube::{
 };
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
+use stackable_operator::status::condition::ClusterCondition;
 
 use crate::constants::REDACTED_PASSWORD;
 
@@ -275,5 +279,46 @@ impl ListParamsExt for ListParams {
             Some(labels) => labels.push_str(format!(",{}", label.into()).as_str()),
             None => self.label_selector = Some(label.into()),
         }
+    }
+}
+
+/// This trait unifies the different conditions, like [`Condition`],
+/// [`DeploymentCondition`], [`ClusterCondition`]. The method `plain` returns
+/// a plain text representation of the list of conditions. This list ist suited
+/// for terminal output, i.e. stackablectl.
+pub trait ConditionsExt: IntoIterator {
+    /// Returns a plain list of conditions.
+    fn plain(&self) -> Vec<String>;
+}
+
+impl ConditionsExt for Vec<Condition> {
+    fn plain(&self) -> Vec<String> {
+        self.iter()
+            .map(|c| format!("{}: {}", c.type_, c.status))
+            .collect()
+    }
+}
+
+impl ConditionsExt for Vec<DeploymentCondition> {
+    fn plain(&self) -> Vec<String> {
+        self.iter()
+            .map(|c| format!("{}: {}", c.type_, c.status))
+            .collect()
+    }
+}
+
+impl ConditionsExt for Vec<ClusterCondition> {
+    fn plain(&self) -> Vec<String> {
+        self.iter()
+            .map(|c| format!("{:?}: {:?}", c.type_, c.status))
+            .collect()
+    }
+}
+
+impl ConditionsExt for Vec<StatefulSetCondition> {
+    fn plain(&self) -> Vec<String> {
+        self.iter()
+            .map(|c| format!("{}: {}", c.type_, c.status))
+            .collect()
     }
 }

@@ -1,13 +1,10 @@
-// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
 use snafu::{ResultExt, Snafu};
-
-// Stackable library
-use stackable::platform::stacklet::{list_stacklets, StackletError};
 use tracing::{info, instrument};
 
-// Local
+use stackable::platform::stacklet::{list_stacklets, StackletError};
+
 use crate::cli::{Cli, OutputType};
 
 #[derive(Debug, Args)]
@@ -87,25 +84,20 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 
             for (product_name, products) in stacklets {
                 for product in products {
-                    let status = product
-                        .conditions
-                        .iter()
-                        .map(|c| format!("{:?}: {:?}", c.type_, c.status))
-                        .collect::<Vec<_>>()
-                        .join("\n");
+                    let conditions = product.conditions.join("\n");
 
                     table.add_row(vec![
                         product_name.clone(),
                         product.name,
                         product.namespace.unwrap_or_default(),
-                        status,
+                        conditions,
                     ]);
                 }
             }
 
             Ok(table.to_string())
         }
-        OutputType::Json => todo!(),
-        OutputType::Yaml => todo!(),
+        OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu {}),
+        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu {}),
     }
 }

@@ -7,7 +7,7 @@ use tracing::warn;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    kube::{KubeClient, KubeClientError},
+    kube::{ConditionsExt, KubeClient, KubeClientError},
     utils::string::Casing,
 };
 
@@ -26,7 +26,7 @@ pub struct Product {
     pub namespace: Option<String>,
 
     /// Multiple cluster conditions
-    pub conditions: Vec<ClusterCondition>,
+    pub conditions: Vec<String>,
 }
 
 #[derive(Debug, Snafu)]
@@ -57,8 +57,7 @@ pub async fn list_stacklets(namespace: Option<&str>) -> Result<StackletList, Sta
         stacklets.insert("grafana".into(), grafana_products);
     }
 
-    // TODO (Techassi): MinIO
-    let minio_products = minio::list_products().await?;
+    let minio_products = minio::list_products(&kube_client, namespace).await?;
     if !minio_products.is_empty() {
         stacklets.insert("minio".into(), minio_products);
     }
@@ -80,10 +79,10 @@ async fn list_stackable_stacklets(
     kube_client: &KubeClient,
     namespace: Option<&str>,
 ) -> Result<StackletList, StackletError> {
-    let products = build_products_gvk_list(PRODUCT_NAMES);
+    let product_list = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = StackletList::new();
 
-    for (product_name, product_gvk) in products {
+    for (product_name, product_gvk) in product_list {
         let objects = match kube_client
             .list_objects(&product_gvk, namespace)
             .await
@@ -101,12 +100,15 @@ async fn list_stackable_stacklets(
         let mut products = Vec::new();
 
         for object in objects {
-            let conditions: Vec<ClusterCondition> =
-                if let Some(conditions) = object.data.pointer("/status/conditions") {
+            let conditions: Vec<ClusterCondition> = match object.data.pointer("/status/conditions")
+            {
+                Some(conditions) => {
                     serde_json::from_value(conditions.clone()).context(JsonSnafu {})?
-                } else {
-                    vec![]
-                };
+                }
+                None => vec![],
+            };
+
+            println!("{:?}", object);
 
             let object_name = object.name_any();
             let object_namespace = match object.namespace() {
@@ -115,16 +117,16 @@ async fn list_stackable_stacklets(
                 None => continue,
             };
 
-            let product = Product {
+            products.push(Product {
                 namespace: Some(object_namespace),
                 name: object_name,
-                conditions,
-            };
-
-            products.push(product);
+                conditions: conditions.plain(),
+            });
         }
 
-        stacklets.insert(product_name.to_string(), products);
+        if !products.is_empty() {
+            stacklets.insert(product_name.to_string(), products);
+        }
     }
 
     Ok(stacklets)
