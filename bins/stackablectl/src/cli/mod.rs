@@ -216,7 +216,7 @@ pub enum Commands {
     Stack(StackArgs),
 
     /// Interact with deployed stacklets
-    #[command(alias("svc"))]
+    #[command(alias("sts"))]
     Stacklets(StackletsArgs),
 
     /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
