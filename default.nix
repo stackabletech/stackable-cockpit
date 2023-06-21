@@ -33,7 +33,7 @@ rec {
         nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs ];
         preConfigure =
           ''
-            rm -r node_modules
+            [[ ! -e node_modules ]] || rm -r node_modules
             ln -s ${web.nodeModules} node_modules
           '';
       };
