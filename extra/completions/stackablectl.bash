@@ -1903,7 +1903,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklets__list)
-            opts="-a -s -o -h -V --all-namespaces --show-credentials --show-versions --output --help --version"
+            opts="-a -c -o -h -V --all-namespaces --color --output --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

@@ -282,43 +282,65 @@ impl ListParamsExt for ListParams {
     }
 }
 
+pub struct DisplayConditions {}
+
 /// This trait unifies the different conditions, like [`Condition`],
 /// [`DeploymentCondition`], [`ClusterCondition`]. The method `plain` returns
 /// a plain text representation of the list of conditions. This list ist suited
 /// for terminal output, i.e. stackablectl.
-pub trait ConditionsExt: IntoIterator {
+pub trait ConditionsExt
+where
+    Self: IntoIterator,
+    Self::Item: ConditionExt,
+{
     /// Returns a plain list of conditions.
-    fn plain(&self) -> Vec<String>;
+    fn plain(&self) -> Vec<(String, Option<bool>)>;
 }
 
 impl ConditionsExt for Vec<Condition> {
-    fn plain(&self) -> Vec<String> {
+    fn plain(&self) -> Vec<(String, Option<bool>)> {
         self.iter()
-            .map(|c| format!("{}: {}", c.type_, c.status))
+            .map(|c| (format!("{}: {}", c.type_, c.status), c.is_good()))
             .collect()
     }
 }
 
 impl ConditionsExt for Vec<DeploymentCondition> {
-    fn plain(&self) -> Vec<String> {
+    fn plain(&self) -> Vec<(String, Option<bool>)> {
         self.iter()
-            .map(|c| format!("{}: {}", c.type_, c.status))
+            .map(|c| (format!("{}: {}", c.type_, c.status), c.is_good()))
             .collect()
     }
 }
 
 impl ConditionsExt for Vec<ClusterCondition> {
-    fn plain(&self) -> Vec<String> {
+    fn plain(&self) -> Vec<(String, Option<bool>)> {
         self.iter()
-            .map(|c| format!("{:?}: {:?}", c.type_, c.status))
+            .map(|c| (c.display_short_or_long(), Some(c.is_good())))
             .collect()
     }
 }
 
 impl ConditionsExt for Vec<StatefulSetCondition> {
-    fn plain(&self) -> Vec<String> {
+    fn plain(&self) -> Vec<(String, Option<bool>)> {
         self.iter()
-            .map(|c| format!("{}: {}", c.type_, c.status))
+            .map(|c| (format!("{}: {}", c.type_, c.status), c.is_good()))
             .collect()
+    }
+}
+
+pub trait ConditionExt {
+    fn is_good(&self) -> Option<bool> {
+        None
+    }
+}
+
+impl ConditionExt for StatefulSetCondition {}
+impl ConditionExt for DeploymentCondition {}
+impl ConditionExt for Condition {}
+
+impl ConditionExt for ClusterCondition {
+    fn is_good(&self) -> Option<bool> {
+        Some(self.is_good())
     }
 }

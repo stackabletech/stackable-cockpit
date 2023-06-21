@@ -20,7 +20,7 @@ use stackable::{
 
 use crate::{
     cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
-    util::{self, InvalidRepoNameError},
+    utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
 #[derive(Debug, Args)]
@@ -369,7 +369,7 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
         HELM_REPO_NAME_DEV,
     ] {
         let helm_repo_url =
-            util::helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
+            helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
 
         helm_index_files.insert(
             helm_repo_name,

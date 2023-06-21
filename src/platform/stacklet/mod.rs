@@ -26,7 +26,7 @@ pub struct Product {
     pub namespace: Option<String>,
 
     /// Multiple cluster conditions
-    pub conditions: Vec<String>,
+    pub conditions: Vec<(String, Option<bool>)>,
 }
 
 #[derive(Debug, Snafu)]
@@ -107,8 +107,6 @@ async fn list_stackable_stacklets(
                 }
                 None => vec![],
             };
-
-            println!("{:?}", object);
 
             let object_name = object.name_any();
             let object_namespace = match object.namespace() {

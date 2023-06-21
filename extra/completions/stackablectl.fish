@@ -107,8 +107,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fi
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "{plain	Print output formatted as plain text,json	Print output formatted as JSON,yaml	Print output formatted as YAML}"
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s a -l all-namespaces -d 'Will display services of all namespaces, not only the current one'
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s s -l show-credentials -d 'Display credentials and secrets in the output'
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l show-versions -d 'Display product versions in the output'
+complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s c -l color -d 'Controls if the output will use color. This only applies to the output type \'plain\''
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from help; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -f -a "list" -d 'List deployed services'

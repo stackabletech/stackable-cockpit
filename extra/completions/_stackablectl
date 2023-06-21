@@ -412,9 +412,8 @@ json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-a[Will display services of all namespaces, not only the current one]' \
 '--all-namespaces[Will display services of all namespaces, not only the current one]' \
-'-s[Display credentials and secrets in the output]' \
-'--show-credentials[Display credentials and secrets in the output]' \
-'--show-versions[Display product versions in the output]' \
+'-c[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
+'--color[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
