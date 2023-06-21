@@ -277,7 +277,7 @@ class ErrImpl<E extends ToString> implements BaseResult<never, E> {
   }
 
   unwrapErr(): E {
-    return this.expectErr('called `Result.unwrapErr()` on an `Ok` value');
+    return this.error;
   }
 
   unwrapOr<T>(defaultValue: T): T {
