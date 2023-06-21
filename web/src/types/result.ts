@@ -195,7 +195,7 @@ export class OkImpl<O> implements BaseResult<O, never> {
   }
 
   unwrap(): O {
-    return this.expect('called `Result.unwrap()` on an `Err` value');
+    return this.value;
   }
 
   unwrapErr(): never {
