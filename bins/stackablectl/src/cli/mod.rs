@@ -215,8 +215,17 @@ pub enum Commands {
     #[command(alias("st"))]
     Stack(StackArgs),
 
-    /// Interact with deployed stacklets
+    /// Interact with deployed stacklets, which are bundles of resources and
+    /// containers required to run the product.
     #[command(alias("sts"))]
+    #[command(
+        long_about = "Interact with deployed stacklets, which are bundles of resources and containers
+required to run the product.
+
+Each stacklet consists of init containers, app containers, sidecar containers
+and additional Kubernetes resources like StatefulSets, ConfigMaps, Services and
+CRDs."
+    )]
     Stacklets(StackletsArgs),
 
     /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
