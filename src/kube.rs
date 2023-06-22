@@ -13,7 +13,7 @@ use kube::{
     discovery::Scope,
     Api, Client, Discovery, ResourceExt,
 };
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
 
@@ -282,7 +282,22 @@ impl ListParamsExt for ListParams {
     }
 }
 
-pub struct DisplayConditions {}
+#[derive(Debug, Serialize)]
+pub struct DisplayCondition {
+    pub message: Option<String>,
+    pub is_good: Option<bool>,
+    pub condition: String,
+}
+
+impl DisplayCondition {
+    pub fn new(condition: String, message: Option<String>, is_good: Option<bool>) -> Self {
+        Self {
+            condition,
+            message,
+            is_good,
+        }
+    }
+}
 
 /// This trait unifies the different conditions, like [`Condition`],
 /// [`DeploymentCondition`], [`ClusterCondition`]. The method `plain` returns
@@ -294,37 +309,55 @@ where
     Self::Item: ConditionExt,
 {
     /// Returns a plain list of conditions.
-    fn plain(&self) -> Vec<(String, Option<bool>)>;
+    fn plain(&self) -> Vec<DisplayCondition>;
 }
 
 impl ConditionsExt for Vec<Condition> {
-    fn plain(&self) -> Vec<(String, Option<bool>)> {
+    fn plain(&self) -> Vec<DisplayCondition> {
         self.iter()
-            .map(|c| (format!("{}: {}", c.type_, c.status), c.is_good()))
+            .map(|c| {
+                DisplayCondition::new(
+                    format!("{}: {}", c.type_, c.status),
+                    Some(c.message.clone()),
+                    c.is_good(),
+                )
+            })
             .collect()
     }
 }
 
 impl ConditionsExt for Vec<DeploymentCondition> {
-    fn plain(&self) -> Vec<(String, Option<bool>)> {
+    fn plain(&self) -> Vec<DisplayCondition> {
         self.iter()
-            .map(|c| (format!("{}: {}", c.type_, c.status), c.is_good()))
+            .map(|c| {
+                DisplayCondition::new(
+                    format!("{}: {}", c.type_, c.status),
+                    c.message.clone(),
+                    c.is_good(),
+                )
+            })
             .collect()
     }
 }
 
 impl ConditionsExt for Vec<ClusterCondition> {
-    fn plain(&self) -> Vec<(String, Option<bool>)> {
+    fn plain(&self) -> Vec<DisplayCondition> {
         self.iter()
-            .map(|c| (c.display_short_or_long(), Some(c.is_good())))
+            .map(|c| DisplayCondition::new(c.display_short(), c.message.clone(), Some(c.is_good())))
             .collect()
     }
 }
 
 impl ConditionsExt for Vec<StatefulSetCondition> {
-    fn plain(&self) -> Vec<(String, Option<bool>)> {
+    fn plain(&self) -> Vec<DisplayCondition> {
         self.iter()
-            .map(|c| (format!("{}: {}", c.type_, c.status), c.is_good()))
+            .map(|c| {
+                DisplayCondition::new(
+                    format!("{}: {}", c.type_, c.status),
+                    c.message.clone(),
+                    c.is_good(),
+                )
+            })
             .collect()
     }
 }
