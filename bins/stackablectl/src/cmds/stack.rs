@@ -132,11 +132,12 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["STACK", "RELEASE", "DESCRIPTION"])
+                .set_header(vec!["#", "STACK", "RELEASE", "DESCRIPTION"])
                 .load_preset(UTF8_FULL);
 
-            for (stack_name, stack) in stack_list.inner() {
+            for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
                 table.add_row(vec![
+                    (index + 1).to_string(),
                     stack_name.clone(),
                     stack.release.clone(),
                     stack.description.clone(),

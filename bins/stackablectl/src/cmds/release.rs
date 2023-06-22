@@ -149,10 +149,11 @@ async fn list_cmd(
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL)
-                .set_header(vec!["RELEASE", "RELEASE DATE", "DESCRIPTION"]);
+                .set_header(vec!["#", "RELEASE", "RELEASE DATE", "DESCRIPTION"]);
 
-            for (release_name, release_spec) in release_list.inner() {
+            for (index, (release_name, release_spec)) in release_list.inner().iter().enumerate() {
                 table.add_row(vec![
+                    (index + 1).to_string(),
                     release_name.to_string(),
                     release_spec.date.clone(),
                     release_spec.description.clone(),

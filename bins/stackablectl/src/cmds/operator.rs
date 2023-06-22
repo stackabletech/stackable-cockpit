@@ -162,15 +162,19 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["OPERATOR", "STABLE VERSIONS"])
+                .set_header(vec!["#", "OPERATOR", "STABLE VERSIONS"])
                 .load_preset(UTF8_FULL);
 
-            for (operator_name, versions) in versions_list {
+            for (index, (operator_name, versions)) in versions_list.iter().enumerate() {
                 let versions_string = match versions.0.get(HELM_REPO_NAME_STABLE) {
                     Some(v) => v.join(", "),
                     None => "".into(),
                 };
-                table.add_row(vec![operator_name, versions_string]);
+                table.add_row(vec![
+                    (index + 1).to_string(),
+                    operator_name.clone(),
+                    versions_string,
+                ]);
             }
 
             Ok(table.to_string())

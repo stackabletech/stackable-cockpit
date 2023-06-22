@@ -143,11 +143,12 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["NAME", "STACK", "DESCRIPTION"])
+                .set_header(vec!["#", "NAME", "STACK", "DESCRIPTION"])
                 .load_preset(UTF8_FULL);
 
-            for (demo_name, demo_spec) in list.inner() {
+            for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
                 let row = Row::from(vec![
+                    (index + 1).to_string(),
                     demo_name.clone(),
                     demo_spec.stack.clone(),
                     demo_spec.description.clone(),

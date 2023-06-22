@@ -24,7 +24,7 @@ enum CliError {
     #[snafu(display("stack command error"))]
     StackCmdError { source: StackCmdError },
 
-    #[snafu(display("services command error"))]
+    #[snafu(display("stacklets command error"))]
     StackletsCmdError { source: StackletsCmdError },
 
     #[snafu(display("demo command error"))]
