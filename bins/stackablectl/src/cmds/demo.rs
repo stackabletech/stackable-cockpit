@@ -224,7 +224,7 @@ async fn install_cmd(
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args
-        .get_stack_files()
+        .get_release_files()
         .context(PathOrUrlParseSnafu {})?;
 
     let release_list = ReleaseList::build(&files, &cache_settings)

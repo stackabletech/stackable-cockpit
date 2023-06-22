@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -106,7 +106,7 @@ impl StackSpecV2 {
             .install(&self.operators, &[], namespace)
             .context(ReleaseInstallSnafu {})?;
 
-        todo!()
+        Ok(())
     }
 
     #[instrument(skip_all)]
@@ -152,14 +152,17 @@ impl StackSpecV2 {
         parameters: &HashMap<String, String>,
         namespace: &str,
     ) -> Result<(), StackError> {
+        debug!("Installing demo / stack manifests");
+
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
                     // Read Helm chart YAML and apply templating
-                    let helm_chart =
-                        read_yaml_data_with_templating::<HelmChart, _>(helm_file, parameters)
-                            .await
-                            .context(TemplatedReadSnafu {})?;
+                    let helm_chart = read_yaml_data_with_templating(helm_file, parameters)
+                        .await
+                        .context(TemplatedReadSnafu {})?;
+                    let helm_chart: HelmChart =
+                        serde_yaml::from_str(&helm_chart).context(YamlSnafu {})?;
 
                     info!(
                         "Installing Helm chart {} ({})",
@@ -171,7 +174,7 @@ impl StackSpecV2 {
 
                     // Serialize chart options to string
                     let values_yaml =
-                        serde_yaml::to_string(&helm_chart.values).context(YamlSnafu {})?;
+                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu {})?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
@@ -192,10 +195,9 @@ impl StackSpecV2 {
                     info!("Installing YAML manifest from {}", path_or_url);
 
                     // Read YAML manifest and apply templating
-                    let manifests =
-                        read_yaml_data_with_templating::<String, _>(path_or_url, parameters)
-                            .await
-                            .context(TemplatedReadSnafu {})?;
+                    let manifests = read_yaml_data_with_templating(path_or_url, parameters)
+                        .await
+                        .context(TemplatedReadSnafu {})?;
 
                     let kube_client = kube::KubeClient::new().await.context(KubeSnafu {})?;
                     kube_client

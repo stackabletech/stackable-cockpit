@@ -7,7 +7,7 @@ use tracing::warn;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    kube::{ConditionsExt, KubeClient, KubeClientError},
+    kube::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
     utils::string::Casing,
 };
 
@@ -26,7 +26,7 @@ pub struct Product {
     pub namespace: Option<String>,
 
     /// Multiple cluster conditions
-    pub conditions: Vec<(String, Option<bool>)>,
+    pub conditions: Vec<DisplayCondition>,
 }
 
 #[derive(Debug, Snafu)]

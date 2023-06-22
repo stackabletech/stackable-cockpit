@@ -26,7 +26,7 @@ pub struct HelmChart {
     pub name: String,
     pub repo: HelmChartRepo,
     pub version: String,
-    pub values: serde_yaml::Value,
+    pub options: serde_yaml::Value,
 }
 
 #[derive(Debug, Deserialize)]
