@@ -20,10 +20,20 @@
       {
         "replacements": {
           "env": false,
-          // props and params are distinct solidjs concepts
+          // Err is used for the Result type
+          "err": false,
+          // Fn or fn is used in callbacks, predicate and filter functions
+          "fn": false,
+          // props and params are distinct SolidJS concepts
           "props": false,
           "params": false
         }
+      }
+    ],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_"
       }
     ]
   }
