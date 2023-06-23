@@ -1,15 +1,15 @@
-use std::{fs, marker::PhantomData};
+use std::marker::PhantomData;
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 
-use crate::utils::{
-    path::PathOrUrl,
-    read::{
-        read_cached_yaml_data, read_yaml_data_from_file, read_yaml_data_from_remote, CacheBackend,
-        CacheSettings, CacheStatus, CachedReadError, LocalReadError, RemoteReadError,
+use crate::{
+    utils::{
+        path::PathOrUrl,
+        read::{read_yaml_data_from_file, LocalReadError},
     },
+    xfer::{TransferClient, TransferError},
 };
 
 pub trait SpecIter<S> {
@@ -24,12 +24,6 @@ pub enum ListError {
     #[snafu(display("local read error"))]
     LocalReadError { source: LocalReadError },
 
-    #[snafu(display("remote read error"))]
-    RemoteReadError { source: RemoteReadError },
-
-    #[snafu(display("cached read error"))]
-    CachedReadError { source: CachedReadError },
-
     #[snafu(display("url parse error"))]
     ParseUrlError { source: url::ParseError },
 
@@ -38,6 +32,9 @@ pub enum ListError {
 
     #[snafu(display("invalid file url"))]
     InvalidFileUrl,
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: TransferError },
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for
@@ -67,47 +64,19 @@ where
     /// all are specified using the [`CacheSettings`].
     pub async fn build(
         files: &[PathOrUrl],
-        cache_settings: &CacheSettings,
+        transfer_client: &TransferClient,
     ) -> Result<Self, ListError> {
         let mut map = IndexMap::new();
 
         for file in files {
             let specs = match file {
-                PathOrUrl::Path(path) => {
-                    read_yaml_data_from_file::<L>(path.clone()).context(LocalReadSnafu {})?
-                }
-                PathOrUrl::Url(url) => match &cache_settings.backend {
-                    CacheBackend::Disabled => read_yaml_data_from_remote::<L>(url.clone())
-                        .await
-                        .context(RemoteReadSnafu {})?,
-                    CacheBackend::Disk {
-                        base_path: cache_base_path,
-                    } => {
-                        let file_name = url
-                            .path_segments()
-                            .ok_or(ListError::InvalidFileUrl)?
-                            .last()
-                            .ok_or(ListError::InvalidFileUrl)?;
-
-                        let file_path = cache_base_path.join(file_name);
-
-                        match read_cached_yaml_data::<L>(file_path.clone(), cache_settings)
-                            .context(CachedReadSnafu {})?
-                        {
-                            CacheStatus::Hit(specs) => specs,
-                            CacheStatus::Expired | CacheStatus::Miss => {
-                                let data = read_yaml_data_from_remote::<L>(url.clone())
-                                    .await
-                                    .context(RemoteReadSnafu {})?;
-
-                                let yaml = serde_yaml::to_string(&data).context(YamlSnafu {})?;
-                                fs::write(file_path, yaml).context(IoSnafu {})?;
-
-                                data
-                            }
-                        }
-                    }
-                },
+                PathOrUrl::Path(path) => read_yaml_data_from_file::<L>(path.clone())
+                    .await
+                    .context(LocalReadSnafu {})?,
+                PathOrUrl::Url(url) => transfer_client
+                    .get_yaml_data::<L>(url)
+                    .await
+                    .context(TransferSnafu)?,
             };
 
             for (spec_name, spec) in specs.inner() {

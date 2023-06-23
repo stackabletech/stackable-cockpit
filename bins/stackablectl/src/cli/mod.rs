@@ -12,10 +12,10 @@ use stackable::{
         DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError},
-    utils::{
-        path::{IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError},
-        read::CacheSettings,
+    utils::path::{
+        IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
+    xfer::CacheSettings,
 };
 
 // Local

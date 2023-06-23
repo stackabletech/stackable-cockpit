@@ -13,6 +13,7 @@ use stackable::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
+    xfer::TransferClient,
 };
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
@@ -106,18 +107,22 @@ pub enum StackCmdError {
 
 impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
+        let transfer_client = TransferClient::new(common_args.cache_settings()?);
+
         let files = common_args
             .get_stack_files()
             .context(PathOrUrlParseSnafu {})?;
 
-        let stack_list = StackList::build(&files, &common_args.cache_settings()?)
+        let stack_list = StackList::build(&files, &transfer_client)
             .await
             .context(ListSnafu {})?;
 
         match &self.subcommand {
             StackCommands::List(args) => list_cmd(args, stack_list),
             StackCommands::Describe(args) => describe_cmd(args, stack_list),
-            StackCommands::Install(args) => install_cmd(args, common_args, stack_list).await,
+            StackCommands::Install(args) => {
+                install_cmd(args, common_args, stack_list, &transfer_client).await
+            }
         }
     }
 }
@@ -206,14 +211,15 @@ async fn install_cmd(
     args: &StackInstallArgs,
     common_args: &Cli,
     stack_list: StackList,
+    transfer_client: &TransferClient,
 ) -> Result<String, StackCmdError> {
-    info!("Installing stack");
+    info!("Installing stack {}", args.stack_name);
 
     let files = common_args
         .get_release_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
+    let release_list = ReleaseList::build(&files, &transfer_client)
         .await
         .context(ListSnafu {})?;
 
@@ -232,7 +238,11 @@ async fn install_cmd(
 
             // Install stack manifests
             stack_spec
-                .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
+                .install_stack_manifests(
+                    &args.stack_parameters,
+                    &common_args.operator_namespace,
+                    transfer_client,
+                )
                 .await
                 .context(StackSnafu {})?;
 

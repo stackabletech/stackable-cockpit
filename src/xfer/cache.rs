@@ -22,6 +22,7 @@ pub enum CacheError {
     WriteDisabled,
 }
 
+#[derive(Debug)]
 pub struct Cache {
     pub(crate) settings: CacheSettings,
 }
@@ -93,6 +94,7 @@ pub enum CacheStatus<T> {
     Miss,
 }
 
+#[derive(Debug, Clone)]
 pub struct CacheSettings {
     pub backend: CacheBackend,
     pub max_age: Duration,
@@ -120,6 +122,7 @@ impl CacheSettings {
     }
 }
 
+#[derive(Debug, Clone)]
 pub enum CacheBackend {
     Disk { base_path: PathBuf },
     Disabled,

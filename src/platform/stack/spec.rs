@@ -19,8 +19,13 @@ use crate::{
         params::{
             IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
         },
-        read::{read_yaml_data_with_templating, TemplatedReadError},
+        path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
+        read::{
+            read_plain_data_from_file_with_templating, read_yaml_data_from_file_with_templating,
+            LocalReadError,
+        },
     },
+    xfer::{TransferClient, TransferError},
 };
 
 pub type RawStackParameterParseError = RawParameterParseError;
@@ -45,11 +50,6 @@ pub enum StackError {
     #[snafu(display("release install error: {source}"))]
     ReleaseInstallError { source: ReleaseInstallError },
 
-    /// This error indicates that reading YAML data and applying templating
-    /// failed.
-    #[snafu(display("templated read error: {source}"))]
-    TemplatedReadError { source: TemplatedReadError },
-
     /// This error indicates the Helm wrapper encountered an error.
     #[snafu(display("Helm error: {source}"))]
     HelmError { source: HelmError },
@@ -60,6 +60,15 @@ pub enum StackError {
     /// This error indicates a YAML error occurred.
     #[snafu(display("yaml error: {source}"))]
     YamlError { source: serde_yaml::Error },
+
+    #[snafu(display("path or url parse error"))]
+    PathOrUrlParseError { source: PathOrUrlParseError },
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: TransferError },
+
+    #[snafu(display("local read error"))]
+    LocalReadError { source: LocalReadError },
 }
 
 /// This struct describes a stack with the v2 spec
@@ -114,6 +123,7 @@ impl StackSpecV2 {
         &self,
         parameters: &[String],
         namespace: &str,
+        transfer_client: &TransferClient,
     ) -> Result<(), StackError> {
         info!("Installing stack manifests");
 
@@ -122,7 +132,7 @@ impl StackSpecV2 {
             .into_params(&self.parameters)
             .context(ParameterSnafu {})?;
 
-        Self::install_manifests(&self.manifests, &parameters, namespace).await?;
+        Self::install_manifests(&self.manifests, &parameters, namespace, transfer_client).await?;
         Ok(())
     }
 
@@ -133,6 +143,7 @@ impl StackSpecV2 {
         valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
         namespace: &str,
+        transfer_client: &TransferClient,
     ) -> Result<(), StackError> {
         info!("Installing demo manifests");
 
@@ -141,7 +152,7 @@ impl StackSpecV2 {
             .into_params(valid_demo_parameters)
             .context(ParameterSnafu {})?;
 
-        Self::install_manifests(manifests, &parameters, namespace).await?;
+        Self::install_manifests(manifests, &parameters, namespace, transfer_client).await?;
         Ok(())
     }
 
@@ -151,15 +162,24 @@ impl StackSpecV2 {
         manifests: &Vec<ManifestSpec>,
         parameters: &HashMap<String, String>,
         namespace: &str,
+        transfer_client: &TransferClient,
     ) -> Result<(), StackError> {
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
                     // Read Helm chart YAML and apply templating
-                    let helm_chart =
-                        read_yaml_data_with_templating::<HelmChart, _>(helm_file, parameters)
-                            .await
-                            .context(TemplatedReadSnafu {})?;
+                    let helm_chart: HelmChart =
+                        match helm_file.into_path_or_url().context(PathOrUrlParseSnafu)? {
+                            PathOrUrl::Path(path) => {
+                                read_yaml_data_from_file_with_templating(path, parameters)
+                                    .await
+                                    .context(LocalReadSnafu)?
+                            }
+                            PathOrUrl::Url(url) => transfer_client
+                                .get_templated_yaml_data(&url, parameters)
+                                .await
+                                .context(TransferSnafu)?,
+                        };
 
                     info!(
                         "Installing Helm chart {} ({})",
@@ -192,10 +212,20 @@ impl StackSpecV2 {
                     info!("Installing YAML manifest from {}", path_or_url);
 
                     // Read YAML manifest and apply templating
-                    let manifests =
-                        read_yaml_data_with_templating::<String, _>(path_or_url, parameters)
+                    let manifests = match path_or_url
+                        .into_path_or_url()
+                        .context(PathOrUrlParseSnafu)?
+                    {
+                        PathOrUrl::Path(path) => {
+                            read_plain_data_from_file_with_templating(path, parameters)
+                                .await
+                                .context(LocalReadSnafu)?
+                        }
+                        PathOrUrl::Url(url) => transfer_client
+                            .get_templated_yaml_data(&url, parameters)
                             .await
-                            .context(TemplatedReadSnafu {})?;
+                            .context(TransferSnafu)?,
+                    };
 
                     kube::deploy_manifests(&manifests, namespace)
                         .await

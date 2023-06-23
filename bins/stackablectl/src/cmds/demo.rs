@@ -12,7 +12,8 @@ use stackable::{
         release::ReleaseList,
         stack::{StackError, StackList},
     },
-    utils::{params::IntoParametersError, path::PathOrUrlParseError},
+    utils::path::PathOrUrlParseError,
+    xfer::TransferClient,
 };
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
@@ -116,20 +117,24 @@ pub enum DemoCmdError {
 
 impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
+        let transfer_client = TransferClient::new(common_args.cache_settings()?);
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
         let files = common_args
             .get_demo_files()
             .context(PathOrUrlParseSnafu {})?;
 
-        let list = DemoList::build(&files, &common_args.cache_settings()?)
+        let list = DemoList::build(&files, &transfer_client)
             .await
             .context(ListSnafu {})?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
-            DemoCommands::Install(args) => install_cmd(args, common_args, list).await,
+            DemoCommands::Install(args) => {
+                install_cmd(args, common_args, list, &transfer_client).await
+            }
             DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
         }
     }
@@ -197,6 +202,7 @@ async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
+    transfer_client: &TransferClient,
 ) -> Result<String, DemoCmdError> {
     // Get the demo spec by name from the list
     let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
@@ -209,9 +215,7 @@ async fn install_cmd(
         .get_stack_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let cache_settings = common_args.cache_settings()?;
-
-    let stack_list = StackList::build(&files, &cache_settings)
+    let stack_list = StackList::build(&files, transfer_client)
         .await
         .context(ListSnafu {})?;
 
@@ -227,7 +231,7 @@ async fn install_cmd(
         .get_stack_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let release_list = ReleaseList::build(&files, &cache_settings)
+    let release_list = ReleaseList::build(&files, transfer_client)
         .await
         .context(ListSnafu {})?;
 
@@ -244,7 +248,11 @@ async fn install_cmd(
 
     // Install stack manifests
     stack_spec
-        .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
+        .install_stack_manifests(
+            &args.stack_parameters,
+            &common_args.operator_namespace,
+            transfer_client,
+        )
         .await
         .context(StackSnafu {})?;
 
@@ -255,6 +263,7 @@ async fn install_cmd(
             &demo_spec.parameters,
             &args.parameters,
             &common_args.operator_namespace,
+            transfer_client,
         )
         .await
         .context(StackSnafu {})?;
