@@ -55,7 +55,7 @@ where
 /// Reads YAML data from a local file at `path` and deserializes it into type
 /// `T`. It also inserts parameter values based on templating expressions. The
 /// parameters are passed into this function as a [`HashMap<String, String>`].
-/// A [`TemplatedReadError`] is returned when the file cannot be read,
+/// A [`LocalReadError`] is returned when the file cannot be read,
 /// deserialization failed or the templating resulted in an error.
 pub async fn read_yaml_data_from_file_with_templating<T>(
     path: PathBuf,

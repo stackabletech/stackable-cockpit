@@ -59,9 +59,7 @@ where
 {
     /// Builds a list of specs of type `S` based on a list of files. These files
     /// can be located locally (on disk) or remotely. Remote files will get
-    /// downloaded once and then will be cached locally for a specified amount
-    /// of time. The cache time, cache base path and whether to use the cache at
-    /// all are specified using the [`CacheSettings`].
+    /// downloaded.
     pub async fn build(
         files: &[PathOrUrl],
         transfer_client: &TransferClient,
