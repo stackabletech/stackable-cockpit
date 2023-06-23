@@ -83,10 +83,10 @@ pub struct ReleaseUninstallArgs {
 #[derive(Debug, Snafu)]
 pub enum ReleaseCmdError {
     #[snafu(display("unable to format yaml output"))]
-    YamlError { source: serde_yaml::Error },
+    YamlOutputFormatError { source: serde_yaml::Error },
 
     #[snafu(display("unable to format json output"))]
-    JsonError { source: serde_json::Error },
+    JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
@@ -164,8 +164,8 @@ async fn list_cmd(
 
             Ok(table.to_string())
         }
-        OutputType::Json => serde_json::to_string(&release_list).context(JsonSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlSnafu {}),
+        OutputType::Json => serde_json::to_string(&release_list).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlOutputFormatSnafu),
     }
 }
 
@@ -207,8 +207,8 @@ async fn describe_cmd(
 
                 Ok(table.to_string())
             }
-            OutputType::Json => serde_json::to_string(&release).context(JsonSnafu {}),
-            OutputType::Yaml => serde_yaml::to_string(&release).context(YamlSnafu {}),
+            OutputType::Json => serde_json::to_string(&release).context(JsonOutputFormatSnafu),
+            OutputType::Yaml => serde_yaml::to_string(&release).context(YamlOutputFormatSnafu),
         },
         None => Ok("No such release".into()),
     }

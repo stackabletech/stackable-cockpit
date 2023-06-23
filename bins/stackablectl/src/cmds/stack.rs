@@ -150,18 +150,14 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 
             Ok(table.to_string())
         }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {})?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {})?)
-        }
+        OutputType::Json => serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {}),
+        OutputType::Yaml => serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {}),
     }
 }
 
 #[instrument]
 fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, StackCmdError> {
-    info!("Describing stack");
+    info!("Describing stack {}", args.stack_name);
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -195,12 +191,8 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
 
                 Ok(table.to_string())
             }
-            OutputType::Json => {
-                Ok(serde_json::to_string(&stack).context(JsonOutputFormatSnafu {})?)
-            }
-            OutputType::Yaml => {
-                Ok(serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {})?)
-            }
+            OutputType::Json => serde_json::to_string(&stack).context(JsonOutputFormatSnafu {}),
+            OutputType::Yaml => serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {}),
         },
         None => Ok("No such stack".into()),
     }

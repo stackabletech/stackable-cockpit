@@ -15,6 +15,7 @@ use stackable::{
     utils::path::PathOrUrlParseError,
     xfer::TransferClient,
 };
+use tracing::{info, instrument};
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
@@ -81,23 +82,17 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
 pub enum DemoCmdError {
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
-
     #[snafu(display("unable to format yaml output"))]
-    YamlError { source: serde_yaml::Error },
+    YamlOutputFormatError { source: serde_yaml::Error },
 
     #[snafu(display("unable to format json output"))]
-    JsonError { source: serde_json::Error },
+    JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
     NoSuchDemo { name: String },
 
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
-
-    #[snafu(display("failed to convert input parameters to validated parameters: {source}"))]
-    IntoParametersError { source: IntoParametersError },
 
     #[snafu(display("list error"))]
     ListError { source: ListError },
@@ -141,7 +136,10 @@ impl DemoArgs {
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
+#[instrument]
 async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
+    info!("Listing demos");
+
     match args.output_type {
         OutputType::Plain => {
             let mut table = Table::new();
@@ -162,13 +160,16 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&list.inner()).context(JsonSnafu {})?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&list.inner()).context(YamlSnafu {})?),
+        OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),
     }
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
+#[instrument]
 async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
+    info!("Describing demo {}", args.demo_name);
+
     let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
@@ -192,18 +193,21 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&demo).context(JsonSnafu {})?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&demo).context(YamlSnafu {})?),
+        OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
     }
 }
 
 /// Install a specific demo
+#[instrument]
 async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
     transfer_client: &TransferClient,
 ) -> Result<String, DemoCmdError> {
+    info!("Installing demo {}", args.demo_name);
+
     // Get the demo spec by name from the list
     let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
