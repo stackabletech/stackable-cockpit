@@ -1,9 +1,12 @@
-interface MaterialSymbolProps {
-  icon: string;
-}
-const MaterialSymbol = (props: MaterialSymbolProps) => (
-  <span class='material-symbols-outlined vertical-middle'>{props.icon}</span>
-);
+import { FeatherIconNames, icons as featherIcons } from 'feather-icons';
 
-export const SearchSymbol = () => <MaterialSymbol icon='search' />;
-export const AddSymbol = () => <MaterialSymbol icon='add' />;
+interface FeatherSymbolProps {
+  icon: FeatherIconNames;
+}
+const FeatherSymbol = (props: FeatherSymbolProps) => {
+  const icon = featherIcons[props.icon];
+  return <svg {...icon.attrs} innerHTML={icon.contents} />;
+};
+
+export const SearchSymbol = () => <FeatherSymbol icon='search' />;
+export const AddSymbol = () => <FeatherSymbol icon='plus' />;
