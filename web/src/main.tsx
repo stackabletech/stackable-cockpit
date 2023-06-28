@@ -7,6 +7,8 @@ import type { ParentProps } from 'solid-js';
 import { Listeners } from './pages/listeners';
 import { Stacklets } from './pages/stacklets/list';
 import { StackletConnectionDetails } from './pages/stacklets/connect';
+import { LoginPageOr } from './pages/login';
+import { logOut } from './api';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -37,6 +39,7 @@ const GlobalNav = () => {
           <NavItem href='/stacklets'>stacklets</NavItem>
           <NavItem href='/listeners'>listeners</NavItem>
           <NavItem href='/stacks'>stacks</NavItem>
+          <button onClick={() => logOut()}>Log out</button>
         </ul>
       </nav>
     </>
@@ -47,16 +50,18 @@ const App = () => {
   return (
     <div class='max-w-5xl ma'>
       <h1>stackablectl, web edition</h1>
-      <GlobalNav />
-      <Routes>
-        <Route
-          path='/stacklets/:namespace/:name/connect'
-          component={StackletConnectionDetails}
-        />
-        <Route path='/stacklets' component={Stacklets} />
-        <Route path='/listeners' component={Listeners} />
-        <Route path='/' component={Home} />
-      </Routes>
+      <LoginPageOr>
+        <GlobalNav />
+        <Routes>
+          <Route
+            path='/stacklets/:namespace/:name/connect'
+            component={StackletConnectionDetails}
+          />
+          <Route path='/stacklets' component={Stacklets} />
+          <Route path='/listeners' component={Listeners} />
+          <Route path='/' component={Home} />
+        </Routes>
+      </LoginPageOr>
     </div>
   );
 };

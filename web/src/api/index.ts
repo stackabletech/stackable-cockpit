@@ -1,7 +1,19 @@
 import createClient from 'openapi-fetch';
 import { components, paths } from './schema';
+import { createLocalStorageSignal } from '../utils/localstorage';
 
 const client = createClient<paths>({ baseUrl: '/api' });
+const [currentSessionToken, setCurrentSessionToken] =
+  createLocalStorageSignal('sessionToken');
+export const isLoggedIn = () => currentSessionToken() !== undefined;
+function sessionOpts() {
+  let sessionToken = currentSessionToken();
+  const headers: HeadersInit = {};
+  if (sessionToken) {
+    headers.Authorization = `Bearer ${sessionToken}`;
+  }
+  return { headers };
+}
 
 interface ObjectMeta {
   namespace: string;
@@ -21,6 +33,22 @@ interface ListenerEndpoint {
 
 function delay(amount: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, amount));
+}
+
+export async function logIn(
+  username: string,
+  password: string,
+): Promise<string | undefined> {
+  const res = await client.post('/login', {
+    headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
+  });
+  setCurrentSessionToken(res.data);
+  if (!res.response.ok) {
+    return res.error;
+  }
+}
+export async function logOut() {
+  setCurrentSessionToken(undefined);
 }
 
 export async function getListeners(): Promise<Listener[]> {
@@ -82,7 +110,7 @@ export async function getListeners(): Promise<Listener[]> {
 
 type Stacklet = components['schemas']['Stacklet'];
 export async function getStacklets(): Promise<Stacklet[]> {
-  const { data } = await client.get('/stacklets', {});
+  const { data } = await client.get('/stacklets', sessionOpts());
   if (data === undefined) {
     throw new Error('No data returned by API');
   } else {

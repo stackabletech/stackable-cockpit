@@ -24,6 +24,9 @@ export interface paths {
      */
     get: operations["get_demo"];
   };
+  "/login": {
+    post: operations["log_in"];
+  };
   "/releases": {
     /**
      * Retrieves all releases. 
@@ -142,6 +145,20 @@ export interface operations {
       };
       /** @description Retrieving the demo with 'name' failed */
       404: never;
+    };
+  };
+  log_in: {
+    responses: {
+      200: {
+        content: {
+          "text/plain": string;
+        };
+      };
+      401: {
+        content: {
+          "text/plain": string;
+        };
+      };
     };
   };
   /**

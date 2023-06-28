@@ -3,7 +3,7 @@ use clap_complete::{generate, Shell};
 use clap_mangen::Man;
 use snafu::{ensure, ResultExt, Snafu};
 use stackablectl::cli::Cli;
-use stackabled::api_doc::{ApiDoc, OpenApi};
+use stackabled::api_doc::openapi;
 
 use std::{
     fs,
@@ -70,7 +70,7 @@ fn main() -> Result<(), TaskError> {
             generate(Shell::Zsh, &mut cmd, name, &mut f);
         }
         XtaskCommand::GenOpenapi => {
-            let openapi_json = ApiDoc::openapi().to_json().context(SerializeOpenApiSnafu)?;
+            let openapi_json = openapi().to_json().context(SerializeOpenApiSnafu)?;
             let mut codegen = Command::new("pnpm")
                 .args(["--filter", "web-ui", "run", "openapi-codegen"])
                 .stdin(Stdio::piped())
