@@ -27,6 +27,9 @@ export interface paths {
   "/login": {
     post: operations["log_in"];
   };
+  "/ping": {
+    get: operations["ping"];
+  };
   "/releases": {
     /**
      * Retrieves all releases. 
@@ -155,6 +158,15 @@ export interface operations {
         };
       };
       401: {
+        content: {
+          "text/plain": string;
+        };
+      };
+    };
+  };
+  ping: {
+    responses: {
+      200: {
         content: {
           "text/plain": string;
         };

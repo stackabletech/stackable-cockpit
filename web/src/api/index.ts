@@ -1,6 +1,7 @@
 import createClient from 'openapi-fetch';
 import { components, paths } from './schema';
 import { createLocalStorageSignal } from '../utils/localstorage';
+import { untrack } from 'solid-js';
 
 const client = createClient<paths>({ baseUrl: '/api' });
 const [currentSessionToken, setCurrentSessionToken] =
@@ -14,6 +15,16 @@ function sessionOpts() {
   }
   return { headers };
 }
+// Try to validate that the initial session token is still valid, and log the user out otherwise
+untrack(async () => {
+  const initialSessionToken = currentSessionToken();
+  if (initialSessionToken !== undefined) {
+    const pingResponse = await client.get('/ping', sessionOpts());
+    if (pingResponse.response.status === 401) {
+      setCurrentSessionToken(undefined);
+    }
+  }
+});
 
 interface ObjectMeta {
   namespace: string;

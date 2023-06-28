@@ -26,7 +26,7 @@ async fn main() -> Result<(), Whatever> {
 
     // Run the server
     let api = Router::new()
-        .route("/", get(handlers::root::get_root))
+        .route("/ping", get(handlers::root::ping))
         .nest("/demos", handlers::demos::router())
         .nest("/stacks", handlers::stacks::router())
         .nest("/releases", handlers::releases::router())

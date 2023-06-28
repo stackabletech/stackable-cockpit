@@ -1,3 +1,6 @@
-pub async fn get_root() -> String {
-    "Hello, World!".into()
+use axum::Json;
+
+#[utoipa::path(get, path = "/ping", responses((status = 200, body = String)))]
+pub async fn ping() -> Json<String> {
+    Json("pong!".to_string())
 }

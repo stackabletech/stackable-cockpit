@@ -15,6 +15,7 @@ use crate::{handlers, middleware};
     info(description = "Stackabled API specification"),
     servers((url = "/api")),
     paths(
+        handlers::root::ping,
         handlers::demos::get_demos,
         handlers::demos::get_demo,
         handlers::releases::get_releases,
