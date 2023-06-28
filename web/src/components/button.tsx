@@ -14,7 +14,7 @@ const buttonProps = (props: VisualButtonProps) => {
     // buttonProps is only called within a reactive scope
     // eslint-disable-next-line solid/reactivity
     props.role === 'primary'
-      ? 'bg-stbluelight hover-bg-stbluedark active-stbluedark border-stbluedark'
+      ? 'bg-stackable-blue-light hover-bg-stackable-blue-dark active-stackable-blue-dark border-stackable-blue-dark'
       : 'bg-gray-700 hover-bg-gray-600 active-bg-gray-500 border-gray-600';
 
   return {
