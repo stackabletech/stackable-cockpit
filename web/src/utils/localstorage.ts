@@ -4,21 +4,21 @@ function createStorageSignal(
   storage: Storage,
   name: string,
 ): Signal<string | undefined> {
-  const signal = createSignal<string | undefined>(
+  const [value, setValue] = createSignal<string | undefined>(
     storage.getItem(name) || undefined,
   );
   // The session writer effect's lifecycle should be tied to that of the signal
   createRoot(() => {
     createEffect(() => {
-      const value = signal[0]();
-      if (value !== undefined) {
-        storage.setItem(name, value);
-      } else {
+      const currentValue = value();
+      if (currentValue === undefined) {
         storage.removeItem(name);
+      } else {
+        storage.setItem(name, currentValue);
       }
     });
   });
-  return signal;
+  return [value, setValue];
 }
 
 export function createLocalStorageSignal(

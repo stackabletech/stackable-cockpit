@@ -19,6 +19,8 @@ export const LoginPage = () => {
   const [username, setUsername] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [currentAttempt, setCurrentAttempt] = createSignal(
+    // Doesn't typecheck without the undefined
+    // eslint-disable-next-line unicorn/no-useless-undefined
     Promise.resolve<string | undefined>(undefined),
   );
   // Create attempts imperatively, use createResource to render the results
@@ -26,9 +28,9 @@ export const LoginPage = () => {
     () => currentAttempt(),
     (attempt) => attempt,
   );
-  const clickLogin = (e: MouseEvent) => {
-    e.preventDefault();
-    setCurrentAttempt(() => logIn(username(), password()));
+  const clickLogin = (event: MouseEvent) => {
+    event.preventDefault();
+    void setCurrentAttempt(() => logIn(username(), password()));
   };
   return (
     <>
@@ -44,14 +46,14 @@ export const LoginPage = () => {
           username
           <input
             value={username()}
-            onInput={(e) => setUsername(e.target.value)}
+            onInput={(event) => setUsername(event.target.value)}
           />
         </label>
         <label>
           password
           <input
             value={password()}
-            onInput={(e) => setPassword(e.target.value)}
+            onInput={(event) => setPassword(event.target.value)}
           />
         </label>
         <input type='submit' value='log in' onClick={clickLogin} />

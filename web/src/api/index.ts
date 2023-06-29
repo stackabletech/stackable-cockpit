@@ -1,14 +1,13 @@
 import createClient from 'openapi-fetch';
 import { components, paths } from './schema';
 import { createLocalStorageSignal } from '../utils/localstorage';
-import { untrack } from 'solid-js';
 
 const client = createClient<paths>({ baseUrl: '/api' });
 const [currentSessionToken, setCurrentSessionToken] =
   createLocalStorageSignal('sessionToken');
 export const isLoggedIn = () => currentSessionToken() !== undefined;
-function sessionOpts() {
-  let sessionToken = currentSessionToken();
+function sessionOptions() {
+  const sessionToken = currentSessionToken();
   const headers: HeadersInit = {};
   if (sessionToken) {
     headers.Authorization = `Bearer ${sessionToken}`;
@@ -16,15 +15,23 @@ function sessionOpts() {
   return { headers };
 }
 // Try to validate that the initial session token is still valid, and log the user out otherwise
-untrack(async () => {
+{
   const initialSessionToken = currentSessionToken();
   if (initialSessionToken !== undefined) {
-    const pingResponse = await client.get('/ping', sessionOpts());
-    if (pingResponse.response.status === 401) {
-      setCurrentSessionToken(undefined);
-    }
+    client
+      .get('/ping', sessionOptions())
+      .then((pingResponse) => {
+        if (pingResponse.response.status === 401) {
+          setCurrentSessionToken();
+        }
+      })
+      // We don't want to block page loads on waiting for this validation
+      // eslint-disable-next-line unicorn/prefer-top-level-await
+      .catch((error) =>
+        console.error('Failed to validate session token', error),
+      );
   }
-});
+}
 
 interface ObjectMeta {
   namespace: string;
@@ -50,16 +57,18 @@ export async function logIn(
   username: string,
   password: string,
 ): Promise<string | undefined> {
-  const res = await client.post('/login', {
+  const response = await client.post('/login', {
     headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
   });
-  setCurrentSessionToken(res.data);
-  if (!res.response.ok) {
-    return res.error;
+  setCurrentSessionToken(response.data);
+  if (!response.response.ok) {
+    return response.error;
   }
 }
+// We want to leave room in the function contract to invalidate the session token in the future
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function logOut() {
-  setCurrentSessionToken(undefined);
+  setCurrentSessionToken();
 }
 
 export async function getListeners(): Promise<Listener[]> {
@@ -121,7 +130,7 @@ export async function getListeners(): Promise<Listener[]> {
 
 type Stacklet = components['schemas']['Stacklet'];
 export async function getStacklets(): Promise<Stacklet[]> {
-  const { data } = await client.get('/stacklets', sessionOpts());
+  const { data } = await client.get('/stacklets', sessionOptions());
   if (data === undefined) {
     throw new Error('No data returned by API');
   } else {
