@@ -4,8 +4,8 @@ interface FeatherSymbolProps {
   icon: FeatherIconNames;
 }
 const FeatherSymbol = (props: FeatherSymbolProps) => {
-  const icon = featherIcons[props.icon];
-  return <svg {...icon.attrs} innerHTML={icon.contents} />;
+  const icon = () => featherIcons[props.icon];
+  return <svg {...icon().attrs} innerHTML={icon().contents} />;
 };
 
 export const SearchSymbol = () => <FeatherSymbol icon='search' />;
