@@ -19,8 +19,6 @@ export const LoginPage = () => {
   const [username, setUsername] = createSignal('');
   const [password, setPassword] = createSignal('');
   const [currentAttempt, setCurrentAttempt] = createSignal(
-    // Doesn't typecheck without the undefined
-    // eslint-disable-next-line unicorn/no-useless-undefined
     Promise.resolve<string | undefined>(undefined),
   );
   // Create attempts imperatively, use createResource to render the results
