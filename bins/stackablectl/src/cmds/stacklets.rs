@@ -1,8 +1,5 @@
 use clap::{Args, Subcommand};
-use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
-    ContentArrangement, Table,
-};
+use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
 use nu_ansi_term::Color::{Green, Red};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
@@ -99,17 +96,13 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 .load_preset(UTF8_FULL);
 
             // The error table displays optional errors in a structured manner.
-            let mut error_table = Table::new();
-            error_table
-                .set_header(vec!["#", "MESSAGES"])
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(NOTHING);
+            let mut error_index = 1;
+            let mut error_list = Vec::new();
 
-            let mut product_index = 0;
             for (product_name, products) in stacklets {
                 for product in products {
                     let (conditions, errors) =
-                        process_conditions(product.conditions, &mut product_index, use_color);
+                        render_conditions(product.conditions, &mut error_index, use_color);
 
                     table.add_row(vec![
                         product_name.clone(),
@@ -118,19 +111,18 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                         conditions,
                     ]);
 
-                    for error in errors {
-                        error_table.add_row(vec![product_index.to_string(), error]);
+                    match render_errors(errors) {
+                        Some(err) => error_list.push(err),
+                        None => (),
                     }
                 }
             }
 
             // Only output the error table if there are errors to report.
-            // Currently this is a little awkward, but an upstream PR will make
-            // this more straight forward.
             Ok(format!(
                 "{table}{errors}",
-                errors = if error_table.row_iter().cloned().count() > 0 {
-                    format!("\n\n{}", error_table)
+                errors = if error_list.len() > 0 {
+                    format!("\n\n{}", error_list.join("\n"))
                 } else {
                     "".into()
                 }
@@ -141,59 +133,53 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
     }
 }
 
-/// Processes conditions for a single stacklet / product. It returns a
+/// Renders conditions for a single stacklet / product. It returns a
 /// concatenated string of conditions (which are colored green and red) to
 /// display next to each listed stacklet in the table. Additionally, it also
 /// returns a list of errors to be displayed underneath the stacklet table.
 fn render_conditions(
     product_conditions: Vec<DisplayCondition>,
-    product_index: &mut usize,
+    error_index: &mut usize,
     use_color: bool,
 ) -> (String, Vec<String>) {
     let mut conditions = Vec::new();
     let mut errors = Vec::new();
 
-    let mut condition_index = 0;
     for cond in product_conditions {
-        match process_condition_error(cond.message, cond.is_good, &mut condition_index, use_color) {
-            Some(error) => {
-                errors.push(error);
-                *product_index += 1;
-            }
-            None => (),
-        }
-
         conditions.push(color_condition(
             &cond.condition,
             cond.is_good,
-            *product_index,
-            condition_index,
+            *error_index,
             use_color,
-        ))
+        ));
+
+        match render_condition_error(cond.message, cond.is_good, *error_index, use_color) {
+            Some(error) => {
+                errors.push(error);
+                *error_index += 1;
+            }
+            None => (),
+        };
     }
 
     (conditions.join(", "), errors)
 }
 
-/// Processes one condition and determines if it is an error (not good). If this
+/// Renders one condition and determines if it is an error (not good). If this
 /// is the case, it get colored red and is returned.
 fn render_condition_error(
     message: Option<String>,
     is_good: Option<bool>,
-    condition_index: &mut usize,
+    error_index: usize,
     use_color: bool,
 ) -> Option<String> {
     let message = message.unwrap_or("-".into());
 
     match (is_good, use_color) {
-        (Some(false), true) => {
-            *condition_index += 1;
-
-            Some(
-                Red.paint(format!("[{}]: {}", condition_index, message))
-                    .to_string(),
-            )
-        }
+        (Some(false), true) => Some(
+            Red.paint(format!("[{}]: {}", error_index, message))
+                .to_string(),
+        ),
         _ => None,
     }
 }
@@ -203,18 +189,25 @@ fn render_condition_error(
 fn color_condition(
     condition: &str,
     is_good: Option<bool>,
-    product_index: usize,
-    condition_index: usize,
+    error_index: usize,
     use_color: bool,
 ) -> String {
     match (is_good, use_color) {
         (Some(true), true) => Green.paint(condition).to_string(),
         (Some(false), true) => Red
-            .paint(format!(
-                "{}: See [{}.{}]",
-                condition, product_index, condition_index
-            ))
+            .paint(format!("{}: See [{}]", condition, error_index))
             .to_string(),
         _ => condition.to_owned(),
+    }
+}
+
+/// Renders multiple errors (of one stacklet)
+fn render_errors(errors: Vec<String>) -> Option<String> {
+    if errors.len() == 0 {
+        None
+    } else if errors.len() == 1 {
+        Some(errors[0].clone())
+    } else {
+        Some(format!("{}\n---\n", errors.join("\n")))
     }
 }
