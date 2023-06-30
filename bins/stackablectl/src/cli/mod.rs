@@ -217,7 +217,7 @@ pub enum Commands {
 
     /// Interact with deployed stacklets, which are bundles of resources and
     /// containers required to run the product.
-    #[command(alias("sts"))]
+    #[command(aliases(["stl", "sl"]))]
     #[command(
         long_about = "Interact with deployed stacklets, which are bundles of resources and containers
 required to run the product.
