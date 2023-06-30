@@ -1,6 +1,6 @@
-# Helm Chart for Stackable Operator for Stackable Cockpit
+# Helm Chart for Stackable Cockpit
 
-This Helm Chart can be used to install Custom Resource Definitions and the Operator for Stackable Cockpit provided by Stackable.
+This Helm Chart can be used to install the Stackable Cockpit.
 
 ## Requirements
 
@@ -15,12 +15,6 @@ make compile-chart
 
 helm install stackable-cockpit deploy/helm/stackable-cockpit
 ```
-
-## Usage of the CRDs
-
-The usage of this operator and its CRDs is described in the [documentation](https://docs.stackable.tech/stackable-cockpit/index.html)
-
-The operator has example requests included in the [`/examples`](https://github.com/stackabletech/stackable-cockpit/tree/main/examples) directory.
 
 ## Links
 
