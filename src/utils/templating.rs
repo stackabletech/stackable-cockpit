@@ -8,12 +8,7 @@ use crate::constants::PASSWORD_LEN;
 
 pub fn render(content: &str, parameters: &HashMap<String, String>) -> Result<String, tera::Error> {
     // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
+    let context = Context::from_serialize(parameters)?;
 
     // Create render engine
     let mut tera = Tera::default();

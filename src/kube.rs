@@ -250,16 +250,13 @@ pub trait ListParamsExt {
     ) -> ListParams {
         let mut params = ListParams::default();
 
-        match product_label {
-            ProductLabel::Both => {
-                params.add_label(format!("app.kubernetes.io/name={product_name}"));
-                params.add_label(format!("app.kubernetes.io/app={product_name}"));
-            }
-            ProductLabel::Name => {
-                params.add_label(format!("app.kubernetes.io/name={product_name}"))
-            }
-            ProductLabel::App => params.add_label(format!("app.kubernetes.io/app={product_name}")),
-        };
+        if matches!(product_label, ProductLabel::Name | ProductLabel::Both) {
+            params.add_label(format!("app.kubernetes.io/name={product_name}"));
+        }
+
+        if matches!(product_label, ProductLabel::App | ProductLabel::Both) {
+            params.add_label(format!("app.kubernetes.io/app={product_name}"));
+        }
 
         if let Some(instance_name) = instance_name {
             // NOTE (Techassi): This bothers me a little, but .labels consumes self
