@@ -128,9 +128,8 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             // Currently this is a little awkward, but an upstream PR will make
             // this more straight forward.
             Ok(format!(
-                "{}{}",
-                table,
-                if error_table.row_iter().cloned().count() > 0 {
+                "{table}{errors}",
+                errors = if error_table.row_iter().cloned().count() > 0 {
                     format!("\n\n{}", error_table)
                 } else {
                     "".into()
@@ -146,7 +145,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 /// concatenated string of conditions (which are colored green and red) to
 /// display next to each listed stacklet in the table. Additionally, it also
 /// returns a list of errors to be displayed underneath the stacklet table.
-fn process_conditions(
+fn render_conditions(
     product_conditions: Vec<DisplayCondition>,
     product_index: &mut usize,
     use_color: bool,
@@ -178,7 +177,7 @@ fn process_conditions(
 
 /// Processes one condition and determines if it is an error (not good). If this
 /// is the case, it get colored red and is returned.
-fn process_condition_error(
+fn render_condition_error(
     message: Option<String>,
     is_good: Option<bool>,
     condition_index: &mut usize,
@@ -202,7 +201,7 @@ fn process_condition_error(
 /// Colors a single condition (green or red) and additionally adds an error
 /// index to the output.
 fn color_condition(
-    condition: &String,
+    condition: &str,
     is_good: Option<bool>,
     product_index: usize,
     condition_index: usize,
