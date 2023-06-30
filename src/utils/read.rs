@@ -8,13 +8,15 @@ use std::{
 
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
-use tera::{Context, Tera};
 use tracing::{debug, instrument};
 use url::Url;
 
 use crate::{
     constants::DEFAULT_CACHE_MAX_AGE,
-    utils::path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
+    utils::{
+        path::{IntoPathOrUrl, PathOrUrl, PathOrUrlParseError},
+        templating,
+    },
 };
 
 #[derive(Debug, Snafu)]
@@ -206,17 +208,7 @@ pub fn read_yaml_data_from_file_with_templating(
     debug!("Read templated YAML data from file");
 
     let content = fs::read_to_string(path).context(TemplatedReadSnafu {})?;
-
-    // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
-
-    // Render template using a one-off function
-    Tera::one_off(&content, &context, true).context(TemplatingSnafu)
+    templating::render(&content, parameters).context(TemplatingSnafu)
 }
 
 /// Reads YAML data from a remote file at `url` and deserializes it into type
@@ -238,14 +230,5 @@ pub async fn read_yaml_data_from_remote_with_templating(
         .await
         .context(TemplatedRequestSnafu {})?;
 
-    // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
-
-    // Render template using a one-off function
-    Tera::one_off(&content, &context, true).context(TemplatingSnafu)
+    templating::render(&content, parameters).context(TemplatingSnafu)
 }

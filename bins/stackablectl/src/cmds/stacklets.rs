@@ -1,5 +1,8 @@
 use clap::{Args, Subcommand};
-use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
+use comfy_table::{
+    presets::{NOTHING, UTF8_FULL},
+    ContentArrangement, Table,
+};
 use nu_ansi_term::Color::{Green, Red};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
@@ -87,19 +90,26 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             // flag and the terminal support.
             let use_color = use_colored_output(args.use_color);
 
-            let mut all_messages = Vec::new();
+            // The main table displays all installed (and discovered) stacklets
+            // and their condition.
             let mut table = Table::new();
-
             table
                 .set_header(vec!["PRODUCT", "NAME", "NAMESPACE", "CONDITIONS"])
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL);
 
-            let mut index = 0;
+            // The error table displays optional errors in a structured manner.
+            let mut error_table = Table::new();
+            error_table
+                .set_header(vec!["#", "MESSAGES"])
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .load_preset(NOTHING);
+
+            let mut product_index = 0;
             for (product_name, products) in stacklets {
                 for product in products {
-                    let (conditions, messages) =
-                        format_product_conditions(product.conditions, use_color, index);
+                    let (conditions, errors) =
+                        process_conditions(product.conditions, &mut product_index, use_color);
 
                     table.add_row(vec![
                         product_name.clone(),
@@ -108,18 +118,22 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                         conditions,
                     ]);
 
-                    all_messages.extend(messages);
-                    index += 1;
+                    for error in errors {
+                        error_table.add_row(vec![product_index.to_string(), error]);
+                    }
                 }
             }
 
+            // Only output the error table if there are errors to report.
+            // Currently this is a little awkward, but an upstream PR will make
+            // this more straight forward.
             Ok(format!(
                 "{}{}",
                 table,
-                if all_messages.is_empty() {
-                    "".into()
+                if error_table.row_iter().cloned().count() > 0 {
+                    format!("\n\n{}", error_table)
                 } else {
-                    format!("\n\n{}", all_messages.join("\n"))
+                    "".into()
                 }
             ))
         }
@@ -128,37 +142,80 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
     }
 }
 
-/// This formats the product conditions for display in a table.
-fn format_product_conditions(
-    conditions: Vec<DisplayCondition>,
+/// Processes conditions for a single stacklet / product. It returns a
+/// concatenated string of conditions (which are colored green and red) to
+/// display next to each listed stacklet in the table. Additionally, it also
+/// returns a list of errors to be displayed underneath the stacklet table.
+fn process_conditions(
+    product_conditions: Vec<DisplayCondition>,
+    product_index: &mut usize,
     use_color: bool,
-    index: usize,
 ) -> (String, Vec<String>) {
-    let mut messages = Vec::new();
+    let mut conditions = Vec::new();
+    let mut errors = Vec::new();
 
-    let formatted = conditions
-        .iter()
-        .map(|cond| match (cond.is_good, use_color) {
-            (Some(is_good), true) => {
-                if is_good {
-                    Green.paint(&cond.condition).to_string()
-                } else {
-                    messages.push(
-                        Red.paint(format!(
-                            "[{}]: {}",
-                            index,
-                            cond.message.clone().unwrap_or("No message".into())
-                        ))
-                        .to_string(),
-                    );
-                    Red.paint(format!("{}: See [{}]", &cond.condition, index))
-                        .to_string()
-                }
+    let mut condition_index = 0;
+    for cond in product_conditions {
+        match process_condition_error(cond.message, cond.is_good, &mut condition_index, use_color) {
+            Some(error) => {
+                errors.push(error);
+                *product_index += 1;
             }
-            (None, _) | (Some(_), _) => cond.condition.to_owned(),
-        })
-        .collect::<Vec<String>>()
-        .join(", ");
+            None => (),
+        }
 
-    (formatted, messages)
+        conditions.push(color_condition(
+            &cond.condition,
+            cond.is_good,
+            *product_index,
+            condition_index,
+            use_color,
+        ))
+    }
+
+    (conditions.join(", "), errors)
+}
+
+/// Processes one condition and determines if it is an error (not good). If this
+/// is the case, it get colored red and is returned.
+fn process_condition_error(
+    message: Option<String>,
+    is_good: Option<bool>,
+    condition_index: &mut usize,
+    use_color: bool,
+) -> Option<String> {
+    let message = message.unwrap_or("-".into());
+
+    match (is_good, use_color) {
+        (Some(false), true) => {
+            *condition_index += 1;
+
+            Some(
+                Red.paint(format!("[{}]: {}", condition_index, message))
+                    .to_string(),
+            )
+        }
+        _ => None,
+    }
+}
+
+/// Colors a single condition (green or red) and additionally adds an error
+/// index to the output.
+fn color_condition(
+    condition: &String,
+    is_good: Option<bool>,
+    product_index: usize,
+    condition_index: usize,
+    use_color: bool,
+) -> String {
+    match (is_good, use_color) {
+        (Some(true), true) => Green.paint(condition).to_string(),
+        (Some(false), true) => Red
+            .paint(format!(
+                "{}: See [{}.{}]",
+                condition, product_index, condition_index
+            ))
+            .to_string(),
+        _ => condition.to_owned(),
+    }
 }

@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 pub const REDACTED_PASSWORD: &str = "<redacted>";
+pub const PASSWORD_LEN: usize = 32;
 
 pub const DEFAULT_STACKABLE_NAMESPACE: &str = "stackable";
 pub const DEFAULT_NAMESPACE: &str = "default";
