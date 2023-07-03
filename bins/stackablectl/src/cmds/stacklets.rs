@@ -101,14 +101,14 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 
             for (product_name, products) in stacklets {
                 for product in products {
-                    let (conditions, errors) =
+                    let ConditionOutput { summary, errors } =
                         render_conditions(product.conditions, &mut error_index, use_color);
 
                     table.add_row(vec![
                         product_name.clone(),
                         product.name,
                         product.namespace.unwrap_or_default(),
-                        conditions,
+                        summary,
                     ]);
 
                     match render_errors(errors) {
@@ -133,6 +133,11 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
     }
 }
 
+pub struct ConditionOutput {
+    summary: String,
+    errors: Vec<String>,
+}
+
 /// Renders conditions for a single stacklet / product. It returns a
 /// concatenated string of conditions (which are colored green and red) to
 /// display next to each listed stacklet in the table. Additionally, it also
@@ -141,7 +146,7 @@ fn render_conditions(
     product_conditions: Vec<DisplayCondition>,
     error_index: &mut usize,
     use_color: bool,
-) -> (String, Vec<String>) {
+) -> ConditionOutput {
     let mut conditions = Vec::new();
     let mut errors = Vec::new();
 
@@ -162,7 +167,10 @@ fn render_conditions(
         };
     }
 
-    (conditions.join(", "), errors)
+    ConditionOutput {
+        summary: conditions.join(", "),
+        errors,
+    }
 }
 
 /// Renders one condition and determines if it is an error (not good). If this
