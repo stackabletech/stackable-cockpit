@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import '@unocss/reset/sanitize/sanitize.css';
 import 'virtual:uno.css';
+import './main.css';
 import { render } from 'solid-js/web';
 import { Route, Router, Routes } from '@solidjs/router';
 import { Listeners } from './pages/listeners';

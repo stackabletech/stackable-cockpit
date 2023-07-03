@@ -81,6 +81,7 @@ export async function getListeners(): Promise<Listener[]> {
 }
 
 export type Stacklet = components['schemas']['Stacklet'];
+export type DisplayCondition = components['schemas']['DisplayCondition'];
 export async function getStacklets(): Promise<Stacklet[]> {
   const { data } = await client.get('/stacklets', {});
   if (data === undefined) {

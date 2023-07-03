@@ -1,5 +1,5 @@
-import { createResource } from 'solid-js';
-import { getStacklets } from '../../api';
+import { For, createResource } from 'solid-js';
+import { DisplayCondition, getStacklets } from '../../api';
 import { DataTable } from '../../components/datatable';
 import { ButtonLink } from '../../components/button';
 import { AddSymbol } from '../../components/symbols';
@@ -26,6 +26,10 @@ export const Stacklets = () => {
             get: (x) => x.name,
             sortBy: (x) => x.name,
           },
+          {
+            label: 'Status',
+            get: (x) => <StackletConditions conditions={x.conditions} />,
+          },
           /* {
             label: 'Actions',
             get: (x) => (
@@ -46,3 +50,27 @@ export const Stacklets = () => {
     </>
   );
 };
+
+const StackletConditions = (props: { conditions: DisplayCondition[] }) => (
+  <ul class='p-0 m-0'>
+    <For each={props.conditions}>
+      {(cond) => (
+        <li class='inline-list-item'>
+          <StackletCondition condition={cond} />
+        </li>
+      )}
+    </For>
+  </ul>
+);
+
+const StackletCondition = (props: { condition: DisplayCondition }) => (
+  <span
+    classList={{
+      'c-green': props.condition.is_good === true,
+      'c-red': props.condition.is_good === false,
+    }}
+    title={props.condition.message || undefined}
+  >
+    {props.condition.condition}
+  </span>
+);
