@@ -104,7 +104,7 @@ impl StackSpecV2 {
         // Install the release
         release
             .install(&self.operators, &[], namespace)
-            .context(ReleaseInstallSnafu {})?;
+            .context(ReleaseInstallSnafu)?;
 
         Ok(())
     }
@@ -120,7 +120,7 @@ impl StackSpecV2 {
         let parameters = parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterSnafu {})?;
+            .context(ParameterSnafu)?;
 
         Self::install_manifests(&self.manifests, &parameters, namespace).await?;
         Ok(())
@@ -139,7 +139,7 @@ impl StackSpecV2 {
         let parameters = demo_parameters
             .to_owned()
             .into_params(valid_demo_parameters)
-            .context(ParameterSnafu {})?;
+            .context(ParameterSnafu)?;
 
         Self::install_manifests(manifests, &parameters, namespace).await?;
         Ok(())
@@ -160,9 +160,9 @@ impl StackSpecV2 {
                     // Read Helm chart YAML and apply templating
                     let helm_chart = read_yaml_data_with_templating(helm_file, parameters)
                         .await
-                        .context(TemplatedReadSnafu {})?;
+                        .context(TemplatedReadSnafu)?;
                     let helm_chart: HelmChart =
-                        serde_yaml::from_str(&helm_chart).context(YamlSnafu {})?;
+                        serde_yaml::from_str(&helm_chart).context(YamlSnafu)?;
 
                     info!(
                         "Installing Helm chart {} ({})",
@@ -170,11 +170,11 @@ impl StackSpecV2 {
                     );
 
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url)
-                        .context(HelmSnafu {})?;
+                        .context(HelmSnafu)?;
 
                     // Serialize chart options to string
                     let values_yaml =
-                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu {})?;
+                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
@@ -189,7 +189,7 @@ impl StackSpecV2 {
                         namespace,
                         false,
                     )
-                    .context(HelmSnafu {})?;
+                    .context(HelmSnafu)?;
                 }
                 ManifestSpec::PlainYaml(path_or_url) => {
                     info!("Installing YAML manifest from {}", path_or_url);
@@ -197,13 +197,13 @@ impl StackSpecV2 {
                     // Read YAML manifest and apply templating
                     let manifests = read_yaml_data_with_templating(path_or_url, parameters)
                         .await
-                        .context(TemplatedReadSnafu {})?;
+                        .context(TemplatedReadSnafu)?;
 
-                    let kube_client = kube::KubeClient::new().await.context(KubeSnafu {})?;
+                    let kube_client = kube::KubeClient::new().await.context(KubeSnafu)?;
                     kube_client
                         .deploy_manifests(&manifests, namespace)
                         .await
-                        .context(KubeSnafu {})?
+                        .context(KubeSnafu)?
                 }
             }
         }

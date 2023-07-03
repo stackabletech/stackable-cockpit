@@ -82,10 +82,10 @@ pub struct ReleaseUninstallArgs {
 #[derive(Debug, Snafu)]
 pub enum ReleaseCmdError {
     #[snafu(display("unable to format yaml output"))]
-    YamlError { source: serde_yaml::Error },
+    YamlOutputFormatError { source: serde_yaml::Error },
 
     #[snafu(display("unable to format json output"))]
-    JsonError { source: serde_json::Error },
+    JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
@@ -110,11 +110,11 @@ impl ReleaseArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, ReleaseCmdError> {
         let files = common_args
             .get_release_files()
-            .context(PathOrUrlParseSnafu {})?;
+            .context(PathOrUrlParseSnafu)?;
 
         let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
             .await
-            .context(ListSnafu {})?;
+            .context(ListSnafu)?;
 
         if release_list.inner().is_empty() {
             return Ok("No releases".into());
@@ -162,8 +162,8 @@ async fn list_cmd(
 
             Ok(table.to_string())
         }
-        OutputType::Json => serde_json::to_string(&release_list).context(JsonSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlSnafu {}),
+        OutputType::Json => serde_json::to_string(&release_list).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlOutputFormatSnafu),
     }
 }
 
@@ -205,8 +205,8 @@ async fn describe_cmd(
 
                 Ok(table.to_string())
             }
-            OutputType::Json => serde_json::to_string(&release).context(JsonSnafu {}),
-            OutputType::Yaml => serde_yaml::to_string(&release).context(YamlSnafu {}),
+            OutputType::Json => serde_json::to_string(&release).context(JsonOutputFormatSnafu),
+            OutputType::Yaml => serde_yaml::to_string(&release).context(YamlOutputFormatSnafu),
         },
         None => Ok("No such release".into()),
     }
@@ -224,7 +224,7 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     match release_list.get(&args.release) {
         Some(release) => {
@@ -234,7 +234,7 @@ async fn install_cmd(
                     &args.excluded_products,
                     &common_args.operator_namespace,
                 )
-                .context(ReleaseInstallSnafu {})?;
+                .context(ReleaseInstallSnafu)?;
 
             Ok("Installed release".into())
         }
@@ -253,7 +253,7 @@ async fn uninstall_cmd(
         Some(release) => {
             release
                 .uninstall(&common_args.operator_namespace)
-                .context(ReleaseUninstallSnafu {})?;
+                .context(ReleaseUninstallSnafu)?;
 
             Ok("Installed release".into())
         }

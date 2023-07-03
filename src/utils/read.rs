@@ -74,8 +74,8 @@ pub fn read_yaml_data_from_file<T>(path: PathBuf) -> Result<T, LocalReadError>
 where
     T: for<'a> Deserialize<'a> + Sized,
 {
-    let content = fs::read_to_string(path).context(LocalIoSnafu {})?;
-    let data = serde_yaml::from_str(&content).context(LocalYamlSnafu {})?;
+    let content = fs::read_to_string(path).context(LocalIoSnafu)?;
+    let data = serde_yaml::from_str(&content).context(LocalYamlSnafu)?;
 
     Ok(data)
 }
@@ -89,12 +89,12 @@ where
 {
     let content = reqwest::get(url)
         .await
-        .context(RequestSnafu {})?
+        .context(RequestSnafu)?
         .text()
         .await
-        .context(RequestSnafu {})?;
+        .context(RequestSnafu)?;
 
-    let data = serde_yaml::from_str(&content).context(RemoteYamlSnafu {})?;
+    let data = serde_yaml::from_str(&content).context(RemoteYamlSnafu)?;
     Ok(data)
 }
 
@@ -154,17 +154,17 @@ where
     if path.is_file() {
         let modified = path
             .metadata()
-            .context(CacheIoSnafu {})?
+            .context(CacheIoSnafu)?
             .modified()
-            .context(CacheIoSnafu {})?;
+            .context(CacheIoSnafu)?;
 
-        let elapsed = modified.elapsed().context(SystemTimeSnafu {})?;
+        let elapsed = modified.elapsed().context(SystemTimeSnafu)?;
 
         if elapsed > settings.max_age {
             return Ok(CacheStatus::Expired);
         }
 
-        let data = read_yaml_data_from_file(path).context(LocalReadSnafu {})?;
+        let data = read_yaml_data_from_file(path).context(LocalReadSnafu)?;
         return Ok(CacheStatus::Hit(data));
     }
 
@@ -188,7 +188,7 @@ where
 
     match path_or_url
         .into_path_or_url()
-        .context(PathOrUrlParseSnafu {})?
+        .context(PathOrUrlParseSnafu)?
     {
         PathOrUrl::Path(path) => read_yaml_data_from_file_with_templating(path, parameters),
         PathOrUrl::Url(url) => read_yaml_data_from_remote_with_templating(url, parameters).await,
@@ -207,7 +207,7 @@ pub fn read_yaml_data_from_file_with_templating(
 ) -> Result<String, TemplatedReadError> {
     debug!("Read templated YAML data from file");
 
-    let content = fs::read_to_string(path).context(TemplatedReadSnafu {})?;
+    let content = fs::read_to_string(path).context(TemplatedReadSnafu)?;
     templating::render(&content, parameters).context(TemplatingSnafu)
 }
 
@@ -225,10 +225,10 @@ pub async fn read_yaml_data_from_remote_with_templating(
 
     let content = reqwest::get(url)
         .await
-        .context(TemplatedRequestSnafu {})?
+        .context(TemplatedRequestSnafu)?
         .text()
         .await
-        .context(TemplatedRequestSnafu {})?;
+        .context(TemplatedRequestSnafu)?;
 
     templating::render(&content, parameters).context(TemplatingSnafu)
 }

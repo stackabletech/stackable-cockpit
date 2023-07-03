@@ -73,9 +73,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .all_namespaces
         .then_some(common_args.operator_namespace.as_str());
 
-    let stacklets = list_stacklets(namespace)
-        .await
-        .context(StackletListSnafu {})?;
+    let stacklets = list_stacklets(namespace).await.context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
         return Ok("No stacklets".into());
@@ -95,9 +93,8 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL);
 
-            // The error table displays optional errors in a structured manner.
-            let mut error_index = 1;
             let mut error_list = Vec::new();
+            let mut error_index = 1;
 
             for (product_name, products) in stacklets {
                 for product in products {
@@ -128,8 +125,8 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 }
             ))
         }
-        OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu {}),
+        OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),
     }
 }
 

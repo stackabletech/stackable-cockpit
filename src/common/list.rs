@@ -74,12 +74,12 @@ where
         for file in files {
             let specs = match file {
                 PathOrUrl::Path(path) => {
-                    read_yaml_data_from_file::<L>(path.clone()).context(LocalReadSnafu {})?
+                    read_yaml_data_from_file::<L>(path.clone()).context(LocalReadSnafu)?
                 }
                 PathOrUrl::Url(url) => match &cache_settings.backend {
                     CacheBackend::Disabled => read_yaml_data_from_remote::<L>(url.clone())
                         .await
-                        .context(RemoteReadSnafu {})?,
+                        .context(RemoteReadSnafu)?,
                     CacheBackend::Disk {
                         base_path: cache_base_path,
                     } => {
@@ -92,16 +92,16 @@ where
                         let file_path = cache_base_path.join(file_name);
 
                         match read_cached_yaml_data::<L>(file_path.clone(), cache_settings)
-                            .context(CachedReadSnafu {})?
+                            .context(CachedReadSnafu)?
                         {
                             CacheStatus::Hit(specs) => specs,
                             CacheStatus::Expired | CacheStatus::Miss => {
                                 let data = read_yaml_data_from_remote::<L>(url.clone())
                                     .await
-                                    .context(RemoteReadSnafu {})?;
+                                    .context(RemoteReadSnafu)?;
 
-                                let yaml = serde_yaml::to_string(&data).context(YamlSnafu {})?;
-                                fs::write(file_path, yaml).context(IoSnafu {})?;
+                                let yaml = serde_yaml::to_string(&data).context(YamlSnafu)?;
+                                fs::write(file_path, yaml).context(IoSnafu)?;
 
                                 data
                             }

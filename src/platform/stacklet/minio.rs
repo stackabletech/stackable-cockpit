@@ -20,7 +20,7 @@ pub(super) async fn list_products(
     let deployments = kube_client
         .list_deployments(namespace, &params)
         .await
-        .context(KubeSnafu {})?;
+        .context(KubeSnafu)?;
 
     for deployment in deployments {
         let conditions: Vec<DeploymentCondition> = match &deployment.status {
@@ -38,7 +38,7 @@ pub(super) async fn list_products(
     let stateful_sets = kube_client
         .list_stateful_sets(namespace, &params)
         .await
-        .context(KubeSnafu {})?;
+        .context(KubeSnafu)?;
 
     for stateful_set in stateful_sets {
         let conditions: Vec<StatefulSetCondition> = match &stateful_set.status {

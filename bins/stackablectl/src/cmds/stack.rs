@@ -106,13 +106,11 @@ pub enum StackCmdError {
 
 impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
-        let files = common_args
-            .get_stack_files()
-            .context(PathOrUrlParseSnafu {})?;
+        let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
         let stack_list = StackList::build(&files, &common_args.cache_settings()?)
             .await
-            .context(ListSnafu {})?;
+            .context(ListSnafu)?;
 
         match &self.subcommand {
             StackCommands::List(args) => list_cmd(args, stack_list),
@@ -146,12 +144,8 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 
             Ok(table.to_string())
         }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {})?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {})?)
-        }
+        OutputType::Json => Ok(serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu)?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu)?),
     }
 }
 
@@ -191,12 +185,8 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
 
                 Ok(table.to_string())
             }
-            OutputType::Json => {
-                Ok(serde_json::to_string(&stack).context(JsonOutputFormatSnafu {})?)
-            }
-            OutputType::Yaml => {
-                Ok(serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {})?)
-            }
+            OutputType::Json => Ok(serde_json::to_string(&stack).context(JsonOutputFormatSnafu)?),
+            OutputType::Yaml => Ok(serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu)?),
         },
         None => Ok("No such stack".into()),
     }
@@ -212,30 +202,30 @@ async fn install_cmd(
 
     let files = common_args
         .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
+        .context(PathOrUrlParseSnafu)?;
 
     let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
         .await
-        .context(ListSnafu {})?;
+        .context(ListSnafu)?;
 
     // Install local cluster if needed
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             // Install the stack
             stack_spec
                 .install(release_list, &common_args.operator_namespace)
-                .context(StackSnafu {})?;
+                .context(StackSnafu)?;
 
             // Install stack manifests
             stack_spec
                 .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
                 .await
-                .context(StackSnafu {})?;
+                .context(StackSnafu)?;
 
             Ok(format!("Install stack {}", args.stack_name))
         }

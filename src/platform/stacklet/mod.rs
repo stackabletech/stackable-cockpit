@@ -48,7 +48,7 @@ pub type StackletList = IndexMap<String, Vec<Product>>;
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
 pub async fn list_stacklets(namespace: Option<&str>) -> Result<StackletList, StackletError> {
-    let kube_client = KubeClient::new().await.context(KubeSnafu {})?;
+    let kube_client = KubeClient::new().await.context(KubeSnafu)?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
 
@@ -86,7 +86,7 @@ async fn list_stackable_stacklets(
         let objects = match kube_client
             .list_objects(&product_gvk, namespace)
             .await
-            .context(KubeSnafu {})?
+            .context(KubeSnafu)?
         {
             Some(obj) => obj,
             None => {
@@ -103,7 +103,7 @@ async fn list_stackable_stacklets(
             let conditions: Vec<ClusterCondition> = match object.data.pointer("/status/conditions")
             {
                 Some(conditions) => {
-                    serde_json::from_value(conditions.clone()).context(JsonSnafu {})?
+                    serde_json::from_value(conditions.clone()).context(JsonSnafu)?
                 }
                 None => vec![],
             };

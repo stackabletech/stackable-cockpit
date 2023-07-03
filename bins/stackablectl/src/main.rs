@@ -79,13 +79,13 @@ async fn main() -> Result<(), CliError> {
     };
 
     let output = match &cli.subcommand {
-        Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu {})?,
-        Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu {})?,
-        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu {})?,
-        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsCmdSnafu {})?,
-        Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu {})?,
-        Commands::Completions(args) => args.run().context(CompletionsCmdSnafu {})?,
-        Commands::Cache(args) => args.run().context(CacheCmdSnafu {})?,
+        Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu)?,
+        Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu)?,
+        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu)?,
+        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsCmdSnafu)?,
+        Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu)?,
+        Commands::Completions(args) => args.run().context(CompletionsCmdSnafu)?,
+        Commands::Cache(args) => args.run().context(CacheCmdSnafu)?,
     };
 
     println!("{output}");

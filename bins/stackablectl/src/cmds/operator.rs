@@ -180,10 +180,10 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
             Ok(table.to_string())
         }
         OutputType::Json => {
-            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu {})?)
+            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
         }
         OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu {})?)
+            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu)?)
         }
     }
 }
@@ -227,8 +227,8 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmd
 
             Ok(table.to_string())
         }
-        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu {}),
+        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
     }
 }
 
@@ -252,7 +252,7 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);
@@ -286,7 +286,7 @@ fn uninstall_cmd(
     for operator in &args.operators {
         operator
             .uninstall(&common_args.operator_namespace)
-            .context(HelmSnafu {})?;
+            .context(HelmSnafu)?;
     }
 
     Ok(format!(
@@ -310,7 +310,7 @@ fn installed_cmd(
     type ReleaseList = IndexMap<String, HelmRelease>;
 
     let installed: ReleaseList = helm::list_releases(&common_args.operator_namespace)
-        .context(HelmSnafu {})?
+        .context(HelmSnafu)?
         .into_iter()
         .filter(|release| {
             VALID_OPERATORS
@@ -351,12 +351,8 @@ fn installed_cmd(
 
             Ok(table.to_string())
         }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu {})?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu {})?)
-        }
+        OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),
     }
 }
 
@@ -373,13 +369,13 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
         HELM_REPO_NAME_DEV,
     ] {
         let helm_repo_url =
-            helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
+            helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu)?;
 
         helm_index_files.insert(
             helm_repo_name,
             helm::get_helm_index(helm_repo_url)
                 .await
-                .context(HelmSnafu {})?,
+                .context(HelmSnafu)?,
         );
     }
 

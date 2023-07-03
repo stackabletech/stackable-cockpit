@@ -17,7 +17,7 @@ pub(super) async fn list_products(
     let services = kube_client
         .list_services(namespace, &params)
         .await
-        .context(KubeSnafu {})?;
+        .context(KubeSnafu)?;
 
     for service in services {
         let conditions: Vec<Condition> = match &service.status {

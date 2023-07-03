@@ -58,11 +58,11 @@ impl KubeClient {
     /// Tries to create a new default Kubernetes client and immediately runs
     /// a discovery.
     pub async fn new() -> Result<Self, KubeClientError> {
-        let client = Client::try_default().await.context(KubeSnafu {})?;
+        let client = Client::try_default().await.context(KubeSnafu)?;
         let discovery = Discovery::new(client.clone())
             .run()
             .await
-            .context(KubeSnafu {})?;
+            .context(KubeSnafu)?;
 
         Ok(Self { client, discovery })
     }
@@ -76,7 +76,7 @@ impl KubeClient {
         namespace: &str,
     ) -> Result<(), KubeClientError> {
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
-            let mut object = DynamicObject::deserialize(manifest).context(YamlSnafu {})?;
+            let mut object = DynamicObject::deserialize(manifest).context(YamlSnafu)?;
             let object_type = object.types.as_ref().ok_or(
                 ObjectTypeSnafu {
                     object: object.clone(),
@@ -106,7 +106,7 @@ impl KubeClient {
                 &Patch::Apply(object),
             )
             .await
-            .context(KubeSnafu {})?;
+            .context(KubeSnafu)?;
         }
 
         Ok(())
@@ -138,7 +138,7 @@ impl KubeClient {
         let objects = object_api
             .list(&ListParams::default())
             .await
-            .context(KubeSnafu {})?;
+            .context(KubeSnafu)?;
 
         Ok(Some(objects))
     }
@@ -157,7 +157,7 @@ impl KubeClient {
             None => Api::all(self.client.clone()),
         };
 
-        let services = service_api.list(list_params).await.context(KubeSnafu {})?;
+        let services = service_api.list(list_params).await.context(KubeSnafu)?;
         Ok(services)
     }
 
@@ -174,12 +174,12 @@ impl KubeClient {
     ) -> Result<Option<(String, String)>, KubeClientError> {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
-        let secret = secret_api.get(secret_name).await.context(KubeSnafu {})?;
+        let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
         let secret_data = secret.data.ok_or(InvalidSecretDataSnafu {}.build())?;
 
         let username = match secret_data.get(username_key) {
             Some(username) => {
-                String::from_utf8(username.0.clone()).context(ByteStringConvertSnafu {})?
+                String::from_utf8(username.0.clone()).context(ByteStringConvertSnafu)?
             }
             None => return Ok(None),
         };
@@ -187,7 +187,7 @@ impl KubeClient {
         let password = match password_key {
             Some(key) => match secret_data.get(key) {
                 Some(password) => {
-                    String::from_utf8(password.0.clone()).context(ByteStringConvertSnafu {})?
+                    String::from_utf8(password.0.clone()).context(ByteStringConvertSnafu)?
                 }
                 None => return Ok(None),
             },
@@ -207,10 +207,7 @@ impl KubeClient {
             None => Api::all(self.client.clone()),
         };
 
-        let deployments = deployment_api
-            .list(list_params)
-            .await
-            .context(KubeSnafu {})?;
+        let deployments = deployment_api.list(list_params).await.context(KubeSnafu)?;
 
         Ok(deployments)
     }
@@ -228,7 +225,7 @@ impl KubeClient {
         let stateful_sets = stateful_set_api
             .list(list_params)
             .await
-            .context(KubeSnafu {})?;
+            .context(KubeSnafu)?;
 
         Ok(stateful_sets)
     }
