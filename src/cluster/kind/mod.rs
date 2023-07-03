@@ -6,7 +6,7 @@ use tracing::{debug, info, instrument};
 
 use crate::{
     cluster::{check_if_docker_is_running, kind::config::KindClusterConfig, DockerError},
-    constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
+    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     utils::check::binaries_present_with_name,
 };
 
@@ -36,7 +36,6 @@ pub enum KindClusterError {
 #[derive(Debug)]
 pub struct KindCluster {
     cp_node_count: usize,
-    namespace: String,
     node_count: usize,
     name: String,
 }
@@ -46,14 +45,8 @@ impl KindCluster {
     /// system, but instead will return a data structure representing the
     /// cluster. To actually create the cluster, the `create` method must be
     /// called.
-    pub fn new(
-        node_count: usize,
-        cp_node_count: usize,
-        name: Option<String>,
-        namespace: Option<String>,
-    ) -> Self {
+    pub fn new(node_count: usize, cp_node_count: usize, name: Option<String>) -> Self {
         Self {
-            namespace: namespace.unwrap_or(DEFAULT_STACKABLE_NAMESPACE.into()),
             name: name.unwrap_or(DEFAULT_LOCAL_CLUSTER_NAME.into()),
             cp_node_count,
             node_count,
@@ -118,11 +111,6 @@ impl KindCluster {
         }
 
         self.create().await
-    }
-
-    /// Retrieve the cluster namespace
-    pub fn get_namespace(&self) -> &String {
-        &self.namespace
     }
 
     /// Retrieve the cluster node count

@@ -70,15 +70,14 @@ always use '1'.")]
 }
 
 impl CommonClusterArgs {
-    /// Installs a local cluster with `name` in `namespace` if needed. The user
-    /// has the option to not install any local cluster. If the user chooses so
-    /// the function skips creation of the local cluster. If a cluster needs to
-    /// be created, the function first validates cluster node counts. If this
-    /// validation fails, an error is returned.
+    /// Installs a local cluster with `name` if needed. The user has the option
+    /// to not install any local cluster. If the user chooses so the function
+    /// skips creation of the local cluster. If a cluster needs to be created,
+    /// the function first validates cluster node counts. If this validation
+    /// fails, an error is returned.
     pub async fn install_if_needed(
         &self,
         name: Option<String>,
-        namespace: Option<String>,
     ) -> Result<(), CommonClusterArgsError> {
         match &self.cluster_type {
             Some(cluster_type) => {
@@ -86,12 +85,8 @@ impl CommonClusterArgs {
 
                 match cluster_type {
                     ClusterType::Kind => {
-                        let kind_cluster = KindCluster::new(
-                            self.cluster_nodes,
-                            self.cluster_cp_nodes,
-                            name,
-                            namespace,
-                        );
+                        let kind_cluster =
+                            KindCluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
 
                         kind_cluster
                             .create_if_not_exists()
@@ -99,8 +94,7 @@ impl CommonClusterArgs {
                             .context(KindClusterSnafu)
                     }
                     ClusterType::Minikube => {
-                        let minikube_cluster =
-                            MinikubeCluster::new(self.cluster_nodes, name, namespace);
+                        let minikube_cluster = MinikubeCluster::new(self.cluster_nodes, name);
 
                         minikube_cluster
                             .create_if_not_exists()

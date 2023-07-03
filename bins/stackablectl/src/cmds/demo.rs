@@ -51,11 +51,13 @@ pub struct DemoListArgs {
 #[derive(Debug, Args)]
 pub struct DemoDescribeArgs {
     /// Demo to describe
-    #[arg(name = "DEMO")]
-    #[arg(long_help = "Demo to describe
+    #[arg(
+        name = "DEMO",
+        long_help = "Demo to describe
 
 Use \"stackablectl demo list\" to display a list of available demos.
-Use \"stackablectl demo install <DEMO>\" to install a specific demo.")]
+Use \"stackablectl demo install <DEMO>\" to install a specific demo."
+    )]
     demo_name: String,
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
@@ -65,11 +67,13 @@ Use \"stackablectl demo install <DEMO>\" to install a specific demo.")]
 #[derive(Debug, Args)]
 pub struct DemoInstallArgs {
     /// Demo to install
-    #[arg(name = "DEMO")]
-    #[arg(long_help = "Demo to install
+    #[arg(
+        name = "DEMO",
+        long_help = "Demo to install
 
 Use \"stackablectl demo list\" to display a list of available demos.
-Use \"stackablectl demo describe <DEMO>\" to display details about the specified demo.")]
+Use \"stackablectl demo describe <DEMO>\" to display details about the specified demo."
+    )]
     demo_name: String,
 
     /// List of parameters to use when installing the stack
@@ -228,7 +232,7 @@ async fn install_cmd(
     })?;
 
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
         .context(CommonClusterArgsSnafu)?;
 
@@ -260,7 +264,7 @@ async fn install_cmd(
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
         .context(CommonClusterArgsSnafu)?;
 

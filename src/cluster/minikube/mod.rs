@@ -4,7 +4,7 @@ use tracing::{debug, info, instrument};
 
 use crate::{
     cluster::{check_if_docker_is_running, DockerError},
-    constants::{DEFAULT_LOCAL_CLUSTER_NAME, DEFAULT_STACKABLE_NAMESPACE},
+    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     utils::check::binaries_present,
 };
 
@@ -25,7 +25,6 @@ pub enum MinikubeClusterError {
 
 #[derive(Debug)]
 pub struct MinikubeCluster {
-    namespace: String,
     node_count: usize,
     name: String,
 }
@@ -33,9 +32,8 @@ pub struct MinikubeCluster {
 impl MinikubeCluster {
     /// Create a new kind cluster. This will NOT yet create the cluster on the system, but instead will return a data
     /// structure representing the cluster. To actually create the cluster, the `create` method must be called.
-    pub fn new(node_count: usize, name: Option<String>, namespace: Option<String>) -> Self {
+    pub fn new(node_count: usize, name: Option<String>) -> Self {
         Self {
-            namespace: namespace.unwrap_or(DEFAULT_STACKABLE_NAMESPACE.into()),
             name: name.unwrap_or(DEFAULT_LOCAL_CLUSTER_NAME.into()),
             node_count,
         }
@@ -60,7 +58,6 @@ impl MinikubeCluster {
             .arg("start")
             .args(["--driver", "docker"])
             .args(["--nodes", self.node_count.to_string().as_str()])
-            .args(["--namespace", self.namespace.as_str()])
             .args(["-p", self.name.as_str()])
             // .stdout(Stdio::null())
             // .stderr(Stdio::null())
@@ -86,11 +83,6 @@ impl MinikubeCluster {
         }
 
         self.create().await
-    }
-
-    /// Retrieve the cluster namespace
-    pub fn get_namespace(&self) -> &String {
-        &self.namespace
     }
 
     /// Retrieve the cluster node count
