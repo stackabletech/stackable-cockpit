@@ -181,15 +181,18 @@ fn render_condition_error(
     error_index: usize,
     use_color: bool,
 ) -> Option<String> {
-    let message = message.unwrap_or("-".into());
+    if !is_good.unwrap_or(true) {
+        let message = message.unwrap_or("-".into());
+        let mut error = format!("[{error_index}]: {message}");
 
-    match (is_good, use_color) {
-        (Some(false), true) => Some(
-            Red.paint(format!("[{}]: {}", error_index, message))
-                .to_string(),
-        ),
-        _ => None,
+        if use_color {
+            error = Red.paint(error).to_string()
+        }
+
+        return Some(error);
     }
+
+    None
 }
 
 /// Colors a single condition (green or red) and additionally adds an error
@@ -203,8 +206,9 @@ fn color_condition(
     match (is_good, use_color) {
         (Some(true), true) => Green.paint(condition).to_string(),
         (Some(false), true) => Red
-            .paint(format!("{}: See [{}]", condition, error_index))
+            .paint(format!("{condition}: See [{error_index}]"))
             .to_string(),
+        (Some(false), false) => format!("{condition}: See [{error_index}]"),
         _ => condition.to_owned(),
     }
 }
