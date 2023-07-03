@@ -89,7 +89,7 @@ impl FromStr for PathOrUrl {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("https://") || s.starts_with("http://") {
-            let url = Url::parse(s).context(UrlParseSnafu {})?;
+            let url = Url::parse(s).context(UrlParseSnafu)?;
             return Ok(Self::Url(url));
         }
 
