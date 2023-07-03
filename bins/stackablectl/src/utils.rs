@@ -1,3 +1,5 @@
+use std::env;
+
 use snafu::Snafu;
 use stackable::constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST};
 
@@ -26,4 +28,11 @@ where
             name: repo_name.to_string(),
         }),
     }
+}
+
+/// Returns wether the application should use colored output based on the user
+/// requested output and the `NO_COLOR` env variable. It currently does not
+/// factor in terminal support.
+pub fn use_colored_output(use_color: bool) -> bool {
+    use_color && env::var_os("NO_COLOR").is_none()
 }

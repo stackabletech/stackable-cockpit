@@ -46,7 +46,7 @@ pub trait IntoParameters: Sized + IntoRawParameters {
     where
         T: AsRef<[Parameter]>,
     {
-        let raw_parameters = self.into_raw_params().context(ParseSnafu {})?;
+        let raw_parameters = self.into_raw_params().context(ParseSnafu)?;
         let parameters = valid_parameters.as_ref();
 
         let mut parameters: HashMap<String, String> = parameters

@@ -8,8 +8,8 @@ use stackablectl::{
     cli::{self, Commands},
     cmds::{
         cache::CacheCmdError, completions::CompletionsCmdError, demo::DemoCmdError,
-        operator::OperatorCmdError, release::ReleaseCmdError, services::ServicesCmdError,
-        stack::StackCmdError,
+        operator::OperatorCmdError, release::ReleaseCmdError, stack::StackCmdError,
+        stacklets::StackletsCmdError,
     },
 };
 
@@ -24,8 +24,8 @@ enum CliError {
     #[snafu(display("stack command error"))]
     StackCmdError { source: StackCmdError },
 
-    #[snafu(display("services command error"))]
-    ServicesCmdError { source: ServicesCmdError },
+    #[snafu(display("stacklets command error"))]
+    StackletsCmdError { source: StackletsCmdError },
 
     #[snafu(display("demo command error"))]
     DemoCmdError { source: DemoCmdError },
@@ -79,13 +79,13 @@ async fn main() -> Result<(), CliError> {
     };
 
     let output = match &cli.subcommand {
-        Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu {})?,
-        Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu {})?,
-        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu {})?,
-        Commands::Services(args) => args.run().context(ServicesCmdSnafu {})?,
-        Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu {})?,
-        Commands::Completions(args) => args.run().context(CompletionsCmdSnafu {})?,
-        Commands::Cache(args) => args.run().context(CacheCmdSnafu {})?,
+        Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu)?,
+        Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu)?,
+        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu)?,
+        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsCmdSnafu)?,
+        Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu)?,
+        Commands::Completions(args) => args.run().context(CompletionsCmdSnafu)?,
+        Commands::Cache(args) => args.run().context(CacheCmdSnafu)?,
     };
 
     println!("{output}");
