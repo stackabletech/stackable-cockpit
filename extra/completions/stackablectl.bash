@@ -30,11 +30,11 @@ _stackablectl() {
             stackablectl,release)
                 cmd="stackablectl__release"
                 ;;
-            stackablectl,services)
-                cmd="stackablectl__services"
-                ;;
             stackablectl,stack)
                 cmd="stackablectl__stack"
+                ;;
+            stackablectl,stacklets)
+                cmd="stackablectl__stacklets"
                 ;;
             stackablectl__cache,clean)
                 cmd="stackablectl__cache__clean"
@@ -126,11 +126,11 @@ _stackablectl() {
             stackablectl__help,release)
                 cmd="stackablectl__help__release"
                 ;;
-            stackablectl__help,services)
-                cmd="stackablectl__help__services"
-                ;;
             stackablectl__help,stack)
                 cmd="stackablectl__help__stack"
+                ;;
+            stackablectl__help,stacklets)
+                cmd="stackablectl__help__stacklets"
                 ;;
             stackablectl__help__cache,clean)
                 cmd="stackablectl__help__cache__clean"
@@ -186,9 +186,6 @@ _stackablectl() {
             stackablectl__help__release,uninstall)
                 cmd="stackablectl__help__release__uninstall"
                 ;;
-            stackablectl__help__services,list)
-                cmd="stackablectl__help__services__list"
-                ;;
             stackablectl__help__stack,describe)
                 cmd="stackablectl__help__stack__describe"
                 ;;
@@ -197,6 +194,9 @@ _stackablectl() {
                 ;;
             stackablectl__help__stack,list)
                 cmd="stackablectl__help__stack__list"
+                ;;
+            stackablectl__help__stacklets,list)
+                cmd="stackablectl__help__stacklets__list"
                 ;;
             stackablectl__operator,describe)
                 cmd="stackablectl__operator__describe"
@@ -264,18 +264,6 @@ _stackablectl() {
             stackablectl__release__help,uninstall)
                 cmd="stackablectl__release__help__uninstall"
                 ;;
-            stackablectl__services,help)
-                cmd="stackablectl__services__help"
-                ;;
-            stackablectl__services,list)
-                cmd="stackablectl__services__list"
-                ;;
-            stackablectl__services__help,help)
-                cmd="stackablectl__services__help__help"
-                ;;
-            stackablectl__services__help,list)
-                cmd="stackablectl__services__help__list"
-                ;;
             stackablectl__stack,describe)
                 cmd="stackablectl__stack__describe"
                 ;;
@@ -300,6 +288,18 @@ _stackablectl() {
             stackablectl__stack__help,list)
                 cmd="stackablectl__stack__help__list"
                 ;;
+            stackablectl__stacklets,help)
+                cmd="stackablectl__stacklets__help"
+                ;;
+            stackablectl__stacklets,list)
+                cmd="stackablectl__stacklets__list"
+                ;;
+            stackablectl__stacklets__help,help)
+                cmd="stackablectl__stacklets__help__help"
+                ;;
+            stackablectl__stacklets__help,list)
+                cmd="stackablectl__stacklets__help__list"
+                ;;
             *)
                 ;;
         esac
@@ -307,7 +307,7 @@ _stackablectl() {
 
     case "${cmd}" in
         stackablectl)
-            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --operator-namespace --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack services demo completions cache help"
+            opts="-l -n -d -s -r -h -V --log-level --no-cache --offline --operator-namespace --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack stacklets demo completions cache help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -803,7 +803,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help)
-            opts="operator release stack services demo completions cache help"
+            opts="operator release stack stacklets demo completions cache help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1152,34 +1152,6 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        stackablectl__help__services)
-            opts="list"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        stackablectl__help__services__list)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
         stackablectl__help__stack)
             opts="list describe install"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
@@ -1223,6 +1195,34 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help__stack__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__help__stacklets)
+            opts="list"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__help__stacklets__list)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1668,84 +1668,6 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        stackablectl__services)
-            opts="-h -V --help --version list help"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        stackablectl__services__help)
-            opts="list help"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        stackablectl__services__help__help)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        stackablectl__services__help__list)
-            opts=""
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
-        stackablectl__services__list)
-            opts="-a -s -o -h -V --all-namespaces --show-credentials --show-versions --output --help --version"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
-                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-                return 0
-            fi
-            case "${prev}" in
-                --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
-                    return 0
-                    ;;
-                -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
-                    return 0
-                    ;;
-                *)
-                    COMPREPLY=()
-                    ;;
-            esac
-            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
-            return 0
-            ;;
         stackablectl__stack)
             opts="-h -V --help --version list describe install help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
@@ -1853,12 +1775,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-p -c -h -V --parameters --cluster --cluster-name --help --version"
+            opts="-s -p -c -h -V --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --stack-parameters)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -s)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --parameters)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -1879,6 +1809,14 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --cluster-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --cluster-cp-nodes)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1888,6 +1826,84 @@ _stackablectl() {
             ;;
         stackablectl__stack__list)
             opts="-o -h -V --output --help --version"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --output)
+                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                -o)
+                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__stacklets)
+            opts="-h -V --help --version list help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__stacklets__help)
+            opts="list help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__stacklets__help__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__stacklets__help__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__stacklets__list)
+            opts="-a -c -o -h -V --all-namespaces --color --output --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

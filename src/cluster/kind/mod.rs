@@ -71,11 +71,11 @@ impl KindCluster {
         }
 
         // Check if Docker is running
-        check_if_docker_is_running().await.context(DockerSnafu {})?;
+        check_if_docker_is_running().await.context(DockerSnafu)?;
 
         debug!("Creating kind cluster config");
         let config = KindClusterConfig::new(self.node_count, self.cp_node_count);
-        let config_string = serde_yaml::to_string(&config).context(YamlSnafu {})?;
+        let config_string = serde_yaml::to_string(&config).context(YamlSnafu)?;
 
         debug!("Creating kind cluster");
         let mut kind_cmd = Command::new("kind")
@@ -86,7 +86,7 @@ impl KindCluster {
             // .stdout(Stdio::null())
             // .stderr(Stdio::null())
             .spawn()
-            .context(IoSnafu {})?;
+            .context(IoSnafu)?;
 
         // Pipe in config
         let mut stdin = kind_cmd.stdin.take().ok_or(KindClusterError::StdinError)?;
@@ -144,7 +144,7 @@ impl KindCluster {
             .args(["get", "clusters"])
             .output()
             .await
-            .context(IoSnafu {})?;
+            .context(IoSnafu)?;
 
         ensure!(
             output.status.success(),

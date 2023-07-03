@@ -2,61 +2,31 @@
 import '@unocss/reset/sanitize/sanitize.css';
 import 'virtual:uno.css';
 import { render } from 'solid-js/web';
-import { A, Route, Router, Routes } from '@solidjs/router';
-import type { ParentProps } from 'solid-js';
+import { Route, Router, Routes } from '@solidjs/router';
 import { Listeners } from './pages/listeners';
-import { ProductClusters } from './pages/product-clusters/list';
-import { ProductClusterConnectionDetails } from './pages/product-clusters/connect';
+import { Header } from './components/header';
+import { StackletConnectionDetails } from './pages/stacklets/connect';
+import { Stacklets } from './pages/stacklets/list';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
 };
 
-interface NavItemProps {
-  href: string;
-}
-
-const GlobalNav = () => {
-  const NavItem = (props: ParentProps<NavItemProps>) => (
-    <li class='inline mr-1'>
-      <A
-        href={props.href}
-        class='p-1 c-white inline-block'
-        activeClass='bg-stblue'
-        inactiveClass='bg-stblue bg-opacity-50 hover:bg-opacity-80'
-      >
-        {props.children}
-      </A>
-    </li>
-  );
-
-  return (
-    <>
-      <nav class='bg-gray'>
-        <ul class='m-0 p-0'>
-          <NavItem href='/product-clusters'>product clusters</NavItem>
-          <NavItem href='/listeners'>listeners</NavItem>
-          <NavItem href='/stacks'>stacks</NavItem>
-        </ul>
-      </nav>
-    </>
-  );
-};
-
 const App = () => {
   return (
-    <div class='max-w-5xl ma'>
-      <h1>stackablectl, web edition</h1>
-      <GlobalNav />
-      <Routes>
-        <Route
-          path='/product-clusters/:namespace/:name/connect'
-          component={ProductClusterConnectionDetails}
-        />
-        <Route path='/product-clusters' component={ProductClusters} />
-        <Route path='/listeners' component={Listeners} />
-        <Route path='/' component={Home} />
-      </Routes>
+    <div class='bg-gray-900 min-h-screen c-white'>
+      <Header />
+      <div class='max-w-5xl mx-a mt-16'>
+        <Routes>
+          <Route
+            path='/stacklets/:namespace/:name/connect'
+            component={StackletConnectionDetails}
+          />
+          <Route path='/stacklets' component={Stacklets} />
+          <Route path='/listeners' component={Listeners} />
+          <Route path='/' component={Home} />
+        </Routes>
+      </div>
     </div>
   );
 };

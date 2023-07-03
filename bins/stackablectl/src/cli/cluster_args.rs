@@ -116,13 +116,13 @@ impl CommonClusterArgs {
     fn validate(&self) -> Result<(), CommonClusterArgsError> {
         // We need at least two nodes in total (one control-plane node and one
         // worker node)
-        ensure!(self.cluster_nodes >= 2, InvalidTotalNodeCountSnafu {});
+        ensure!(self.cluster_nodes >= 2, InvalidTotalNodeCountSnafu);
 
         // The cluster control-plane node count must be smaller than the total
         // node count
         ensure!(
             self.cluster_cp_nodes < self.cluster_nodes,
-            InvalidControlPlaneNodeCountSnafu {}
+            InvalidControlPlaneNodeCountSnafu
         );
 
         Ok(())

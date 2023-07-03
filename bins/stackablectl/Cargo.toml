@@ -4,6 +4,7 @@ version = "0.0.1"
 edition = "2021"
 
 [dependencies]
+comfy-table = { version = "6.2.0", features = ["custom_styling"] }
 tracing-subscriber = { workspace = true }
 clap_complete = { workspace = true }
 lazy_static = { workspace = true }
@@ -20,4 +21,4 @@ tokio = { workspace = true }
 serde = { workspace = true }
 clap = { workspace = true }
 xdg = { workspace = true }
-comfy-table = "6.1.4"
+nu-ansi-term = "0.48.0"

@@ -1,5 +1,8 @@
 use std::time::Duration;
 
+pub const REDACTED_PASSWORD: &str = "<redacted>";
+pub const PASSWORD_LEN: usize = 32;
+
 pub const DEFAULT_STACKABLE_NAMESPACE: &str = "stackable";
 pub const DEFAULT_NAMESPACE: &str = "default";
 
@@ -15,4 +18,17 @@ pub const HELM_REPO_INDEX_FILE: &str = "index.yaml";
 pub const HELM_DEFAULT_CHART_VERSION: &str = ">0.0.0-0";
 pub const HELM_ERROR_PREFIX: &str = "ERROR:";
 
-pub const PASSWORD_LEN: usize = 30;
+pub const PRODUCT_NAMES: &[&str] = &[
+    "airflow",
+    "druid",
+    "hbase",
+    "hdfs",
+    "hive",
+    "kafka",
+    "nifi",
+    "opa",
+    "spark-history-server",
+    "superset",
+    "trino",
+    "zookeeper",
+];

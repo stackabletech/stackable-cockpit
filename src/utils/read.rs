@@ -1,5 +1,6 @@
 use std::{
     collections::HashMap,
+    fmt::Debug,
     fs, io,
     path::PathBuf,
     time::{Duration, SystemTimeError},
@@ -7,6 +8,7 @@ use std::{
 
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
+use tracing::{debug, instrument};
 use url::Url;
 
 use crate::{
@@ -72,8 +74,8 @@ pub fn read_yaml_data_from_file<T>(path: PathBuf) -> Result<T, LocalReadError>
 where
     T: for<'a> Deserialize<'a> + Sized,
 {
-    let content = fs::read_to_string(path).context(LocalIoSnafu {})?;
-    let data = serde_yaml::from_str(&content).context(LocalYamlSnafu {})?;
+    let content = fs::read_to_string(path).context(LocalIoSnafu)?;
+    let data = serde_yaml::from_str(&content).context(LocalYamlSnafu)?;
 
     Ok(data)
 }
@@ -87,12 +89,12 @@ where
 {
     let content = reqwest::get(url)
         .await
-        .context(RequestSnafu {})?
+        .context(RequestSnafu)?
         .text()
         .await
-        .context(RequestSnafu {})?;
+        .context(RequestSnafu)?;
 
-    let data = serde_yaml::from_str(&content).context(RemoteYamlSnafu {})?;
+    let data = serde_yaml::from_str(&content).context(RemoteYamlSnafu)?;
     Ok(data)
 }
 
@@ -152,17 +154,17 @@ where
     if path.is_file() {
         let modified = path
             .metadata()
-            .context(CacheIoSnafu {})?
+            .context(CacheIoSnafu)?
             .modified()
-            .context(CacheIoSnafu {})?;
+            .context(CacheIoSnafu)?;
 
-        let elapsed = modified.elapsed().context(SystemTimeSnafu {})?;
+        let elapsed = modified.elapsed().context(SystemTimeSnafu)?;
 
         if elapsed > settings.max_age {
             return Ok(CacheStatus::Expired);
         }
 
-        let data = read_yaml_data_from_file(path).context(LocalReadSnafu {})?;
+        let data = read_yaml_data_from_file(path).context(LocalReadSnafu)?;
         return Ok(CacheStatus::Hit(data));
     }
 
@@ -174,17 +176,19 @@ where
 /// a [`HashMap<String, String>`]. The final templated result is returned as
 /// a [`String`]. A [`TemplatedReadError`] is returned when the file cannot be
 /// read, deserialization failed or the templating resulted in an error.
-pub async fn read_yaml_data_with_templating<T, P>(
+#[instrument]
+pub async fn read_yaml_data_with_templating<P>(
     path_or_url: P,
     parameters: &HashMap<String, String>,
-) -> Result<T, TemplatedReadError>
+) -> Result<String, TemplatedReadError>
 where
-    T: for<'a> Deserialize<'a>,
-    P: IntoPathOrUrl,
+    P: IntoPathOrUrl + Debug,
 {
+    debug!("Read templated YAML data");
+
     match path_or_url
         .into_path_or_url()
-        .context(PathOrUrlParseSnafu {})?
+        .context(PathOrUrlParseSnafu)?
     {
         PathOrUrl::Path(path) => read_yaml_data_from_file_with_templating(path, parameters),
         PathOrUrl::Url(url) => read_yaml_data_from_remote_with_templating(url, parameters).await,
@@ -196,18 +200,15 @@ where
 /// parameters are passed into this function as a [`HashMap<String, String>`].
 /// A [`TemplatedReadError`] is returned when the file cannot be read,
 /// deserialization failed or the templating resulted in an error.
-pub fn read_yaml_data_from_file_with_templating<T>(
+#[instrument]
+pub fn read_yaml_data_from_file_with_templating(
     path: PathBuf,
     parameters: &HashMap<String, String>,
-) -> Result<T, TemplatedReadError>
-where
-    T: for<'a> Deserialize<'a>,
-{
-    let content = fs::read_to_string(path).context(TemplatedReadSnafu {})?;
+) -> Result<String, TemplatedReadError> {
+    debug!("Read templated YAML data from file");
 
-    // Render template
-    let result = templating::render(&content, parameters).context(TemplatingSnafu {})?;
-    serde_yaml::from_str(&result).context(YamlSnafu {})
+    let content = fs::read_to_string(path).context(TemplatedReadSnafu)?;
+    templating::render(&content, parameters).context(TemplatingSnafu)
 }
 
 /// Reads YAML data from a remote file at `url` and deserializes it into type
@@ -215,21 +216,19 @@ where
 /// parameters are passed into this function as a [`HashMap<String, String>`].
 /// A [`TemplatedReadError`] is returned when the file cannot be read,
 /// deserialization failed or the templating resulted in an error.
-pub async fn read_yaml_data_from_remote_with_templating<T>(
+#[instrument]
+pub async fn read_yaml_data_from_remote_with_templating(
     url: Url,
     parameters: &HashMap<String, String>,
-) -> Result<T, TemplatedReadError>
-where
-    T: for<'a> Deserialize<'a>,
-{
+) -> Result<String, TemplatedReadError> {
+    debug!("Read templated YAML data from URL");
+
     let content = reqwest::get(url)
         .await
-        .context(TemplatedRequestSnafu {})?
+        .context(TemplatedRequestSnafu)?
         .text()
         .await
-        .context(TemplatedRequestSnafu {})?;
+        .context(TemplatedRequestSnafu)?;
 
-    // Render template
-    let result = templating::render(&content, parameters).context(TemplatingSnafu {})?;
-    serde_yaml::from_str(&result).context(YamlSnafu {})
+    templating::render(&content, parameters).context(TemplatingSnafu)
 }

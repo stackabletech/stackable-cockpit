@@ -10,7 +10,7 @@ use utoipa::ToSchema;
 use crate::{
     common::ManifestSpec,
     helm::{self, HelmChart, HelmError},
-    kube::{self, KubeError},
+    kube::{self, KubeClientError},
     platform::{
         demo::DemoParameter,
         release::{ReleaseInstallError, ReleaseList},
@@ -55,7 +55,7 @@ pub enum StackError {
     HelmError { source: HelmError },
 
     #[snafu(display("kube error: {source}"))]
-    KubeError { source: KubeError },
+    KubeError { source: KubeClientError },
 
     /// This error indicates a YAML error occurred.
     #[snafu(display("yaml error: {source}"))]
@@ -104,7 +104,7 @@ impl StackSpecV2 {
         // Install the release
         release
             .install(&self.operators, &[], namespace)
-            .context(ReleaseInstallSnafu {})?;
+            .context(ReleaseInstallSnafu)?;
 
         Ok(())
     }
@@ -120,7 +120,7 @@ impl StackSpecV2 {
         let parameters = parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterSnafu {})?;
+            .context(ParameterSnafu)?;
 
         Self::install_manifests(&self.manifests, &parameters, namespace).await?;
         Ok(())
@@ -139,7 +139,7 @@ impl StackSpecV2 {
         let parameters = demo_parameters
             .to_owned()
             .into_params(valid_demo_parameters)
-            .context(ParameterSnafu {})?;
+            .context(ParameterSnafu)?;
 
         Self::install_manifests(manifests, &parameters, namespace).await?;
         Ok(())
@@ -152,7 +152,7 @@ impl StackSpecV2 {
         parameters: &HashMap<String, String>,
         namespace: &str,
     ) -> Result<(), StackError> {
-        debug!("Installing manifests");
+        debug!("Installing demo / stack manifests");
 
         for manifest in manifests {
             match manifest {
@@ -160,10 +160,11 @@ impl StackSpecV2 {
                     debug!("Installing manifest from Helm chart {}", helm_file);
 
                     // Read Helm chart YAML and apply templating
-                    let helm_chart =
-                        read_yaml_data_with_templating::<HelmChart, _>(helm_file, parameters)
-                            .await
-                            .context(TemplatedReadSnafu {})?;
+                    let helm_chart = read_yaml_data_with_templating(helm_file, parameters)
+                        .await
+                        .context(TemplatedReadSnafu)?;
+                    let helm_chart: HelmChart =
+                        serde_yaml::from_str(&helm_chart).context(YamlSnafu)?;
 
                     info!(
                         "Installing Helm chart {} ({})",
@@ -171,11 +172,11 @@ impl StackSpecV2 {
                     );
 
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url)
-                        .context(HelmSnafu {})?;
+                        .context(HelmSnafu)?;
 
                     // Serialize chart options to string
                     let values_yaml =
-                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu {})?;
+                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
@@ -190,20 +191,21 @@ impl StackSpecV2 {
                         namespace,
                         false,
                     )
-                    .context(HelmSnafu {})?;
+                    .context(HelmSnafu)?;
                 }
                 ManifestSpec::PlainYaml(path_or_url) => {
                     debug!("Installing YAML manifest from {}", path_or_url);
 
                     // Read YAML manifest and apply templating
-                    let manifests =
-                        read_yaml_data_with_templating::<String, _>(path_or_url, parameters)
-                            .await
-                            .context(TemplatedReadSnafu {})?;
-
-                    kube::deploy_manifests(&manifests, namespace)
+                    let manifests = read_yaml_data_with_templating(path_or_url, parameters)
                         .await
-                        .context(KubeSnafu {})?;
+                        .context(TemplatedReadSnafu)?;
+
+                    let kube_client = kube::KubeClient::new().await.context(KubeSnafu)?;
+                    kube_client
+                        .deploy_manifests(&manifests, namespace)
+                        .await
+                        .context(KubeSnafu)?
                 }
             }
         }

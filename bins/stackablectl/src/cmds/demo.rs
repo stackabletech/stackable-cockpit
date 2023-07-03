@@ -85,10 +85,10 @@ pub enum DemoCmdError {
     IoError { source: std::io::Error },
 
     #[snafu(display("unable to format yaml output"))]
-    YamlError { source: serde_yaml::Error },
+    YamlOutputFormatError { source: serde_yaml::Error },
 
     #[snafu(display("unable to format json output"))]
-    JsonError { source: serde_json::Error },
+    JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
     NoSuchDemo { name: String },
@@ -122,13 +122,11 @@ impl DemoArgs {
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = common_args
-            .get_demo_files()
-            .context(PathOrUrlParseSnafu {})?;
+        let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
 
         let list = DemoList::build(&files, &common_args.cache_settings()?)
             .await
-            .context(ListSnafu {})?;
+            .context(ListSnafu)?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -150,11 +148,12 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["NAME", "STACK", "DESCRIPTION"])
+                .set_header(vec!["#", "NAME", "STACK", "DESCRIPTION"])
                 .load_preset(UTF8_FULL);
 
-            for (demo_name, demo_spec) in list.inner() {
+            for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
                 let row = Row::from(vec![
+                    (index + 1).to_string(),
                     demo_name.clone(),
                     demo_spec.stack.clone(),
                     demo_spec.description.clone(),
@@ -164,8 +163,12 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&list.inner()).context(JsonSnafu {})?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&list.inner()).context(YamlSnafu {})?),
+        OutputType::Json => {
+            Ok(serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu)?)
+        }
+        OutputType::Yaml => {
+            Ok(serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu)?)
+        }
     }
 }
 
@@ -185,13 +188,11 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
                 .load_preset(NOTHING)
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .add_row(vec!["DEMO", &args.demo_name])
-                .add_row(vec!["DESCRIPTION", &demo.description]);
-
-            if let Some(documentation) = &demo.documentation {
-                table.add_row(vec!["DOCUMENTATION", documentation]);
-            }
-
-            table
+                .add_row(vec!["DESCRIPTION", &demo.description])
+                .add_row_if(
+                    |_, _| demo.documentation.is_some(),
+                    vec!["DOCUMENTATION", demo.documentation.as_ref().unwrap()],
+                )
                 .add_row(vec!["STACK", &demo.stack])
                 .add_row(vec!["LABELS", &demo.labels.join(", ")]);
 
@@ -199,8 +200,8 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&demo).context(JsonSnafu {})?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&demo).context(YamlSnafu {})?),
+        OutputType::Json => Ok(serde_json::to_string(&demo).context(JsonOutputFormatSnafu)?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu)?),
     }
 }
 
@@ -225,15 +226,13 @@ async fn install_cmd(
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-    let files = common_args
-        .get_stack_files()
-        .context(PathOrUrlParseSnafu {})?;
+    let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
     let cache_settings = common_args.cache_settings()?;
 
     let stack_list = StackList::build(&files, &cache_settings)
         .await
-        .context(ListSnafu {})?;
+        .context(ListSnafu)?;
 
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
@@ -245,28 +244,28 @@ async fn install_cmd(
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args
         .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
+        .context(PathOrUrlParseSnafu)?;
 
     let release_list = ReleaseList::build(&files, &cache_settings)
         .await
-        .context(ListSnafu {})?;
+        .context(ListSnafu)?;
 
     // Install local cluster if needed
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     // Install the stack
     stack_spec
         .install(release_list, &common_args.operator_namespace)
-        .context(StackSnafu {})?;
+        .context(StackSnafu)?;
 
     // Install stack manifests
     stack_spec
         .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
         .await
-        .context(StackSnafu {})?;
+        .context(StackSnafu)?;
 
     // Install demo manifests
     stack_spec
@@ -277,7 +276,7 @@ async fn install_cmd(
             &common_args.operator_namespace,
         )
         .await
-        .context(StackSnafu {})?;
+        .context(StackSnafu)?;
 
     Ok("".into())
 }
