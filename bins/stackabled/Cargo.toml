@@ -20,3 +20,4 @@ tokio = { workspace = true }
 stackabled-web = { path = "../../web", optional = true }
 serde.workspace = true
 k8s-openapi.workspace = true
+futures = "0.3.28"

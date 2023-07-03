@@ -2833,6 +2833,7 @@ version = "0.0.1"
 dependencies = [
  "axum",
  "clap",
+ "futures",
  "k8s-openapi",
  "serde",
  "snafu",
