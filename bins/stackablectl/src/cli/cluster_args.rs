@@ -135,6 +135,6 @@ pub enum ClusterType {
     #[default]
     Kind,
 
-    /// Use a minikube cluster (CURRENTLY UNSUPPORTED)
+    /// Use a minikube cluster
     Minikube,
 }

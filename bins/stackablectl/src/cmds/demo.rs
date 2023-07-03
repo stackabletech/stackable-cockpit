@@ -52,6 +52,10 @@ pub struct DemoListArgs {
 pub struct DemoDescribeArgs {
     /// Demo to describe
     #[arg(name = "DEMO")]
+    #[arg(long_help = "Demo to describe
+
+Use \"stackablectl demo list\" to display a list of available demos.
+Use \"stackablectl demo install <DEMO>\" to install a specific demo.")]
     demo_name: String,
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
@@ -62,6 +66,10 @@ pub struct DemoDescribeArgs {
 pub struct DemoInstallArgs {
     /// Demo to install
     #[arg(name = "DEMO")]
+    #[arg(long_help = "Demo to install
+
+Use \"stackablectl demo list\" to display a list of available demos.
+Use \"stackablectl demo describe <DEMO>\" to display details about the specified demo.")]
     demo_name: String,
 
     /// List of parameters to use when installing the stack

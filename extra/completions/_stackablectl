@@ -91,9 +91,9 @@ yaml\:"Print output formatted as YAML"))' \
 (install)
 _arguments "${_arguments_options[@]}" \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
@@ -223,9 +223,9 @@ _arguments "${_arguments_options[@]}" \
 '*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
 '*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
@@ -337,9 +337,9 @@ _arguments "${_arguments_options[@]}" \
 '*-p+[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
@@ -500,9 +500,9 @@ _arguments "${_arguments_options[@]}" \
 '*-p+[List of parameters to use when installing the demo]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the demo]:PARAMETERS: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see '\''https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'\''"
-minikube\:"Use a minikube cluster (CURRENTLY UNSUPPORTED)"))' \
+minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
