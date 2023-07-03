@@ -66,6 +66,11 @@ export interface components {
       /** @description The name of the underlying stack */
       stackableStack: string;
     };
+    DisplayCondition: {
+      condition: string;
+      is_good?: boolean | null;
+      message?: string | null;
+    };
     ManifestSpec: OneOf<[{
       helmChart: string;
     }, {
@@ -92,7 +97,13 @@ export interface components {
       releaseDate: string;
     };
     Stacklet: {
-      metadata: components["schemas"]["ObjectMeta"];
+      /** @description Multiple cluster conditions */
+      conditions: (components["schemas"]["DisplayCondition"])[];
+      /** @description Name of the stacklet. */
+      name: string;
+      /** @description Some CRDs are cluster scoped. */
+      namespace?: string | null;
+      /** @description Name of the product. */
       product: string;
     };
   };

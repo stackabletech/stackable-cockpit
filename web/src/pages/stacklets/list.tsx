@@ -18,24 +18,22 @@ export const Stacklets = () => {
           },
           {
             label: 'Namespace',
-            get: (x) => x.metadata.namespace,
-            sortBy: (x) => x.metadata.namespace,
+            get: (x) => x.namespace || '(Cluster-scoped)',
+            sortBy: (x) => x.namespace || '',
           },
           {
             label: 'Name',
-            get: (x) => x.metadata.name,
-            sortBy: (x) => x.metadata.name,
+            get: (x) => x.name,
+            sortBy: (x) => x.name,
           },
-          {
+          /* {
             label: 'Actions',
             get: (x) => (
-              <ButtonLink
-                href={`/stacklets/${x.metadata.namespace}/${x.metadata.name}/connect`}
-              >
+              <ButtonLink href={`/stacklets/${x.namespace}/${x.name}/connect`}>
                 Connect
               </ButtonLink>
             ),
-          },
+          }, */
         ]}
         extraButtons={
           <ButtonLink href='/stacklets/add' role='primary'>

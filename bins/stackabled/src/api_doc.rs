@@ -1,6 +1,7 @@
 use stackable::{
     common::ManifestSpec,
-    platform::{demo::DemoSpecV2, release::ReleaseSpec},
+    kube::DisplayCondition,
+    platform::{demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet},
     utils::params::Parameter,
 };
 pub use utoipa::OpenApi;
@@ -18,7 +19,7 @@ use crate::handlers;
         handlers::releases::get_release,
         handlers::stacklets::get_stacklets
     ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, synthetic_types::ObjectMeta))
+    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, Stacklet, DisplayCondition, synthetic_types::ObjectMeta))
 )]
 pub struct ApiDoc {}
 

@@ -1,13 +1,7 @@
 use axum::{routing::get, Json, Router};
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
-use serde::Serialize;
-use utoipa::ToSchema;
+use stackable::platform;
 
-#[derive(ToSchema, Serialize)]
-pub struct Stacklet {
-    metadata: ObjectMeta,
-    product: String,
-}
+pub use stackable::{kube::DisplayCondition, platform::stacklet::Stacklet};
 
 /// Creates the stack sub-router.
 pub fn router() -> Router {
@@ -19,22 +13,5 @@ pub fn router() -> Router {
     (status = 200, body = Vec<Stacklet>),
 ))]
 pub async fn get_stacklets() -> Json<Vec<Stacklet>> {
-    Json(vec![
-        Stacklet {
-            metadata: ObjectMeta {
-                name: Some("simple-nifi".to_string()),
-                namespace: Some("default".to_string()),
-                ..Default::default()
-            },
-            product: "nifi".to_string(),
-        },
-        Stacklet {
-            metadata: ObjectMeta {
-                name: Some("simple-hdfs".to_string()),
-                namespace: Some("default".to_string()),
-                ..Default::default()
-            },
-            product: "hdfs".to_string(),
-        },
-    ])
+    Json(platform::stacklet::list(None).await.unwrap())
 }

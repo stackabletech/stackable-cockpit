@@ -4,14 +4,14 @@ use snafu::ResultExt;
 
 use crate::{
     kube::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
-    platform::stacklet::{KubeSnafu, Product, StackletError},
+    platform::stacklet::{KubeSnafu, Stacklet, StackletError},
 };
 
-pub(super) async fn list_products(
+pub(super) async fn list(
     kube_client: &KubeClient,
     namespace: Option<&str>,
-) -> Result<Vec<Product>, StackletError> {
-    let mut products = Vec::new();
+) -> Result<Vec<Stacklet>, StackletError> {
+    let mut stacklets = Vec::new();
 
     let params = ListParams::from_product(
         "kube-prometheus-stack-prometheus",
@@ -30,12 +30,13 @@ pub(super) async fn list_products(
             None => vec![],
         };
 
-        products.push(Product {
+        stacklets.push(Stacklet {
             name: service.name_any(),
             namespace: service.namespace(),
+            product: "prometheus".to_string(),
             conditions: conditions.plain(),
         })
     }
 
-    Ok(products)
+    Ok(stacklets)
 }

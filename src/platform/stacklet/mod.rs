@@ -5,6 +5,9 @@ use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
 use tracing::warn;
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 use crate::{
     constants::PRODUCT_NAMES,
     kube::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
@@ -17,13 +20,17 @@ mod opensearch;
 mod prometheus;
 
 #[derive(Debug, Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
-pub struct Product {
-    /// Name of the product.
+pub struct Stacklet {
+    /// Name of the stacklet.
     pub name: String,
 
     /// Some CRDs are cluster scoped.
     pub namespace: Option<String>,
+
+    /// Name of the product.
+    pub product: String,
 
     /// Multiple cluster conditions
     pub conditions: Vec<DisplayCondition>,
@@ -41,37 +48,20 @@ pub enum StackletError {
     JsonError { source: serde_json::Error },
 }
 
-pub type StackletList = IndexMap<String, Vec<Product>>;
+pub type StackletList = Vec<Stacklet>;
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list_stacklets(namespace: Option<&str>) -> Result<StackletList, StackletError> {
+pub async fn list(namespace: Option<&str>) -> Result<StackletList, StackletError> {
     let kube_client = KubeClient::new().await.context(KubeSnafu)?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
-
-    let grafana_products = grafana::list_products(&kube_client, namespace).await?;
-    if !grafana_products.is_empty() {
-        stacklets.insert("grafana".into(), grafana_products);
-    }
-
-    let minio_products = minio::list_products(&kube_client, namespace).await?;
-    if !minio_products.is_empty() {
-        stacklets.insert("minio".into(), minio_products);
-    }
-
-    let opensearch_products = opensearch::list_products(&kube_client, namespace).await?;
-    if !opensearch_products.is_empty() {
-        stacklets.insert("opensearch-dashboards".into(), opensearch_products);
-    }
-
-    let prometheus_products = prometheus::list_products(&kube_client, namespace).await?;
-    if !prometheus_products.is_empty() {
-        stacklets.insert("prometheus".into(), prometheus_products);
-    }
-
+    stacklets.extend(grafana::list(&kube_client, namespace).await?);
+    stacklets.extend(minio::list(&kube_client, namespace).await?);
+    stacklets.extend(opensearch::list(&kube_client, namespace).await?);
+    stacklets.extend(prometheus::list(&kube_client, namespace).await?);
     Ok(stacklets)
 }
 
@@ -80,7 +70,7 @@ async fn list_stackable_stacklets(
     namespace: Option<&str>,
 ) -> Result<StackletList, StackletError> {
     let product_list = build_products_gvk_list(PRODUCT_NAMES);
-    let mut stacklets = StackletList::new();
+    let mut stacklets = Vec::new();
 
     for (product_name, product_gvk) in product_list {
         let objects = match kube_client
@@ -96,8 +86,6 @@ async fn list_stackable_stacklets(
                 continue;
             }
         };
-
-        let mut products = Vec::new();
 
         for object in objects {
             let conditions: Vec<ClusterCondition> = match object.data.pointer("/status/conditions")
@@ -115,15 +103,12 @@ async fn list_stackable_stacklets(
                 None => continue,
             };
 
-            products.push(Product {
+            stacklets.push(Stacklet {
                 namespace: Some(object_namespace),
                 name: object_name,
+                product: product_name.to_string(),
                 conditions: conditions.plain(),
             });
-        }
-
-        if !products.is_empty() {
-            stacklets.insert(product_name.to_string(), products);
         }
     }
 
