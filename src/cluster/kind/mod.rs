@@ -93,10 +93,10 @@ impl KindCluster {
         stdin
             .write_all(config_string.as_bytes())
             .await
-            .context(IoSnafu {})?;
+            .context(IoSnafu)?;
 
         // Write the piped in data
-        stdin.flush().await.context(IoSnafu {})?;
+        stdin.flush().await.context(IoSnafu)?;
         drop(stdin);
 
         if let Err(err) = kind_cmd.wait().await {

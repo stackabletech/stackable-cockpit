@@ -222,7 +222,7 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed(None, None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.

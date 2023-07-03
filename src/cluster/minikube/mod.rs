@@ -52,7 +52,7 @@ impl MinikubeCluster {
         }
 
         // Check if Docker is running
-        check_if_docker_is_running().await.context(DockerSnafu {})?;
+        check_if_docker_is_running().await.context(DockerSnafu)?;
 
         // Create local cluster via minikube
         debug!("Creating minikube cluster");
@@ -114,7 +114,7 @@ impl MinikubeCluster {
             .args(["-o", "json"])
             .output()
             .await
-            .context(IoSnafu {})?;
+            .context(IoSnafu)?;
 
         if !output.status.success() {
             return Ok(false);

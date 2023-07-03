@@ -96,7 +96,7 @@ impl CommonClusterArgs {
                         kind_cluster
                             .create_if_not_exists()
                             .await
-                            .context(KindClusterSnafu {})
+                            .context(KindClusterSnafu)
                     }
                     ClusterType::Minikube => {
                         let minikube_cluster =
@@ -105,7 +105,7 @@ impl CommonClusterArgs {
                         minikube_cluster
                             .create_if_not_exists()
                             .await
-                            .context(MinikubeClusterSnafu {})
+                            .context(MinikubeClusterSnafu)
                     }
                 }
             }
