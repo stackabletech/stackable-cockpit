@@ -21,8 +21,9 @@ HELM_CHART_ARTIFACT := target/helm/${OPERATOR_NAME}-${VERSION}.tgz
 
 SHELL=/usr/bin/env bash -euo pipefail
 
-render-readme:
-	scripts/render_readme.sh
+# Cockpit is not using the standardized README yet
+#render-readme:
+#	scripts/render_readme.sh
 
 ## Docker related targets
 docker-build:
