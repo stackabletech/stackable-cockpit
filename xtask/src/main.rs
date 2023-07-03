@@ -69,8 +69,8 @@ fn main() -> Result<(), TaskError> {
         }
         XtaskCommand::GenOpenapi => {
             let openapi_json = ApiDoc::openapi().to_json().context(SerializeOpenApiSnafu)?;
-            let mut codegen = Command::new("pnpm")
-                .args(["--filter", "web-ui", "run", "openapi-codegen"])
+            let mut codegen = Command::new("yarn")
+                .args(["--cwd", "web", "run", "openapi-codegen"])
                 .stdin(Stdio::piped())
                 .spawn()
                 .context(ImportOpenapiSchemaRunSnafu)?;
