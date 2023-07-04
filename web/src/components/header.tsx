@@ -1,23 +1,46 @@
 import { A } from '@solidjs/router';
-import { ParentProps } from 'solid-js';
+import { ParentProps, Show } from 'solid-js';
 import logo from '../resources/logo.png';
 import { logOut } from '../api';
 
 interface NavItemProps {
-  href: string;
+  href?: string;
+  onClick?: () => void;
 }
 
-const NavItem = (props: ParentProps<NavItemProps>) => (
-  <li class='block h-auto ml-4'>
-    <A
-      href={props.href}
-      class='p-4 c-white flex flex-items-center h-full decoration-none bg-gray-900'
-      inactiveClass='bg-opacity-30 hover:bg-opacity-50'
-    >
-      {props.children}
-    </A>
-  </li>
-);
+const NavItem = (props: ParentProps<NavItemProps>) => {
+  const linkClass =
+    'p-4 b-0 cursor-pointer c-white flex flex-items-center h-full decoration-none bg-gray-900';
+  const inactiveClass = 'bg-opacity-30 hover:bg-opacity-50';
+
+  return (
+    <li class='block h-auto ml-4'>
+      <Show
+        when={props.href !== undefined}
+        fallback={
+          <button
+            class={`${linkClass} ${inactiveClass}`}
+            onClick={(event) => {
+              event.preventDefault();
+              props.onClick?.();
+            }}
+          >
+            {props.children}
+          </button>
+        }
+      >
+        <A
+          href={props.href || ''}
+          class={linkClass}
+          inactiveClass={inactiveClass}
+          onClick={() => props.onClick?.()}
+        >
+          {props.children}
+        </A>
+      </Show>
+    </li>
+  );
+};
 
 export const Header = () => {
   return (
@@ -36,7 +59,8 @@ export const Header = () => {
         <NavItem href='/stacklets'>Stacklets</NavItem>
         <NavItem href='/listeners'>Listeners</NavItem>
         <NavItem href='/stacks'>Stacks</NavItem>
-        <button onClick={() => logOut()}>Log out</button>
+        <li class='flex-grow' />
+        <NavItem onClick={() => logOut()}>Log out</NavItem>
       </ul>
     </nav>
   );
