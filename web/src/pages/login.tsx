@@ -1,10 +1,13 @@
-import { JSX, Show, createResource, createSignal } from 'solid-js';
-import { isLoggedIn, logIn } from '../api';
+import { JSX, Show, createResource, createSignal, untrack } from 'solid-js';
+import { isLoggedIn, logIn, validateSessionOrLogOut } from '../api';
 
 interface LoginPageOrProps {
   children: JSX.Element;
 }
 export const LoginPageOr = (props: LoginPageOrProps) => {
+  // Validate the session when loading, but there's little to no point re-validating
+  // when the user has just logged in.
+  untrack(() => validateSessionOrLogOut());
   return (
     <>
       <Show when={isLoggedIn()}>{props.children}</Show>

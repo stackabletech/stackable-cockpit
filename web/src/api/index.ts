@@ -1,7 +1,7 @@
 import createClient from 'openapi-fetch';
 import { components, paths } from './schema';
 import { createLocalStorageSignal } from '../utils/localstorage';
-import { None, Some, someIfDefined } from '../types';
+import { None, someIfDefined } from '../types';
 
 const client = createClient<paths>({ baseUrl: '/api' });
 const [currentSessionToken, setCurrentSessionToken] =
@@ -14,8 +14,9 @@ function sessionOptions() {
   });
   return { headers };
 }
-// Try to validate that the initial session token is still valid, and log the user out otherwise
-{
+
+// Try to validate that the session token is still valid, and log the user out otherwise
+export function validateSessionOrLogOut() {
   currentSessionToken().map(() => {
     client
       .get('/ping', sessionOptions())
