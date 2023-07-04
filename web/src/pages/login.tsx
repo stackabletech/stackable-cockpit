@@ -9,12 +9,9 @@ export const LoginPageOr = (props: LoginPageOrProps) => {
   // when the user has just logged in.
   untrack(() => validateSessionOrLogOut());
   return (
-    <>
-      <Show when={isLoggedIn()}>{props.children}</Show>
-      <Show when={!isLoggedIn()}>
-        <LoginPage />
-      </Show>
-    </>
+    <Show when={isLoggedIn()} fallback={<LoginPage />}>
+      {props.children}
+    </Show>
   );
 };
 
