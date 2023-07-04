@@ -92,7 +92,7 @@ impl Authenticator {
                 Err("request authentication failed: invalid username or password")
             }
         } else {
-            Err("request authentication failed: no valid authentication method presented")
+            Err("request authentication failed: no valid authentication method presented (expected authorization: basic or bearer)")
         }
     }
 
