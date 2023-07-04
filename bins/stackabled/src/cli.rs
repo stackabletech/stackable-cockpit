@@ -20,6 +20,6 @@ pub struct Cli {
     /// Path to the password database, can be generated with the Apache `htpasswd` utility
     ///
     /// Only bcrypt passwords are supported (`htpasswd -B`).
-    #[arg(long, env = "STACKABLED_HTPASSWD")]
+    #[arg(long, env = "STACKABLED_HTPASSWD_PATH")]
     pub htpasswd: PathBuf,
 }
