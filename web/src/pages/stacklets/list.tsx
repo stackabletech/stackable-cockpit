@@ -1,14 +1,13 @@
-import { Show, createResource } from 'solid-js';
+import { createResource } from 'solid-js';
 import { getStacklets } from '../../api';
 import { DataTable } from '../../components/datatable';
-import { A } from '@solidjs/router';
+import { ButtonLink } from '../../components/button';
+import { AddSymbol } from '../../components/symbols';
 
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
   return (
     <>
-      <button onClick={refetch}>Refresh</button>
-      <Show when={stacklets.loading}>Loading...</Show>
       <DataTable
         items={stacklets() || []}
         columns={[
@@ -30,19 +29,21 @@ export const Stacklets = () => {
           {
             label: 'Actions',
             get: (x) => (
-              <ul class='m-0 p-0'>
-                <li class='inline-block mx-1 p-1 bg-gray'>
-                  <A
-                    class='color-black'
-                    href={`/stacklets/${x.metadata.namespace}/${x.metadata.name}/connect`}
-                  >
-                    Connect
-                  </A>
-                </li>
-              </ul>
+              <ButtonLink
+                href={`/stacklets/${x.metadata.namespace}/${x.metadata.name}/connect`}
+              >
+                Connect
+              </ButtonLink>
             ),
           },
         ]}
+        extraButtons={
+          <ButtonLink href='/stacklets/add' role='primary'>
+            <AddSymbol /> Add stacklet
+          </ButtonLink>
+        }
+        refresh={refetch}
+        isLoading={stacklets.loading}
       />
     </>
   );

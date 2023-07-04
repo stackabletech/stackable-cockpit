@@ -6,6 +6,7 @@ use axum::{
     Router, Server,
 };
 use clap::Parser;
+use futures::FutureExt;
 use snafu::{ResultExt, Whatever};
 use stackabled::{
     api_doc, handlers,
@@ -46,10 +47,28 @@ async fn main() -> Result<(), Whatever> {
 
     if let Err(err) = Server::bind(&SocketAddr::new(cli.address, cli.port))
         .serve(router.into_make_service())
+        .with_graceful_shutdown(wait_for_shutdown_signal())
         .await
     {
         eprintln!("{err}")
     }
 
     Ok(())
+}
+
+async fn wait_for_shutdown_signal() {
+    // Copied from kube::runtime::Controller::shutdown_on_signal
+    futures::future::select(
+        tokio::signal::ctrl_c().map(|_| ()).boxed(),
+        #[cfg(unix)]
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .unwrap()
+            .recv()
+            .map(|_| ())
+            .boxed(),
+        // Assume that ctrl_c is enough on non-Unix platforms (such as Windows)
+        #[cfg(not(unix))]
+        futures::future::pending::<()>(),
+    )
+    .await;
 }
