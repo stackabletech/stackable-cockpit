@@ -57,7 +57,7 @@ export async function logIn(
   password: string,
 ): Promise<string | undefined> {
   const response = await client.post('/login', {
-    headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
+    headers: { Authorization: 'Basic ' + btoa(`${username}:${password}`) },
   });
   setCurrentSessionToken(someIfDefined(response.data?.sessionToken));
   if (!response.response.ok) {
