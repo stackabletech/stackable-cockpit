@@ -7,14 +7,15 @@ use axum::{
 };
 use clap::Parser;
 use snafu::{ResultExt, Whatever};
-use stackabled::middleware::{self, authentication::Authenticator};
+use stackabled::{
+    api_doc, handlers,
+    middleware::{self, authentication::Authenticator},
+};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::cli::Cli;
 
-mod api_doc;
 mod cli;
-mod handlers;
 
 #[tokio::main]
 #[snafu::report]

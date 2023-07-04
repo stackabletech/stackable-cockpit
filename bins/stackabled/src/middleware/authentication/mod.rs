@@ -1,7 +1,7 @@
 use std::{
     borrow::Borrow,
     collections::HashMap,
-    path::{Path, PathBuf},
+    path::Path,
     sync::{Arc, RwLock},
 };
 
@@ -16,12 +16,16 @@ use axum::{
     response::IntoResponse,
     Json,
 };
-use snafu::{ResultExt, Snafu};
 use tower_http::validate_request::{ValidateRequest, ValidateRequestHeaderLayer};
 use uuid::Uuid;
 
-#[derive(PartialEq, Eq, Hash, Clone)]
+pub use self::htpasswd::Error as HtpasswdError;
+
+mod htpasswd;
+
+#[derive(PartialEq, Eq, Hash, Clone, Debug)]
 pub struct Username(String);
+#[cfg_attr(test, derive(PartialEq, Debug))]
 enum PasswordHash {
     Bcrypt(String),
 }
@@ -50,54 +54,11 @@ pub struct Authenticator {
     state: Arc<State>,
 }
 
-#[derive(Debug, Snafu)]
-#[snafu(module)]
-pub enum HtpasswdError {
-    #[snafu(display("failed to read htpasswd file at {path:?}"))]
-    Read {
-        source: std::io::Error,
-        path: PathBuf,
-    },
-    #[snafu(display("malformed htpasswd entry on line {line}"))]
-    Entry {
-        source: HtpasswdEntryError,
-        line: usize,
-    },
-}
-#[derive(Debug, Snafu)]
-#[snafu(module)]
-pub enum HtpasswdEntryError {
-    #[snafu(display("invalid hash type (only bcrypt is currently supported)"))]
-    InvalidHashType,
-    #[snafu(display("no username/password separator"))]
-    NoSeparator,
-}
-
 impl Authenticator {
     pub fn load_htpasswd(path: &Path) -> Result<Self, HtpasswdError> {
-        use htpasswd_entry_error::*;
-        use htpasswd_error::*;
-        let htaccess = std::fs::read_to_string(path).context(ReadSnafu { path })?;
-        let mut accounts = HashMap::new();
-        for (line, entry) in htaccess.lines().enumerate() {
-            if let Some((username, prefixed_pw_hash)) = entry.split_once(':') {
-                if prefixed_pw_hash.starts_with("$2y$") {
-                    accounts.insert(
-                        Username(username.to_string()),
-                        PasswordHash::Bcrypt(prefixed_pw_hash.to_string()),
-                    );
-                    Ok(())
-                } else {
-                    InvalidHashTypeSnafu.fail()
-                }
-            } else {
-                NoSeparatorSnafu.fail()
-            }
-            .context(EntrySnafu { line })?
-        }
         Ok(Self {
             state: Arc::new(State {
-                accounts,
+                accounts: htpasswd::load(path)?,
                 sessions: RwLock::new(HashMap::new()),
             }),
         })
