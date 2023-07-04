@@ -8,7 +8,13 @@ use utoipa::{
     OpenApi,
 };
 
-use crate::{handlers, middleware};
+use crate::{
+    handlers,
+    middleware::{
+        self,
+        authentication::{Session, SessionToken},
+    },
+};
 
 #[derive(Debug, OpenApi)]
 #[openapi(
@@ -23,7 +29,10 @@ use crate::{handlers, middleware};
         handlers::stacklets::get_stacklets,
         middleware::authentication::log_in,
     ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, synthetic_types::ObjectMeta)),
+    components(schemas(
+        DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, synthetic_types::ObjectMeta,
+        Session, SessionToken,
+    )),
     security(("session_token" = []), ("basic" = []))
 )]
 struct ApiDoc {}

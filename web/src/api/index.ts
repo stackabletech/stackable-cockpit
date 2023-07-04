@@ -1,28 +1,27 @@
 import createClient from 'openapi-fetch';
 import { components, paths } from './schema';
 import { createLocalStorageSignal } from '../utils/localstorage';
+import { None, Some, someIfDefined } from '../types';
 
 const client = createClient<paths>({ baseUrl: '/api' });
 const [currentSessionToken, setCurrentSessionToken] =
   createLocalStorageSignal('sessionToken');
-export const isLoggedIn = () => currentSessionToken() !== undefined;
+export const isLoggedIn = () => currentSessionToken().isSome();
 function sessionOptions() {
-  const sessionToken = currentSessionToken();
   const headers: HeadersInit = {};
-  if (sessionToken) {
+  currentSessionToken().map((sessionToken) => {
     headers.Authorization = `Bearer ${sessionToken}`;
-  }
+  });
   return { headers };
 }
 // Try to validate that the initial session token is still valid, and log the user out otherwise
 {
-  const initialSessionToken = currentSessionToken();
-  if (initialSessionToken !== undefined) {
+  currentSessionToken().map(() => {
     client
       .get('/ping', sessionOptions())
       .then((pingResponse) => {
         if (pingResponse.response.status === 401) {
-          setCurrentSessionToken();
+          setCurrentSessionToken(None);
         }
       })
       // We don't want to block page loads on waiting for this validation
@@ -30,7 +29,7 @@ function sessionOptions() {
       .catch((error) =>
         console.error('Failed to validate session token', error),
       );
-  }
+  });
 }
 
 interface ObjectMeta {
@@ -60,7 +59,7 @@ export async function logIn(
   const response = await client.post('/login', {
     headers: { Authorization: 'Basic ' + btoa(username + ':' + password) },
   });
-  setCurrentSessionToken(response.data);
+  setCurrentSessionToken(someIfDefined(response.data?.sessionToken));
   if (!response.response.ok) {
     return response.error;
   }
@@ -68,7 +67,7 @@ export async function logIn(
 // We want to leave room in the function contract to invalidate the session token in the future
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function logOut() {
-  setCurrentSessionToken();
+  setCurrentSessionToken(None);
 }
 
 export async function getListeners(): Promise<Listener[]> {

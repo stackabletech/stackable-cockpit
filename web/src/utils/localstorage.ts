@@ -1,28 +1,25 @@
 import { Signal, createEffect, createRoot, createSignal } from 'solid-js';
+import { Option, someIfNotNull } from '../types';
 
 function createStorageSignal(
   storage: Storage,
   name: string,
-): Signal<string | undefined> {
-  const [value, setValue] = createSignal<string | undefined>(
-    storage.getItem(name) || undefined,
+): Signal<Option<string>> {
+  const [value, setValue] = createSignal<Option<string>>(
+    someIfNotNull(storage.getItem(name)),
   );
   // The session writer effect's lifecycle should be tied to that of the signal
   createRoot(() => {
     createEffect(() => {
-      const currentValue = value();
-      if (currentValue === undefined) {
-        storage.removeItem(name);
-      } else {
-        storage.setItem(name, currentValue);
-      }
+      value().match({
+        none: () => storage.removeItem(name),
+        some: (currentValue) => storage.setItem(name, currentValue),
+      });
     });
   });
   return [value, setValue];
 }
 
-export function createLocalStorageSignal(
-  name: string,
-): Signal<string | undefined> {
+export function createLocalStorageSignal(name: string): Signal<Option<string>> {
   return createStorageSignal(localStorage, name);
 }

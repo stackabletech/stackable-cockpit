@@ -16,7 +16,9 @@ use axum::{
     response::IntoResponse,
     Json,
 };
+use serde::Serialize;
 use tower_http::validate_request::{ValidateRequest, ValidateRequestHeaderLayer};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 pub use self::htpasswd::Error as HtpasswdError;
@@ -29,8 +31,8 @@ pub struct Username(String);
 enum PasswordHash {
     Bcrypt(String),
 }
-#[derive(PartialEq, Eq, Hash, Clone)]
-struct SessionToken(String);
+#[derive(PartialEq, Eq, Hash, Clone, Serialize, ToSchema)]
+pub struct SessionToken(String);
 
 impl Borrow<str> for Username {
     fn borrow(&self) -> &str {
@@ -118,17 +120,23 @@ impl<B> ValidateRequest<B> for Authenticator {
     }
 }
 
-#[utoipa::path(post, path = "/login", responses((status = 200, body = String), (status = 401, body = String)))]
+#[derive(Serialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct Session {
+    session_token: SessionToken,
+}
+
+#[utoipa::path(post, path = "/login", responses((status = 200, body = Session), (status = 401, body = String)))]
 pub async fn log_in(
     Extension(username): Extension<Username>,
     Extension(authn): Extension<Authenticator>,
-) -> (StatusCode, Json<String>) {
-    let token = SessionToken(Uuid::new_v4().to_string());
+) -> (StatusCode, Json<Session>) {
+    let session_token = SessionToken(Uuid::new_v4().to_string());
     authn
         .state
         .sessions
         .write()
         .unwrap()
-        .insert(token.clone(), username);
-    (StatusCode::OK, Json(token.0))
+        .insert(session_token.clone(), username);
+    (StatusCode::OK, Json(Session { session_token }))
 }

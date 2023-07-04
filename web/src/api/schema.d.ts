@@ -97,6 +97,10 @@ export interface components {
       /** @description Date this released was released */
       releaseDate: string;
     };
+    Session: {
+      sessionToken: components["schemas"]["SessionToken"];
+    };
+    SessionToken: string;
     Stacklet: {
       metadata: components["schemas"]["ObjectMeta"];
       product: string;
@@ -154,7 +158,7 @@ export interface operations {
     responses: {
       200: {
         content: {
-          "text/plain": string;
+          "application/json": components["schemas"]["Session"];
         };
       };
       401: {
