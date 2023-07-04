@@ -50,6 +50,7 @@ export const LoginPage = () => {
         <label>
           password
           <input
+            type='password'
             value={password()}
             onInput={(event) => setPassword(event.target.value)}
           />
