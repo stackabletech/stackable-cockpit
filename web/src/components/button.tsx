@@ -27,7 +27,13 @@ export interface ButtonProps extends VisualButtonProps {
 }
 
 export const Button = (props: ButtonProps) => (
-  <button {...buttonProps(props)} onClick={() => props.onClick()}>
+  <button
+    {...buttonProps(props)}
+    onClick={(event) => {
+      event.preventDefault();
+      props.onClick();
+    }}
+  >
     {props.children}
   </button>
 );

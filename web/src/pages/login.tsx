@@ -1,5 +1,14 @@
-import { JSX, Show, createResource, createSignal, untrack } from 'solid-js';
+import {
+  JSX,
+  Show,
+  createResource,
+  createSignal,
+  createUniqueId,
+  untrack,
+} from 'solid-js';
+import logo from '../resources/logo.png';
 import { isLoggedIn, logIn, validateSessionOrLogOut } from '../api';
+import { Button } from '../components/button';
 
 interface LoginPageOrProps {
   children: JSX.Element;
@@ -26,37 +35,63 @@ export const LoginPage = () => {
     () => currentAttempt(),
     (attempt) => attempt,
   );
-  const clickLogin = (event: MouseEvent) => {
-    event.preventDefault();
+  const clickLogin = () => {
     void setCurrentAttempt(() => logIn(username(), password()));
   };
+  const usernameId = createUniqueId();
+  const passwordId = createUniqueId();
   return (
-    <>
-      <h2>login pl0x</h2>
-      <form>
-        <Show when={loginMessage.loading}>
-          <div>logging in...</div>
-        </Show>
-        <Show when={loginMessage()}>
-          <div class='c-red'>{loginMessage()}</div>
-        </Show>
-        <label>
-          username
+    <div class='p-16'>
+      <div class='p-4 pt-0 max-w-2xl bg-gray-800 m-auto flex flex-col flex-items-center'>
+        <h1 class='m-0'>
+          <img
+            src={logo}
+            elementtiming='logo'
+            fetchpriority='auto'
+            alt='Stackable'
+          />
+        </h1>
+        <h2 class='mt-0 mb-1'>Login</h2>
+        <form
+          class='grid'
+          style={{
+            'grid-template-columns': '[label] auto [field] 1fr',
+            width: '100%',
+          }}
+        >
+          <label class='me-2' for={usernameId}>
+            Username
+          </label>
           <input
+            id={usernameId}
             value={username()}
             onInput={(event) => setUsername(event.target.value)}
           />
-        </label>
-        <label>
-          password
+          <label class='me-2' for={passwordId}>
+            Password
+          </label>
           <input
+            id={passwordId}
             type='password'
             value={password()}
             onInput={(event) => setPassword(event.target.value)}
           />
-        </label>
-        <input type='submit' value='log in' onClick={clickLogin} />
-      </form>
-    </>
+          <div
+            class='flex flex-col flex-items-center mt-2'
+            style={{ 'grid-column': 'span 2' }}
+          >
+            <Show when={loginMessage.loading}>
+              <div>logging in...</div>
+            </Show>
+            <Show when={loginMessage()}>
+              <div class='c-red'>{loginMessage()}</div>
+            </Show>
+            <Button onClick={clickLogin} role='primary'>
+              Log in
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
