@@ -59,8 +59,6 @@ impl MinikubeCluster {
             .args(["--driver", "docker"])
             .args(["--nodes", self.node_count.to_string().as_str()])
             .args(["-p", self.name.as_str()])
-            // .stdout(Stdio::null())
-            // .stderr(Stdio::null())
             .status()
             .await;
 

@@ -76,8 +76,6 @@ impl KindCluster {
             .args(["--name", self.name.as_str()])
             .args(["--config", "-"])
             .stdin(Stdio::piped())
-            // .stdout(Stdio::null())
-            // .stderr(Stdio::null())
             .spawn()
             .context(IoSnafu)?;
 
