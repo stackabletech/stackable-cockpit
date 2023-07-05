@@ -1,7 +1,7 @@
 import { A } from '@solidjs/router';
 import { ParentProps, Show } from 'solid-js';
 import logo from '../resources/logo.png';
-import { logOut } from '../api';
+import { logOut } from '../api/session';
 
 interface NavItemProps {
   href?: string;

@@ -1,5 +1,5 @@
 import { createResource } from 'solid-js';
-import { getStacklets } from '../../api';
+import { getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
 import { ButtonLink } from '../../components/button';
 import { AddSymbol } from '../../components/symbols';

@@ -7,7 +7,7 @@ import {
   untrack,
 } from 'solid-js';
 import logo from '../resources/logo.png';
-import { isLoggedIn, logIn, validateSessionOrLogOut } from '../api';
+import { isLoggedIn, logIn, validateSessionOrLogOut } from '../api/session';
 import { Button } from '../components/button';
 
 interface LoginPageOrProps {
