@@ -2660,7 +2660,7 @@ dependencies = [
 
 [[package]]
 name = "stackable"
-version = "0.1.0"
+version = "0.0.0-dev"
 dependencies = [
  "bcrypt",
  "gobuild",
@@ -2729,7 +2729,7 @@ dependencies = [
 
 [[package]]
 name = "stackablectl"
-version = "0.0.1"
+version = "0.0.0-dev"
 dependencies = [
  "clap",
  "clap_complete",
@@ -2753,7 +2753,7 @@ dependencies = [
 
 [[package]]
 name = "stackabled"
-version = "0.0.1"
+version = "0.0.0-dev"
 dependencies = [
  "axum",
  "bcrypt",
@@ -2774,7 +2774,7 @@ dependencies = [
 
 [[package]]
 name = "stackabled-web"
-version = "0.1.0"
+version = "0.0.0-dev"
 dependencies = [
  "phf 0.11.1",
  "phf_codegen 0.11.1",
@@ -3708,7 +3708,7 @@ checksum = "52839dc911083a8ef63efa4d039d1f58b5e409f923e44c80828f206f66e5541c"
 
 [[package]]
 name = "xtask"
-version = "0.0.1"
+version = "0.0.0-dev"
 dependencies = [
  "clap",
  "clap_complete",
