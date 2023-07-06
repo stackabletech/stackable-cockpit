@@ -2,11 +2,12 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 use snafu::{ensure, ResultExt, Snafu};
-use tera::{Context, Tera};
 use url::Url;
 
 mod cache;
 pub use cache::*;
+
+use crate::utils::templating;
 
 type Result<T> = core::result::Result<T, TransferError>;
 
@@ -57,7 +58,7 @@ impl TransferClient {
         parameters: &HashMap<String, String>,
     ) -> Result<String> {
         let content = self.get_from_cache_or_remote(url).await?;
-        Self::render_template(&content, parameters)
+        templating::render(&content, parameters).context(TemplatingSnafu)
     }
 
     /// Retrieves data from the provided `url` and tries to deserialize it
@@ -82,7 +83,7 @@ impl TransferClient {
         T: for<'a> Deserialize<'a> + Sized,
     {
         let content = self.get_from_cache_or_remote(url).await?;
-        let content = Self::render_template(&content, parameters)?;
+        let content = templating::render(&content, parameters).context(TemplatingSnafu)?;
         serde_yaml::from_str(&content).context(YamlSnafu {})
     }
 
@@ -134,24 +135,5 @@ impl TransferClient {
 
         ensure!(segment.contains('.'), FileNameSnafu {});
         Ok(segment.to_string())
-    }
-
-    /// Creates a template rendering context and inserts key-value pairs.
-    fn create_templating_context(parameters: &HashMap<String, String>) -> Context {
-        // Create templating context
-        let mut context = Context::new();
-
-        // Fill context with parameters
-        for (name, value) in parameters {
-            context.insert(name, value)
-        }
-
-        context
-    }
-
-    /// Renders templated content and returns it as a [`String`].
-    fn render_template(content: &str, parameters: &HashMap<String, String>) -> Result<String> {
-        let context = Self::create_templating_context(parameters);
-        Tera::one_off(content, &context, true).context(TemplatingSnafu)
     }
 }

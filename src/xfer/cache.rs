@@ -47,6 +47,7 @@ impl Cache {
         }
     }
 
+    /// Returns wether the cache is enabled.
     pub fn is_enabled(&self) -> bool {
         match self.settings.backend {
             CacheBackend::Disk { .. } => true,
@@ -54,6 +55,12 @@ impl Cache {
         }
     }
 
+    /// Retrieves cached content located at `file_name`. It should be noted that
+    /// the `file_name` should only contain the file name and extension without
+    /// any path segments prefixed. The cache internally makes sure the file is
+    /// read from within the cache base path. The status is indicated by
+    /// [`CacheStatus`]. An error is returned when the cache was unable to read
+    /// data from disk.
     pub async fn retrieve(&self, file_name: &str) -> CacheResult<CacheStatus<String>> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
@@ -82,6 +89,9 @@ impl Cache {
         }
     }
 
+    /// Stores `file_content` at the cache base path in a file named `file_name`.
+    /// The method returns an error if the cache fails to write the data to disk
+    /// or the cache is disabled.
     pub async fn store(&self, file_name: &str, file_content: &str) -> CacheResult<()> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
@@ -92,6 +102,9 @@ impl Cache {
         }
     }
 
+    /// Returns a list of currently cached files. This method makes no assumptions
+    /// if the cached files are expired. It simply returns a list of files known
+    /// by the cache.
     pub async fn list(&self) -> CacheResult<Vec<(PathBuf, SystemTime)>> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
@@ -118,6 +131,8 @@ impl Cache {
         }
     }
 
+    /// Removes all cached files by deleting the base cache folder and then
+    /// recreating it.
     pub async fn purge(&self) -> CacheResult<()> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {

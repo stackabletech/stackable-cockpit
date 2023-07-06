@@ -48,7 +48,7 @@ where
     L: for<'a> Deserialize<'a> + Serialize + SpecIter<S>,
     S: for<'a> Deserialize<'a> + Serialize + Clone,
 {
-    pub inner: IndexMap<String, S>,
+    inner: IndexMap<String, S>,
     list_type: PhantomData<L>,
 }
 
@@ -96,8 +96,8 @@ where
     /// Returns an optional reference to a single spec of type `S` by `name`
     pub fn get<T>(&self, name: T) -> Option<&S>
     where
-        T: Into<String>,
+        T: AsRef<str>,
     {
-        self.inner.get(&name.into())
+        self.inner.get(name.as_ref())
     }
 }
