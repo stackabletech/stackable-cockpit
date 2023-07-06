@@ -1,11 +1,11 @@
-use std::{fs, io, time::Duration};
+use std::time::Duration;
 
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, Table};
 use snafu::{ResultExt, Snafu};
-use xdg::BaseDirectoriesError;
+use stackable::xfer::{Cache, CacheError};
 
-use crate::constants::CACHE_HOME_PATH;
+use crate::cli::{CacheSettingsError, Cli};
 
 #[derive(Debug, Args)]
 pub struct CacheArgs {
@@ -26,39 +26,27 @@ pub enum CacheCommands {
 
 #[derive(Debug, Snafu)]
 pub enum CacheCmdError {
-    #[snafu(display("io error: {source}"))]
-    IoError { source: io::Error },
+    #[snafu(display("cache settings error"))]
+    CacheSettingsError { source: CacheSettingsError },
 
-    #[snafu(display("xdg error: {source}"))]
-    XdgError { source: BaseDirectoriesError },
+    #[snafu(display("cache error"))]
+    CacheError { source: CacheError },
 }
 
 impl CacheArgs {
-    pub fn run(&self) -> Result<String, CacheCmdError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, CacheCmdError> {
         match self.subcommand {
-            CacheCommands::List => list_cmd(),
-            CacheCommands::Clean => clean_cmd(),
+            CacheCommands::List => list_cmd(common_args).await,
+            CacheCommands::Clean => clean_cmd(common_args).await,
         }
     }
 }
 
-fn list_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu)?
-        .get_cache_home();
+async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
+    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?);
+    cache.init().await.context(CacheSnafu)?;
 
-    fs::create_dir_all(cache_dir.clone()).context(IoSnafu)?;
-
-    let mut files = fs::read_dir(cache_dir)
-        .context(IoSnafu)?
-        .map(|res| {
-            let entry = res?;
-            Ok((entry.path(), entry.metadata()?.modified()?))
-        })
-        .collect::<Result<Vec<_>, io::Error>>()
-        .context(IoSnafu)?;
-
-    files.sort();
+    let files = cache.list().await.context(CacheSnafu)?;
 
     if files.is_empty() {
         return Ok("No cached files".into());
@@ -83,13 +71,10 @@ fn list_cmd() -> Result<String, CacheCmdError> {
     Ok(table.to_string())
 }
 
-fn clean_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu)?
-        .get_cache_home();
-
-    fs::remove_dir_all(cache_dir.clone()).context(IoSnafu)?;
-    fs::create_dir_all(cache_dir).context(IoSnafu)?;
+async fn clean_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
+    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?);
+    cache.init().await.context(CacheSnafu)?;
+    cache.purge().await.context(CacheSnafu)?;
 
     Ok("Cleaned cached files".into())
 }

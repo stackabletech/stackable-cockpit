@@ -1,6 +1,6 @@
 use std::{
     path::PathBuf,
-    time::{Duration, SystemTimeError},
+    time::{Duration, SystemTime, SystemTimeError},
 };
 
 use snafu::{ResultExt, Snafu};
@@ -28,8 +28,23 @@ pub struct Cache {
 }
 
 impl Cache {
+    /// Creates a new [`Cache`] instance with the provided `settings`. It should
+    /// be noted that it is required to call the [`Cache::init`] method before
+    /// using the cache for the first time to ensure the backend is setup
+    /// properly.
     pub fn new(settings: CacheSettings) -> Self {
         Self { settings }
+    }
+
+    /// Initializes the cache backend. This ensure that local files and folders
+    /// needed for operation are created.
+    pub async fn init(&self) -> CacheResult<()> {
+        match &self.settings.backend {
+            CacheBackend::Disk { base_path } => {
+                fs::create_dir_all(base_path).await.context(CacheIoSnafu)
+            }
+            CacheBackend::Disabled => Ok(()),
+        }
     }
 
     pub fn is_enabled(&self) -> bool {
@@ -74,6 +89,42 @@ impl Cache {
                 Self::write(file_path, file_content).await
             }
             CacheBackend::Disabled => WriteDisabledSnafu {}.fail(),
+        }
+    }
+
+    pub async fn list(&self) -> CacheResult<Vec<(PathBuf, SystemTime)>> {
+        match &self.settings.backend {
+            CacheBackend::Disk { base_path } => {
+                let mut files = Vec::new();
+
+                let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
+
+                while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
+                    files.push((
+                        entry.path(),
+                        entry
+                            .metadata()
+                            .await
+                            .context(CacheIoSnafu)?
+                            .modified()
+                            .context(CacheIoSnafu)?,
+                    ))
+                }
+
+                files.sort();
+                Ok(files)
+            }
+            CacheBackend::Disabled => Ok(vec![]),
+        }
+    }
+
+    pub async fn purge(&self) -> CacheResult<()> {
+        match &self.settings.backend {
+            CacheBackend::Disk { base_path } => {
+                fs::remove_dir_all(base_path).await.context(CacheIoSnafu)?;
+                fs::create_dir_all(base_path).await.context(CacheIoSnafu)
+            }
+            CacheBackend::Disabled => todo!(),
         }
     }
 
