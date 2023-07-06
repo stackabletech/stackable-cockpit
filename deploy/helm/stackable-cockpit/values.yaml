@@ -53,3 +53,8 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+# CHANGE ME BEFORE DEPLOYING
+# default: admin:changeme
+htpasswd: |
+  admin:$2y$05$qxtdrJCE2TeBK5jIus3pY.PA4Z4Dc7T.OLcL44gXQFH7m0dzw/x.O

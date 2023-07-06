@@ -5,6 +5,7 @@ htpasswd
 /result
 gomod2nix.toml
 Cargo.nix
+crate-hashes.json
 .yarn
 .pnp
 .pnp.*
