@@ -15,7 +15,7 @@ use stackable::{
     utils::path::PathOrUrlParseError,
     xfer::TransferClient,
 };
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
@@ -38,9 +38,8 @@ pub enum DemoCommands {
     /// Install a specific demo
     #[command(aliases(["i", "in"]))]
     Install(DemoInstallArgs),
-
-    #[command(aliases(["rm", "un"]))]
-    Uninstall(DemoUninstallArgs),
+    // #[command(aliases(["rm", "un"]))]
+    // Uninstall(DemoUninstallArgs),
 }
 
 #[derive(Debug, Args)]
@@ -52,7 +51,13 @@ pub struct DemoListArgs {
 #[derive(Debug, Args)]
 pub struct DemoDescribeArgs {
     /// Demo to describe
-    #[arg(name = "DEMO")]
+    #[arg(
+        name = "DEMO",
+        long_help = "Demo to describe
+
+Use \"stackablectl demo list\" to display a list of available demos.
+Use \"stackablectl demo install <DEMO>\" to install a specific demo."
+    )]
     demo_name: String,
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
@@ -62,7 +67,13 @@ pub struct DemoDescribeArgs {
 #[derive(Debug, Args)]
 pub struct DemoInstallArgs {
     /// Demo to install
-    #[arg(name = "DEMO")]
+    #[arg(
+        name = "DEMO",
+        long_help = "Demo to install
+
+Use \"stackablectl demo list\" to display a list of available demos.
+Use \"stackablectl demo describe <DEMO>\" to display details about the specified demo."
+    )]
     demo_name: String,
 
     /// List of parameters to use when installing the stack
@@ -111,26 +122,26 @@ pub enum DemoCmdError {
 }
 
 impl DemoArgs {
+    #[instrument]
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
+        debug!("Handle demo args");
+
         let transfer_client = TransferClient::new(common_args.cache_settings()?);
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = common_args
-            .get_demo_files()
-            .context(PathOrUrlParseSnafu {})?;
+        let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
 
         let list = DemoList::build(&files, &transfer_client)
             .await
-            .context(ListSnafu {})?;
+            .context(ListSnafu)?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
             DemoCommands::Install(args) => {
                 install_cmd(args, common_args, list, &transfer_client).await
-            }
-            DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
+            } // DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
         }
     }
 }
@@ -146,11 +157,12 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["NAME", "STACK", "DESCRIPTION"])
+                .set_header(vec!["#", "NAME", "STACK", "DESCRIPTION"])
                 .load_preset(UTF8_FULL);
 
-            for (demo_name, demo_spec) in list.inner() {
+            for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
                 let row = Row::from(vec![
+                    (index + 1).to_string(),
                     demo_name.clone(),
                     demo_spec.stack.clone(),
                     demo_spec.description.clone(),
@@ -199,7 +211,7 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 }
 
 /// Install a specific demo
-#[instrument]
+#[instrument(skip(list))]
 async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
@@ -213,15 +225,18 @@ async fn install_cmd(
         name: args.demo_name.clone(),
     })?;
 
+    args.local_cluster
+        .install_if_needed(None)
+        .await
+        .context(CommonClusterArgsSnafu)?;
+
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-    let files = common_args
-        .get_stack_files()
-        .context(PathOrUrlParseSnafu {})?;
+    let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
     let stack_list = StackList::build(&files, transfer_client)
         .await
-        .context(ListSnafu {})?;
+        .context(ListSnafu)?;
 
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
@@ -232,23 +247,23 @@ async fn install_cmd(
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args
-        .get_stack_files()
-        .context(PathOrUrlParseSnafu {})?;
+        .get_release_files()
+        .context(PathOrUrlParseSnafu)?;
 
     let release_list = ReleaseList::build(&files, transfer_client)
         .await
-        .context(ListSnafu {})?;
+        .context(ListSnafu)?;
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     // Install the stack
     stack_spec
         .install(release_list, &common_args.operator_namespace)
-        .context(StackSnafu {})?;
+        .context(StackSnafu)?;
 
     // Install stack manifests
     stack_spec
@@ -258,7 +273,7 @@ async fn install_cmd(
             transfer_client,
         )
         .await
-        .context(StackSnafu {})?;
+        .context(StackSnafu)?;
 
     // Install demo manifests
     stack_spec
@@ -270,11 +285,11 @@ async fn install_cmd(
             transfer_client,
         )
         .await
-        .context(StackSnafu {})?;
+        .context(StackSnafu)?;
 
     Ok("".into())
 }
 
-fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
-    todo!()
-}
+// fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
+//     todo!()
+// }

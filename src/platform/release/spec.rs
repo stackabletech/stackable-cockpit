@@ -60,18 +60,17 @@ impl ReleaseSpec {
 
             // Create operator spec
             let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
-                .context(OperatorSpecParseSnafu {})?;
+                .context(OperatorSpecParseSnafu)?;
 
             // Install operator
-            operator.install(namespace).context(HelmSnafu {})?
+            operator.install(namespace).context(HelmSnafu)?
         }
         Ok(())
     }
 
     pub fn uninstall(&self, namespace: &str) -> Result<(), ReleaseUninstallError> {
         for (product_name, _) in &self.products {
-            helm::uninstall_release(product_name, namespace, true)
-                .context(HelmUninstallSnafu {})?;
+            helm::uninstall_release(product_name, namespace, true).context(HelmUninstallSnafu)?;
         }
 
         Ok(())

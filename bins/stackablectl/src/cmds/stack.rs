@@ -109,13 +109,11 @@ impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
         let transfer_client = TransferClient::new(common_args.cache_settings()?);
 
-        let files = common_args
-            .get_stack_files()
-            .context(PathOrUrlParseSnafu {})?;
+        let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
         let stack_list = StackList::build(&files, &transfer_client)
             .await
-            .context(ListSnafu {})?;
+            .context(ListSnafu)?;
 
         match &self.subcommand {
             StackCommands::List(args) => list_cmd(args, stack_list),
@@ -137,11 +135,12 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["STACK", "RELEASE", "DESCRIPTION"])
+                .set_header(vec!["#", "STACK", "RELEASE", "DESCRIPTION"])
                 .load_preset(UTF8_FULL);
 
-            for (stack_name, stack) in stack_list.inner() {
+            for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
                 table.add_row(vec![
+                    (index + 1).to_string(),
                     stack_name.clone(),
                     stack.release.clone(),
                     stack.description.clone(),
@@ -209,24 +208,24 @@ async fn install_cmd(
 
     let files = common_args
         .get_release_files()
-        .context(PathOrUrlParseSnafu {})?;
+        .context(PathOrUrlParseSnafu)?;
 
     let release_list = ReleaseList::build(&files, &transfer_client)
         .await
-        .context(ListSnafu {})?;
+        .context(ListSnafu)?;
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             // Install the stack
             stack_spec
                 .install(release_list, &common_args.operator_namespace)
-                .context(StackSnafu {})?;
+                .context(StackSnafu)?;
 
             // Install stack manifests
             stack_spec
@@ -236,7 +235,7 @@ async fn install_cmd(
                     transfer_client,
                 )
                 .await
-                .context(StackSnafu {})?;
+                .context(StackSnafu)?;
 
             Ok(format!("Install stack {}", args.stack_name))
         }

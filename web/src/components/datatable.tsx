@@ -1,4 +1,7 @@
 import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
+import { Button } from './button';
+import { SearchInput } from './form/search';
+import { LoadingBar } from './loading';
 
 export interface DataTableColumn<T> {
   label: string;
@@ -9,6 +12,14 @@ export interface DataTableColumn<T> {
 export interface DataTableProps<T> {
   columns: DataTableColumn<T>[];
   items: T[];
+
+  searchQuery?: string;
+  setSearchQuery?: (query: string) => void;
+
+  extraButtons?: JSX.Element;
+
+  refresh?: () => void;
+  isLoading?: boolean;
 }
 
 export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
@@ -35,7 +46,20 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
   };
 
   return (
-    <>
+    <div class='bg-gray-800 rounded-2 overflow-clip'>
+      <div class='p-4 flex flex-gap-4'>
+        <Show when={props.searchQuery !== undefined}>
+          <SearchInput
+            query={props.searchQuery || ''}
+            setQuery={(q) => props.setSearchQuery?.(q)}
+          />
+        </Show>
+        <div class='flex-grow' />
+        {props.extraButtons}
+        <Show when={props.refresh}>
+          <Button onClick={() => props.refresh?.()}>Refresh</Button>
+        </Show>
+      </div>
       <table class='font-sans border-collapse text-left w-full'>
         <thead class='text-xs uppercase text-gray-400 bg-gray-700'>
           <tr>
@@ -55,14 +79,21 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
               )}
             </For>
           </tr>
+          <tr>
+            <th class='line-height-0 m-0 p-0' colspan={props.columns.length}>
+              <div classList={{ invisible: !props.isLoading }}>
+                <LoadingBar />
+              </div>
+            </th>
+          </tr>
         </thead>
         <tbody>
           <For each={sortedItems()}>
             {(item) => (
-              <tr class='bg-gray-800 border-b border-b-style-solid border-gray-700'>
+              <tr class='border-t border-t-style-solid border-gray-700'>
                 <For each={props.columns}>
                   {(col) => (
-                    <td class='px-4 py-3 font-medium text-gray-400'>
+                    <td class='px-4 py-3 font-medium text-white'>
                       {col.get(item)}
                     </td>
                   )}
@@ -72,7 +103,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
           </For>
         </tbody>
       </table>
-    </>
+    </div>
   );
 }
 

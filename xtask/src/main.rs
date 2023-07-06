@@ -43,36 +43,34 @@ fn main() -> Result<(), TaskError> {
         XtaskCommand::GenMan => {
             let cmd = Cli::command();
 
-            fs::create_dir_all("extra/man").context(IoSnafu {})?;
-            let mut f = fs::File::create("extra/man/stackablectl.1").context(IoSnafu {})?;
+            fs::create_dir_all("extra/man").context(IoSnafu)?;
+            let mut f = fs::File::create("extra/man/stackablectl.1").context(IoSnafu)?;
 
             let man = Man::new(cmd);
-            man.render(&mut f).context(IoSnafu {})?
+            man.render(&mut f).context(IoSnafu)?
         }
         XtaskCommand::GenComp => {
             let mut cmd = Cli::command();
             let name = cmd.get_name().to_string();
 
-            fs::create_dir_all("extra/completions").context(IoSnafu {})?;
+            fs::create_dir_all("extra/completions").context(IoSnafu)?;
 
             // Bash completions
-            let mut f =
-                fs::File::create("extra/completions/stackablectl.bash").context(IoSnafu {})?;
+            let mut f = fs::File::create("extra/completions/stackablectl.bash").context(IoSnafu)?;
             generate(Shell::Bash, &mut cmd, name.clone(), &mut f);
 
             // Fish completions
-            let mut f =
-                fs::File::create("extra/completions/stackablectl.fish").context(IoSnafu {})?;
+            let mut f = fs::File::create("extra/completions/stackablectl.fish").context(IoSnafu)?;
             generate(Shell::Fish, &mut cmd, name.clone(), &mut f);
 
             // ZSH completions
-            let mut f = fs::File::create("extra/completions/_stackablectl").context(IoSnafu {})?;
+            let mut f = fs::File::create("extra/completions/_stackablectl").context(IoSnafu)?;
             generate(Shell::Zsh, &mut cmd, name, &mut f);
         }
         XtaskCommand::GenOpenapi => {
             let openapi_json = ApiDoc::openapi().to_json().context(SerializeOpenApiSnafu)?;
-            let mut codegen = Command::new("pnpm")
-                .args(["--filter", "web-ui", "run", "openapi-codegen"])
+            let mut codegen = Command::new("yarn")
+                .args(["--cwd", "web", "run", "openapi-codegen"])
                 .stdin(Stdio::piped())
                 .spawn()
                 .context(ImportOpenapiSchemaRunSnafu)?;

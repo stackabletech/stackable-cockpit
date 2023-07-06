@@ -113,11 +113,11 @@ impl ReleaseArgs {
 
         let files = common_args
             .get_release_files()
-            .context(PathOrUrlParseSnafu {})?;
+            .context(PathOrUrlParseSnafu)?;
 
         let release_list = ReleaseList::build(&files, &transfer_client)
             .await
-            .context(ListSnafu {})?;
+            .context(ListSnafu)?;
 
         if release_list.inner().is_empty() {
             return Ok("No releases".into());
@@ -152,10 +152,11 @@ async fn list_cmd(
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL)
-                .set_header(vec!["RELEASE", "RELEASE DATE", "DESCRIPTION"]);
+                .set_header(vec!["#", "RELEASE", "RELEASE DATE", "DESCRIPTION"]);
 
-            for (release_name, release_spec) in release_list.inner() {
+            for (index, (release_name, release_spec)) in release_list.inner().iter().enumerate() {
                 table.add_row(vec![
+                    (index + 1).to_string(),
                     release_name.to_string(),
                     release_spec.date.clone(),
                     release_spec.description.clone(),
@@ -224,9 +225,9 @@ async fn install_cmd(
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
-        .context(CommonClusterArgsSnafu {})?;
+        .context(CommonClusterArgsSnafu)?;
 
     match release_list.get(&args.release) {
         Some(release) => {
@@ -236,7 +237,7 @@ async fn install_cmd(
                     &args.excluded_products,
                     &common_args.operator_namespace,
                 )
-                .context(ReleaseInstallSnafu {})?;
+                .context(ReleaseInstallSnafu)?;
 
             Ok("Installed release".into())
         }
@@ -255,7 +256,7 @@ async fn uninstall_cmd(
         Some(release) => {
             release
                 .uninstall(&common_args.operator_namespace)
-                .context(ReleaseUninstallSnafu {})?;
+                .context(ReleaseUninstallSnafu)?;
 
             Ok("Installed release".into())
         }

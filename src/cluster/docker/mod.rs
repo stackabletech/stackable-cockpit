@@ -22,10 +22,10 @@ pub async fn check_if_docker_is_running() -> Result<(), DockerError> {
         .arg("info")
         .stdout(Stdio::null())
         .spawn()
-        .context(IoSnafu {})?
+        .context(IoSnafu)?
         .wait()
         .await
-        .context(IoSnafu {})?
+        .context(IoSnafu)?
         .success()
     {
         return Ok(());

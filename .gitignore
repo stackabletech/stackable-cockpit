@@ -1,3 +1,9 @@
 /target
 .env
 /node_modules
+/result
+gomod2nix.toml
+Cargo.nix
+.yarn
+.pnp
+.pnp.*

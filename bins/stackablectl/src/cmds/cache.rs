@@ -44,19 +44,19 @@ impl CacheArgs {
 
 fn list_cmd() -> Result<String, CacheCmdError> {
     let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
+        .context(XdgSnafu)?
         .get_cache_home();
 
-    fs::create_dir_all(cache_dir.clone()).context(IoSnafu {})?;
+    fs::create_dir_all(cache_dir.clone()).context(IoSnafu)?;
 
     let mut files = fs::read_dir(cache_dir)
-        .context(IoSnafu {})?
+        .context(IoSnafu)?
         .map(|res| {
             let entry = res?;
             Ok((entry.path(), entry.metadata()?.modified()?))
         })
         .collect::<Result<Vec<_>, io::Error>>()
-        .context(IoSnafu {})?;
+        .context(IoSnafu)?;
 
     files.sort();
 
@@ -85,11 +85,11 @@ fn list_cmd() -> Result<String, CacheCmdError> {
 
 fn clean_cmd() -> Result<String, CacheCmdError> {
     let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu {})?
+        .context(XdgSnafu)?
         .get_cache_home();
 
-    fs::remove_dir_all(cache_dir.clone()).context(IoSnafu {})?;
-    fs::create_dir_all(cache_dir).context(IoSnafu {})?;
+    fs::remove_dir_all(cache_dir.clone()).context(IoSnafu)?;
+    fs::create_dir_all(cache_dir).context(IoSnafu)?;
 
     Ok("Cleaned cached files".into())
 }

@@ -2,8 +2,9 @@ use std::{collections::HashMap, path::PathBuf};
 
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
-use tera::{Context, Tera};
 use tokio::{fs, io};
+
+use crate::utils::templating;
 
 #[derive(Debug, Snafu)]
 pub enum LocalReadError {
@@ -18,7 +19,7 @@ pub enum LocalReadError {
 }
 
 pub async fn read_plain_data_from_file(path: PathBuf) -> Result<String, LocalReadError> {
-    fs::read_to_string(path).await.context(IoSnafu {})
+    fs::read_to_string(path).await.context(IoSnafu)
 }
 
 pub async fn read_plain_data_from_file_with_templating(
@@ -26,17 +27,7 @@ pub async fn read_plain_data_from_file_with_templating(
     parameters: &HashMap<String, String>,
 ) -> Result<String, LocalReadError> {
     let content = read_plain_data_from_file(path).await?;
-
-    // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
-
-    // Render template using a one-off function
-    Tera::one_off(&content, &context, true).context(TemplatingSnafu)
+    templating::render(&content, parameters).context(TemplatingSnafu)
 }
 
 /// Reads YAML data from a local file at `path` and deserializes it into type
@@ -47,7 +38,7 @@ where
     T: for<'a> Deserialize<'a> + Sized,
 {
     let content = read_plain_data_from_file(path).await?;
-    let data = serde_yaml::from_str(&content).context(YamlSnafu {})?;
+    let data = serde_yaml::from_str(&content).context(YamlSnafu)?;
 
     Ok(data)
 }
@@ -65,16 +56,6 @@ where
     T: for<'a> Deserialize<'a>,
 {
     let content = read_plain_data_from_file(path).await?;
-
-    // Create templating context
-    let mut context = Context::new();
-
-    // Fill context with parameters
-    for (name, value) in parameters {
-        context.insert(name, value)
-    }
-
-    // Render template using a one-off function
-    let result = Tera::one_off(&content, &context, true).context(TemplatingSnafu)?;
-    serde_yaml::from_str(&result).context(YamlSnafu {})
+    let content = templating::render(&content, parameters).context(TemplatingSnafu)?;
+    serde_yaml::from_str(&content).context(YamlSnafu)
 }
