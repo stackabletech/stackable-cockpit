@@ -44,6 +44,11 @@ impl TransferClient {
         Self { client, cache }
     }
 
+    /// Initializes internal components.
+    pub async fn init(&self) -> Result<()> {
+        self.cache.init().await.context(CacheSnafu)
+    }
+
     /// Retrieves plain data from the provided `url`.
     pub async fn get_plain_data(&self, url: &Url) -> Result<String> {
         self.get_from_cache_or_remote(url).await

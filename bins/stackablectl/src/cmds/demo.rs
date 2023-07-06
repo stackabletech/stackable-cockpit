@@ -13,7 +13,7 @@ use stackable::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
-    xfer::TransferClient,
+    xfer::{TransferClient, TransferError},
 };
 use tracing::{debug, info, instrument};
 
@@ -119,6 +119,9 @@ pub enum DemoCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: TransferError },
 }
 
 impl DemoArgs {
@@ -127,6 +130,7 @@ impl DemoArgs {
         debug!("Handle demo args");
 
         let transfer_client = TransferClient::new(common_args.cache_settings()?);
+        transfer_client.init().await.context(TransferSnafu)?;
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.

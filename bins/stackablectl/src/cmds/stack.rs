@@ -4,7 +4,7 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 use stackable::{
     common::ListError,
@@ -13,7 +13,7 @@ use stackable::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
-    xfer::TransferClient,
+    xfer::{TransferClient, TransferError},
 };
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
@@ -103,11 +103,17 @@ pub enum StackCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: TransferError },
 }
 
 impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
+        debug!("Handle stack args");
+
         let transfer_client = TransferClient::new(common_args.cache_settings()?);
+        transfer_client.init().await.context(TransferSnafu)?;
 
         let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
