@@ -1,4 +1,4 @@
-use std::net::IpAddr;
+use std::{net::IpAddr, path::PathBuf};
 
 use clap::Parser;
 
@@ -16,4 +16,10 @@ pub struct Cli {
     /// Address the server binds to
     #[arg(short, long, default_value = "127.0.0.1", env = "STACKABLED_ADDRESS")]
     pub address: IpAddr,
+
+    /// Path to the password database, can be generated with the Apache `htpasswd` utility
+    ///
+    /// Only bcrypt passwords are supported (`htpasswd -B`).
+    #[arg(long, env = "STACKABLED_HTPASSWD_PATH")]
+    pub htpasswd: PathBuf,
 }

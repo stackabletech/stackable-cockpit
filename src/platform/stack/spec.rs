@@ -157,6 +157,8 @@ impl StackSpecV2 {
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
+                    debug!("Installing manifest from Helm chart {}", helm_file);
+
                     // Read Helm chart YAML and apply templating
                     let helm_chart = read_yaml_data_with_templating(helm_file, parameters)
                         .await
@@ -192,7 +194,7 @@ impl StackSpecV2 {
                     .context(HelmSnafu)?;
                 }
                 ManifestSpec::PlainYaml(path_or_url) => {
-                    info!("Installing YAML manifest from {}", path_or_url);
+                    debug!("Installing YAML manifest from {}", path_or_url);
 
                     // Read YAML manifest and apply templating
                     let manifests = read_yaml_data_with_templating(path_or_url, parameters)

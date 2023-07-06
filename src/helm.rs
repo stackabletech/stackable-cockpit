@@ -104,7 +104,7 @@ pub enum HelmInstallReleaseError {
 pub enum HelmInstallReleaseStatus {
     /// Indicates that a release is already installed with a different version
     /// than requested.
-    ReleaseAlreadyInstalledWithversion {
+    ReleaseAlreadyInstalledWithVersion {
         release_name: String,
         current_version: String,
         requested_version: String,
@@ -124,7 +124,7 @@ pub enum HelmInstallReleaseStatus {
 impl Display for HelmInstallReleaseStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
+            HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
                 release_name,
                 current_version,
                 requested_version,
@@ -254,7 +254,7 @@ pub fn install_release_from_repo(
             Some(chart_version) => {
                 if chart_version == current_version {
                     return Ok(
-                        HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
+                        HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
                             requested_version: chart_version.to_string(),
                             release_name: release_name.to_string(),
                             current_version,

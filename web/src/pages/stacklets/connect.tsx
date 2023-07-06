@@ -6,7 +6,7 @@ import {
   createResource,
   createUniqueId,
 } from 'solid-js';
-import { DiscoveryFieldType, getStackletDiscovery } from '../../api';
+import { DiscoveryFieldType, getStackletDiscovery } from '../../api/stacklets';
 import { Params, useParams } from '@solidjs/router';
 
 interface StackletConnectionDetailsParams extends Params {

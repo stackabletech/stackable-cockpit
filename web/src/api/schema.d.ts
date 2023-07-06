@@ -24,6 +24,12 @@ export interface paths {
      */
     get: operations["get_demo"];
   };
+  "/login": {
+    post: operations["log_in"];
+  };
+  "/ping": {
+    get: operations["ping"];
+  };
   "/releases": {
     /**
      * Retrieves all releases. 
@@ -96,6 +102,10 @@ export interface components {
       /** @description Date this released was released */
       releaseDate: string;
     };
+    Session: {
+      sessionToken: components["schemas"]["SessionToken"];
+    };
+    SessionToken: string;
     Stacklet: {
       /** @description Multiple cluster conditions */
       conditions: (components["schemas"]["DisplayCondition"])[];
@@ -153,6 +163,29 @@ export interface operations {
       };
       /** @description Retrieving the demo with 'name' failed */
       404: never;
+    };
+  };
+  log_in: {
+    responses: {
+      200: {
+        content: {
+          "application/json": components["schemas"]["Session"];
+        };
+      };
+      401: {
+        content: {
+          "text/plain": string;
+        };
+      };
+    };
+  };
+  ping: {
+    responses: {
+      200: {
+        content: {
+          "text/plain": string;
+        };
+      };
     };
   };
   /**
