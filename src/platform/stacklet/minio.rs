@@ -4,15 +4,15 @@ use snafu::ResultExt;
 
 use crate::{
     kube::{ConditionsExt, KubeClient},
-    platform::stacklet::{KubeSnafu, Product, StackletError},
+    platform::stacklet::{KubeSnafu, Stacklet, StackletError},
 };
 
-pub(super) async fn list_products(
+pub(super) async fn list(
     kube_client: &KubeClient,
     namespace: Option<&str>,
-) -> Result<Vec<Product>, StackletError> {
+) -> Result<Vec<Stacklet>, StackletError> {
     let params = ListParams::default().labels("app=minio");
-    let mut products = Vec::new();
+    let mut stacklets = Vec::new();
 
     // MinIO can either be installed in standalone mode which creates a Deployment
     // The other option is to run it in a distributed mode, which created a StatefulSet
@@ -28,9 +28,10 @@ pub(super) async fn list_products(
             None => vec![],
         };
 
-        products.push(Product {
+        stacklets.push(Stacklet {
             name: deployment.name_any(),
             namespace: deployment.namespace(),
+            product: "minio".to_string(),
             conditions: conditions.plain(),
         })
     }
@@ -46,12 +47,13 @@ pub(super) async fn list_products(
             None => vec![],
         };
 
-        products.push(Product {
+        stacklets.push(Stacklet {
             name: stateful_set.name_any(),
             namespace: stateful_set.namespace(),
+            product: "minio".to_string(),
             conditions: conditions.plain(),
         })
     }
 
-    Ok(products)
+    Ok(stacklets)
 }

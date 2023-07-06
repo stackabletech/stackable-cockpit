@@ -6,7 +6,7 @@ use tracing::{info, instrument};
 
 use stackable::{
     kube::DisplayCondition,
-    platform::stacklet::{list_stacklets, StackletError},
+    platform::stacklet::{list, StackletError},
 };
 
 use crate::{
@@ -73,7 +73,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .all_namespaces
         .then_some(common_args.operator_namespace.as_str());
 
-    let stacklets = list_stacklets(namespace).await.context(StackletListSnafu)?;
+    let stacklets = list(namespace).await.context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
         return Ok("No stacklets".into());
@@ -96,29 +96,26 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             let mut error_list = Vec::new();
             let mut error_index = 1;
 
-            for (product_name, products) in stacklets {
-                for product in products {
-                    let ConditionOutput { summary, errors } =
-                        render_conditions(product.conditions, &mut error_index, use_color);
+            for stacklet in stacklets {
+                let ConditionOutput { summary, errors } =
+                    render_conditions(stacklet.conditions, &mut error_index, use_color);
 
-                    table.add_row(vec![
-                        product_name.clone(),
-                        product.name,
-                        product.namespace.unwrap_or_default(),
-                        summary,
-                    ]);
+                table.add_row(vec![
+                    stacklet.product,
+                    stacklet.name,
+                    stacklet.namespace.unwrap_or_default(),
+                    summary,
+                ]);
 
-                    match render_errors(errors) {
-                        Some(err) => error_list.push(err),
-                        None => (),
-                    }
+                if let Some(err) = render_errors(errors) {
+                    error_list.push(err)
                 }
             }
 
             // Only output the error table if there are errors to report.
             Ok(format!(
                 "{table}{errors}",
-                errors = if error_list.len() > 0 {
+                errors = if !error_list.is_empty() {
                     format!("\n\n{}", error_list.join("\n"))
                 } else {
                     "".into()
@@ -155,12 +152,11 @@ fn render_conditions(
             use_color,
         ));
 
-        match render_condition_error(cond.message, cond.is_good, *error_index, use_color) {
-            Some(error) => {
-                errors.push(error);
-                *error_index += 1;
-            }
-            None => (),
+        if let Some(error) =
+            render_condition_error(cond.message, cond.is_good, *error_index, use_color)
+        {
+            errors.push(error);
+            *error_index += 1;
         };
     }
 
@@ -212,7 +208,7 @@ fn color_condition(
 
 /// Renders multiple errors (of one stacklet)
 fn render_errors(errors: Vec<String>) -> Option<String> {
-    if errors.len() == 0 {
+    if errors.is_empty() {
         None
     } else if errors.len() == 1 {
         Some(errors[0].clone())
