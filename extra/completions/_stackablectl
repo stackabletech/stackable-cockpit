@@ -513,14 +513,6 @@ minikube\:"Use a minikube cluster"))' \
 ':DEMO -- Demo to install:' \
 && ret=0
 ;;
-(uninstall)
-_arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
-'-V[Print version]' \
-'--version[Print version]' \
-&& ret=0
-;;
 (help)
 _arguments "${_arguments_options[@]}" \
 ":: :_stackablectl__demo__help_commands" \
@@ -542,10 +534,6 @@ _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
 (install)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
-(uninstall)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -853,10 +841,6 @@ _arguments "${_arguments_options[@]}" \
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
-(uninstall)
-_arguments "${_arguments_options[@]}" \
-&& ret=0
-;;
         esac
     ;;
 esac
@@ -1012,7 +996,6 @@ _stackablectl__demo_commands() {
 'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
-'uninstall:' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl demo commands' commands "$@"
@@ -1023,7 +1006,6 @@ _stackablectl__help__demo_commands() {
 'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
-'uninstall:' \
     )
     _describe -t commands 'stackablectl help demo commands' commands "$@"
 }
@@ -1137,7 +1119,6 @@ _stackablectl__demo__help_commands() {
 'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
-'uninstall:' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl demo help commands' commands "$@"
@@ -1469,21 +1450,6 @@ _stackablectl__stacklets_commands() {
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl stacklets commands' commands "$@"
-}
-(( $+functions[_stackablectl__demo__help__uninstall_commands] )) ||
-_stackablectl__demo__help__uninstall_commands() {
-    local commands; commands=()
-    _describe -t commands 'stackablectl demo help uninstall commands' commands "$@"
-}
-(( $+functions[_stackablectl__demo__uninstall_commands] )) ||
-_stackablectl__demo__uninstall_commands() {
-    local commands; commands=()
-    _describe -t commands 'stackablectl demo uninstall commands' commands "$@"
-}
-(( $+functions[_stackablectl__help__demo__uninstall_commands] )) ||
-_stackablectl__help__demo__uninstall_commands() {
-    local commands; commands=()
-    _describe -t commands 'stackablectl help demo uninstall commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__operator__uninstall_commands] )) ||
 _stackablectl__help__operator__uninstall_commands() {
