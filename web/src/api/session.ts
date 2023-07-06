@@ -4,7 +4,7 @@ import { createLocalStorageSignal } from '../utils/localstorage';
 import { None, someIfDefined } from '../types';
 import { createMemo } from 'solid-js';
 
-const createClient = (options: RequestInit) =>
+const createClient = (options?: RequestInit) =>
   openapiCreateClient<paths>({ baseUrl: '/api', ...options });
 const [currentSessionToken, setCurrentSessionToken] =
   createLocalStorageSignal('sessionToken');
@@ -40,7 +40,7 @@ export async function logIn(
   password: string,
 ): Promise<string | undefined> {
   // Always use unauthenticated client for login requests
-  const response = await createClient({}).post('/login', {
+  const response = await createClient().post('/login', {
     headers: { Authorization: 'Basic ' + btoa(`${username}:${password}`) },
   });
   setCurrentSessionToken(someIfDefined(response.data?.sessionToken));

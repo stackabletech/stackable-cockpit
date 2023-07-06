@@ -30,13 +30,6 @@
         }
       }
     ],
-    // foo(undefined) is not always equivalent to foo()
-    "unicorn/no-useless-undefined": [
-      "error",
-      {
-        "checkArguments": false
-      }
-    ],
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
