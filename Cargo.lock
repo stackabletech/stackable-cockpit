@@ -2736,7 +2736,7 @@ dependencies = [
 
 [[package]]
 name = "stackable"
-version = "0.1.0"
+version = "0.0.0-dev"
 dependencies = [
  "bcrypt",
  "gobuild",
@@ -2805,7 +2805,7 @@ dependencies = [
 
 [[package]]
 name = "stackablectl"
-version = "0.0.1"
+version = "0.0.0-dev"
 dependencies = [
  "clap",
  "clap_complete",
@@ -2829,9 +2829,10 @@ dependencies = [
 
 [[package]]
 name = "stackabled"
-version = "0.0.1"
+version = "0.0.0-dev"
 dependencies = [
  "axum",
+ "bcrypt",
  "clap",
  "futures",
  "k8s-openapi",
@@ -2840,14 +2841,16 @@ dependencies = [
  "stackable",
  "stackabled-web",
  "tokio",
+ "tower-http",
  "tracing",
  "utoipa",
  "utoipa-swagger-ui",
+ "uuid",
 ]
 
 [[package]]
 name = "stackabled-web"
-version = "0.1.0"
+version = "0.0.0-dev"
 dependencies = [
  "phf 0.11.2",
  "phf_codegen 0.11.2",
@@ -3431,6 +3434,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "uuid"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d023da39d1fde5a8a3fe1f3e01ca9632ada0a63e9797de55a879d6e2236277be"
+dependencies = [
+ "getrandom",
+]
+
+[[package]]
 name = "valuable"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3773,7 +3785,7 @@ checksum = "5a56c84a8ccd4258aed21c92f70c0f6dea75356b6892ae27c24139da456f9336"
 
 [[package]]
 name = "xtask"
-version = "0.0.1"
+version = "0.0.0-dev"
 dependencies = [
  "clap",
  "clap_complete",

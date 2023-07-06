@@ -6,7 +6,7 @@ import {
   createSignal,
   createMemo,
 } from 'solid-js';
-import { getListeners } from '../api';
+import { getListeners } from '../api/listeners';
 import { DataTable } from '../components/datatable';
 import { Title } from '../components/title';
 

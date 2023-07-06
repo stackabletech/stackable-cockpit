@@ -46,7 +46,7 @@ helm-package:
 	mkdir -p target/helm && helm package --destination target/helm deploy/helm/${OPERATOR_NAME}
 
 ## Chart related targets
-compile-chart: version crds config
+compile-chart: version config
 
 chart-clean:
 	rm -rf "deploy/helm/${OPERATOR_NAME}/configs"
@@ -62,9 +62,9 @@ config:
 		cp -r deploy/config-spec/* "deploy/helm/${OPERATOR_NAME}/configs";\
 	fi
 
-crds:
-	mkdir -p deploy/helm/"${OPERATOR_NAME}"/crds
-	cargo run --bin stackable-"${OPERATOR_NAME}" -- crd | yq eval '.metadata.annotations["helm.sh/resource-policy"]="keep"' - > "deploy/helm/${OPERATOR_NAME}/crds/crds.yaml"
+# crds:
+# 	mkdir -p deploy/helm/"${OPERATOR_NAME}"/crds
+# 	cargo run --bin "${OPERATOR_NAME}" -- crd | yq eval '.metadata.annotations["helm.sh/resource-policy"]="keep"' - > "deploy/helm/${OPERATOR_NAME}/crds/crds.yaml"
 
 chart-lint: compile-chart
 	docker run -it -v $(shell pwd):/build/helm-charts -w /build/helm-charts quay.io/helmpack/chart-testing:v3.5.0  ct lint --config deploy/helm/ct.yaml

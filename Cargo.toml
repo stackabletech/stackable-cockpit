@@ -6,9 +6,12 @@ members = [
   "."
 ]
 
+[workspace.package]
+version = "0.0.0-dev"
+
 [package]
 name = "stackable"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 publish = false
 

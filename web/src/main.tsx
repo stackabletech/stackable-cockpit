@@ -7,6 +7,7 @@ import { Listeners } from './pages/listeners';
 import { Header } from './components/header';
 import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
+import { LoginPageOr } from './pages/login';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -15,18 +16,20 @@ const Home = () => {
 const App = () => {
   return (
     <div class='bg-gray-900 min-h-screen c-white'>
-      <Header />
-      <div class='max-w-5xl mx-a mt-16'>
-        <Routes>
-          <Route
-            path='/stacklets/:namespace/:name/connect'
-            component={StackletConnectionDetails}
-          />
-          <Route path='/stacklets' component={Stacklets} />
-          <Route path='/listeners' component={Listeners} />
-          <Route path='/' component={Home} />
-        </Routes>
-      </div>
+      <LoginPageOr>
+        <Header />
+        <div class='max-w-5xl mx-a mt-16'>
+          <Routes>
+            <Route
+              path='/stacklets/:namespace/:name/connect'
+              component={StackletConnectionDetails}
+            />
+            <Route path='/stacklets' component={Stacklets} />
+            <Route path='/listeners' component={Listeners} />
+            <Route path='/' component={Home} />
+          </Routes>
+        </div>
+      </LoginPageOr>
     </div>
   );
 };

@@ -1,34 +1,45 @@
 use std::net::SocketAddr;
 
-use api_doc::ApiDoc;
-use axum::{response::Redirect, routing::get, Router, Server};
+use axum::{
+    response::Redirect,
+    routing::{get, post},
+    Router, Server,
+};
 use clap::Parser;
 use futures::FutureExt;
-use utoipa::OpenApi;
+use snafu::{ResultExt, Whatever};
+use stackabled::{
+    api_doc, handlers,
+    middleware::{self, authentication::Authenticator},
+};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::cli::Cli;
 
-mod api_doc;
 mod cli;
-mod handlers;
 
 #[tokio::main]
-async fn main() {
+#[snafu::report]
+async fn main() -> Result<(), Whatever> {
     let cli = Cli::parse();
+
+    let authn =
+        Authenticator::load_htpasswd(&cli.htpasswd).whatever_context("failed to load htpasswd")?;
 
     // Run the server
     let api = Router::new()
-        .route("/", get(handlers::root::get_root))
+        .route("/ping", get(handlers::root::ping))
         .nest("/demos", handlers::demos::router())
         .nest("/stacks", handlers::stacks::router())
         .nest("/releases", handlers::releases::router())
-        .nest("/stacklets", handlers::stacklets::router());
+        .nest("/stacklets", handlers::stacklets::router())
+        .route("/login", post(middleware::authentication::log_in))
+        .layer(authn.clone().layer());
 
     let router = Router::new()
         .nest("/api/", api)
         .nest("/ui/", handlers::ui::router())
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api_doc::openapi()))
         .route("/", get(|| async { Redirect::permanent("/ui/") }));
 
     // Needed in next axum version
@@ -41,6 +52,8 @@ async fn main() {
     {
         eprintln!("{err}")
     }
+
+    Ok(())
 }
 
 async fn wait_for_shutdown_signal() {
