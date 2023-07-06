@@ -62,6 +62,8 @@ hooks are:
 - `cargo fmt -- --check`: Checks if Rust code needs formatting
 - `cargo xtask gen-comp`: Runs shell completions generation for `stackablectl`
 - `cargo xtask gen-mam`: Runs man page generation for `stackablectl`
+- `cargo xtask gen-openapi`: Runs OpenAPI spec generation to connect backend with frontend
+- `cargo xtask gen-ctl-readme`: Generates and inserts `stackablectl` help text into README
 
 [server-readme]: ./bins/stackabled/README.md
 [ctl-readme]: ./bins/stackablectl/README.md
