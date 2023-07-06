@@ -250,7 +250,7 @@ async fn install_cmd(
     );
 
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
         .context(CommonClusterArgsSnafu)?;
 

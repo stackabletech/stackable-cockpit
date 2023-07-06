@@ -14,6 +14,7 @@ use stackable::{
     },
     utils::{params::IntoParametersError, path::PathOrUrlParseError},
 };
+use tracing::{debug, info, instrument};
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
@@ -36,9 +37,8 @@ pub enum DemoCommands {
     /// Install a specific demo
     #[command(aliases(["i", "in"]))]
     Install(DemoInstallArgs),
-
-    #[command(aliases(["rm", "un"]))]
-    Uninstall(DemoUninstallArgs),
+    // #[command(aliases(["rm", "un"]))]
+    // Uninstall(DemoUninstallArgs),
 }
 
 #[derive(Debug, Args)]
@@ -50,7 +50,13 @@ pub struct DemoListArgs {
 #[derive(Debug, Args)]
 pub struct DemoDescribeArgs {
     /// Demo to describe
-    #[arg(name = "DEMO")]
+    #[arg(
+        name = "DEMO",
+        long_help = "Demo to describe
+
+Use \"stackablectl demo list\" to display a list of available demos.
+Use \"stackablectl demo install <DEMO>\" to install a specific demo."
+    )]
     demo_name: String,
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
@@ -60,7 +66,13 @@ pub struct DemoDescribeArgs {
 #[derive(Debug, Args)]
 pub struct DemoInstallArgs {
     /// Demo to install
-    #[arg(name = "DEMO")]
+    #[arg(
+        name = "DEMO",
+        long_help = "Demo to install
+
+Use \"stackablectl demo list\" to display a list of available demos.
+Use \"stackablectl demo describe <DEMO>\" to display details about the specified demo."
+    )]
     demo_name: String,
 
     /// List of parameters to use when installing the stack
@@ -115,7 +127,10 @@ pub enum DemoCmdError {
 }
 
 impl DemoArgs {
+    #[instrument]
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
+        debug!("Handle demo args");
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
         let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
@@ -128,13 +143,16 @@ impl DemoArgs {
             DemoCommands::List(args) => list_cmd(args, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
             DemoCommands::Install(args) => install_cmd(args, common_args, list).await,
-            DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
+            // DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
         }
     }
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
+#[instrument]
 async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
+    info!("Listing demos");
+
     match args.output_type {
         OutputType::Plain => {
             let mut table = Table::new();
@@ -166,7 +184,10 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
+#[instrument]
 async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
+    info!("Describing demo");
+
     let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
@@ -196,15 +217,23 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 }
 
 /// Install a specific demo
+#[instrument(skip(list))]
 async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
 ) -> Result<String, DemoCmdError> {
+    info!("Installing demo");
+
     // Get the demo spec by name from the list
     let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
+
+    args.local_cluster
+        .install_if_needed(None)
+        .await
+        .context(CommonClusterArgsSnafu)?;
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
@@ -234,7 +263,7 @@ async fn install_cmd(
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None, None)
+        .install_if_needed(None)
         .await
         .context(CommonClusterArgsSnafu)?;
 
@@ -263,6 +292,6 @@ async fn install_cmd(
     Ok("".into())
 }
 
-fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
-    todo!()
-}
+// fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
+//     todo!()
+// }
