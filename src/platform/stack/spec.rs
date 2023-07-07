@@ -25,7 +25,10 @@ use crate::{
             LocalReadError,
         },
     },
-    xfer::{TransferClient, TransferError},
+    xfer::{
+        parser::{Parser, Tera, Yaml},
+        TransferClient, TransferError,
+    },
 };
 
 pub type RawStackParameterParseError = RawParameterParseError;
@@ -176,7 +179,7 @@ impl StackSpecV2 {
                                     .context(LocalReadSnafu)?
                             }
                             PathOrUrl::Url(url) => transfer_client
-                                .get_templated_yaml_data(&url, parameters)
+                                .get(&url, &Tera { parameters }.then(Yaml::default()))
                                 .await
                                 .context(TransferSnafu)?,
                         };
@@ -222,7 +225,7 @@ impl StackSpecV2 {
                                 .context(LocalReadSnafu)?
                         }
                         PathOrUrl::Url(url) => transfer_client
-                            .get_templated_yaml_data(&url, parameters)
+                            .get(&url, &Tera { parameters }.then(Yaml::default()))
                             .await
                             .context(TransferSnafu)?,
                     };

@@ -211,7 +211,7 @@ async fn install_cmd(
         .get_release_files()
         .context(PathOrUrlParseSnafu {})?;
 
-    let release_list = ReleaseList::build(&files, &transfer_client)
+    let release_list = ReleaseList::build(&files, transfer_client)
         .await
         .context(ListSnafu {})?;
 

@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-
-use serde::Deserialize;
 use snafu::{ensure, ResultExt, Snafu};
 use url::Url;
 
@@ -9,7 +6,7 @@ pub use cache::*;
 
 pub mod parser;
 
-use self::parser::{Parser, Tera, Text, Yaml};
+use self::parser::Parser;
 
 type Result<T> = core::result::Result<T, TransferError>;
 
@@ -51,50 +48,6 @@ impl TransferClient {
         P: Parser<Input = String>,
     {
         parser.parse(self.get_from_cache_or_remote(url).await?)
-    }
-
-    /// Retrieves plain data from the provided `url`.
-    #[deprecated(note = "use TransferClient::get")]
-    pub async fn get_plain_data(&self, url: &Url) -> Result<String> {
-        self.get(url, &Text).await
-    }
-
-    /// Retrieves plain data from the provided `url` and applies templating
-    /// to it. Variables inside handlebars are replaced with values provided
-    /// by the `parameters`, which is a key-value map.
-    #[deprecated(note = "use TransferClient::get")]
-    pub async fn get_templated_plain_data(
-        &self,
-        url: &Url,
-        parameters: &HashMap<String, String>,
-    ) -> Result<String> {
-        self.get(url, &Tera { parameters }).await
-    }
-
-    /// Retrieves data from the provided `url` and tries to deserialize it
-    /// into YAML.
-    #[deprecated(note = "use TransferClient::get")]
-    pub async fn get_yaml_data<T>(&self, url: &Url) -> Result<T>
-    where
-        T: for<'a> Deserialize<'a> + Sized,
-    {
-        self.get(url, &Yaml::<T>::default()).await
-    }
-
-    /// Retrieves data from the provided `url`,  applies templating and tries
-    /// to deserialize it into YAML Variables inside handlebars are replaced
-    /// with values provided by the `parameters`, which is a key-value map.
-    #[deprecated(note = "use TransferClient::get")]
-    pub async fn get_templated_yaml_data<T>(
-        &self,
-        url: &Url,
-        parameters: &HashMap<String, String>,
-    ) -> Result<T>
-    where
-        T: for<'a> Deserialize<'a> + Sized,
-    {
-        self.get(url, &Tera { parameters }.then(Yaml::<T>::default()))
-            .await
     }
 
     /// Internal method which either looks up the requested file in the cache

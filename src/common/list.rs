@@ -9,7 +9,7 @@ use crate::{
         path::PathOrUrl,
         read::{read_yaml_data_from_file, LocalReadError},
     },
-    xfer::{TransferClient, TransferError},
+    xfer::{parser::Yaml, TransferClient, TransferError},
 };
 
 pub trait SpecIter<S> {
@@ -72,7 +72,7 @@ where
                     .await
                     .context(LocalReadSnafu {})?,
                 PathOrUrl::Url(url) => transfer_client
-                    .get_yaml_data::<L>(url)
+                    .get(url, &Yaml::<L>::default())
                     .await
                     .context(TransferSnafu)?,
             };
