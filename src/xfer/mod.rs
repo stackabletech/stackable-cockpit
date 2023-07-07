@@ -2,11 +2,14 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 use snafu::{ensure, ResultExt, Snafu};
-use tera::{Context, Tera};
 use url::Url;
 
 mod cache;
 pub use cache::*;
+
+pub mod parser;
+
+use self::parser::{Parser, Tera, Text, Yaml};
 
 type Result<T> = core::result::Result<T, TransferError>;
 
@@ -43,36 +46,45 @@ impl TransferClient {
         Self { client, cache }
     }
 
+    pub async fn get<P>(&self, url: &Url, parser: &P) -> Result<P::Output>
+    where
+        P: Parser<Input = String>,
+    {
+        parser.parse(self.get_from_cache_or_remote(url).await?)
+    }
+
     /// Retrieves plain data from the provided `url`.
+    #[deprecated(note = "use TransferClient::get")]
     pub async fn get_plain_data(&self, url: &Url) -> Result<String> {
-        self.get_from_cache_or_remote(url).await
+        self.get(url, &Text).await
     }
 
     /// Retrieves plain data from the provided `url` and applies templating
     /// to it. Variables inside handlebars are replaced with values provided
     /// by the `parameters`, which is a key-value map.
+    #[deprecated(note = "use TransferClient::get")]
     pub async fn get_templated_plain_data(
         &self,
         url: &Url,
         parameters: &HashMap<String, String>,
     ) -> Result<String> {
-        let content = self.get_from_cache_or_remote(url).await?;
-        Self::render_template(&content, parameters)
+        self.get(url, &Tera { parameters }).await
     }
 
     /// Retrieves data from the provided `url` and tries to deserialize it
     /// into YAML.
+    #[deprecated(note = "use TransferClient::get")]
     pub async fn get_yaml_data<T>(&self, url: &Url) -> Result<T>
     where
         T: for<'a> Deserialize<'a> + Sized,
     {
-        let content = self.get_from_cache_or_remote(url).await?;
-        serde_yaml::from_str(&content).context(YamlSnafu {})
+        self.get(url, &Yaml::<T>::default()).await
     }
 
     /// Retrieves data from the provided `url`,  applies templating and tries
     /// to deserialize it into YAML Variables inside handlebars are replaced
     /// with values provided by the `parameters`, which is a key-value map.
+    #[deprecated(note = "use TransferClient::get")]
     pub async fn get_templated_yaml_data<T>(
         &self,
         url: &Url,
@@ -81,9 +93,8 @@ impl TransferClient {
     where
         T: for<'a> Deserialize<'a> + Sized,
     {
-        let content = self.get_from_cache_or_remote(url).await?;
-        let content = Self::render_template(&content, parameters)?;
-        serde_yaml::from_str(&content).context(YamlSnafu {})
+        self.get(url, &Tera { parameters }.then(Yaml::<T>::default()))
+            .await
     }
 
     /// Internal method which either looks up the requested file in the cache
@@ -100,7 +111,7 @@ impl TransferClient {
         {
             CacheStatus::Hit(content) => Ok(content),
             CacheStatus::Expired | CacheStatus::Miss => {
-                let content = self.get(url).await?;
+                let content = self.get_from_remote(url).await?;
                 self.cache
                     .store(&file_name, &content)
                     .await
@@ -112,7 +123,7 @@ impl TransferClient {
     }
 
     /// Internal call which executes a HTTP GET request to `url`.
-    async fn get(&self, url: &Url) -> Result<String> {
+    async fn get_from_remote(&self, url: &Url) -> Result<String> {
         let req = self
             .client
             .get(url.clone())
@@ -134,24 +145,5 @@ impl TransferClient {
 
         ensure!(segment.contains('.'), FileNameSnafu {});
         Ok(segment.to_string())
-    }
-
-    /// Creates a template rendering context and inserts key-value pairs.
-    fn create_templating_context(parameters: &HashMap<String, String>) -> Context {
-        // Create templating context
-        let mut context = Context::new();
-
-        // Fill context with parameters
-        for (name, value) in parameters {
-            context.insert(name, value)
-        }
-
-        context
-    }
-
-    /// Renders templated content and returns it as a [`String`].
-    fn render_template(content: &str, parameters: &HashMap<String, String>) -> Result<String> {
-        let context = Self::create_templating_context(parameters);
-        Tera::one_off(content, &context, true).context(TemplatingSnafu)
     }
 }
