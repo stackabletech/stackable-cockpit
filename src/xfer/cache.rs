@@ -165,7 +165,7 @@ impl Cache {
         hasher.update(file_url.as_str().as_bytes());
         let file_url_hash = hasher.finalize();
 
-        base_path.join(format!("{sanitized_file_name}-{:x}", file_url_hash))
+        base_path.join(format!("{sanitized_file_name}-{file_url_hash:x}"))
     }
 }
 
