@@ -5,11 +5,8 @@ use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 
 use crate::{
-    utils::{
-        path::PathOrUrl,
-        read::{read_yaml_data_from_file, LocalReadError},
-    },
-    xfer::{FileTransferClient, FileTransferError},
+    utils::path::PathOrUrl,
+    xfer::{processor::Yaml, FileTransferClient, FileTransferError},
 };
 
 pub trait SpecIter<S> {
@@ -20,9 +17,6 @@ pub trait SpecIter<S> {
 pub enum ListError {
     #[snafu(display("io error"))]
     IoError { source: std::io::Error },
-
-    #[snafu(display("local read error"))]
-    LocalReadError { source: LocalReadError },
 
     #[snafu(display("url parse error"))]
     ParseUrlError { source: url::ParseError },
@@ -67,15 +61,10 @@ where
         let mut map = IndexMap::new();
 
         for file in files {
-            let specs = match file {
-                PathOrUrl::Path(path) => read_yaml_data_from_file::<L>(path.clone())
-                    .await
-                    .context(LocalReadSnafu {})?,
-                PathOrUrl::Url(url) => transfer_client
-                    .get_yaml_data::<L>(url)
-                    .await
-                    .context(TransferSnafu)?,
-            };
+            let specs = transfer_client
+                .get(file, &Yaml::<L>::new())
+                .await
+                .context(TransferSnafu)?;
 
             for (spec_name, spec) in specs.inner() {
                 map.insert(spec_name.clone(), spec.clone());

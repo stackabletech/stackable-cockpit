@@ -1,20 +1,27 @@
-use std::collections::HashMap;
+use std::path::PathBuf;
 
-use serde::Deserialize;
 use snafu::{ensure, ResultExt, Snafu};
+use tokio::fs;
 use url::Url;
 
 pub mod cache;
+pub mod processor;
 
 use crate::{
-    utils::templating,
-    xfer::cache::{Cache, CacheError, CacheSettings, CacheStatus},
+    utils::path::PathOrUrl,
+    xfer::{
+        cache::{Cache, CacheError, CacheSettings, CacheStatus},
+        processor::Processor,
+    },
 };
 
 type Result<T> = core::result::Result<T, FileTransferError>;
 
 #[derive(Debug, Snafu)]
 pub enum FileTransferError {
+    #[snafu(display("io error"))]
+    IoError { source: std::io::Error },
+
     #[snafu(display("failed to extract file name from URL"))]
     FileNameError,
 
@@ -51,47 +58,21 @@ impl FileTransferClient {
         self.cache.init().await.context(CacheSnafu)
     }
 
-    /// Retrieves plain data from the provided `url`.
-    pub async fn get_plain_data(&self, url: &Url) -> Result<String> {
-        self.get_from_cache_or_remote(url).await
-    }
-
-    /// Retrieves plain data from the provided `url` and applies templating
-    /// to it. Variables inside handlebars are replaced with values provided
-    /// by the `parameters`, which is a key-value map.
-    pub async fn get_templated_plain_data(
-        &self,
-        url: &Url,
-        parameters: &HashMap<String, String>,
-    ) -> Result<String> {
-        let content = self.get_from_cache_or_remote(url).await?;
-        templating::render(&content, parameters).context(TemplatingSnafu)
-    }
-
-    /// Retrieves data from the provided `url` and tries to deserialize it
-    /// into YAML.
-    pub async fn get_yaml_data<T>(&self, url: &Url) -> Result<T>
+    /// Retrieves data from `path_or_url` which can either be a [`PathBuf`]
+    /// or a [`Url`]. The `processor` defines how the data is processed, for
+    /// example as plain text data, YAML content or even templated.
+    pub async fn get<P>(&self, path_or_url: &PathOrUrl, processor: &P) -> Result<P::Output>
     where
-        T: for<'a> Deserialize<'a> + Sized,
+        P: Processor<Input = String>,
     {
-        let content = self.get_from_cache_or_remote(url).await?;
-        serde_yaml::from_str(&content).context(YamlSnafu {})
+        match path_or_url {
+            PathOrUrl::Path(path) => processor.process(self.get_from_local_file(path).await?),
+            PathOrUrl::Url(url) => processor.process(self.get_from_cache_or_remote(url).await?),
+        }
     }
 
-    /// Retrieves data from the provided `url`,  applies templating and tries
-    /// to deserialize it into YAML Variables inside handlebars are replaced
-    /// with values provided by the `parameters`, which is a key-value map.
-    pub async fn get_templated_yaml_data<T>(
-        &self,
-        url: &Url,
-        parameters: &HashMap<String, String>,
-    ) -> Result<T>
-    where
-        T: for<'a> Deserialize<'a> + Sized,
-    {
-        let content = self.get_from_cache_or_remote(url).await?;
-        let content = templating::render(&content, parameters).context(TemplatingSnafu)?;
-        serde_yaml::from_str(&content).context(YamlSnafu {})
+    async fn get_from_local_file(&self, path: &PathBuf) -> Result<String> {
+        fs::read_to_string(path).await.context(IoSnafu)
     }
 
     /// Internal method which either looks up the requested file in the cache
@@ -108,7 +89,7 @@ impl FileTransferClient {
         {
             CacheStatus::Hit(content) => Ok(content),
             CacheStatus::Expired | CacheStatus::Miss => {
-                let content = self.get(url).await?;
+                let content = self.get_from_remote(url).await?;
                 self.cache
                     .store(&file_name, &content)
                     .await
@@ -120,7 +101,7 @@ impl FileTransferClient {
     }
 
     /// Internal call which executes a HTTP GET request to `url`.
-    async fn get(&self, url: &Url) -> Result<String> {
+    async fn get_from_remote(&self, url: &Url) -> Result<String> {
         let req = self
             .client
             .get(url.clone())
