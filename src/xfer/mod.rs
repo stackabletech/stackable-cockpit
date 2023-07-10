@@ -9,10 +9,10 @@ pub use cache::*;
 
 use crate::utils::templating;
 
-type Result<T> = core::result::Result<T, TransferError>;
+type Result<T> = core::result::Result<T, FileTransferError>;
 
 #[derive(Debug, Snafu)]
-pub enum TransferError {
+pub enum FileTransferError {
     #[snafu(display("failed to extract file name from URL"))]
     FileNameError,
 
@@ -30,12 +30,12 @@ pub enum TransferError {
 }
 
 #[derive(Debug)]
-pub struct TransferClient {
+pub struct FileTransferClient {
     pub(crate) client: reqwest::Client,
     pub(crate) cache: Cache,
 }
 
-impl TransferClient {
+impl FileTransferClient {
     /// Creates a new [`TransferClient`] with caching capabilities.
     pub fn new(cache_settings: CacheSettings) -> Self {
         let cache = Cache::new(cache_settings);
@@ -134,9 +134,9 @@ impl TransferClient {
     fn extract_file_name(url: &Url) -> Result<String> {
         let segment = url
             .path_segments()
-            .ok_or(TransferError::FileNameError)?
+            .ok_or(FileTransferError::FileNameError)?
             .last()
-            .ok_or(TransferError::FileNameError)?;
+            .ok_or(FileTransferError::FileNameError)?;
 
         ensure!(segment.contains('.'), FileNameSnafu {});
         Ok(segment.to_string())

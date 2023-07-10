@@ -9,7 +9,7 @@ use crate::{
         path::PathOrUrl,
         read::{read_yaml_data_from_file, LocalReadError},
     },
-    xfer::{TransferClient, TransferError},
+    xfer::{FileTransferClient, FileTransferError},
 };
 
 pub trait SpecIter<S> {
@@ -34,7 +34,7 @@ pub enum ListError {
     InvalidFileUrl,
 
     #[snafu(display("transfer error"))]
-    TransferError { source: TransferError },
+    TransferError { source: FileTransferError },
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for
@@ -62,7 +62,7 @@ where
     /// downloaded.
     pub async fn build(
         files: &[PathOrUrl],
-        transfer_client: &TransferClient,
+        transfer_client: &FileTransferClient,
     ) -> Result<Self, ListError> {
         let mut map = IndexMap::new();
 

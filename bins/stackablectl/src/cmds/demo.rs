@@ -13,7 +13,7 @@ use stackable::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
-    xfer::{TransferClient, TransferError},
+    xfer::{FileTransferClient, FileTransferError},
 };
 use tracing::{debug, info, instrument};
 
@@ -121,7 +121,7 @@ pub enum DemoCmdError {
     CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("transfer error"))]
-    TransferError { source: TransferError },
+    TransferError { source: FileTransferError },
 }
 
 impl DemoArgs {
@@ -129,7 +129,7 @@ impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
         debug!("Handle demo args");
 
-        let transfer_client = TransferClient::new(common_args.cache_settings()?);
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?);
         transfer_client.init().await.context(TransferSnafu)?;
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
@@ -220,7 +220,7 @@ async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
-    transfer_client: &TransferClient,
+    transfer_client: &FileTransferClient,
 ) -> Result<String, DemoCmdError> {
     info!("Installing demo {}", args.demo_name);
 

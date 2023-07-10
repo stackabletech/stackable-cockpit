@@ -10,7 +10,7 @@ use stackable::{
     common::ListError,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
-    xfer::{TransferClient, TransferError},
+    xfer::{FileTransferClient, FileTransferError},
 };
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
@@ -107,14 +107,14 @@ pub enum ReleaseCmdError {
     CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("transfer error"))]
-    TransferError { source: TransferError },
+    TransferError { source: FileTransferError },
 }
 
 impl ReleaseArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, ReleaseCmdError> {
         debug!("Handle release args");
 
-        let transfer_client = TransferClient::new(common_args.cache_settings()?);
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?);
         transfer_client.init().await.context(TransferSnafu)?;
 
         let files = common_args

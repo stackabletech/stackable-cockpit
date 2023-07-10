@@ -25,7 +25,7 @@ use crate::{
             LocalReadError,
         },
     },
-    xfer::{TransferClient, TransferError},
+    xfer::{FileTransferClient, FileTransferError},
 };
 
 pub type RawStackParameterParseError = RawParameterParseError;
@@ -65,7 +65,7 @@ pub enum StackError {
     PathOrUrlParseError { source: PathOrUrlParseError },
 
     #[snafu(display("transfer error"))]
-    TransferError { source: TransferError },
+    TransferError { source: FileTransferError },
 
     #[snafu(display("local read error"))]
     LocalReadError { source: LocalReadError },
@@ -123,7 +123,7 @@ impl StackSpecV2 {
         &self,
         parameters: &[String],
         namespace: &str,
-        transfer_client: &TransferClient,
+        transfer_client: &FileTransferClient,
     ) -> Result<(), StackError> {
         info!("Installing stack manifests");
 
@@ -143,7 +143,7 @@ impl StackSpecV2 {
         valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
         namespace: &str,
-        transfer_client: &TransferClient,
+        transfer_client: &FileTransferClient,
     ) -> Result<(), StackError> {
         info!("Installing demo manifests");
 
@@ -162,7 +162,7 @@ impl StackSpecV2 {
         manifests: &Vec<ManifestSpec>,
         parameters: &HashMap<String, String>,
         namespace: &str,
-        transfer_client: &TransferClient,
+        transfer_client: &FileTransferClient,
     ) -> Result<(), StackError> {
         debug!("Installing demo / stack manifests");
 
