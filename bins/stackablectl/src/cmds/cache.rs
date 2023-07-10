@@ -3,7 +3,7 @@ use std::time::Duration;
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, Table};
 use snafu::{ResultExt, Snafu};
-use stackable::xfer::{Cache, CacheError};
+use stackable::xfer::cache::{Cache, CacheError};
 
 use crate::cli::{CacheSettingsError, Cli};
 

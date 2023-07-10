@@ -15,7 +15,7 @@ use stackable::{
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
-    xfer::CacheSettings,
+    xfer::cache::CacheSettings,
 };
 
 // Local

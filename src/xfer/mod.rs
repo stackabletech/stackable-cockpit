@@ -4,10 +4,12 @@ use serde::Deserialize;
 use snafu::{ensure, ResultExt, Snafu};
 use url::Url;
 
-mod cache;
-pub use cache::*;
+pub mod cache;
 
-use crate::utils::templating;
+use crate::{
+    utils::templating,
+    xfer::cache::{Cache, CacheError, CacheSettings, CacheStatus},
+};
 
 type Result<T> = core::result::Result<T, FileTransferError>;
 
