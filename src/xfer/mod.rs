@@ -45,7 +45,7 @@ pub struct FileTransferClient {
 }
 
 impl FileTransferClient {
-    /// Creates a new [`TransferClient`] with caching capabilities.
+    /// Creates a new [`FileTransferClient`] with caching capabilities.
     pub fn new(cache_settings: CacheSettings) -> Self {
         let cache = Cache::new(cache_settings);
         let client = reqwest::Client::new();
