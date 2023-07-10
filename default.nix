@@ -127,6 +127,7 @@ rec {
         cp -r ${./go-helm-wrapper} $out/go-helm-wrapper
       '';
     pwd = ./go-helm-wrapper;
+    modules = ./gomod2nix.toml;
     ldflags = "-buildmode c-archive";
   };
 

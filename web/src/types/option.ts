@@ -403,3 +403,10 @@ export const Some = <T>(value: T) => new SomeImpl(value);
 export type Some<S> = SomeImpl<S>;
 
 export type Option<S> = Some<S> | None;
+
+export function someIfDefined<T>(value: T | undefined): Option<T> {
+  return value === undefined ? None : Some(value);
+}
+export function someIfNotNull<T>(value: T | null): Option<T> {
+  return value === null ? None : Some(value);
+}
