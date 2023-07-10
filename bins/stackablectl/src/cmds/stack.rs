@@ -4,7 +4,7 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 use stackable::{
     common::ListError,
@@ -13,6 +13,7 @@ use stackable::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
+    xfer::{FileTransferClient, FileTransferError},
 };
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
@@ -102,20 +103,30 @@ pub enum StackCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: FileTransferError },
 }
 
 impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
+        debug!("Handle stack args");
+
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?);
+        transfer_client.init().await.context(TransferSnafu)?;
+
         let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
-        let stack_list = StackList::build(&files, &common_args.cache_settings()?)
+        let stack_list = StackList::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
         match &self.subcommand {
             StackCommands::List(args) => list_cmd(args, stack_list),
             StackCommands::Describe(args) => describe_cmd(args, stack_list),
-            StackCommands::Install(args) => install_cmd(args, common_args, stack_list).await,
+            StackCommands::Install(args) => {
+                install_cmd(args, common_args, stack_list, &transfer_client).await
+            }
         }
     }
 }
@@ -144,14 +155,14 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu)?),
+        OutputType::Json => serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {}),
+        OutputType::Yaml => serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {}),
     }
 }
 
 #[instrument]
 fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, StackCmdError> {
-    info!("Describing stack");
+    info!("Describing stack {}", args.stack_name);
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -185,8 +196,8 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
 
                 Ok(table.to_string())
             }
-            OutputType::Json => Ok(serde_json::to_string(&stack).context(JsonOutputFormatSnafu)?),
-            OutputType::Yaml => Ok(serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu)?),
+            OutputType::Json => serde_json::to_string(&stack).context(JsonOutputFormatSnafu {}),
+            OutputType::Yaml => serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {}),
         },
         None => Ok("No such stack".into()),
     }
@@ -197,14 +208,15 @@ async fn install_cmd(
     args: &StackInstallArgs,
     common_args: &Cli,
     stack_list: StackList,
+    transfer_client: &FileTransferClient,
 ) -> Result<String, StackCmdError> {
-    info!("Installing stack");
+    info!("Installing stack {}", args.stack_name);
 
     let files = common_args
         .get_release_files()
         .context(PathOrUrlParseSnafu)?;
 
-    let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
+    let release_list = ReleaseList::build(&files, &transfer_client)
         .await
         .context(ListSnafu)?;
 
@@ -223,7 +235,11 @@ async fn install_cmd(
 
             // Install stack manifests
             stack_spec
-                .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
+                .install_stack_manifests(
+                    &args.stack_parameters,
+                    &common_args.operator_namespace,
+                    transfer_client,
+                )
                 .await
                 .context(StackSnafu)?;
 

@@ -65,3 +65,9 @@ repos:
         entry: cargo xtask gen-openapi
         stages: [commit, merge-commit, manual]
         pass_filenames: false
+      - id: gen-ctl-readme
+        name: gen-ctl-readme
+        language: system
+        entry: cargo xtask gen-ctl-readme
+        stages: [commit, merge-commit, manual]
+        pass_filenames: false
