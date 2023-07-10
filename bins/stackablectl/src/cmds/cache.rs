@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use clap::{Args, Subcommand};
-use comfy_table::{presets::UTF8_FULL, Table};
+use comfy_table::{presets::UTF8_FULL, ColumnConstraint, Table, Width};
 use snafu::{ResultExt, Snafu};
 use stackable::xfer::cache::{Cache, CacheError};
 
@@ -55,6 +55,7 @@ async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
     let mut table = Table::new();
     table
         .set_header(vec!["FILE", "LAST SYNC"])
+        .set_constraints(vec![ColumnConstraint::UpperBoundary(Width::Percentage(80))])
         .load_preset(UTF8_FULL);
 
     for (path, modified) in files {

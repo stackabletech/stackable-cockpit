@@ -2748,6 +2748,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml 0.9.22",
+ "sha2",
  "snafu",
  "stackable-operator",
  "tera",

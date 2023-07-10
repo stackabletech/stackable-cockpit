@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use snafu::{ensure, ResultExt, Snafu};
+use snafu::{ResultExt, Snafu};
 use tokio::fs;
 use url::Url;
 
@@ -79,19 +79,12 @@ impl FileTransferClient {
     /// or retrieves it from the remote located at `url` when the cache missed
     /// or is expired.
     async fn get_from_cache_or_remote(&self, url: &Url) -> Result<String> {
-        let file_name = Self::extract_file_name(url)?;
-
-        match self
-            .cache
-            .retrieve(&file_name)
-            .await
-            .context(CacheSnafu {})?
-        {
+        match self.cache.retrieve(url).await.context(CacheSnafu {})? {
             CacheStatus::Hit(content) => Ok(content),
             CacheStatus::Expired | CacheStatus::Miss => {
                 let content = self.get_from_remote(url).await?;
                 self.cache
-                    .store(&file_name, &content)
+                    .store(url, &content)
                     .await
                     .context(CacheSnafu {})?;
 
@@ -110,18 +103,5 @@ impl FileTransferClient {
         let result = self.client.execute(req).await.context(RequestSnafu {})?;
 
         result.text().await.context(RequestSnafu {})
-    }
-
-    /// Returns the last URL path segment as the filename. It ensures that the
-    /// last segment contains at least one dot.
-    fn extract_file_name(url: &Url) -> Result<String> {
-        let segment = url
-            .path_segments()
-            .ok_or(FileTransferError::FileNameError)?
-            .last()
-            .ok_or(FileTransferError::FileNameError)?;
-
-        ensure!(segment.contains('.'), FileNameSnafu {});
-        Ok(segment.to_string())
     }
 }

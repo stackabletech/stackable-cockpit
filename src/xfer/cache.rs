@@ -1,10 +1,12 @@
 use std::{
-    path::PathBuf,
+    path::{Path, PathBuf},
     time::{Duration, SystemTime, SystemTimeError},
 };
 
+use sha2::{Digest, Sha256};
 use snafu::{ResultExt, Snafu};
 use tokio::{fs, io};
+use url::Url;
 
 use crate::constants::DEFAULT_CACHE_MAX_AGE;
 
@@ -61,10 +63,10 @@ impl Cache {
     /// read from within the cache base path. The status is indicated by
     /// [`CacheStatus`]. An error is returned when the cache was unable to read
     /// data from disk.
-    pub async fn retrieve(&self, file_name: &str) -> CacheResult<CacheStatus<String>> {
+    pub async fn retrieve(&self, file_url: &Url) -> CacheResult<CacheStatus<String>> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
-                let file_path = base_path.join(file_name);
+                let file_path = Self::file_path(base_path, file_url);
 
                 if !file_path.is_file() {
                     return Ok(CacheStatus::Miss);
@@ -92,10 +94,10 @@ impl Cache {
     /// Stores `file_content` at the cache base path in a file named `file_name`.
     /// The method returns an error if the cache fails to write the data to disk
     /// or the cache is disabled.
-    pub async fn store(&self, file_name: &str, file_content: &str) -> CacheResult<()> {
+    pub async fn store(&self, file_url: &Url, file_content: &str) -> CacheResult<()> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
-                let file_path = base_path.join(file_name);
+                let file_path = Self::file_path(base_path, file_url);
                 Self::write(file_path, file_content).await
             }
             CacheBackend::Disabled => WriteDisabledSnafu {}.fail(),
@@ -151,6 +153,19 @@ impl Cache {
         fs::write(file_path, file_content)
             .await
             .context(CacheIoSnafu {})
+    }
+
+    fn file_path(base_path: &Path, file_url: &Url) -> PathBuf {
+        let mut hasher = Sha256::new();
+
+        let sanitized_file_name = file_url
+            .as_str()
+            .replace(|c: char| !c.is_alphanumeric(), "-");
+
+        hasher.update(file_url.as_str().as_bytes());
+        let file_url_hash = hasher.finalize();
+
+        base_path.join(format!("{sanitized_file_name}-{:x}", file_url_hash))
     }
 }
 
