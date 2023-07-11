@@ -56,7 +56,7 @@ pub trait TabledOutput {
     const PRESET: &'static str = UTF8_FULL;
 
     /// Columns needed to render that table.
-    const COLUMNS: &'static [&'static str];
+    const COLUMNS: &'static [&'static str] = &[];
 
     /// Type of row.
     type Row: Into<Row>;

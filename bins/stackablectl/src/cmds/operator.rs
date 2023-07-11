@@ -175,7 +175,6 @@ impl ResultOutput for OperatorVersionList {
 }
 
 impl TabledOutput for OperatorVersionList {
-    const COLUMNS: &'static [&'static str] = &[];
     type Row = Vec<String>;
 
     fn rows(&self) -> Vec<Self::Row> {

@@ -155,7 +155,6 @@ impl ResultOutput for DemoSpecV2 {
 }
 
 impl TabledOutput for DemoSpecV2 {
-    const COLUMNS: &'static [&'static str] = &[];
     type Row = Vec<String>;
 
     fn rows(&self) -> Vec<Self::Row> {
@@ -199,37 +198,44 @@ impl DemoArgs {
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument]
-async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
+async fn list_cmd(args: &DemoListArgs, demo_list: DemoList) -> Result<String, DemoCmdError> {
     info!("Listing demos");
 
-    Ok(list.output(args.output_type)?)
+    Ok(demo_list.output(args.output_type)?)
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 #[instrument]
-async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
+async fn describe_cmd(
+    args: &DemoDescribeArgs,
+    demo_list: DemoList,
+) -> Result<String, DemoCmdError> {
     info!("Describing demo");
 
-    let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
-        name: args.demo_name.clone(),
-    })?;
+    let demo = demo_list
+        .get(&args.demo_name)
+        .ok_or(DemoCmdError::NoSuchDemo {
+            name: args.demo_name.clone(),
+        })?;
 
     Ok(demo.output(args.output_type)?)
 }
 
 /// Install a specific demo
-#[instrument(skip(list))]
+#[instrument(skip(demo_list))]
 async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
-    list: DemoList,
+    demo_list: DemoList,
 ) -> Result<String, DemoCmdError> {
     info!("Installing demo");
 
     // Get the demo spec by name from the list
-    let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
-        name: args.demo_name.clone(),
-    })?;
+    let demo_spec = demo_list
+        .get(&args.demo_name)
+        .ok_or(DemoCmdError::NoSuchDemo {
+            name: args.demo_name.clone(),
+        })?;
 
     args.local_cluster
         .install_if_needed(None)
