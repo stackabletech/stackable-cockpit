@@ -239,7 +239,7 @@ CRDs."
     Cache(CacheArgs),
 }
 
-#[derive(Clone, Debug, Default, ValueEnum)]
+#[derive(Copy, Clone, Debug, Default, ValueEnum)]
 pub enum OutputType {
     /// Print output formatted as plain text
     #[default]

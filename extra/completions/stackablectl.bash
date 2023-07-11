@@ -448,12 +448,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__list)
-            opts="-h -V --help --version"
+            opts="-o -h -V --output --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --output)
+                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                -o)
+                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;

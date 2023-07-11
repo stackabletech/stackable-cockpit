@@ -157,7 +157,8 @@ complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_s
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "list" -d 'List cached files'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "clean" -d 'Clean cached files'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help'
+complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "{plain	Print output formatted as plain text,json	Print output formatted as JSON,yaml	Print output formatted as YAML}"
+complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s h -l help -d 'Print help'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s V -l version -d 'Print version'

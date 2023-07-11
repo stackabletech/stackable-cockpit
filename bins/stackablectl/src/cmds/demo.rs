@@ -1,14 +1,10 @@
 use clap::{Args, Subcommand};
-use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
-    ContentArrangement, Row, Table,
-};
 use snafu::{ResultExt, Snafu};
 
 use stackable::{
     common::ListError,
     platform::{
-        demo::DemoList,
+        demo::{DemoList, DemoSpecV2},
         release::ReleaseList,
         stack::{StackError, StackList},
     },
@@ -16,7 +12,10 @@ use stackable::{
 };
 use tracing::{debug, info, instrument};
 
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::{
+    cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
+    output::{ResultOutput, TabledOutput},
+};
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -95,10 +94,10 @@ pub enum DemoCmdError {
     #[snafu(display("io error"))]
     IoError { source: std::io::Error },
 
-    #[snafu(display("unable to format yaml output"))]
+    #[snafu(display("unable to format yaml output"), context(false))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
+    #[snafu(display("unable to format json output"), context(false))]
     JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
@@ -124,6 +123,55 @@ pub enum DemoCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+}
+
+impl ResultOutput for DemoList {
+    type Error = DemoCmdError;
+}
+
+impl TabledOutput for DemoList {
+    const COLUMNS: &'static [&'static str] = &["#", "NAME", "STACK", "DESCRIPTION"];
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        self.inner()
+            .iter()
+            .enumerate()
+            .map(|(index, (demo_name, demo_spec))| {
+                vec![
+                    (index + 1).to_string(),
+                    demo_name.clone(),
+                    demo_spec.stack.clone(),
+                    demo_spec.description.clone(),
+                ]
+            })
+            .collect()
+    }
+}
+
+impl ResultOutput for DemoSpecV2 {
+    type Error = DemoCmdError;
+}
+
+impl TabledOutput for DemoSpecV2 {
+    const COLUMNS: &'static [&'static str] = &[];
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        // TODO (Techassi): Add parameter output
+        let mut rows = Vec::new();
+
+        rows.push(vec!["DESCRIPTION".into(), self.description.clone()]);
+
+        if let Some(doc) = &self.documentation {
+            rows.push(vec!["DOCUMENTATION".into(), doc.clone()]);
+        }
+
+        rows.push(vec!["STACK".into(), self.stack.clone()]);
+        rows.push(vec!["LABELS".into(), self.labels.join(", ")]);
+
+        rows
+    }
 }
 
 impl DemoArgs {
@@ -153,34 +201,7 @@ impl DemoArgs {
 async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
     info!("Listing demos");
 
-    match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
-
-            table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["#", "NAME", "STACK", "DESCRIPTION"])
-                .load_preset(UTF8_FULL);
-
-            for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
-                let row = Row::from(vec![
-                    (index + 1).to_string(),
-                    demo_name.clone(),
-                    demo_spec.stack.clone(),
-                    demo_spec.description.clone(),
-                ]);
-                table.add_row(row);
-            }
-
-            Ok(table.to_string())
-        }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu)?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu)?)
-        }
-    }
+    Ok(list.output(args.output_type)?)
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
@@ -192,28 +213,7 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
         name: args.demo_name.clone(),
     })?;
 
-    match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
-            table
-                .load_preset(NOTHING)
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .add_row(vec!["DEMO", &args.demo_name])
-                .add_row(vec!["DESCRIPTION", &demo.description])
-                .add_row_if(
-                    |_, _| demo.documentation.is_some(),
-                    vec!["DOCUMENTATION", demo.documentation.as_ref().unwrap()],
-                )
-                .add_row(vec!["STACK", &demo.stack])
-                .add_row(vec!["LABELS", &demo.labels.join(", ")]);
-
-            // TODO (Techassi): Add parameter output
-
-            Ok(table.to_string())
-        }
-        OutputType::Json => Ok(serde_json::to_string(&demo).context(JsonOutputFormatSnafu)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu)?),
-    }
+    Ok(demo.output(args.output_type)?)
 }
 
 /// Install a specific demo

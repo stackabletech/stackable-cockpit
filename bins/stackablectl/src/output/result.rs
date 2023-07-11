@@ -6,33 +6,47 @@ use crate::cli::OutputType;
 pub trait ResultOutput: Serialize + TabledOutput + Sized {
     type Error: std::error::Error + From<serde_json::Error> + From<serde_yaml::Error>;
 
-    fn result_output(&self, output_type: OutputType) -> Result<String, Self::Error> {
+    fn output(&self, output_type: OutputType) -> Result<String, Self::Error> {
         match output_type {
-            OutputType::Plain => {
-                // Build the base table
-                let mut table = Table::new();
-
-                table
-                    .set_content_arrangement(ContentArrangement::Dynamic)
-                    .load_preset(Self::PRESET);
-
-                // Get columns and rows
-                let columns = Self::COLUMNS;
-                let rows = self.rows();
-
-                // Only add a header when we have columns
-                if !columns.is_empty() {
-                    table.set_header(columns);
-                }
-
-                // Add rows to table
-                table.add_rows(rows);
-
-                Ok(table.to_string())
-            }
-            OutputType::Json => Ok(serde_json::to_string(&self)?),
-            OutputType::Yaml => Ok(serde_yaml::to_string(&self)?),
+            OutputType::Plain => self.plain_output(),
+            OutputType::Json => self.json_output(),
+            OutputType::Yaml => self.yaml_output(),
         }
+    }
+
+    fn plain_output(&self) -> Result<String, Self::Error> {
+        if self.rows().is_empty() {
+            return Ok("No cached files".into());
+        }
+
+        // Build the base table
+        let mut table = Table::new();
+
+        table
+            .set_content_arrangement(ContentArrangement::Dynamic)
+            .load_preset(Self::PRESET);
+
+        // Get columns and rows
+        let columns = Self::COLUMNS;
+        let rows = self.rows();
+
+        // Only add a header when we have columns
+        if !columns.is_empty() {
+            table.set_header(columns);
+        }
+
+        // Add rows to table
+        table.add_rows(rows);
+
+        Ok(table.to_string())
+    }
+
+    fn json_output(&self) -> Result<String, Self::Error> {
+        Ok(serde_json::to_string(&self)?)
+    }
+
+    fn yaml_output(&self) -> Result<String, Self::Error> {
+        Ok(serde_yaml::to_string(&self)?)
     }
 }
 
@@ -108,16 +122,16 @@ mod test {
 └──────┴───────────┘";
 
         assert_eq!(
-            "\n".to_string() + &d.result_output(OutputType::Plain).unwrap(),
+            "\n".to_string() + &d.output(OutputType::Plain).unwrap(),
             expected
         );
 
         // JSON output
         let expected = "{\"foo\":\"foo value\",\"bar\":\"bar value\"}";
-        assert_eq!(d.result_output(OutputType::Json).unwrap(), expected);
+        assert_eq!(d.output(OutputType::Json).unwrap(), expected);
 
         // YAML output
         let expected = "foo: foo value\nbar: bar value\n";
-        assert_eq!(d.result_output(OutputType::Yaml).unwrap(), expected);
+        assert_eq!(d.output(OutputType::Yaml).unwrap(), expected);
     }
 }
