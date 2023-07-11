@@ -1,4 +1,11 @@
 /target
-/Cargo.lock
 .env
 /node_modules
+htpasswd
+/result
+gomod2nix.toml
+Cargo.nix
+crate-hashes.json
+.yarn
+.pnp
+.pnp.*

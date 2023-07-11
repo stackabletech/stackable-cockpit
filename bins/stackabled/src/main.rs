@@ -1,48 +1,45 @@
 use std::net::SocketAddr;
 
-use axum::{response::Redirect, routing::get, Router, Server};
-use clap::Parser;
-use stackable::{
-    common::ManifestSpec,
-    platform::{demo::DemoSpecV2, release::ReleaseSpec},
-    utils::params::Parameter,
+use axum::{
+    response::Redirect,
+    routing::{get, post},
+    Router, Server,
 };
-use utoipa::OpenApi;
+use clap::Parser;
+use futures::FutureExt;
+use snafu::{ResultExt, Whatever};
+use stackabled::{
+    api_doc, handlers,
+    middleware::{self, authentication::Authenticator},
+};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::cli::Cli;
 
 mod cli;
-mod handlers;
-
-#[derive(Debug, OpenApi)]
-#[openapi(
-    info(description = "Stackabled API specification"),
-    paths(
-        handlers::get_demos,
-        handlers::get_demo,
-        handlers::get_releases,
-        handlers::get_release
-    ),
-    components(schemas(DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec))
-)]
-struct ApiDoc {}
 
 #[tokio::main]
-async fn main() {
+#[snafu::report]
+async fn main() -> Result<(), Whatever> {
     let cli = Cli::parse();
+
+    let authn =
+        Authenticator::load_htpasswd(&cli.htpasswd).whatever_context("failed to load htpasswd")?;
 
     // Run the server
     let api = Router::new()
-        .route("/", get(handlers::get_root))
-        .nest("/demos", handlers::demo_router())
-        .nest("/stacks", handlers::stack_router())
-        .nest("/releases", handlers::release_router())
-        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()));
+        .route("/ping", get(handlers::root::ping))
+        .nest("/demos", handlers::demos::router())
+        .nest("/stacks", handlers::stacks::router())
+        .nest("/releases", handlers::releases::router())
+        .nest("/stacklets", handlers::stacklets::router())
+        .route("/login", post(middleware::authentication::log_in))
+        .layer(authn.clone().layer());
 
     let router = Router::new()
         .nest("/api/", api)
         .nest("/ui/", handlers::ui::router())
+        .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api_doc::openapi()))
         .route("/", get(|| async { Redirect::permanent("/ui/") }));
 
     // Needed in next axum version
@@ -50,8 +47,28 @@ async fn main() {
 
     if let Err(err) = Server::bind(&SocketAddr::new(cli.address, cli.port))
         .serve(router.into_make_service())
+        .with_graceful_shutdown(wait_for_shutdown_signal())
         .await
     {
         eprintln!("{err}")
     }
+
+    Ok(())
+}
+
+async fn wait_for_shutdown_signal() {
+    // Copied from kube::runtime::Controller::shutdown_on_signal
+    futures::future::select(
+        tokio::signal::ctrl_c().map(|_| ()).boxed(),
+        #[cfg(unix)]
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .unwrap()
+            .recv()
+            .map(|_| ())
+            .boxed(),
+        // Assume that ctrl_c is enough on non-Unix platforms (such as Windows)
+        #[cfg(not(unix))]
+        futures::future::pending::<()>(),
+    )
+    .await;
 }

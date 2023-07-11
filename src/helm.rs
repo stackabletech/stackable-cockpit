@@ -26,7 +26,7 @@ pub struct HelmChart {
     pub name: String,
     pub repo: HelmChartRepo,
     pub version: String,
-    pub values: serde_yaml::Value,
+    pub options: serde_yaml::Value,
 }
 
 #[derive(Debug, Deserialize)]
@@ -104,7 +104,7 @@ pub enum HelmInstallReleaseError {
 pub enum HelmInstallReleaseStatus {
     /// Indicates that a release is already installed with a different version
     /// than requested.
-    ReleaseAlreadyInstalledWithversion {
+    ReleaseAlreadyInstalledWithVersion {
         release_name: String,
         current_version: String,
         requested_version: String,
@@ -124,7 +124,7 @@ pub enum HelmInstallReleaseStatus {
 impl Display for HelmInstallReleaseStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
+            HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
                 release_name,
                 current_version,
                 requested_version,
@@ -254,7 +254,7 @@ pub fn install_release_from_repo(
             Some(chart_version) => {
                 if chart_version == current_version {
                     return Ok(
-                        HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithversion {
+                        HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
                             requested_version: chart_version.to_string(),
                             release_name: release_name.to_string(),
                             current_version,
@@ -322,7 +322,7 @@ fn install_release(
         )
     };
 
-    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
+    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
     if let Some(err) = to_helm_error(result) {
         error!(
             "Go wrapper function go_install_helm_release encountered an error: {}",
@@ -351,7 +351,7 @@ pub fn uninstall_release(
             go_uninstall_helm_release(release_name.into(), namespace.into(), suppress_output)
         };
 
-        let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
+        let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
 
         if let Some(err) = to_helm_error(result) {
             error!(
@@ -394,7 +394,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
     debug!("List Helm releases");
 
     let result = unsafe { go_helm_list_releases(namespace.into()) };
-    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
+    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
 
     if let Some(err) = to_helm_error(result) {
         error!(
@@ -405,7 +405,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
         return Err(HelmError::ListReleasesError { error: err });
     }
 
-    serde_json::from_str(result).context(JsonSnafu {})
+    serde_json::from_str(result).context(JsonSnafu)
 }
 
 /// Returns a single Helm release by `release_name`.
@@ -424,7 +424,7 @@ pub fn add_repo(repo_name: &str, repo_url: &str) -> Result<(), HelmError> {
     debug!("Add Helm repo");
 
     let result = unsafe { go_add_helm_repo(repo_name.into(), repo_url.into()) };
-    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu {})? };
+    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
 
     if let Some(err) = to_helm_error(result) {
         error!(
@@ -446,19 +446,19 @@ where
 {
     debug!("Get Helm repo index file");
 
-    let url = Url::parse(repo_url.as_ref()).context(UrlParseSnafu {})?;
-    let url = url.join(HELM_REPO_INDEX_FILE).context(UrlParseSnafu {})?;
+    let url = Url::parse(repo_url.as_ref()).context(UrlParseSnafu)?;
+    let url = url.join(HELM_REPO_INDEX_FILE).context(UrlParseSnafu)?;
 
     debug!("Using {} to retrieve Helm index file", url);
 
     let index_file_content = reqwest::get(url)
         .await
-        .context(RequestSnafu {})?
+        .context(RequestSnafu)?
         .text()
         .await
-        .context(RequestSnafu {})?;
+        .context(RequestSnafu)?;
 
-    serde_yaml::from_str(&index_file_content).context(YamlSnafu {})
+    serde_yaml::from_str(&index_file_content).context(YamlSnafu)
 }
 
 /// Helper function to convert raw C string pointers to &str.

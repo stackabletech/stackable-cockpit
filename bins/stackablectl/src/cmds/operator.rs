@@ -1,7 +1,5 @@
-// Std library
 use std::collections::HashMap;
 
-// External crates
 use clap::{Args, Subcommand};
 use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
@@ -13,21 +11,16 @@ use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
-// Stackable library
 use stackable::{
-    cluster::{ClusterError, KindCluster},
-    constants::{
-        DEFAULT_LOCAL_CLUSTER_NAME, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
-    },
+    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm::{self, HelmError, HelmRelease, HelmRepo},
     platform::operator::{OperatorSpec, VALID_OPERATORS},
     utils,
 };
 
-// Local
 use crate::{
-    cli::{Cli, ClusterType, OutputType},
-    util::{self, InvalidRepoNameError},
+    cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
+    utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
 #[derive(Debug, Args)]
@@ -93,41 +86,8 @@ Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
     operators: Vec<OperatorSpec>,
 
-    /// Type of local cluster to use for testing
-    #[arg(short = 'c', long = "cluster", value_name = "CLUSTER_TYPE")]
-    #[arg(
-        long_help = "If specified, a local Kubernetes cluster consisting of 4 nodes (1 for
-control-plane and 3 workers) will be created for testing purposes. Currently
-'kind' and 'minikube' are supported. Both require a working Docker
-installation on the system."
-    )]
-    cluster_type: Option<ClusterType>,
-
-    /// Name of the local cluster
-    #[arg(long, default_value = DEFAULT_LOCAL_CLUSTER_NAME)]
-    cluster_name: String,
-
-    /// Number of total nodes in the local cluster
-    #[arg(long, default_value_t = 2)]
-    #[arg(long_help = "Number of total nodes in the local cluster
-
-This number specifies the total number of nodes, which combines control plane
-and worker nodes. The number of control plane nodes can be customized with the
---cluster-cp-nodes argument. The default number of control plane nodes is '1'.
-So when specifying a total number of nodes of '4', there will be one control
-plane node and three worker nodes. The minimum total cluster node count is '2'.
-If a smaller number is supplied, stackablectl will abort cluster creation,
-operator installation and displays an error message.")]
-    cluster_nodes: usize,
-
-    /// Number of control plane nodes in the local cluster
-    #[arg(long, default_value_t = 1)]
-    #[arg(long_help = "Number of control plane nodes in the local cluster
-
-This number must be smaller than --cluster-nodes. If this is not the case,
-stackablectl will abort cluster creation, operator installation and displays
-an error message.")]
-    cluster_cp_nodes: usize,
+    #[command(flatten)]
+    local_cluster: CommonClusterArgs,
 }
 
 #[derive(Debug, Args)]
@@ -154,8 +114,8 @@ pub enum OperatorCmdError {
     #[snafu(display("Helm error"))]
     HelmError { source: HelmError },
 
-    #[snafu(display("cluster error"))]
-    ClusterError { source: ClusterError },
+    #[snafu(display("cluster argument error"))]
+    CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("semver parse error"))]
     SemVerParseError { source: semver::Error },
@@ -165,22 +125,6 @@ pub enum OperatorCmdError {
 
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
-
-    #[snafu(display("cluster node count error"))]
-    ClusterNodeCountError { source: ClusterNodeCountError },
-}
-
-#[derive(Debug, Snafu)]
-pub enum ClusterNodeCountError {
-    #[snafu(display(
-        "invalid total node count - at least two nodes in total are needed to run a local cluster"
-    ))]
-    InvalidTotalNodeCount,
-
-    #[snafu(display(
-        "invalid control-plane node count - the number of control-plane nodes needs to be lower than total node count
-    "))]
-    InvalidControlPlaneNodeCount,
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -218,24 +162,28 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
 
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["OPERATOR", "STABLE VERSIONS"])
+                .set_header(vec!["#", "OPERATOR", "STABLE VERSIONS"])
                 .load_preset(UTF8_FULL);
 
-            for (operator_name, versions) in versions_list {
+            for (index, (operator_name, versions)) in versions_list.iter().enumerate() {
                 let versions_string = match versions.0.get(HELM_REPO_NAME_STABLE) {
                     Some(v) => v.join(", "),
                     None => "".into(),
                 };
-                table.add_row(vec![operator_name, versions_string]);
+                table.add_row(vec![
+                    (index + 1).to_string(),
+                    operator_name.clone(),
+                    versions_string,
+                ]);
             }
 
             Ok(table.to_string())
         }
         OutputType::Json => {
-            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu {})?)
+            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
         }
         OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu {})?)
+            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu)?)
         }
     }
 }
@@ -279,8 +227,8 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmd
 
             Ok(table.to_string())
         }
-        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu {}),
+        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
     }
 }
 
@@ -290,22 +238,6 @@ async fn install_cmd(
     common_args: &Cli,
 ) -> Result<String, OperatorCmdError> {
     info!("Installing operator(s)");
-
-    // We need at least two nodes in total (one control-plane node and one
-    // worker node)
-    if args.cluster_nodes < 2 {
-        return Err(OperatorCmdError::ClusterNodeCountError {
-            source: ClusterNodeCountError::InvalidTotalNodeCount,
-        });
-    }
-
-    // The cluster control-plane node count must be smaller than the total node
-    // count
-    if args.cluster_cp_nodes >= args.cluster_nodes {
-        return Err(OperatorCmdError::ClusterNodeCountError {
-            source: ClusterNodeCountError::InvalidControlPlaneNodeCount,
-        });
-    }
 
     println!(
         "Installing {} {}",
@@ -317,20 +249,10 @@ async fn install_cmd(
         }
     );
 
-    if let Some(cluster_type) = &args.cluster_type {
-        match cluster_type {
-            ClusterType::Kind => {
-                println!("Creating local kind cluster");
-
-                let kind_cluster =
-                    KindCluster::new(args.cluster_nodes, args.cluster_cp_nodes, None, None);
-                kind_cluster.create().await.context(ClusterSnafu {})?;
-
-                println!("Created local kind cluster");
-            }
-            ClusterType::Minikube => todo!(),
-        }
-    }
+    args.local_cluster
+        .install_if_needed(None)
+        .await
+        .context(CommonClusterArgsSnafu)?;
 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);
@@ -364,7 +286,7 @@ fn uninstall_cmd(
     for operator in &args.operators {
         operator
             .uninstall(&common_args.operator_namespace)
-            .context(HelmSnafu {})?;
+            .context(HelmSnafu)?;
     }
 
     Ok(format!(
@@ -388,7 +310,7 @@ fn installed_cmd(
     type ReleaseList = IndexMap<String, HelmRelease>;
 
     let installed: ReleaseList = helm::list_releases(&common_args.operator_namespace)
-        .context(HelmSnafu {})?
+        .context(HelmSnafu)?
         .into_iter()
         .filter(|release| {
             VALID_OPERATORS
@@ -429,12 +351,8 @@ fn installed_cmd(
 
             Ok(table.to_string())
         }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu {})?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu {})?)
-        }
+        OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),
     }
 }
 
@@ -451,13 +369,13 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
         HELM_REPO_NAME_DEV,
     ] {
         let helm_repo_url =
-            util::helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu {})?;
+            helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu)?;
 
         helm_index_files.insert(
             helm_repo_name,
             helm::get_helm_index(helm_repo_url)
                 .await
-                .context(HelmSnafu {})?,
+                .context(HelmSnafu)?,
         );
     }
 

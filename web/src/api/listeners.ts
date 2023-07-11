@@ -1,7 +1,5 @@
-interface ObjectMeta {
-  namespace: string;
-  name: string;
-}
+import { ObjectMeta } from './meta';
+import { delay } from './mock-utils';
 
 interface Listener {
   metadata: ObjectMeta;
@@ -12,10 +10,6 @@ interface Listener {
 interface ListenerEndpoint {
   path: string;
   web: boolean;
-}
-
-function delay(amount: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, amount));
 }
 
 export async function getListeners(): Promise<Listener[]> {
