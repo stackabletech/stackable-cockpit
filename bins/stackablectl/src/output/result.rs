@@ -5,6 +5,7 @@ use crate::cli::OutputType;
 
 pub trait ResultOutput: Serialize + TabledOutput + Sized {
     type Error: std::error::Error + From<serde_json::Error> + From<serde_yaml::Error>;
+    const EMPTY_MESSAGE: &'static str = "No entries";
 
     fn output(&self, output_type: OutputType) -> Result<String, Self::Error> {
         match output_type {
@@ -16,7 +17,7 @@ pub trait ResultOutput: Serialize + TabledOutput + Sized {
 
     fn plain_output(&self) -> Result<String, Self::Error> {
         if self.rows().is_empty() {
-            return Ok("No cached files".into());
+            return Ok(Self::EMPTY_MESSAGE.into());
         }
 
         // Build the base table

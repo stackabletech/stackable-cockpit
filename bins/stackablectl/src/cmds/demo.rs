@@ -126,6 +126,7 @@ pub enum DemoCmdError {
 }
 
 impl ResultOutput for DemoList {
+    const EMPTY_MESSAGE: &'static str = "No demos";
     type Error = DemoCmdError;
 }
 

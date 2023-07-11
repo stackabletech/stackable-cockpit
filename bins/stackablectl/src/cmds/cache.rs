@@ -53,6 +53,7 @@ pub enum CacheCmdError {
 }
 
 impl ResultOutput for Vec<(PathBuf, SystemTime)> {
+    const EMPTY_MESSAGE: &'static str = "No cached files";
     type Error = CacheCmdError;
 }
 

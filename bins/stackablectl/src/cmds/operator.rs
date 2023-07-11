@@ -1,10 +1,6 @@
 use std::collections::HashMap;
 
 use clap::{Args, Subcommand};
-use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
-    ContentArrangement, Table,
-};
 use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
@@ -20,6 +16,7 @@ use stackable::{
 
 use crate::{
     cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
+    output::{ResultOutput, TabledOutput},
     utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
@@ -120,10 +117,10 @@ pub enum OperatorCmdError {
     #[snafu(display("semver parse error"))]
     SemVerParseError { source: semver::Error },
 
-    #[snafu(display("unable to format yaml output"))]
+    #[snafu(display("unable to format yaml output"), context(false))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
+    #[snafu(display("unable to format json output"), context(false))]
     JsonOutputFormatError { source: serde_json::Error },
 }
 
@@ -145,6 +142,90 @@ impl OperatorArgs {
     }
 }
 
+impl ResultOutput for IndexMap<String, OperatorVersionList> {
+    const EMPTY_MESSAGE: &'static str = "No operators";
+    type Error = OperatorCmdError;
+}
+
+impl TabledOutput for IndexMap<String, OperatorVersionList> {
+    const COLUMNS: &'static [&'static str] = &["#", "OPERATOR", "STABLE VERSIONS"];
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        self.iter()
+            .enumerate()
+            .map(|(index, (operator_name, versions))| {
+                let versions_string = versions
+                    .0
+                    .get(HELM_REPO_NAME_STABLE)
+                    .map_or("".into(), |v| v.join(", "));
+
+                vec![
+                    (index + 1).to_string(),
+                    operator_name.clone(),
+                    versions_string,
+                ]
+            })
+            .collect()
+    }
+}
+
+impl ResultOutput for OperatorVersionList {
+    type Error = OperatorCmdError;
+}
+
+impl TabledOutput for OperatorVersionList {
+    const COLUMNS: &'static [&'static str] = &[];
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        let stable_versions_string = self
+            .0
+            .get(HELM_REPO_NAME_STABLE)
+            .map_or("".into(), |v| v.join(", "));
+
+        let test_versions_string = self
+            .0
+            .get(HELM_REPO_NAME_TEST)
+            .map_or("".into(), |v| v.join(", "));
+
+        let dev_versions_string = self
+            .0
+            .get(HELM_REPO_NAME_DEV)
+            .map_or("".into(), |v| v.join(", "));
+
+        vec![
+            vec!["STABLE VERSIONS".into(), stable_versions_string],
+            vec!["TEST VERSIONS".into(), test_versions_string],
+            vec!["DEV VERSIONS".into(), dev_versions_string],
+        ]
+    }
+}
+
+impl ResultOutput for IndexMap<String, HelmRelease> {
+    type Error = OperatorCmdError;
+}
+
+impl TabledOutput for IndexMap<String, HelmRelease> {
+    const COLUMNS: &'static [&'static str] =
+        &["OPERATOR", "VERSION", "NAMESPACE", "STATUS", "LAST UPDATED"];
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        self.into_iter()
+            .map(|(release_name, release)| {
+                vec![
+                    release_name.clone(),
+                    release.version.clone(),
+                    release.namespace.clone(),
+                    release.status.clone(),
+                    release.last_updated.clone(),
+                ]
+            })
+            .collect()
+    }
+}
+
 #[instrument]
 async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
     debug!("Listing operators");
@@ -156,36 +237,7 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
     // by stable, test and dev lines
     let versions_list = build_versions_list(&helm_index_files)?;
 
-    match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
-
-            table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["#", "OPERATOR", "STABLE VERSIONS"])
-                .load_preset(UTF8_FULL);
-
-            for (index, (operator_name, versions)) in versions_list.iter().enumerate() {
-                let versions_string = match versions.0.get(HELM_REPO_NAME_STABLE) {
-                    Some(v) => v.join(", "),
-                    None => "".into(),
-                };
-                table.add_row(vec![
-                    (index + 1).to_string(),
-                    operator_name.clone(),
-                    versions_string,
-                ]);
-            }
-
-            Ok(table.to_string())
-        }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu)?)
-        }
-    }
+    Ok(versions_list.output(args.output_type)?)
 }
 
 #[instrument]
@@ -198,38 +250,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmd
     // Create a list of versions for this operator
     let versions_list = build_versions_list_for_operator(&args.operator_name, &helm_index_files)?;
 
-    match args.output_type {
-        OutputType::Plain => {
-            let stable_versions_string = match versions_list.0.get(HELM_REPO_NAME_STABLE) {
-                Some(v) => v.join(", "),
-                None => "".into(),
-            };
-
-            let test_versions_string = match versions_list.0.get(HELM_REPO_NAME_TEST) {
-                Some(v) => v.join(", "),
-                None => "".into(),
-            };
-
-            let dev_versions_string = match versions_list.0.get(HELM_REPO_NAME_DEV) {
-                Some(v) => v.join(", "),
-                None => "".into(),
-            };
-
-            let mut table = Table::new();
-
-            table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(NOTHING)
-                .add_row(vec!["OPERATOR", &args.operator_name.to_string()])
-                .add_row(vec!["STABLE VERSIONS", stable_versions_string.as_str()])
-                .add_row(vec!["TEST VERSIONS", test_versions_string.as_str()])
-                .add_row(vec!["DEV VERSIONS", dev_versions_string.as_str()]);
-
-            Ok(table.to_string())
-        }
-        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
-    }
+    Ok(versions_list.output(args.output_type)?)
 }
 
 #[instrument]
@@ -320,40 +341,7 @@ fn installed_cmd(
         .map(|release| (release.name.clone(), release))
         .collect();
 
-    match args.output_type {
-        OutputType::Plain => {
-            if installed.is_empty() {
-                return Ok("No installed operators".into());
-            }
-
-            let mut table = Table::new();
-
-            table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(UTF8_FULL)
-                .set_header(vec![
-                    "OPERATOR",
-                    "VERSION",
-                    "NAMESPACE",
-                    "STATUS",
-                    "LAST UPDATED",
-                ]);
-
-            for (release_name, release) in installed {
-                table.add_row(vec![
-                    release_name,
-                    release.version,
-                    release.namespace,
-                    release.status,
-                    release.last_updated,
-                ]);
-            }
-
-            Ok(table.to_string())
-        }
-        OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),
-    }
+    Ok(installed.output(args.output_type)?)
 }
 
 /// Builds a map which maps Helm repo name to Helm repo URL.
