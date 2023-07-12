@@ -1,8 +1,5 @@
 use clap::{Args, Subcommand};
-use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
-    ContentArrangement, Table,
-};
+use comfy_table::{presets::NOTHING, ContentArrangement, Table};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
@@ -10,12 +7,15 @@ use stackable::{
     common::ListError,
     platform::{
         release::ReleaseList,
-        stack::{StackError, StackList},
+        stack::{StackError, StackList, StackSpecV2},
     },
     utils::path::PathOrUrlParseError,
 };
 
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::{
+    cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
+    output::{ResultOutput, TabledOutput},
+};
 
 #[derive(Debug, Args)]
 pub struct StackArgs {
@@ -85,10 +85,10 @@ pub enum StackCmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("unable to format yaml output"))]
+    #[snafu(display("unable to format yaml output"), context(false))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
+    #[snafu(display("unable to format json output"), context(false))]
     JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("stack error"))]
@@ -102,6 +102,66 @@ pub enum StackCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+
+    #[snafu(display("no stack with name '{name}'"))]
+    NoSuchStack { name: String },
+}
+
+impl ResultOutput for StackList {
+    type Error = StackCmdError;
+}
+
+impl TabledOutput for StackList {
+    const COLUMNS: &'static [&'static str] = &["#", "STACK", "RELEASE", "DESCRIPTION"];
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        self.inner()
+            .iter()
+            .enumerate()
+            .map(|(index, (stack_name, stack))| {
+                vec![
+                    (index + 1).to_string(),
+                    stack_name.clone(),
+                    stack.release.clone(),
+                    stack.description.clone(),
+                ]
+            })
+            .collect()
+    }
+}
+
+impl ResultOutput for StackSpecV2 {
+    type Error = StackCmdError;
+}
+
+impl TabledOutput for StackSpecV2 {
+    type Row = Vec<String>;
+
+    fn rows(&self) -> Vec<Self::Row> {
+        let mut parameter_table = Table::new();
+
+        parameter_table
+            .set_header(vec!["NAME", "DESCRIPTION", "DEFAULT VALUE"])
+            .set_content_arrangement(ContentArrangement::Dynamic)
+            .load_preset(NOTHING);
+
+        for parameter in &self.parameters {
+            parameter_table.add_row(vec![
+                parameter.name.clone(),
+                parameter.description.clone(),
+                parameter.default.clone(),
+            ]);
+        }
+
+        vec![
+            vec!["DESCRIPTION".into(), self.description.clone()],
+            vec!["RELEASE".into(), self.release.clone()],
+            vec!["OPERATORS".into(), self.operators.join(", ")],
+            vec!["LABELS".into(), self.labels.join(", ")],
+            vec!["PARAMETERS".into(), parameter_table.to_string()],
+        ]
+    }
 }
 
 impl StackArgs {
@@ -124,72 +184,20 @@ impl StackArgs {
 fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, StackCmdError> {
     info!("Listing stacks");
 
-    match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
-
-            table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .set_header(vec!["#", "STACK", "RELEASE", "DESCRIPTION"])
-                .load_preset(UTF8_FULL);
-
-            for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
-                table.add_row(vec![
-                    (index + 1).to_string(),
-                    stack_name.clone(),
-                    stack.release.clone(),
-                    stack.description.clone(),
-                ]);
-            }
-
-            Ok(table.to_string())
-        }
-        OutputType::Json => Ok(serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu)?),
-    }
+    Ok(stack_list.output(args.output_type)?)
 }
 
 #[instrument]
 fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, StackCmdError> {
     info!("Describing stack");
 
-    match stack_list.get(&args.stack_name) {
-        Some(stack) => match args.output_type {
-            OutputType::Plain => {
-                let mut table = Table::new();
+    let stack = stack_list
+        .get(&args.stack_name)
+        .ok_or(StackCmdError::NoSuchStack {
+            name: args.stack_name.clone(),
+        })?;
 
-                let mut parameter_table = Table::new();
-
-                parameter_table
-                    .set_header(vec!["NAME", "DESCRIPTION", "DEFAULT VALUE"])
-                    .set_content_arrangement(ContentArrangement::Dynamic)
-                    .load_preset(NOTHING);
-
-                for parameter in &stack.parameters {
-                    parameter_table.add_row(vec![
-                        parameter.name.clone(),
-                        parameter.description.clone(),
-                        parameter.default.clone(),
-                    ]);
-                }
-
-                table
-                    .set_content_arrangement(ContentArrangement::Dynamic)
-                    .load_preset(NOTHING)
-                    .add_row(vec!["STACK", args.stack_name.as_str()])
-                    .add_row(vec!["DESCRIPTION", stack.description.as_str()])
-                    .add_row(vec!["RELEASE", stack.release.as_str()])
-                    .add_row(vec!["OPERATORS", stack.operators.join(", ").as_str()])
-                    .add_row(vec!["LABELS", stack.labels.join(", ").as_str()])
-                    .add_row(vec!["PARAMETERS", parameter_table.to_string().as_str()]);
-
-                Ok(table.to_string())
-            }
-            OutputType::Json => Ok(serde_json::to_string(&stack).context(JsonOutputFormatSnafu)?),
-            OutputType::Yaml => Ok(serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu)?),
-        },
-        None => Ok("No such stack".into()),
-    }
+    Ok(stack.output(args.output_type)?)
 }
 
 #[instrument]
