@@ -44,7 +44,7 @@ pub struct StackletListArgs {
 
 #[derive(Debug, Snafu)]
 pub enum StackletsCmdError {
-    #[snafu(display("service list error"))]
+    #[snafu(display("stacklet list error"))]
     StackletListError { source: StackletError },
 
     #[snafu(display("unable to format yaml output"))]
@@ -96,13 +96,13 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             let mut error_list = Vec::new();
             let mut error_index = 1;
 
-            for (product_name, products) in stacklets {
+            for (stacklet_name, products) in stacklets {
                 for product in products {
                     let ConditionOutput { summary, errors } =
                         render_conditions(product.conditions, &mut error_index, use_color);
 
                     table.add_row(vec![
-                        product_name.clone(),
+                        stacklet_name.clone(),
                         product.name,
                         product.namespace.unwrap_or_default(),
                         summary,
