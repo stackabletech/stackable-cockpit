@@ -124,9 +124,9 @@ rec {
         mkdir $out
         cp ${./go.mod} $out/go.mod
         cp ${./go.sum} $out/go.sum
-        cp -r ${./go-helm-wrapper} $out/go-helm-wrapper
+        cp -r ${./rust/stackable/go-helm-wrapper} $out/go-helm-wrapper
       '';
-    pwd = ./go-helm-wrapper;
+    pwd = ./rust/stackable/go-helm-wrapper;
     modules = ./gomod2nix.toml;
     ldflags = "-buildmode c-archive";
   };

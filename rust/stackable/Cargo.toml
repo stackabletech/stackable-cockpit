@@ -1,0 +1,31 @@
+[package]
+name = "stackable"
+version.workspace = true
+edition = "2021"
+publish = false
+
+[features]
+full = ["openapi"]
+openapi = ["dep:utoipa"]
+
+[dependencies]
+tokio = { workspace = true, features = ["process"] }
+utoipa = { workspace = true, optional = true }
+stackable-operator = { workspace = true }
+k8s-openapi = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+indexmap = { workspace = true }
+reqwest = { workspace = true }
+tracing = { workspace = true }
+bcrypt = { workspace = true }
+snafu = { workspace = true }
+which = { workspace = true }
+serde = { workspace = true }
+tera = { workspace = true }
+kube = { workspace = true }
+rand = { workspace = true }
+url = { workspace = true }
+
+[build-dependencies]
+gobuild = "0.1.0-alpha.1"

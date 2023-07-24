@@ -4,8 +4,8 @@ version.workspace = true
 edition = "2021"
 
 [dependencies]
-stackablectl = { path = "../bins/stackablectl" }
-stackabled = { path = "../bins/stackabled" }
+stackablectl = { path = "../stackablectl" }
+stackabled = { path = "../stackabled" }
 clap_complete =  { workspace = true }
 snafu = { workspace = true }
 clap.workspace = true
