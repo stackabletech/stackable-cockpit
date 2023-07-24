@@ -145,7 +145,7 @@ impl DemoArgs {
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
             DemoCommands::Install(args) => {
                 install_cmd(args, common_args, list, &transfer_client).await
-            } // DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
+            }
         }
     }
 }
@@ -293,7 +293,3 @@ async fn install_cmd(
 
     Ok("".into())
 }
-
-// fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
-//     todo!()
-// }
