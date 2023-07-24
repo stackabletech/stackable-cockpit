@@ -18,7 +18,7 @@ use crate::{
 
 #[derive(Debug, OpenApi)]
 #[openapi(
-    info(description = "Stackabled API specification"),
+    info(description = "stackable-cockpitd API specification"),
     servers((url = "/api")),
     paths(
         handlers::root::ping,

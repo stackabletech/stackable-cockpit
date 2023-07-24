@@ -1,8 +1,8 @@
-# stackabled
+# stackable-cockpitd
 
 ## The stack
 
-Like all our software, the `stackabled` server is written in Rust. The server internally uses the `stackable` library
+Like all our software, the `stackable-cockpitd` server is written in Rust. The server internally uses the `stackable-cockpit` library
 and exposes functionality via an HTTP REST API. Core community-provided dependencies are:
 
 - [`tokio`][tokio-link], the async runtime, which ised used to handle incoming network requests over HTTP/TCP.
@@ -18,12 +18,12 @@ in [web](../../web). Detailed information about the frontend stack can be found 
 ## Development
 
 ```shell
-cargo run -p stackabled -- <ARGS>
+cargo run -p stackable-cockpitd -- <ARGS>
 ```
 
 ```shell
-cargo build -p stackabled --release # or --debug
-./target/release/stackabled <ARGS>
+cargo build -p stackable-cockpitd --release # or --debug
+./target/release/stackable-cockpitd <ARGS>
 ```
 
 [tokio-link]: https://tokio.rs/

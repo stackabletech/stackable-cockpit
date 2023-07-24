@@ -1,6 +1,6 @@
-# stackable
+# stackable-cockpit
 
-Stackable library powering the `stackablectl` CLI tool and `stackabled` API server. The components are:
+Stackable Cockpit library powering the `stackablectl` CLI tool and `stackable-cockpitd` API server. The components are:
 
 - `cluster`: Cluster-related functions and data structures. Currently two kind of cluster orchestration tools are
   supported:
@@ -23,5 +23,5 @@ Stackable library powering the `stackablectl` CLI tool and `stackabled` API serv
 ### Testing
 
 ```shell
-cargo test -p stackable
+cargo test -p stackable-cockpit
 ```
