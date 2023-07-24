@@ -43,8 +43,10 @@ impl CacheArgs {
 }
 
 async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
-    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?);
-    cache.init().await.context(CacheSnafu)?;
+    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?)
+        .init()
+        .await
+        .context(CacheSnafu)?;
 
     let files = cache.list().await.context(CacheSnafu)?;
 
@@ -73,9 +75,11 @@ async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
 }
 
 async fn clean_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
-    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?);
-    cache.init().await.context(CacheSnafu)?;
-    cache.purge().await.context(CacheSnafu)?;
+    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?)
+        .init()
+        .await
+        .context(CacheSnafu)?;
 
+    cache.purge().await.context(CacheSnafu)?;
     Ok("Cleaned cached files".into())
 }

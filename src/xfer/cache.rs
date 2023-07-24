@@ -1,4 +1,5 @@
 use std::{
+    marker::PhantomData,
     path::{Path, PathBuf},
     time::{Duration, SystemTime, SystemTimeError},
 };
@@ -11,6 +12,12 @@ use url::Url;
 use crate::constants::DEFAULT_CACHE_MAX_AGE;
 
 pub type CacheResult<T> = Result<T, CacheError>;
+
+#[derive(Debug)]
+pub struct CacheUninitialized;
+
+#[derive(Debug)]
+pub struct CacheInitialized;
 
 #[derive(Debug, Snafu)]
 pub enum CacheError {
@@ -25,30 +32,12 @@ pub enum CacheError {
 }
 
 #[derive(Debug)]
-pub struct Cache {
+pub struct Cache<State> {
     pub(crate) settings: CacheSettings,
+    state: PhantomData<State>,
 }
 
-impl Cache {
-    /// Creates a new [`Cache`] instance with the provided `settings`. It should
-    /// be noted that it is required to call the [`Cache::init`] method before
-    /// using the cache for the first time to ensure the backend is setup
-    /// properly.
-    pub fn new(settings: CacheSettings) -> Self {
-        Self { settings }
-    }
-
-    /// Initializes the cache backend. This ensure that local files and folders
-    /// needed for operation are created.
-    pub async fn init(&self) -> CacheResult<()> {
-        match &self.settings.backend {
-            CacheBackend::Disk { base_path } => {
-                fs::create_dir_all(base_path).await.context(CacheIoSnafu)
-            }
-            CacheBackend::Disabled => Ok(()),
-        }
-    }
-
+impl<State> Cache<State> {
     /// Returns wether the cache is enabled.
     pub fn is_enabled(&self) -> bool {
         match self.settings.backend {
@@ -56,7 +45,43 @@ impl Cache {
             CacheBackend::Disabled => false,
         }
     }
+}
 
+impl Cache<CacheUninitialized> {
+    /// Creates a new [`Cache`] instance with the provided `settings`. It should
+    /// be noted that it is required to call the [`Cache::init`] method before
+    /// using the cache for the first time to ensure the backend is setup
+    /// properly.
+    pub fn new(settings: CacheSettings) -> Cache<CacheUninitialized> {
+        Self {
+            settings,
+            state: PhantomData,
+        }
+    }
+
+    /// Initializes the cache backend. This ensure that local files and folders
+    /// needed for operation are created.
+    pub async fn init(self) -> CacheResult<Cache<CacheInitialized>> {
+        let Self { settings, .. } = self;
+
+        match &settings.backend {
+            CacheBackend::Disk { base_path } => {
+                fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
+
+                Ok(Cache {
+                    state: PhantomData,
+                    settings,
+                })
+            }
+            CacheBackend::Disabled => Ok(Cache {
+                state: PhantomData,
+                settings,
+            }),
+        }
+    }
+}
+
+impl Cache<CacheInitialized> {
     /// Retrieves cached content located at `file_name`. It should be noted that
     /// the `file_name` should only contain the file name and extension without
     /// any path segments prefixed. The cache internally makes sure the file is

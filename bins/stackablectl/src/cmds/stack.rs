@@ -112,8 +112,9 @@ impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
         debug!("Handle stack args");
 
-        let transfer_client = FileTransferClient::new(common_args.cache_settings()?);
-        transfer_client.init().await.context(TransferSnafu)?;
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
+            .await
+            .context(TransferSnafu)?;
 
         let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 

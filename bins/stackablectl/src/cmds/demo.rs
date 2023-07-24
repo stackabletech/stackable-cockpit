@@ -129,8 +129,9 @@ impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
         debug!("Handle demo args");
 
-        let transfer_client = FileTransferClient::new(common_args.cache_settings()?);
-        transfer_client.init().await.context(TransferSnafu)?;
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
+            .await
+            .context(TransferSnafu)?;
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
