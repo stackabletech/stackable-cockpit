@@ -11,16 +11,16 @@ use url::Url;
 
 use crate::constants::DEFAULT_CACHE_MAX_AGE;
 
-pub type CacheResult<T> = Result<T, CacheError>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug)]
-pub struct CacheUninitialized;
+pub struct Uninitialized;
 
 #[derive(Debug)]
-pub struct CacheInitialized;
+pub struct Initialized;
 
 #[derive(Debug, Snafu)]
-pub enum CacheError {
+pub enum Error {
     #[snafu(display("io error"))]
     CacheIoError { source: io::Error },
 
@@ -47,12 +47,12 @@ impl<State> Cache<State> {
     }
 }
 
-impl Cache<CacheUninitialized> {
+impl Cache<Uninitialized> {
     /// Creates a new [`Cache`] instance with the provided `settings`. It should
     /// be noted that it is required to call the [`Cache::init`] method before
     /// using the cache for the first time to ensure the backend is setup
     /// properly.
-    pub fn new(settings: CacheSettings) -> Cache<CacheUninitialized> {
+    pub fn new(settings: CacheSettings) -> Cache<Uninitialized> {
         Self {
             settings,
             state: PhantomData,
@@ -61,7 +61,7 @@ impl Cache<CacheUninitialized> {
 
     /// Initializes the cache backend. This ensure that local files and folders
     /// needed for operation are created.
-    pub async fn init(self) -> CacheResult<Cache<CacheInitialized>> {
+    pub async fn init(self) -> Result<Cache<Initialized>> {
         let Self { settings, .. } = self;
 
         match &settings.backend {
@@ -81,14 +81,14 @@ impl Cache<CacheUninitialized> {
     }
 }
 
-impl Cache<CacheInitialized> {
+impl Cache<Initialized> {
     /// Retrieves cached content located at `file_name`. It should be noted that
     /// the `file_name` should only contain the file name and extension without
     /// any path segments prefixed. The cache internally makes sure the file is
     /// read from within the cache base path. The status is indicated by
     /// [`CacheStatus`]. An error is returned when the cache was unable to read
     /// data from disk.
-    pub async fn retrieve(&self, file_url: &Url) -> CacheResult<CacheStatus<String>> {
+    pub async fn retrieve(&self, file_url: &Url) -> Result<CacheStatus<String>> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
                 let file_path = Self::file_path(base_path, file_url);
@@ -119,7 +119,7 @@ impl Cache<CacheInitialized> {
     /// Stores `file_content` at the cache base path in a file named `file_name`.
     /// The method returns an error if the cache fails to write the data to disk
     /// or the cache is disabled.
-    pub async fn store(&self, file_url: &Url, file_content: &str) -> CacheResult<()> {
+    pub async fn store(&self, file_url: &Url, file_content: &str) -> Result<()> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
                 let file_path = Self::file_path(base_path, file_url);
@@ -132,7 +132,7 @@ impl Cache<CacheInitialized> {
     /// Returns a list of currently cached files. This method makes no assumptions
     /// if the cached files are expired. It simply returns a list of files known
     /// by the cache.
-    pub async fn list(&self) -> CacheResult<Vec<(PathBuf, SystemTime)>> {
+    pub async fn list(&self) -> Result<Vec<(PathBuf, SystemTime)>> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
                 let mut files = Vec::new();
@@ -160,7 +160,7 @@ impl Cache<CacheInitialized> {
 
     /// Removes all cached files by deleting the base cache folder and then
     /// recreating it.
-    pub async fn purge(&self) -> CacheResult<()> {
+    pub async fn purge(&self) -> Result<()> {
         match &self.settings.backend {
             CacheBackend::Disk { base_path } => {
                 fs::remove_dir_all(base_path).await.context(CacheIoSnafu)?;
@@ -170,11 +170,11 @@ impl Cache<CacheInitialized> {
         }
     }
 
-    async fn read(file_path: PathBuf) -> CacheResult<String> {
+    async fn read(file_path: PathBuf) -> Result<String> {
         fs::read_to_string(file_path).await.context(CacheIoSnafu {})
     }
 
-    async fn write(file_path: PathBuf, file_content: &str) -> CacheResult<()> {
+    async fn write(file_path: PathBuf, file_content: &str) -> Result<()> {
         fs::write(file_path, file_content)
             .await
             .context(CacheIoSnafu {})

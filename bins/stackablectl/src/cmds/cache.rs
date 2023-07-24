@@ -3,7 +3,7 @@ use std::time::Duration;
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ColumnConstraint, Table, Width};
 use snafu::{ResultExt, Snafu};
-use stackable::xfer::cache::{Cache, CacheError};
+use stackable::xfer::cache::{Cache, Error};
 
 use crate::cli::{CacheSettingsError, Cli};
 
@@ -30,7 +30,7 @@ pub enum CacheCmdError {
     CacheSettingsError { source: CacheSettingsError },
 
     #[snafu(display("cache error"))]
-    CacheError { source: CacheError },
+    CacheError { source: Error },
 }
 
 impl CacheArgs {

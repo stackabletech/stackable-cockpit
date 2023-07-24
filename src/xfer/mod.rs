@@ -10,7 +10,7 @@ pub mod processor;
 use crate::{
     utils::path::PathOrUrl,
     xfer::{
-        cache::{Cache, CacheError, CacheInitialized, CacheSettings, CacheStatus},
+        cache::{Cache, CacheSettings, CacheStatus, Error, Initialized},
         processor::Processor,
     },
 };
@@ -26,7 +26,7 @@ pub enum FileTransferError {
     FileNameError,
 
     #[snafu(display("cache error"))]
-    CacheError { source: CacheError },
+    CacheError { source: Error },
 
     #[snafu(display("request error"))]
     RequestError { source: reqwest::Error },
@@ -41,7 +41,7 @@ pub enum FileTransferError {
 #[derive(Debug)]
 pub struct FileTransferClient {
     pub(crate) client: reqwest::Client,
-    pub(crate) cache: Cache<CacheInitialized>,
+    pub(crate) cache: Cache<Initialized>,
 }
 
 impl FileTransferClient {
