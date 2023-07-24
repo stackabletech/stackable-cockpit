@@ -1,16 +1,18 @@
-use std::os::raw::c_char;
+use std::{marker::PhantomData, os::raw::c_char};
 
 #[repr(C)]
-pub struct GoString {
+pub struct GoString<'a> {
     p: *const u8,
     n: i64,
+    _lifetime: PhantomData<&'a str>,
 }
 
-impl From<&str> for GoString {
-    fn from(str: &str) -> Self {
+impl<'a> From<&'a str> for GoString<'a> {
+    fn from(str: &'a str) -> Self {
         GoString {
             p: str.as_ptr(),
             n: str.len() as i64,
+            _lifetime: PhantomData,
         }
     }
 }
