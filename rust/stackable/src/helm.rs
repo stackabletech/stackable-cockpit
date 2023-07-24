@@ -1,7 +1,11 @@
 use std::fmt::Display;
 use std::str::{self, Utf8Error};
-use std::{collections::HashMap, ffi::CStr, os::raw::c_char};
+use std::{collections::HashMap, ffi::CStr};
 
+use helm_sys::{
+    go_add_helm_repo, go_helm_list_releases, go_helm_release_exists, go_install_helm_release,
+    go_uninstall_helm_release,
+};
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, error, info, instrument};
@@ -182,40 +186,6 @@ impl Display for HelmUninstallReleaseStatus {
             }
         }
     }
-}
-
-#[repr(C)]
-pub struct GoString {
-    p: *const u8,
-    n: i64,
-}
-
-impl From<&str> for GoString {
-    fn from(str: &str) -> Self {
-        GoString {
-            p: str.as_ptr(),
-            n: str.len() as i64,
-        }
-    }
-}
-
-extern "C" {
-    fn go_install_helm_release(
-        release_name: GoString,
-        chart_name: GoString,
-        chart_version: GoString,
-        values_yaml: GoString,
-        namespace: GoString,
-        suppress_output: bool,
-    ) -> *const c_char;
-    fn go_uninstall_helm_release(
-        release_name: GoString,
-        namespace: GoString,
-        suppress_output: bool,
-    ) -> *const c_char;
-    fn go_helm_release_exists(release_name: GoString, namespace: GoString) -> bool;
-    fn go_helm_list_releases(namespace: GoString) -> *const c_char;
-    fn go_add_helm_repo(name: GoString, url: GoString) -> *const c_char;
 }
 
 pub struct ChartVersion<'a> {

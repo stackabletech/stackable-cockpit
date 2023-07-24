@@ -37,7 +37,7 @@ rec {
             ln -s ${web.nodeModules} node_modules
           '';
       };
-      stackable = attrs: {
+      helm-sys = attrs: {
         GO_HELM_WRAPPER = goHelmWrapper + "/bin/go-helm-wrapper";
       };
     };
@@ -124,9 +124,9 @@ rec {
         mkdir $out
         cp ${./go.mod} $out/go.mod
         cp ${./go.sum} $out/go.sum
-        cp -r ${./rust/stackable/go-helm-wrapper} $out/go-helm-wrapper
+        cp -r ${./rust/helm-sys/go-helm-wrapper} $out/go-helm-wrapper
       '';
-    pwd = ./rust/stackable/go-helm-wrapper;
+    pwd = ./rust/helm-sys/go-helm-wrapper;
     modules = ./gomod2nix.toml;
     ldflags = "-buildmode c-archive";
   };

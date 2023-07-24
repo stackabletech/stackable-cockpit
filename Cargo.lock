@@ -1119,6 +1119,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 
 [[package]]
+name = "helm-sys"
+version = "0.1.0"
+dependencies = [
+ "gobuild",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2739,7 +2746,7 @@ name = "stackable"
 version = "0.0.0-dev"
 dependencies = [
  "bcrypt",
- "gobuild",
+ "helm-sys",
  "indexmap 1.9.3",
  "k8s-openapi",
  "kube 0.82.2",

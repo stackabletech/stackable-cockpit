@@ -26,6 +26,4 @@ tera = { workspace = true }
 kube = { workspace = true }
 rand = { workspace = true }
 url = { workspace = true }
-
-[build-dependencies]
-gobuild = "0.1.0-alpha.1"
+helm-sys = { path = "../helm-sys" }
