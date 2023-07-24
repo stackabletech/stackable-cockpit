@@ -1,5 +1,4 @@
 use std::{
-    marker::PhantomData,
     path::{Path, PathBuf},
     time::{Duration, SystemTime, SystemTimeError},
 };
@@ -13,12 +12,6 @@ use crate::constants::DEFAULT_CACHE_MAX_AGE;
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
-#[derive(Debug)]
-pub struct Uninitialized;
-
-#[derive(Debug)]
-pub struct Initialized;
-
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("io error"))]
@@ -31,57 +24,69 @@ pub enum Error {
     WriteDisabled,
 }
 
-#[derive(Debug)]
-pub struct Cache<State> {
-    pub(crate) settings: CacheSettings,
-    state: PhantomData<State>,
+pub struct CacheBuilder {
+    backend: CacheBackend,
+    max_age: Duration,
 }
 
-impl<State> Cache<State> {
+impl Default for CacheBuilder {
+    fn default() -> Self {
+        Self {
+            backend: CacheBackend::Disabled,
+            max_age: DEFAULT_CACHE_MAX_AGE,
+        }
+    }
+}
+
+impl CacheBuilder {
+    /// Sets the [`CacheBackend`] which should be used by the [`Cache`].
+    /// Defaults to [`CacheBackend::Disabled`].
+    pub fn with_backend(mut self, backend: CacheBackend) -> Self {
+        self.backend = backend;
+        self
+    }
+
+    /// Sets the cache max age. Defaults to [`DEFAULT_CACHE_MAX_AGE`].
+    pub fn with_max_age(mut self, max_age: Duration) -> Self {
+        self.max_age = max_age;
+        self
+    }
+
+    ///  Creates a new [`Cache`] instance with the provided `settings`. It also
+    /// initializes the cache backend. This ensure that local files and folders
+    /// needed for operation are created.
+    pub async fn build(self) -> Result<Cache> {
+        match &self.backend {
+            CacheBackend::Disk { base_path } => {
+                fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
+                Ok(Cache::new(self.backend, self.max_age))
+            }
+            CacheBackend::Disabled => todo!(),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Cache {
+    pub(crate) backend: CacheBackend,
+    pub(crate) max_age: Duration,
+}
+
+impl Cache {
+    /// Returns a [`CacheBuilder`] which allows to safely build and initialize
+    /// a local cache.
+    pub fn builder() -> CacheBuilder {
+        CacheBuilder::default()
+    }
+
     /// Returns wether the cache is enabled.
     pub fn is_enabled(&self) -> bool {
-        match self.settings.backend {
+        match self.backend {
             CacheBackend::Disk { .. } => true,
             CacheBackend::Disabled => false,
         }
     }
-}
 
-impl Cache<Uninitialized> {
-    /// Creates a new [`Cache`] instance with the provided `settings`. It should
-    /// be noted that it is required to call the [`Cache::init`] method before
-    /// using the cache for the first time to ensure the backend is setup
-    /// properly.
-    pub fn new(settings: CacheSettings) -> Cache<Uninitialized> {
-        Self {
-            settings,
-            state: PhantomData,
-        }
-    }
-
-    /// Initializes the cache backend. This ensure that local files and folders
-    /// needed for operation are created.
-    pub async fn init(self) -> Result<Cache<Initialized>> {
-        let Self { settings, .. } = self;
-
-        match &settings.backend {
-            CacheBackend::Disk { base_path } => {
-                fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
-
-                Ok(Cache {
-                    state: PhantomData,
-                    settings,
-                })
-            }
-            CacheBackend::Disabled => Ok(Cache {
-                state: PhantomData,
-                settings,
-            }),
-        }
-    }
-}
-
-impl Cache<Initialized> {
     /// Retrieves cached content located at `file_name`. It should be noted that
     /// the `file_name` should only contain the file name and extension without
     /// any path segments prefixed. The cache internally makes sure the file is
@@ -89,7 +94,7 @@ impl Cache<Initialized> {
     /// [`CacheStatus`]. An error is returned when the cache was unable to read
     /// data from disk.
     pub async fn retrieve(&self, file_url: &Url) -> Result<CacheStatus<String>> {
-        match &self.settings.backend {
+        match &self.backend {
             CacheBackend::Disk { base_path } => {
                 let file_path = Self::file_path(base_path, file_url);
 
@@ -105,7 +110,7 @@ impl Cache<Initialized> {
 
                 let elapsed = modified.elapsed().context(SystemTimeSnafu {})?;
 
-                if elapsed > self.settings.max_age {
+                if elapsed > self.max_age {
                     return Ok(CacheStatus::Expired);
                 }
 
@@ -120,7 +125,7 @@ impl Cache<Initialized> {
     /// The method returns an error if the cache fails to write the data to disk
     /// or the cache is disabled.
     pub async fn store(&self, file_url: &Url, file_content: &str) -> Result<()> {
-        match &self.settings.backend {
+        match &self.backend {
             CacheBackend::Disk { base_path } => {
                 let file_path = Self::file_path(base_path, file_url);
                 Self::write(file_path, file_content).await
@@ -133,7 +138,7 @@ impl Cache<Initialized> {
     /// if the cached files are expired. It simply returns a list of files known
     /// by the cache.
     pub async fn list(&self) -> Result<Vec<(PathBuf, SystemTime)>> {
-        match &self.settings.backend {
+        match &self.backend {
             CacheBackend::Disk { base_path } => {
                 let mut files = Vec::new();
 
@@ -161,13 +166,17 @@ impl Cache<Initialized> {
     /// Removes all cached files by deleting the base cache folder and then
     /// recreating it.
     pub async fn purge(&self) -> Result<()> {
-        match &self.settings.backend {
+        match &self.backend {
             CacheBackend::Disk { base_path } => {
                 fs::remove_dir_all(base_path).await.context(CacheIoSnafu)?;
                 fs::create_dir_all(base_path).await.context(CacheIoSnafu)
             }
             CacheBackend::Disabled => todo!(),
         }
+    }
+
+    fn new(backend: CacheBackend, max_age: Duration) -> Self {
+        Self { backend, max_age }
     }
 
     async fn read(file_path: PathBuf) -> Result<String> {

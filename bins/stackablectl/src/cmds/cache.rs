@@ -43,8 +43,12 @@ impl CacheArgs {
 }
 
 async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
-    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?)
-        .init()
+    let cache_settings = common_args.cache_settings().context(CacheSettingsSnafu)?;
+
+    let cache = Cache::builder()
+        .with_backend(cache_settings.backend)
+        .with_max_age(cache_settings.max_age)
+        .build()
         .await
         .context(CacheSnafu)?;
 
@@ -75,8 +79,12 @@ async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
 }
 
 async fn clean_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
-    let cache = Cache::new(common_args.cache_settings().context(CacheSettingsSnafu)?)
-        .init()
+    let cache_settings = common_args.cache_settings().context(CacheSettingsSnafu)?;
+
+    let cache = Cache::builder()
+        .with_backend(cache_settings.backend)
+        .with_max_age(cache_settings.max_age)
+        .build()
         .await
         .context(CacheSnafu)?;
 

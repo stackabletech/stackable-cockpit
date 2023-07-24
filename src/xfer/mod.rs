@@ -10,7 +10,7 @@ pub mod processor;
 use crate::{
     utils::path::PathOrUrl,
     xfer::{
-        cache::{Cache, CacheSettings, CacheStatus, Error, Initialized},
+        cache::{Cache, CacheSettings, CacheStatus, Error},
         processor::Processor,
     },
 };
@@ -41,14 +41,16 @@ pub enum FileTransferError {
 #[derive(Debug)]
 pub struct FileTransferClient {
     pub(crate) client: reqwest::Client,
-    pub(crate) cache: Cache<Initialized>,
+    pub(crate) cache: Cache,
 }
 
 impl FileTransferClient {
     /// Creates a new [`FileTransferClient`] with caching capabilities.
     pub async fn new(cache_settings: CacheSettings) -> Result<Self> {
-        let cache = Cache::new(cache_settings)
-            .init()
+        let cache = Cache::builder()
+            .with_backend(cache_settings.backend)
+            .with_max_age(cache_settings.max_age)
+            .build()
             .await
             .context(CacheSnafu)?;
 
