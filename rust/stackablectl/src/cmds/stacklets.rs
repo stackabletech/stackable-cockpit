@@ -4,7 +4,7 @@ use nu_ansi_term::Color::{Green, Red};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
-use stackable::{
+use stackable_cockpit::{
     kube::DisplayCondition,
     platform::stacklet::{list_stacklets, StackletError},
 };

@@ -5,7 +5,7 @@ use comfy_table::{
 };
 use snafu::{ResultExt, Snafu};
 
-use stackable::{
+use stackable_cockpit::{
     common::ListError,
     platform::{
         demo::DemoList,

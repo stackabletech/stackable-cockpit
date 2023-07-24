@@ -6,18 +6,18 @@ edition = "2021"
 [features]
 default = []
 # The UI builds slowly, so run in API-only mode during development
-ui = ["dep:stackabled-web"]
+ui = ["dep:stackable-cockpit-web"]
 
 [dependencies]
 utoipa-swagger-ui = { workspace = true, features = ["axum"] }
 axum = { workspace = true, features = ["http2", "headers"] }
 utoipa = { workspace = true, features = ["axum_extras"] }
-stackable = { path = "../stackable-cockpit", package = "stackable-cockpit", features = ["openapi"] }
+stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
 clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
 snafu = { workspace = true }
 tokio = { workspace = true }
-stackabled-web = { path = "../../web", optional = true, package = "stackable-cockpit-web" }
+stackable-cockpit-web = { path = "../../web", optional = true }
 serde.workspace = true
 k8s-openapi.workspace = true
 tower-http = { version = "0.4.1", features = ["validate-request"] }

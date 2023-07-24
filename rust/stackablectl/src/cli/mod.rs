@@ -1,13 +1,10 @@
-// Std library
 use std::env;
 
-// External crates
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, instrument, Level};
 
-// Stackable library
-use stackable::{
+use stackable_cockpit::{
     constants::{
         DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
@@ -18,7 +15,6 @@ use stackable::{
     },
 };
 
-// Local
 use crate::{
     cmds::{
         cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,

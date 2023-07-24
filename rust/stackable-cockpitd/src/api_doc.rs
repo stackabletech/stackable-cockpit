@@ -1,4 +1,4 @@
-use stackable::{
+use stackable_cockpit::{
     common::ManifestSpec,
     platform::{demo::DemoSpecV2, release::ReleaseSpec},
     utils::params::Parameter,

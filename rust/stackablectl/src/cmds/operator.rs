@@ -11,7 +11,7 @@ use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
-use stackable::{
+use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm::{self, HelmError, HelmRelease, HelmRepo},
     platform::operator::{OperatorSpec, VALID_OPERATORS},

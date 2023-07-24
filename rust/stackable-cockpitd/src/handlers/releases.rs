@@ -1,5 +1,5 @@
 use axum::{extract::Path, routing::get, Json, Router};
-use stackable::platform::release::ReleaseSpec;
+use stackable_cockpit::platform::release::ReleaseSpec;
 
 /// Creates the release sub-router.
 pub fn router() -> Router {

@@ -2,8 +2,8 @@ use clap::{CommandFactory, Parser};
 use clap_complete::{generate, Shell};
 use clap_mangen::Man;
 use snafu::{ensure, ResultExt, Snafu};
+use stackable_cockpitd::api_doc::openapi;
 use stackablectl::cli::Cli;
-use stackabled::api_doc::openapi;
 
 use std::{
     fs,

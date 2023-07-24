@@ -1,5 +1,5 @@
 use axum::{extract::Path, routing::get, Json, Router};
-use stackable::platform::stack::StackSpecV2;
+use stackable_cockpit::platform::stack::StackSpecV2;
 
 /// Creates the stack sub-router.
 pub fn router() -> Router {

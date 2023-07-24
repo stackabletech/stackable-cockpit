@@ -1,7 +1,9 @@
 use std::env;
 
 use snafu::Snafu;
-use stackable::constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST};
+use stackable_cockpit::constants::{
+    HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+};
 
 use crate::constants::{HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST};
 

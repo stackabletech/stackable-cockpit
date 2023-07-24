@@ -6,7 +6,7 @@ use comfy_table::{
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
-use stackable::{
+use stackable_cockpit::{
     common::ListError,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,

@@ -1,5 +1,5 @@
 use axum::{extract::Path, routing::get, Json, Router};
-use stackable::platform::demo::DemoSpecV2;
+use stackable_cockpit::platform::demo::DemoSpecV2;
 
 /// Creates the demo sub-router.
 pub fn router() -> Router {
