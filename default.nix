@@ -45,7 +45,7 @@ rec {
   build = cargo.workspaceMembers.stackable-cockpitd.build.override {
     features = [ "ui" ];
   };
-  entrypoint = build+"/bin/stackabled";
+  entrypoint = build+"/bin/stackable-cockpitd";
   # crds = pkgs.runCommand "${meta.operator.name}-crds.yaml" {}
   # ''
   #   ${entrypoint} crd > $out
@@ -73,7 +73,7 @@ rec {
       Cmd = [];
     };
   };
-  docker = pkgs.linkFarm "listener-operator-docker" [
+  docker = pkgs.linkFarm "stackable-cockpit-docker" [
     {
       name = "load-image";
       path = dockerImage;
