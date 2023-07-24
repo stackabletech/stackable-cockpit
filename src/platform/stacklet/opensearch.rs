@@ -28,7 +28,7 @@ pub(super) async fn list(
         stacklets.push(Stacklet {
             name: service.name_any(),
             namespace: service.namespace(),
-            product: "opensearch".to_string(),
+            product: "opensearch-dashboards".to_string(),
             conditions: conditions.plain(),
         })
     }
