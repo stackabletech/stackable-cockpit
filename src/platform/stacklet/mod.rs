@@ -48,13 +48,11 @@ pub enum StackletError {
     JsonError { source: serde_json::Error },
 }
 
-pub type StackletList = Vec<Stacklet>;
-
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list(namespace: Option<&str>) -> Result<StackletList, StackletError> {
+pub async fn list(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
     let kube_client = KubeClient::new().await.context(KubeSnafu)?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
@@ -68,7 +66,7 @@ pub async fn list(namespace: Option<&str>) -> Result<StackletList, StackletError
 async fn list_stackable_stacklets(
     kube_client: &KubeClient,
     namespace: Option<&str>,
-) -> Result<StackletList, StackletError> {
+) -> Result<Vec<Stacklet>, StackletError> {
     let product_list = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = Vec::new();
 
