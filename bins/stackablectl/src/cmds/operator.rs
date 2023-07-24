@@ -4,7 +4,7 @@ use clap::{Args, Subcommand};
 use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
 use tracing::{debug, info, instrument};
 
 use stackable::{
@@ -100,28 +100,28 @@ pub struct OperatorInstalledArgs {
     output_type: OutputType,
 }
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 pub enum OperatorCmdError {
-    #[snafu(display("invalid repo name"))]
-    InvalidRepoNameError { source: InvalidRepoNameError },
+    #[error("invalid repo name")]
+    InvalidRepoNameError(#[from] InvalidRepoNameError),
 
-    #[snafu(display("unknown repo name: {name}"))]
-    UnknownRepoNameError { name: String },
+    #[error("unknown repo name: {0}")]
+    UnknownRepoNameError(String),
 
-    #[snafu(display("Helm error"))]
-    HelmError { source: HelmError },
+    #[error("Helm error")]
+    HelmError(#[from] HelmError),
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
+    #[error("cluster argument error")]
+    CommonClusterArgsError(#[from] CommonClusterArgsError),
 
-    #[snafu(display("semver parse error"))]
-    SemVerParseError { source: semver::Error },
+    #[error("semver parse error")]
+    SemVerParseError(#[from] semver::Error),
 
-    #[snafu(display("unable to format yaml output"), context(false))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[error("unable to format yaml output")]
+    YamlOutputFormatError(#[from] serde_yaml::Error),
 
-    #[snafu(display("unable to format json output"), context(false))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[error("unable to format json output")]
+    JsonOutputFormatError(#[from] serde_json::Error),
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -269,20 +269,12 @@ async fn install_cmd(
         }
     );
 
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
+    args.local_cluster.install_if_needed(None).await?;
 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);
-
-        match operator.install(&common_args.operator_namespace) {
-            Ok(_) => println!("Installed {} operator", operator.name),
-            Err(err) => {
-                return Err(OperatorCmdError::HelmError { source: err });
-            }
-        };
+        operator.install(&common_args.operator_namespace)?;
+        println!("Installed {} operator", operator.name)
     }
 
     Ok(format!(
@@ -304,9 +296,7 @@ fn uninstall_cmd(
     info!("Uninstalling operator(s)");
 
     for operator in &args.operators {
-        operator
-            .uninstall(&common_args.operator_namespace)
-            .context(HelmSnafu)?;
+        operator.uninstall(&common_args.operator_namespace)?;
     }
 
     Ok(format!(
@@ -329,8 +319,7 @@ fn installed_cmd(
 
     type ReleaseList = IndexMap<String, HelmRelease>;
 
-    let installed: ReleaseList = helm::list_releases(&common_args.operator_namespace)
-        .context(HelmSnafu)?
+    let installed: ReleaseList = helm::list_releases(&common_args.operator_namespace)?
         .into_iter()
         .filter(|release| {
             VALID_OPERATORS
@@ -355,15 +344,8 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
         HELM_REPO_NAME_TEST,
         HELM_REPO_NAME_DEV,
     ] {
-        let helm_repo_url =
-            helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu)?;
-
-        helm_index_files.insert(
-            helm_repo_name,
-            helm::get_helm_index(helm_repo_url)
-                .await
-                .context(HelmSnafu)?,
-        );
+        let helm_repo_url = helm_repo_name_to_repo_url(helm_repo_name)?;
+        helm_index_files.insert(helm_repo_name, helm::get_helm_index(helm_repo_url).await?);
     }
 
     Ok(helm_index_files)

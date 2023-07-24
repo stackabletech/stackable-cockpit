@@ -71,7 +71,7 @@ mod test {
 
     use super::{ResultOutput, TabledOutput};
     use serde::Serialize;
-    use snafu::Snafu;
+    use thiserror::Error;
 
     #[test]
     fn basic_output() {
@@ -81,13 +81,13 @@ mod test {
             bar: String,
         }
 
-        #[derive(Debug, Snafu)]
+        #[derive(Debug, Error)]
         pub enum DataError {
-            #[snafu(display("unable to format yaml output"), context(false))]
-            YamlOutputFormatError { source: serde_yaml::Error },
+            #[error("unable to format yaml output")]
+            YamlOutputFormatError(#[from] serde_yaml::Error),
 
-            #[snafu(display("unable to format json output"), context(false))]
-            JsonOutputFormatError { source: serde_json::Error },
+            #[error("unable to format json output")]
+            JsonOutputFormatError(#[from] serde_json::Error),
         }
 
         let d = Data {

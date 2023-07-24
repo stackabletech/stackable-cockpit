@@ -5,7 +5,7 @@ use std::{
 };
 
 use clap::{Args, Subcommand};
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
 use xdg::BaseDirectoriesError;
 
 use crate::{
@@ -37,19 +37,19 @@ pub struct CacheListArgs {
     output_type: OutputType,
 }
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 pub enum CacheCmdError {
-    #[snafu(display("io error"))]
-    IoError { source: io::Error },
+    #[error("io error")]
+    IoError(#[from] io::Error),
 
-    #[snafu(display("xdg error"))]
-    XdgError { source: BaseDirectoriesError },
+    #[error("xdg error")]
+    XdgError(#[from] BaseDirectoriesError),
 
-    #[snafu(display("unable to format yaml output"), context(false))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[error("unable to format yaml output")]
+    YamlOutputFormatError(#[from] serde_yaml::Error),
 
-    #[snafu(display("unable to format json output"), context(false))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[error("unable to format json output")]
+    JsonOutputFormatError(#[from] serde_json::Error),
 }
 
 impl ResultOutput for Vec<(PathBuf, SystemTime)> {
@@ -86,20 +86,15 @@ impl CacheArgs {
 }
 
 fn list_cmd(args: &CacheListArgs) -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu)?
-        .get_cache_home();
+    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
+    fs::create_dir_all(cache_dir.clone())?;
 
-    fs::create_dir_all(cache_dir.clone()).context(IoSnafu)?;
-
-    let mut files = fs::read_dir(cache_dir)
-        .context(IoSnafu)?
+    let mut files = fs::read_dir(cache_dir)?
         .map(|res| {
             let entry = res?;
             Ok((entry.path(), entry.metadata()?.modified()?))
         })
-        .collect::<Result<Vec<_>, io::Error>>()
-        .context(IoSnafu)?;
+        .collect::<Result<Vec<_>, io::Error>>()?;
 
     files.sort();
 
@@ -107,12 +102,10 @@ fn list_cmd(args: &CacheListArgs) -> Result<String, CacheCmdError> {
 }
 
 fn clean_cmd() -> Result<String, CacheCmdError> {
-    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-        .context(XdgSnafu)?
-        .get_cache_home();
+    let cache_dir = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?.get_cache_home();
 
-    fs::remove_dir_all(cache_dir.clone()).context(IoSnafu)?;
-    fs::create_dir_all(cache_dir).context(IoSnafu)?;
+    fs::remove_dir_all(cache_dir.clone())?;
+    fs::create_dir_all(cache_dir)?;
 
     Ok("Cleaned cached files".into())
 }

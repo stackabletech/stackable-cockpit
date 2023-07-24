@@ -1,6 +1,6 @@
 use clap::Parser;
 use dotenvy::dotenv;
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
@@ -13,31 +13,30 @@ use stackablectl::{
     },
 };
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 enum CliError {
-    #[snafu(display("operator command error"))]
-    OperatorCmdError { source: OperatorCmdError },
+    #[error("operator command error")]
+    OperatorCmdError(#[from] OperatorCmdError),
 
-    #[snafu(display("release command error"))]
-    ReleaseCmdError { source: ReleaseCmdError },
+    #[error("release command error")]
+    ReleaseCmdError(#[from] ReleaseCmdError),
 
-    #[snafu(display("stack command error"))]
-    StackCmdError { source: StackCmdError },
+    #[error("stack command error")]
+    StackCmdError(#[from] StackCmdError),
 
-    #[snafu(display("stacklets command error"))]
-    StackletsCmdError { source: StackletsCmdError },
+    #[error("stacklets command error")]
+    StackletsCmdError(#[from] StackletsCmdError),
 
-    #[snafu(display("demo command error"))]
-    DemoCmdError { source: DemoCmdError },
+    #[error("demo command error")]
+    DemoCmdError(#[from] DemoCmdError),
 
-    #[snafu(display("completions command error"))]
-    CompletionsCmdError { source: CompletionsCmdError },
+    #[error("completions command error")]
+    CompletionsCmdError(#[from] CompletionsCmdError),
 
-    #[snafu(display("cache command error"))]
-    CacheCmdError { source: CacheCmdError },
+    #[error("cache command error")]
+    CacheCmdError(#[from] CacheCmdError),
 }
 
-#[snafu::report]
 #[tokio::main]
 async fn main() -> Result<(), CliError> {
     // Parse the CLI args and commands
@@ -68,7 +67,7 @@ async fn main() -> Result<(), CliError> {
         Ok(_) => {}
         Err(err) => {
             if !err.not_found() {
-                println!("{err}")
+                eprintln!("{err}")
             }
         }
     }
@@ -79,13 +78,13 @@ async fn main() -> Result<(), CliError> {
     };
 
     let output = match &cli.subcommand {
-        Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu)?,
-        Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu)?,
-        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu)?,
-        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsCmdSnafu)?,
-        Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu)?,
-        Commands::Completions(args) => args.run().context(CompletionsCmdSnafu)?,
-        Commands::Cache(args) => args.run().context(CacheCmdSnafu)?,
+        Commands::Operator(args) => args.run(&cli).await?,
+        Commands::Release(args) => args.run(&cli).await?,
+        Commands::Stack(args) => args.run(&cli).await?,
+        Commands::Stacklets(args) => args.run(&cli).await?,
+        Commands::Demo(args) => args.run(&cli).await?,
+        Commands::Completions(args) => args.run()?,
+        Commands::Cache(args) => args.run()?,
     };
 
     println!("{output}");

@@ -1,7 +1,7 @@
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
 use nu_ansi_term::Color::{Green, Red};
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
 use tracing::{info, instrument};
 
 use stackable::{
@@ -42,16 +42,16 @@ pub struct StackletListArgs {
     output_type: OutputType,
 }
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 pub enum StackletsCmdError {
-    #[snafu(display("stacklet list error"))]
-    StackletListError { source: StackletError },
+    #[error("stacklet list error")]
+    StackletListError(#[from] StackletError),
 
-    #[snafu(display("unable to format yaml output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[error("unable to format yaml output")]
+    YamlOutputFormatError(#[from] serde_yaml::Error),
 
-    #[snafu(display("unable to format json output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[error("unable to format json output")]
+    JsonOutputFormatError(#[from] serde_json::Error),
 }
 
 impl StackletsArgs {
@@ -73,7 +73,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .all_namespaces
         .then_some(common_args.operator_namespace.as_str());
 
-    let stacklets = list_stacklets(namespace).await.context(StackletListSnafu)?;
+    let stacklets = list_stacklets(namespace).await?;
 
     if stacklets.is_empty() {
         return Ok("No stacklets".into());
@@ -125,8 +125,8 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 }
             ))
         }
-        OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),
+        OutputType::Json => Ok(serde_json::to_string(&stacklets)?),
+        OutputType::Yaml => Ok(serde_yaml::to_string(&stacklets)?),
     }
 }
 

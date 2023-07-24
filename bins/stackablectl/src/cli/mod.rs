@@ -3,7 +3,7 @@ use std::env;
 
 // External crates
 use clap::{Parser, Subcommand, ValueEnum, ValueHint};
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
 use tracing::{debug, instrument, Level};
 
 // Stackable library
@@ -194,8 +194,7 @@ impl Cli {
         if self.no_cache {
             Ok(CacheSettings::disabled())
         } else {
-            let xdg = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-                .context(cache_settings_error::XdgSnafu)?;
+            let xdg = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)?;
             Ok(CacheSettings::disk(xdg.get_cache_home()))
         }
     }
@@ -252,9 +251,8 @@ pub enum OutputType {
     Yaml,
 }
 
-#[derive(Debug, Snafu)]
-#[snafu(module)]
+#[derive(Debug, Error)]
 pub enum CacheSettingsError {
-    #[snafu(display("unable to resolve XDG directories"))]
-    Xdg { source: xdg::BaseDirectoriesError },
+    #[error("unable to resolve XDG directories")]
+    Xdg(#[from] xdg::BaseDirectoriesError),
 }

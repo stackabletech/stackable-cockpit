@@ -1,6 +1,6 @@
 use clap::{Args, Subcommand};
 use comfy_table::{presets::NOTHING, ContentArrangement, Table};
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
 use tracing::{info, instrument};
 
 use stackable::{
@@ -80,31 +80,31 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
     local_cluster: CommonClusterArgs,
 }
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 pub enum StackCmdError {
-    #[snafu(display("path/url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    #[error("path/url parse error")]
+    PathOrUrlParseError(#[from] PathOrUrlParseError),
 
-    #[snafu(display("unable to format yaml output"), context(false))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[error("unable to format yaml output")]
+    YamlOutputFormatError(#[from] serde_yaml::Error),
 
-    #[snafu(display("unable to format json output"), context(false))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[error("unable to format json output")]
+    JsonOutputFormatError(#[from] serde_json::Error),
 
-    #[snafu(display("stack error"))]
-    StackError { source: StackError },
+    #[error("stack error")]
+    StackError(#[from] StackError),
 
-    #[snafu(display("list error"))]
-    ListError { source: ListError },
+    #[error("list error")]
+    ListError(#[from] ListError),
 
-    #[snafu(display("cache settings resolution error"), context(false))]
-    CacheSettingsError { source: CacheSettingsError },
+    #[error("cache settings resolution error")]
+    CacheSettingsError(#[from] CacheSettingsError),
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
+    #[error("cluster argument error")]
+    CommonClusterArgsError(#[from] CommonClusterArgsError),
 
-    #[snafu(display("no stack with name '{name}'"))]
-    NoSuchStack { name: String },
+    #[error("no stack with name '{0}'")]
+    NoSuchStack(String),
 }
 
 impl ResultOutput for StackList {
@@ -166,11 +166,8 @@ impl TabledOutput for StackSpecV2 {
 
 impl StackArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
-        let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
-
-        let stack_list = StackList::build(&files, &common_args.cache_settings()?)
-            .await
-            .context(ListSnafu)?;
+        let files = common_args.get_stack_files()?;
+        let stack_list = StackList::build(&files, &common_args.cache_settings()?).await?;
 
         match &self.subcommand {
             StackCommands::List(args) => list_cmd(args, stack_list),
@@ -193,9 +190,7 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
 
     let stack = stack_list
         .get(&args.stack_name)
-        .ok_or(StackCmdError::NoSuchStack {
-            name: args.stack_name.clone(),
-        })?;
+        .ok_or(StackCmdError::NoSuchStack(args.stack_name.clone()))?;
 
     Ok(stack.output(args.output_type)?)
 }
@@ -208,32 +203,21 @@ async fn install_cmd(
 ) -> Result<String, StackCmdError> {
     info!("Installing stack");
 
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu)?;
-
-    let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
-        .await
-        .context(ListSnafu)?;
+    let files = common_args.get_release_files()?;
+    let release_list = ReleaseList::build(&files, &common_args.cache_settings()?).await?;
 
     // Install local cluster if needed
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
+    args.local_cluster.install_if_needed(None).await?;
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             // Install the stack
-            stack_spec
-                .install(release_list, &common_args.operator_namespace)
-                .context(StackSnafu)?;
+            stack_spec.install(release_list, &common_args.operator_namespace)?;
 
             // Install stack manifests
             stack_spec
                 .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
-                .await
-                .context(StackSnafu)?;
+                .await?;
 
             Ok(format!("Install stack {}", args.stack_name))
         }

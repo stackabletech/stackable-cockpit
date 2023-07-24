@@ -1,5 +1,6 @@
 use clap::{Args, Subcommand};
-use snafu::{ResultExt, Snafu};
+use thiserror::Error;
+use tracing::{debug, info, instrument};
 
 use stackable::{
     common::ListError,
@@ -10,11 +11,10 @@ use stackable::{
     },
     utils::{params::IntoParametersError, path::PathOrUrlParseError},
 };
-use tracing::{debug, info, instrument};
 
 use crate::{
     cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
-    output::{ResultOutput, TabledOutput},
+    output::{ProgressOutput, ResultOutput, TabledOutput},
 };
 
 #[derive(Debug, Args)]
@@ -89,40 +89,40 @@ Use \"stackablectl demo describe <DEMO>\" to display details about the specified
 #[derive(Debug, Args)]
 pub struct DemoUninstallArgs {}
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 pub enum DemoCmdError {
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
+    #[error("io error")]
+    IoError(#[from] std::io::Error),
 
-    #[snafu(display("unable to format yaml output"), context(false))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[error("unable to format yaml output")]
+    YamlOutputFormatError(#[from] serde_yaml::Error),
 
-    #[snafu(display("unable to format json output"), context(false))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[error("unable to format json output")]
+    JsonOutputFormatError(#[from] serde_json::Error),
 
-    #[snafu(display("no demo with name '{name}'"))]
-    NoSuchDemo { name: String },
+    #[error("no demo with name '{0}'")]
+    NoSuchDemo(String),
 
-    #[snafu(display("no stack with name '{name}'"))]
-    NoSuchStack { name: String },
+    #[error("no stack with name '{0}'")]
+    NoSuchStack(String),
 
-    #[snafu(display("failed to convert input parameters to validated parameters: {source}"))]
-    IntoParametersError { source: IntoParametersError },
+    #[error("failed to convert input parameters to validated parameters")]
+    IntoParametersError(#[from] IntoParametersError),
 
-    #[snafu(display("list error"))]
-    ListError { source: ListError },
+    #[error("list error")]
+    ListError(#[from] ListError),
 
-    #[snafu(display("stack error"))]
-    StackError { source: StackError },
+    #[error("stack error")]
+    StackError(#[from] StackError),
 
-    #[snafu(display("path/url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    #[error("path/url parse error")]
+    PathOrUrlParseError(#[from] PathOrUrlParseError),
 
-    #[snafu(display("cache settings resolution error"), context(false))]
-    CacheSettingsError { source: CacheSettingsError },
+    #[error("cache settings resolution error")]
+    CacheSettingsError(#[from] CacheSettingsError),
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
+    #[error("cluster argument error")]
+    CommonClusterArgsError(#[from] CommonClusterArgsError),
 }
 
 impl ResultOutput for DemoList {
@@ -181,11 +181,8 @@ impl DemoArgs {
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
-
-        let list = DemoList::build(&files, &common_args.cache_settings()?)
-            .await
-            .context(ListSnafu)?;
+        let files = common_args.get_demo_files()?;
+        let list = DemoList::build(&files, &common_args.cache_settings()?).await?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
@@ -214,9 +211,7 @@ async fn describe_cmd(
 
     let demo = demo_list
         .get(&args.demo_name)
-        .ok_or(DemoCmdError::NoSuchDemo {
-            name: args.demo_name.clone(),
-        })?;
+        .ok_or(DemoCmdError::NoSuchDemo(args.demo_name.clone()))?;
 
     Ok(demo.output(args.output_type)?)
 }
@@ -230,60 +225,49 @@ async fn install_cmd(
 ) -> Result<String, DemoCmdError> {
     info!("Installing demo");
 
+    let mut pb = ProgressOutput::new();
+    pb.add("Building stack list", Some(6));
+
     // Get the demo spec by name from the list
     let demo_spec = demo_list
         .get(&args.demo_name)
-        .ok_or(DemoCmdError::NoSuchDemo {
-            name: args.demo_name.clone(),
-        })?;
-
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
+        .ok_or(DemoCmdError::NoSuchDemo(args.demo_name.clone()))?;
 
     // Build demo list based on the (default) remote demo file, and additional files provided by the
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-    let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
-
+    let files = common_args.get_stack_files()?;
     let cache_settings = common_args.cache_settings()?;
-
-    let stack_list = StackList::build(&files, &cache_settings)
-        .await
-        .context(ListSnafu)?;
+    let stack_list = StackList::build(&files, &cache_settings).await?;
 
     // Get the stack spec based on the name defined in the demo spec
     let stack_spec = stack_list
         .get(&demo_spec.stack)
-        .ok_or(DemoCmdError::NoSuchStack {
-            name: demo_spec.stack.clone(),
-        })?;
+        .ok_or(DemoCmdError::NoSuchStack(demo_spec.stack.clone()))?;
+
+    pb.tick_with_message("Building release list");
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu)?;
+    let files = common_args.get_release_files()?;
+    let release_list = ReleaseList::build(&files, &cache_settings).await?;
 
-    let release_list = ReleaseList::build(&files, &cache_settings)
-        .await
-        .context(ListSnafu)?;
+    pb.tick_with_message("Installing local cluster");
 
     // Install local cluster if needed
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
+    args.local_cluster.install_if_needed(None).await?;
+
+    pb.tick_with_message("Installing stack");
 
     // Install the stack
-    stack_spec
-        .install(release_list, &common_args.operator_namespace)
-        .context(StackSnafu)?;
+    stack_spec.install(release_list, &common_args.operator_namespace)?;
+
+    pb.tick_with_message("Installing stack manifests");
 
     // Install stack manifests
     stack_spec
         .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
-        .await
-        .context(StackSnafu)?;
+        .await?;
+
+    pb.tick_with_message("Installing demo manifests");
 
     // Install demo manifests
     stack_spec
@@ -293,8 +277,7 @@ async fn install_cmd(
             &args.parameters,
             &common_args.operator_namespace,
         )
-        .await
-        .context(StackSnafu)?;
+        .await?;
 
     Ok("".into())
 }

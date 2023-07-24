@@ -1,12 +1,12 @@
 use std::env;
 
-use snafu::Snafu;
 use stackable::constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST};
+use thiserror::Error;
 
 use crate::constants::{HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST};
 
-#[derive(Debug, Snafu)]
-#[snafu(display("Invalid Helm repo name ({name}), cannot resolve to repo URL"))]
+#[derive(Debug, Error)]
+#[error("Invalid Helm repo name ({name}), cannot resolve to repo URL")]
 pub struct InvalidRepoNameError {
     name: String,
 }

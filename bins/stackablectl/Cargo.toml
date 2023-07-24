@@ -10,6 +10,7 @@ clap_complete = { workspace = true }
 lazy_static = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
+thiserror = { workspace = true }
 indicatif = { workspace = true }
 indexmap = { workspace = true }
 stackable = { path = "../../" }
@@ -17,7 +18,6 @@ dotenvy = { workspace = true }
 reqwest = { workspace = true }
 tracing = { workspace = true }
 semver = { workspace = true }
-snafu = { workspace = true }
 tokio = { workspace = true }
 serde = { workspace = true }
 clap = { workspace = true }

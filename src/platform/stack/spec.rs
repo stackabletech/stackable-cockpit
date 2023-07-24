@@ -189,7 +189,7 @@ impl StackSpecV2 {
                         },
                         Some(&values_yaml),
                         namespace,
-                        false,
+                        true,
                     )
                     .context(HelmSnafu)?;
                 }

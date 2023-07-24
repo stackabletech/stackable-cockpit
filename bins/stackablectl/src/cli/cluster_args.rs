@@ -1,27 +1,27 @@
 use clap::{Args, ValueEnum};
-use snafu::{ensure, ResultExt, Snafu};
+use thiserror::Error;
 
 use stackable::{
     cluster::{KindCluster, KindClusterError, MinikubeCluster, MinikubeClusterError},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
 };
 
-#[derive(Debug, Snafu)]
+#[derive(Debug, Error)]
 pub enum CommonClusterArgsError {
-    #[snafu(display("failed to create kind cluster"))]
-    KindClusterError { source: KindClusterError },
+    #[error("failed to create kind cluster")]
+    KindClusterError(#[from] KindClusterError),
 
-    #[snafu(display("minikube cluster error"))]
-    MinikubeClusterError { source: MinikubeClusterError },
+    #[error("minikube cluster error")]
+    MinikubeClusterError(#[from] MinikubeClusterError),
 
-    #[snafu(display(
+    #[error(
         "invalid total node count - at least two nodes in total are needed to run a local cluster"
-    ))]
+    )]
     InvalidTotalNodeCountError,
 
-    #[snafu(display(
+    #[error(
         "invalid control-plane node count - the number of control-plane nodes needs to be lower than total node count
-    "))]
+    ")]
     InvalidControlPlaneNodeCountError,
 }
 
@@ -87,19 +87,11 @@ impl CommonClusterArgs {
                     ClusterType::Kind => {
                         let kind_cluster =
                             KindCluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
-
-                        kind_cluster
-                            .create_if_not_exists()
-                            .await
-                            .context(KindClusterSnafu)
+                        Ok(kind_cluster.create_if_not_exists().await?)
                     }
                     ClusterType::Minikube => {
                         let minikube_cluster = MinikubeCluster::new(self.cluster_nodes, name);
-
-                        minikube_cluster
-                            .create_if_not_exists()
-                            .await
-                            .context(MinikubeClusterSnafu)
+                        Ok(minikube_cluster.create_if_not_exists().await?)
                     }
                 }
             }
@@ -110,14 +102,15 @@ impl CommonClusterArgs {
     fn validate(&self) -> Result<(), CommonClusterArgsError> {
         // We need at least two nodes in total (one control-plane node and one
         // worker node)
-        ensure!(self.cluster_nodes >= 2, InvalidTotalNodeCountSnafu);
+        if self.cluster_nodes < 2 {
+            return Err(CommonClusterArgsError::InvalidTotalNodeCountError);
+        }
 
         // The cluster control-plane node count must be smaller than the total
         // node count
-        ensure!(
-            self.cluster_cp_nodes < self.cluster_nodes,
-            InvalidControlPlaneNodeCountSnafu
-        );
+        if self.cluster_cp_nodes >= self.cluster_nodes {
+            return Err(CommonClusterArgsError::InvalidControlPlaneNodeCountError);
+        }
 
         Ok(())
     }

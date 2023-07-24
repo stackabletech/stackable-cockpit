@@ -187,10 +187,7 @@ impl OperatorSpec {
             namespace,
             true,
         ) {
-            Ok(status) => {
-                println!("{status}");
-                Ok(())
-            }
+            Ok(_) => Ok(()),
             Err(err) => Err(err),
         }
     }
