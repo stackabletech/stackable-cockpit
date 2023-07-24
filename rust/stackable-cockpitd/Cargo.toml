@@ -1,5 +1,5 @@
 [package]
-name = "stackabled"
+name = "stackable-cockpitd"
 version.workspace = true
 edition = "2021"
 
@@ -12,12 +12,12 @@ ui = ["dep:stackabled-web"]
 utoipa-swagger-ui = { workspace = true, features = ["axum"] }
 axum = { workspace = true, features = ["http2", "headers"] }
 utoipa = { workspace = true, features = ["axum_extras"] }
-stackable = { path = "../stackable", features = ["openapi"] }
+stackable = { path = "../stackable-cockpit", package = "stackable-cockpit", features = ["openapi"] }
 clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
 snafu = { workspace = true }
 tokio = { workspace = true }
-stackabled-web = { path = "../../web", optional = true }
+stackabled-web = { path = "../../web", optional = true, package = "stackable-cockpit-web" }
 serde.workspace = true
 k8s-openapi.workspace = true
 tower-http = { version = "0.4.1", features = ["validate-request"] }

@@ -29,7 +29,7 @@ rec {
         LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
         BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.glibc.dev}/include -I${pkgs.clang.cc.lib}/lib/clang/${pkgs.lib.getVersion pkgs.clang.cc}/include";
       };
-      stackabled-web = attrs: {
+      stackable-cockpit-web = attrs: {
         nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs ];
         preConfigure =
           ''
@@ -42,7 +42,7 @@ rec {
       };
     };
   };
-  build = cargo.workspaceMembers.stackabled.build.override {
+  build = cargo.workspaceMembers.stackable-cockpitd.build.override {
     features = [ "ui" ];
   };
   entrypoint = build+"/bin/stackabled";

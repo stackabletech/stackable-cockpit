@@ -8,7 +8,7 @@ use axum::{
 use clap::Parser;
 use futures::FutureExt;
 use snafu::{ResultExt, Whatever};
-use stackabled::{
+use stackable_cockpitd::{
     api_doc, handlers,
     middleware::{self, authentication::Authenticator},
 };

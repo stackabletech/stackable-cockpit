@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 stackablectl = { path = "../stackablectl" }
-stackabled = { path = "../stackabled" }
+stackabled = { path = "../stackable-cockpitd", package = "stackable-cockpitd" }
 clap_complete =  { workspace = true }
 snafu = { workspace = true }
 clap.workspace = true

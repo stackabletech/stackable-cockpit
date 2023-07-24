@@ -2742,7 +2742,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "stackable"
+name = "stackable-cockpit"
 version = "0.0.0-dev"
 dependencies = [
  "bcrypt",
@@ -2763,6 +2763,35 @@ dependencies = [
  "url",
  "utoipa",
  "which",
+]
+
+[[package]]
+name = "stackable-cockpit-web"
+version = "0.0.0-dev"
+dependencies = [
+ "phf 0.11.2",
+ "phf_codegen 0.11.2",
+]
+
+[[package]]
+name = "stackable-cockpitd"
+version = "0.0.0-dev"
+dependencies = [
+ "axum",
+ "bcrypt",
+ "clap",
+ "futures",
+ "k8s-openapi",
+ "serde",
+ "snafu",
+ "stackable-cockpit",
+ "stackable-cockpit-web",
+ "tokio",
+ "tower-http",
+ "tracing",
+ "utoipa",
+ "utoipa-swagger-ui",
+ "uuid",
 ]
 
 [[package]]
@@ -2827,40 +2856,11 @@ dependencies = [
  "serde_json",
  "serde_yaml 0.9.22",
  "snafu",
- "stackable",
+ "stackable-cockpit",
  "tokio",
  "tracing",
  "tracing-subscriber",
  "xdg",
-]
-
-[[package]]
-name = "stackabled"
-version = "0.0.0-dev"
-dependencies = [
- "axum",
- "bcrypt",
- "clap",
- "futures",
- "k8s-openapi",
- "serde",
- "snafu",
- "stackable",
- "stackabled-web",
- "tokio",
- "tower-http",
- "tracing",
- "utoipa",
- "utoipa-swagger-ui",
- "uuid",
-]
-
-[[package]]
-name = "stackabled-web"
-version = "0.0.0-dev"
-dependencies = [
- "phf 0.11.2",
- "phf_codegen 0.11.2",
 ]
 
 [[package]]
@@ -3799,8 +3799,8 @@ dependencies = [
  "clap_mangen",
  "serde_json",
  "snafu",
+ "stackable-cockpitd",
  "stackablectl",
- "stackabled",
 ]
 
 [[package]]

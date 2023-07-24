@@ -1,5 +1,5 @@
 [package]
-name = "stackabled-web"
+name = "stackable-cockpit-web"
 version.workspace = true
 edition = "2021"
 
