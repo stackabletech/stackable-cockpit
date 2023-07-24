@@ -14,7 +14,7 @@ pub fn router() -> Router {
 }
 
 async fn ui() -> Html<&'static str> {
-    Html(stackabled_web::INDEX_HTML)
+    Html(stackable_cockpit_web::INDEX_HTML)
 }
 async fn asset(Path(name): Path<String>) -> impl IntoResponse {
     (
@@ -26,6 +26,6 @@ async fn asset(Path(name): Path<String>) -> impl IntoResponse {
                 _ => HeaderValue::from_static("application/octet-stream"),
             },
         )]),
-        stackabled_web::ASSETS[&name],
+        stackable_cockpit_web::ASSETS[&name],
     )
 }
