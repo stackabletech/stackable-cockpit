@@ -3,6 +3,7 @@ import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
 import { ButtonLink } from '../../components/button';
 import { AddSymbol } from '../../components/symbols';
+import styles from './list.module.css';
 
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
@@ -55,7 +56,7 @@ const StackletConditions = (props: { conditions: DisplayCondition[] }) => (
   <ul class='p-0 m-0'>
     <For each={props.conditions}>
       {(cond) => (
-        <li class='inline-list-item'>
+        <li class={styles.inlineListItem}>
           <StackletCondition condition={cond} />
         </li>
       )}
