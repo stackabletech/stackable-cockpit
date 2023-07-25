@@ -2,6 +2,7 @@
 name = "stackable-cockpitd"
 version.workspace = true
 edition = "2021"
+publish = false
 
 [features]
 default = []

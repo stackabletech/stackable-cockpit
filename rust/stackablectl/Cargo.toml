@@ -2,6 +2,7 @@
 name = "stackablectl"
 version.workspace = true
 edition = "2021"
+publish = false
 
 [dependencies]
 comfy-table = { version = "6.2.0", features = ["custom_styling"] }
