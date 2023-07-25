@@ -16,25 +16,25 @@ use stackablectl::{
 #[derive(Debug, Snafu)]
 enum CliError {
     #[snafu(display("operator command error"))]
-    OperatorCmdError { source: OperatorCmdError },
+    Operator { source: OperatorCmdError },
 
     #[snafu(display("release command error"))]
-    ReleaseCmdError { source: ReleaseCmdError },
+    Release { source: ReleaseCmdError },
 
     #[snafu(display("stack command error"))]
-    StackCmdError { source: StackCmdError },
+    Stack { source: StackCmdError },
 
     #[snafu(display("stacklets command error"))]
-    StackletsCmdError { source: StackletsCmdError },
+    Stacklets { source: StackletsCmdError },
 
     #[snafu(display("demo command error"))]
-    DemoCmdError { source: DemoCmdError },
+    Demo { source: DemoCmdError },
 
     #[snafu(display("completions command error"))]
-    CompletionsCmdError { source: CompletionsCmdError },
+    Completions { source: CompletionsCmdError },
 
     #[snafu(display("cache command error"))]
-    CacheCmdError { source: CacheCmdError },
+    Cache { source: CacheCmdError },
 }
 
 #[snafu::report]
@@ -79,13 +79,13 @@ async fn main() -> Result<(), CliError> {
     };
 
     let output = match &cli.subcommand {
-        Commands::Operator(args) => args.run(&cli).await.context(OperatorCmdSnafu)?,
-        Commands::Release(args) => args.run(&cli).await.context(ReleaseCmdSnafu)?,
-        Commands::Stack(args) => args.run(&cli).await.context(StackCmdSnafu)?,
-        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsCmdSnafu)?,
-        Commands::Demo(args) => args.run(&cli).await.context(DemoCmdSnafu)?,
-        Commands::Completions(args) => args.run().context(CompletionsCmdSnafu)?,
-        Commands::Cache(args) => args.run().context(CacheCmdSnafu)?,
+        Commands::Operator(args) => args.run(&cli).await.context(OperatorSnafu)?,
+        Commands::Release(args) => args.run(&cli).await.context(ReleaseSnafu)?,
+        Commands::Stack(args) => args.run(&cli).await.context(StackSnafu)?,
+        Commands::Stacklets(args) => args.run(&cli).await.context(StackletsSnafu)?,
+        Commands::Demo(args) => args.run(&cli).await.context(DemoSnafu)?,
+        Commands::Completions(args) => args.run().context(CompletionsSnafu)?,
+        Commands::Cache(args) => args.run().context(CacheSnafu)?,
     };
 
     println!("{output}");

@@ -108,9 +108,8 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                         summary,
                     ]);
 
-                    match render_errors(errors) {
-                        Some(err) => error_list.push(err),
-                        None => (),
+                    if let Some(err) = render_errors(errors) {
+                        error_list.push(err)
                     }
                 }
             }
@@ -118,7 +117,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             // Only output the error table if there are errors to report.
             Ok(format!(
                 "{table}{errors}",
-                errors = if error_list.len() > 0 {
+                errors = if !error_list.is_empty() {
                     format!("\n\n{}", error_list.join("\n"))
                 } else {
                     "".into()
@@ -155,12 +154,11 @@ fn render_conditions(
             use_color,
         ));
 
-        match render_condition_error(cond.message, cond.is_good, *error_index, use_color) {
-            Some(error) => {
-                errors.push(error);
-                *error_index += 1;
-            }
-            None => (),
+        if let Some(error) =
+            render_condition_error(cond.message, cond.is_good, *error_index, use_color)
+        {
+            errors.push(error);
+            *error_index += 1;
         };
     }
 
@@ -212,7 +210,7 @@ fn color_condition(
 
 /// Renders multiple errors (of one stacklet)
 fn render_errors(errors: Vec<String>) -> Option<String> {
-    if errors.len() == 0 {
+    if errors.is_empty() {
         None
     } else if errors.len() == 1 {
         Some(errors[0].clone())
