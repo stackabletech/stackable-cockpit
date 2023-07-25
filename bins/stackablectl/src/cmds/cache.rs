@@ -3,7 +3,7 @@ use std::time::Duration;
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ColumnConstraint, Table, Width};
 use snafu::{ResultExt, Snafu};
-use stackable::xfer::cache::{self, Cache};
+use stackable::xfer::cache;
 
 use crate::cli::{CacheSettingsError, Cli};
 
@@ -44,13 +44,7 @@ impl CacheArgs {
 
 async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
     let cache_settings = common_args.cache_settings().context(CacheSettingsSnafu)?;
-
-    let cache = Cache::builder()
-        .with_backend(cache_settings.backend)
-        .with_max_age(cache_settings.max_age)
-        .build()
-        .await
-        .context(CacheSnafu)?;
+    let cache = cache_settings.try_into_cache().await.context(CacheSnafu)?;
 
     let files = cache.list().await.context(CacheSnafu)?;
 
@@ -80,13 +74,7 @@ async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
 
 async fn clean_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
     let cache_settings = common_args.cache_settings().context(CacheSettingsSnafu)?;
-
-    let cache = Cache::builder()
-        .with_backend(cache_settings.backend)
-        .with_max_age(cache_settings.max_age)
-        .build()
-        .await
-        .context(CacheSnafu)?;
+    let cache = cache_settings.try_into_cache().await.context(CacheSnafu)?;
 
     cache.purge().await.context(CacheSnafu)?;
     Ok("Cleaned cached files".into())

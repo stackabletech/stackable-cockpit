@@ -24,48 +24,6 @@ pub enum Error {
     WriteDisabled,
 }
 
-pub struct CacheBuilder {
-    backend: CacheBackend,
-    max_age: Duration,
-}
-
-impl Default for CacheBuilder {
-    fn default() -> Self {
-        Self {
-            backend: CacheBackend::Disabled,
-            max_age: DEFAULT_CACHE_MAX_AGE,
-        }
-    }
-}
-
-impl CacheBuilder {
-    /// Sets the [`CacheBackend`] which should be used by the [`Cache`].
-    /// Defaults to [`CacheBackend::Disabled`].
-    pub fn with_backend(mut self, backend: CacheBackend) -> Self {
-        self.backend = backend;
-        self
-    }
-
-    /// Sets the cache max age. Defaults to [`DEFAULT_CACHE_MAX_AGE`].
-    pub fn with_max_age(mut self, max_age: Duration) -> Self {
-        self.max_age = max_age;
-        self
-    }
-
-    ///  Creates a new [`Cache`] instance with the provided `settings`. It also
-    /// initializes the cache backend. This ensure that local files and folders
-    /// needed for operation are created.
-    pub async fn build(self) -> Result<Cache> {
-        match &self.backend {
-            CacheBackend::Disk { base_path } => {
-                fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
-                Ok(Cache::new(self.backend, self.max_age))
-            }
-            CacheBackend::Disabled => todo!(),
-        }
-    }
-}
-
 #[derive(Debug)]
 pub struct Cache {
     pub(crate) backend: CacheBackend,
@@ -73,12 +31,6 @@ pub struct Cache {
 }
 
 impl Cache {
-    /// Returns a [`CacheBuilder`] which allows to safely build and initialize
-    /// a local cache.
-    pub fn builder() -> CacheBuilder {
-        CacheBuilder::default()
-    }
-
     /// Returns wether the cache is enabled.
     pub fn is_enabled(&self) -> bool {
         match self.backend {
@@ -234,6 +186,19 @@ impl CacheSettings {
 
     pub fn disabled() -> Self {
         CacheBackend::Disabled.into()
+    }
+
+    /// Creates a new [`Cache`] instance with the provided `settings`. It also
+    /// initializes the cache backend. This ensure that local files and folders
+    /// needed for operation are created.
+    pub async fn try_into_cache(self) -> Result<Cache> {
+        match &self.backend {
+            CacheBackend::Disk { base_path } => {
+                fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
+                Ok(Cache::new(self.backend, self.max_age))
+            }
+            CacheBackend::Disabled => Ok(Cache::new(self.backend, self.max_age)),
+        }
     }
 }
 
