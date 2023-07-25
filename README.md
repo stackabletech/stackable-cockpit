@@ -19,7 +19,7 @@ interface.
 
 ### Prerequisites
 
-- A working (and up2date) NodeJS installation, with pnpm as the preferred package manager
+- A working (and up2date) NodeJS installation, with Yarn as the preferred package manager
 - A working (and up2date) Rust installation including rustc, clippy, and cargo
 - Optional, but strongly advised: a working [pre-commit][pre-commit] installation
 
@@ -31,7 +31,7 @@ cd stackable-cockpit
 ```
 
 The admin UI is registered as a crate and is part of the build process, as the HTML/CSS/JS bundle is included in the
-final `stackable-cockpitd` binary. To get the build process running, first execute `pnpm i` to install all required NodeJS
+final `stackable-cockpitd` binary. To get the build process running, first execute `yarn install` to install all required NodeJS
 dependencies in the `node_modules` folder.
 
 ---
@@ -39,10 +39,10 @@ dependencies in the `node_modules` folder.
 Each component can be build separately like this:
 
 ```shell
-cargo build --release -p stackablectl                    # Builds stackablectl
-cargo build --release -p stackable-cockpit               # Builds the Stackable Cockpit API server
-cargo build --release -p stackable-cockpit --features ui # Builds the Stackable Cockpit API server bundled with the admin UI
-cd web && yarn run build && cd -                         # Builds the admin UI
+cargo build --release -p stackablectl                     # Builds stackablectl
+cargo build --release -p stackable-cockpitd               # Builds the Stackable Cockpit API server
+cargo build --release -p stackable-cockpitd --features ui # Builds the Stackable Cockpit API server bundled with the admin UI
+cd web && yarn run build && cd -                          # Builds the admin UI
 ```
 
 ### Pre-commit hooks and xtasks
@@ -68,5 +68,5 @@ hooks are:
 [ctl-readme]: ./rust/stackablectl/README.md
 [pre-commit]: https://pre-commit.com/
 [web-readme]: ./web/README.md
-[lib-readme]: ./src/README.md
+[lib-readme]: ./rust/stackable-cockpit/README.md
 [xtasks]: ./xtask/src/main.rs
