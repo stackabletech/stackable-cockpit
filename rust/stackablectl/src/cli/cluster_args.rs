@@ -125,7 +125,7 @@ impl CommonClusterArgs {
 
 #[derive(Clone, Debug, Default, ValueEnum)]
 pub enum ClusterType {
-    /// Use a kind cluster, see 'https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind'
+    /// Use a kind cluster, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>
     #[default]
     Kind,
 
