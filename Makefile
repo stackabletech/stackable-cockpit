@@ -11,7 +11,7 @@
 
 TAG    := $(shell git rev-parse --short HEAD)
 OPERATOR_NAME := stackable-cockpit
-VERSION := $(shell cargo metadata --format-version 1 | jq -r '.packages[] | select(.name=="stackabled") | .version')
+VERSION := $(shell cargo metadata --format-version 1 | jq -r '.packages[] | select(.name=="stackable-cockpitd") | .version')
 
 DOCKER_REPO := docker.stackable.tech
 ORGANIZATION := stackable
