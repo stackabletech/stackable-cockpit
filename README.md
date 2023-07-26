@@ -4,21 +4,22 @@
 released. Users of `stackablectl` should continue to use the current latest version. A switch can be made when the time
 is appropriate.
 
-This repository contains the Stackable library `stackable`, the Stackable CLI tool `stackablectl`, the Stackable server
-`stackabled`, and the web-based admin user interface.
+This repository contains the Stackable library `stackable-cockpit`, the Stackable CLI tool
+`stackablectl`, the Stackable server `stackable-cockpitd`, and the web-based admin user
+interface.
 
 ## Components
 
-- [`stackable`][lib-readme]: The underlying library for all actions related to the Stackable Data Platform
+- [`stackable-cockpit`][lib-readme]: The underlying library for all actions related to the Stackable Data Platform
 - [`stackablectl`][ctl-readme]: CLI tool to interact with local and remote deployments of the data platform
-- [`stackabled`][server-readme]: API server used by frontends to interact with the data platform
-- [`stackabled-web`][web-readme]: The web-based admin UI powered by SolidJS, TypeScript and Vite
+- [`stackable-cockpitd`][server-readme]: API server used by frontends to interact with the data platform
+- [`stackable-cockpit-web`][web-readme]: The web-based admin UI powered by SolidJS, TypeScript and Vite
 
 ## Developer Setup
 
 ### Prerequisites
 
-- A working (and up2date) NodeJS installation, with pnpm as the preferred package manager
+- A working (and up2date) NodeJS installation, with Yarn as the preferred package manager
 - A working (and up2date) Rust installation including rustc, clippy, and cargo
 - Optional, but strongly advised: a working [pre-commit][pre-commit] installation
 
@@ -30,7 +31,7 @@ cd stackable-cockpit
 ```
 
 The admin UI is registered as a crate and is part of the build process, as the HTML/CSS/JS bundle is included in the
-final `stackabled` binary. To get the build process running, first execute `pnpm i` to install all required NodeJS
+final `stackable-cockpitd` binary. To get the build process running, first execute `yarn install` to install all required NodeJS
 dependencies in the `node_modules` folder.
 
 ---
@@ -38,10 +39,10 @@ dependencies in the `node_modules` folder.
 Each component can be build separately like this:
 
 ```shell
-cargo build --release -p stackablectl             # Builds stackablectl
-cargo build --release -p stackabled               # Builds the Stackable API server
-cargo build --release -p stackabled --features ui # Builds the Stackable API server bundled with the admin UI
-cd web && pnpm build && cd -                      # Builds the admin UI
+cargo build --release -p stackablectl                     # Builds stackablectl
+cargo build --release -p stackable-cockpitd               # Builds the Stackable Cockpit API server
+cargo build --release -p stackable-cockpitd --features ui # Builds the Stackable Cockpit API server bundled with the admin UI
+cd web && yarn run build && cd -                          # Builds the admin UI
 ```
 
 ### Pre-commit hooks and xtasks
@@ -65,9 +66,9 @@ hooks are:
 - `cargo xtask gen-openapi`: Runs OpenAPI spec generation to connect backend with frontend
 - `cargo xtask gen-ctl-readme`: Generates and inserts `stackablectl` help text into README
 
-[server-readme]: ./bins/stackabled/README.md
-[ctl-readme]: ./bins/stackablectl/README.md
+[server-readme]: ./rust/stackable-cockpitd/README.md
+[ctl-readme]: ./rust/stackablectl/README.md
 [pre-commit]: https://pre-commit.com/
 [web-readme]: ./web/README.md
-[lib-readme]: ./src/README.md
+[lib-readme]: ./rust/stackable-cockpit/README.md
 [xtasks]: ./xtask/src/main.rs
