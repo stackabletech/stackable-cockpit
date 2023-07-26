@@ -1,45 +1,12 @@
 [workspace]
 members = [
-  "bins/*",
+  "rust/*",
   "web",
-  "xtask",
   "."
 ]
 
 [workspace.package]
 version = "0.0.0-dev"
-
-[package]
-name = "stackable"
-version.workspace = true
-edition = "2021"
-publish = false
-
-[features]
-full = ["openapi"]
-openapi = ["dep:utoipa"]
-
-[dependencies]
-tokio = { workspace = true, features = ["process"] }
-utoipa = { workspace = true, optional = true }
-stackable-operator = { workspace = true }
-k8s-openapi = { workspace = true }
-serde_json = { workspace = true }
-serde_yaml = { workspace = true }
-indexmap = { workspace = true }
-reqwest = { workspace = true }
-tracing = { workspace = true }
-bcrypt = { workspace = true }
-snafu = { workspace = true }
-which = { workspace = true }
-serde = { workspace = true }
-tera = { workspace = true }
-kube = { workspace = true }
-rand = { workspace = true }
-url = { workspace = true }
-
-[build-dependencies]
-gobuild = "0.1.0-alpha.1"
 
 [workspace.dependencies]
 stackable-operator = { git = "https://github.com/stackabletech/operator-rs.git", tag = "0.42.2" }
@@ -52,6 +19,7 @@ indexmap = { version = "1.9.3", features = ["serde"] }
 clap = { version = "4.2.1", features = ["derive"] }
 tracing-subscriber = "0.3.17"
 utoipa-swagger-ui = "3.1.3"
+tracing-indicatif = "0.3.4"
 clap_complete = "4.2.0"
 phf_codegen = "0.11.1"
 async-trait = "0.1.68"

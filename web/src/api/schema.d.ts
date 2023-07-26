@@ -140,7 +140,7 @@ export interface operations {
   get_demo: {
     parameters: {
       path: {
-        _name: string;
+        name: string;
       };
     };
     responses: {
@@ -200,7 +200,7 @@ export interface operations {
   get_release: {
     parameters: {
       path: {
-        _name: string;
+        name: string;
       };
     };
     responses: {

@@ -29,7 +29,7 @@ rec {
         LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
         BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.glibc.dev}/include -I${pkgs.clang.cc.lib}/lib/clang/${pkgs.lib.getVersion pkgs.clang.cc}/include";
       };
-      stackabled-web = attrs: {
+      stackable-cockpit-web = attrs: {
         nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs ];
         preConfigure =
           ''
@@ -37,15 +37,15 @@ rec {
             ln -s ${web.nodeModules} node_modules
           '';
       };
-      stackable = attrs: {
+      helm-sys = attrs: {
         GO_HELM_WRAPPER = goHelmWrapper + "/bin/go-helm-wrapper";
       };
     };
   };
-  build = cargo.workspaceMembers.stackabled.build.override {
+  build = cargo.workspaceMembers.stackable-cockpitd.build.override {
     features = [ "ui" ];
   };
-  entrypoint = build+"/bin/stackabled";
+  entrypoint = build+"/bin/stackable-cockpitd";
   # crds = pkgs.runCommand "${meta.operator.name}-crds.yaml" {}
   # ''
   #   ${entrypoint} crd > $out
@@ -73,7 +73,7 @@ rec {
       Cmd = [];
     };
   };
-  docker = pkgs.linkFarm "listener-operator-docker" [
+  docker = pkgs.linkFarm "stackable-cockpit-docker" [
     {
       name = "load-image";
       path = dockerImage;
@@ -124,9 +124,9 @@ rec {
         mkdir $out
         cp ${./go.mod} $out/go.mod
         cp ${./go.sum} $out/go.sum
-        cp -r ${./go-helm-wrapper} $out/go-helm-wrapper
+        cp -r ${./rust/helm-sys/go-helm-wrapper} $out/go-helm-wrapper
       '';
-    pwd = ./go-helm-wrapper;
+    pwd = ./rust/helm-sys/go-helm-wrapper;
     modules = ./gomod2nix.toml;
     ldflags = "-buildmode c-archive";
   };
