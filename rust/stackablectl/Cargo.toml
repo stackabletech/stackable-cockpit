@@ -1,0 +1,25 @@
+[package]
+name = "stackablectl"
+version.workspace = true
+edition = "2021"
+publish = false
+
+[dependencies]
+comfy-table = { version = "6.2.0", features = ["custom_styling"] }
+tracing-subscriber = { workspace = true }
+clap_complete = { workspace = true }
+lazy_static = { workspace = true }
+serde_json = { workspace = true }
+serde_yaml = { workspace = true }
+indexmap = { workspace = true }
+stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
+dotenvy = { workspace = true }
+reqwest = { workspace = true }
+tracing = { workspace = true }
+semver = { workspace = true }
+snafu = { workspace = true }
+tokio = { workspace = true }
+serde = { workspace = true }
+clap = { workspace = true }
+xdg = { workspace = true }
+nu-ansi-term = "0.48.0"

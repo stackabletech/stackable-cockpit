@@ -1,4 +1,4 @@
-# stackabled-web
+# stackable-cockpit-web
 
 ## The stack
 

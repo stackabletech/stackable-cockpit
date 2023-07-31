@@ -1,0 +1,11 @@
+[package]
+name = "helm-sys"
+version = "0.0.0-dev"
+edition = "2021"
+publish = false
+links = "helm"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+gobuild = "0.1.0-alpha.1"
