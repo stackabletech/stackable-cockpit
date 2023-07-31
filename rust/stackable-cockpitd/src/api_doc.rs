@@ -1,6 +1,7 @@
 use stackable_cockpit::{
     common::ManifestSpec,
-    platform::{demo::DemoSpecV2, release::ReleaseSpec},
+    kube::DisplayCondition,
+    platform::{demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet},
     utils::params::Parameter,
 };
 use utoipa::{
@@ -30,10 +31,11 @@ use crate::{
         middleware::authentication::log_in,
     ),
     components(schemas(
-        DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec, handlers::stacklets::Stacklet, synthetic_types::ObjectMeta,
+        DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec,
+        Stacklet, DisplayCondition,
+        synthetic_types::ObjectMeta,
         Session, SessionToken,
-    )),
-    security(("session_token" = []), ("basic" = []))
+    ))
 )]
 struct ApiDoc {}
 

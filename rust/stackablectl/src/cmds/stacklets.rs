@@ -6,7 +6,7 @@ use tracing::{info, instrument};
 
 use stackable_cockpit::{
     kube::DisplayCondition,
-    platform::stacklet::{list_stacklets, StackletError},
+    platform::stacklet::{list, StackletError},
 };
 
 use crate::{
@@ -73,7 +73,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .all_namespaces
         .then_some(common_args.operator_namespace.as_str());
 
-    let stacklets = list_stacklets(namespace).await.context(StackletListSnafu)?;
+    let stacklets = list(namespace).await.context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
         return Ok("No stacklets".into());
@@ -96,21 +96,19 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             let mut error_list = Vec::new();
             let mut error_index = 1;
 
-            for (product_name, products) in stacklets {
-                for product in products {
-                    let ConditionOutput { summary, errors } =
-                        render_conditions(product.conditions, &mut error_index, use_color);
+            for stacklet in stacklets {
+                let ConditionOutput { summary, errors } =
+                    render_conditions(stacklet.conditions, &mut error_index, use_color);
 
-                    table.add_row(vec![
-                        product_name.clone(),
-                        product.name,
-                        product.namespace.unwrap_or_default(),
-                        summary,
-                    ]);
+                table.add_row(vec![
+                    stacklet.product,
+                    stacklet.name,
+                    stacklet.namespace.unwrap_or_default(),
+                    summary,
+                ]);
 
-                    if let Some(err) = render_errors(errors) {
-                        error_list.push(err)
-                    }
+                if let Some(err) = render_errors(errors) {
+                    error_list.push(err)
                 }
             }
 

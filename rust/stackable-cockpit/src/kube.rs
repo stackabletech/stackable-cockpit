@@ -17,6 +17,9 @@ use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 use crate::constants::REDACTED_PASSWORD;
 
 #[derive(Debug, Snafu)]
@@ -277,6 +280,7 @@ impl ListParamsExt for ListParams {
 }
 
 #[derive(Debug, Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct DisplayCondition {
     pub message: Option<String>,
     pub is_good: Option<bool>,
