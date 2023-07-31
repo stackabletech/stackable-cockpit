@@ -8,6 +8,7 @@ import { Header } from './components/header';
 import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
+import { LanguageProvider } from './localization';
 
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
@@ -42,9 +43,11 @@ if (root == undefined) {
 } else {
   render(
     () => (
-      <Router base='/ui'>
-        <App />
-      </Router>
+      <LanguageProvider languages={['sv', 'en']}>
+        <Router base='/ui'>
+          <App />
+        </Router>
+      </LanguageProvider>
     ),
     root,
   );

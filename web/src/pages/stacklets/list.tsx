@@ -4,6 +4,7 @@ import { DataTable } from '../../components/datatable';
 import { ButtonLink } from '../../components/button';
 import { AddSymbol } from '../../components/symbols';
 import styles from './list.module.css';
+import { translate } from '../../localization';
 
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
@@ -13,22 +14,22 @@ export const Stacklets = () => {
         items={stacklets() || []}
         columns={[
           {
-            label: 'Product',
+            label: translate('product'),
             get: (x) => x.product,
             sortBy: (x) => x.product,
           },
           {
-            label: 'Namespace',
+            label: translate('namespace'),
             get: (x) => x.namespace || '(Cluster-scoped)',
             sortBy: (x) => x.namespace || '',
           },
           {
-            label: 'Name',
+            label: translate('name'),
             get: (x) => x.name,
             sortBy: (x) => x.name,
           },
           {
-            label: 'Status',
+            label: translate('status'),
             get: (x) => <StackletConditions conditions={x.conditions} />,
           },
           /* {
@@ -42,7 +43,7 @@ export const Stacklets = () => {
         ]}
         extraButtons={
           <ButtonLink href='/stacklets/add' role='primary'>
-            <AddSymbol /> Add stacklet
+            <AddSymbol /> {translate('stacklets-add')}
           </ButtonLink>
         }
         refresh={refetch}

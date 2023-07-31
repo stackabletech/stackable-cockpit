@@ -2,6 +2,7 @@ import { A } from '@solidjs/router';
 import { ParentProps, Show } from 'solid-js';
 import logo from '../resources/logo.png';
 import { logOut } from '../api/session';
+import { translate } from '../localization';
 
 interface NavItemProps {
   href?: string;
@@ -56,11 +57,11 @@ export const Header = () => {
         </A>
       </h1>
       <ul class='flex-auto m-0 p-0 flex'>
-        <NavItem href='/stacklets'>Stacklets</NavItem>
+        <NavItem href='/stacklets'>{translate('stacklets-list')}</NavItem>
         <NavItem href='/listeners'>Listeners</NavItem>
         <NavItem href='/stacks'>Stacks</NavItem>
         <li class='flex-grow' />
-        <NavItem onClick={() => logOut()}>Log out</NavItem>
+        <NavItem onClick={() => logOut()}>{translate('log-out')}</NavItem>
       </ul>
     </nav>
   );
