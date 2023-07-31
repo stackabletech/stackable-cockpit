@@ -2,15 +2,11 @@
 import '@unocss/reset/sanitize/sanitize.css';
 import 'virtual:uno.css';
 import { render } from 'solid-js/web';
-import { Route, Router, Routes } from '@solidjs/router';
+import { Navigate, Route, Router, Routes } from '@solidjs/router';
 import { Header } from './components/header';
 import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
-
-const Home = () => {
-  return <>lorem ipsum dolor sit amet</>;
-};
 
 const App = () => {
   return (
@@ -24,7 +20,7 @@ const App = () => {
               component={StackletConnectionDetails}
             />
             <Route path='/stacklets' component={Stacklets} />
-            <Route path='/' component={Home} />
+            <Route path='/' component={() => <Navigate href='/stacklets' />} />
           </Routes>
         </div>
       </LoginPageOr>
