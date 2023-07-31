@@ -12,7 +12,8 @@ use stackable_cockpit::{
         release::ReleaseList,
         stack::{StackError, StackList},
     },
-    utils::{params::IntoParametersError, path::PathOrUrlParseError},
+    utils::path::PathOrUrlParseError,
+    xfer::{FileTransferClient, FileTransferError},
 };
 use tracing::{debug, info, instrument};
 
@@ -92,9 +93,6 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
 pub enum DemoCmdError {
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
-
     #[snafu(display("unable to format yaml output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
@@ -106,9 +104,6 @@ pub enum DemoCmdError {
 
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
-
-    #[snafu(display("failed to convert input parameters to validated parameters: {source}"))]
-    IntoParametersError { source: IntoParametersError },
 
     #[snafu(display("list error"))]
     ListError { source: ListError },
@@ -124,6 +119,9 @@ pub enum DemoCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: FileTransferError },
 }
 
 impl DemoArgs {
@@ -131,19 +129,24 @@ impl DemoArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
         debug!("Handle demo args");
 
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
+            .await
+            .context(TransferSnafu)?;
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
         let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
 
-        let list = DemoList::build(&files, &common_args.cache_settings()?)
+        let list = DemoList::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
-            DemoCommands::Install(args) => install_cmd(args, common_args, list).await,
-            // DemoCommands::Uninstall(args) => uninstall_cmd(args, list),
+            DemoCommands::Install(args) => {
+                install_cmd(args, common_args, list, &transfer_client).await
+            }
         }
     }
 }
@@ -174,19 +177,15 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
             Ok(table.to_string())
         }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu)?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu)?)
-        }
+        OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),
     }
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 #[instrument]
 async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
-    info!("Describing demo");
+    info!("Describing demo {}", args.demo_name);
 
     let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
@@ -211,8 +210,8 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
             Ok(table.to_string())
         }
-        OutputType::Json => Ok(serde_json::to_string(&demo).context(JsonOutputFormatSnafu)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu)?),
+        OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
     }
 }
 
@@ -222,8 +221,9 @@ async fn install_cmd(
     args: &DemoInstallArgs,
     common_args: &Cli,
     list: DemoList,
+    transfer_client: &FileTransferClient,
 ) -> Result<String, DemoCmdError> {
-    info!("Installing demo");
+    info!("Installing demo {}", args.demo_name);
 
     // Get the demo spec by name from the list
     let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
@@ -239,9 +239,7 @@ async fn install_cmd(
     // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
     let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
-    let cache_settings = common_args.cache_settings()?;
-
-    let stack_list = StackList::build(&files, &cache_settings)
+    let stack_list = StackList::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 
@@ -257,7 +255,7 @@ async fn install_cmd(
         .get_release_files()
         .context(PathOrUrlParseSnafu)?;
 
-    let release_list = ReleaseList::build(&files, &cache_settings)
+    let release_list = ReleaseList::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 
@@ -274,7 +272,11 @@ async fn install_cmd(
 
     // Install stack manifests
     stack_spec
-        .install_stack_manifests(&args.stack_parameters, &common_args.operator_namespace)
+        .install_stack_manifests(
+            &args.stack_parameters,
+            &common_args.operator_namespace,
+            transfer_client,
+        )
         .await
         .context(StackSnafu)?;
 
@@ -285,13 +287,10 @@ async fn install_cmd(
             &demo_spec.parameters,
             &args.parameters,
             &common_args.operator_namespace,
+            transfer_client,
         )
         .await
         .context(StackSnafu)?;
 
     Ok("".into())
 }
-
-// fn uninstall_cmd(_args: &DemoUninstallArgs, _list: DemoList) -> Result<String, DemoCmdError> {
-//     todo!()
-// }

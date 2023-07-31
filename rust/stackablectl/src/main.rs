@@ -85,7 +85,7 @@ async fn main() -> Result<(), CliError> {
         Commands::Stacklets(args) => args.run(&cli).await.context(StackletsSnafu)?,
         Commands::Demo(args) => args.run(&cli).await.context(DemoSnafu)?,
         Commands::Completions(args) => args.run().context(CompletionsSnafu)?,
-        Commands::Cache(args) => args.run().context(CacheSnafu)?,
+        Commands::Cache(args) => args.run(&cli).await.context(CacheSnafu)?,
     };
 
     println!("{output}");

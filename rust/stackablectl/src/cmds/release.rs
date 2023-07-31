@@ -4,12 +4,13 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::ListError,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
+    xfer::{FileTransferClient, FileTransferError},
 };
 
 use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
@@ -104,15 +105,24 @@ pub enum ReleaseCmdError {
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
+
+    #[snafu(display("transfer error"))]
+    TransferError { source: FileTransferError },
 }
 
 impl ReleaseArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, ReleaseCmdError> {
+        debug!("Handle release args");
+
+        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
+            .await
+            .context(TransferSnafu)?;
+
         let files = common_args
             .get_release_files()
             .context(PathOrUrlParseSnafu)?;
 
-        let release_list = ReleaseList::build(&files, &common_args.cache_settings()?)
+        let release_list = ReleaseList::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 

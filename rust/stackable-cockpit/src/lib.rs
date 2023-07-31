@@ -5,3 +5,4 @@ pub mod helm;
 pub mod kube;
 pub mod platform;
 pub mod utils;
+pub mod xfer;

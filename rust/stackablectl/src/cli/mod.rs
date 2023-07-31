@@ -9,10 +9,10 @@ use stackable_cockpit::{
         DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError},
-    utils::{
-        path::{IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError},
-        read::CacheSettings,
+    utils::path::{
+        IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
+    xfer::cache::CacheSettings,
 };
 
 use crate::{
@@ -89,11 +89,11 @@ to provide multiple additional stack files.")]
 Releases are loaded in the following order: Remote (default) release file,
 custom release files provided via the 'STACKABLE_RELEASE_FILES' environment
 variable, and lastly release files provided via the '-r/--release-file'
-argument(s). If there are releases with the same name, the last stack definition
-will be used.
+argument(s). If there are releases with the same name, the last release
+definition will be used.
 
-Use \"stackablectl -r path/to/realeases1.yaml -r path/to/realeases2.yaml [OPTIONS] <COMMAND>\"
-to provide multiple additional stack files.")]
+Use \"stackablectl -r path/to/releases1.yaml -r path/to/releases2.yaml [OPTIONS] <COMMAND>\"
+to provide multiple additional release files.")]
     pub release_files: Vec<String>,
 
     /// Provide a custom Helm stable repository URL

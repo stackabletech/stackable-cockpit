@@ -12,6 +12,7 @@ openapi = ["dep:utoipa"]
 tokio = { workspace = true, features = ["process"] }
 utoipa = { workspace = true, optional = true }
 stackable-operator = { workspace = true }
+helm-sys = { path = "../helm-sys" }
 k8s-openapi = { workspace = true }
 serde_json = { workspace = true }
 serde_yaml = { workspace = true }
@@ -25,5 +26,5 @@ serde = { workspace = true }
 tera = { workspace = true }
 kube = { workspace = true }
 rand = { workspace = true }
+sha2 = { workspace = true }
 url = { workspace = true }
-helm-sys = { path = "../helm-sys" }

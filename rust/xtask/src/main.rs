@@ -8,8 +8,11 @@ use stackablectl::cli::Cli;
 use std::{
     fs,
     io::Write,
+    path::Path,
     process::{Command, Stdio},
 };
+
+const USAGE_STRING: &str = "Usage: stackablectl [OPTIONS] <COMMAND>\n";
 
 #[derive(clap::Parser)]
 #[allow(clippy::enum_variant_names)]
@@ -17,6 +20,7 @@ enum XtaskCommand {
     GenMan,
     GenComp,
     GenOpenapi,
+    GenCtlReadme,
 }
 
 #[derive(Debug, Snafu)]
@@ -87,6 +91,24 @@ fn main() -> Result<(), TaskError> {
                     error_code: status.code()
                 }
             );
+        }
+        XtaskCommand::GenCtlReadme => {
+            let mut cmd = Cli::command();
+            let usage_text = cmd.render_long_help().to_string();
+            let usage_text: Vec<_> = usage_text.lines().map(|l| l.trim_end()).collect();
+            let usage_text = usage_text.join("\n");
+
+            let readme_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+                .parent()
+                .unwrap()
+                .join("stackablectl/README.md");
+
+            let mut readme = fs::read_to_string(&readme_path).context(IoSnafu)?;
+            let usage_start = readme.find(USAGE_STRING).unwrap();
+            let usage_end = readme[usage_start..].find("\n```").unwrap();
+
+            readme.replace_range(usage_start..usage_start + usage_end, &usage_text);
+            fs::write(readme_path, readme).context(IoSnafu)?
         }
     }
 

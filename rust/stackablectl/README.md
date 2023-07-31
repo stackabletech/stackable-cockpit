@@ -16,7 +16,7 @@ Commands:
   operator     Interact with single operator instead of the full platform
   release      Interact with all operators of the platform which are released together
   stack        Interact with stacks, which are ready-to-use product combinations
-  services     Interact with deployed services of products
+  stacklets    Interact with deployed stacklets, which are bundles of resources and containers required to run the product
   demo         Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
   completions  Generate shell completions for this tool
   cache        Interact with locally cached files
@@ -68,11 +68,11 @@ Options:
           Releases are loaded in the following order: Remote (default) release file,
           custom release files provided via the 'STACKABLE_RELEASE_FILES' environment
           variable, and lastly release files provided via the '-r/--release-file'
-          argument(s). If there are releases with the same name, the last stack definition
-          will be used.
+          argument(s). If there are releases with the same name, the last release
+          definition will be used.
 
           Use "stackablectl -r path/to/releases1.yaml -r path/to/releases2.yaml [OPTIONS] <COMMAND>"
-          to provide multiple additional stack files.
+          to provide multiple additional release files.
 
       --helm-repo-stable <URL>
           Provide a custom Helm stable repository URL
