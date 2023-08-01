@@ -651,6 +651,8 @@ _arguments "${_arguments_options[@]}" \
 ;;
 (clean)
 _arguments "${_arguments_options[@]}" \
+'--old[Only remove outdated files in the cache]' \
+'--outdated[Only remove outdated files in the cache]' \
 '-h[Print help]' \
 '--help[Print help]' \
 '-V[Print version]' \

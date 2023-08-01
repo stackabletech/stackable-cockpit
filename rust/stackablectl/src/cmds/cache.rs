@@ -3,9 +3,10 @@ use std::time::Duration;
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ColumnConstraint, Table, Width};
 use snafu::{ResultExt, Snafu};
-use stackable_cockpit::xfer::cache;
+use stackable_cockpit::xfer::cache::{self, Cache};
+use tracing::{info, instrument};
 
-use crate::cli::{CacheSettingsError, Cli};
+use crate::cli::CacheSettingsError;
 
 #[derive(Debug, Args)]
 pub struct CacheArgs {
@@ -21,7 +22,14 @@ pub enum CacheCommands {
 
     /// Clean cached files
     #[command(aliases(["rm", "purge"]))]
-    Clean,
+    Clean(CacheCleanArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct CacheCleanArgs {
+    /// Only remove outdated files in the cache
+    #[arg(long = "old", visible_aliases(["outdated"]))]
+    only_remove_old_files: bool,
 }
 
 #[derive(Debug, Snafu)]
@@ -34,17 +42,17 @@ pub enum CacheCmdError {
 }
 
 impl CacheArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, CacheCmdError> {
-        match self.subcommand {
-            CacheCommands::List => list_cmd(common_args).await,
-            CacheCommands::Clean => clean_cmd(common_args).await,
+    pub async fn run(&self, cache: Cache) -> Result<String, CacheCmdError> {
+        match &self.subcommand {
+            CacheCommands::List => list_cmd(cache).await,
+            CacheCommands::Clean(args) => clean_cmd(args, cache).await,
         }
     }
 }
 
-async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
-    let cache_settings = common_args.cache_settings().context(CacheSettingsSnafu)?;
-    let cache = cache_settings.try_into_cache().await.context(CacheSnafu)?;
+#[instrument(skip_all)]
+async fn list_cmd(cache: Cache) -> Result<String, CacheCmdError> {
+    info!("Listing cached files");
 
     let files = cache.list().await.context(CacheSnafu)?;
 
@@ -72,10 +80,14 @@ async fn list_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
     Ok(table.to_string())
 }
 
-async fn clean_cmd(common_args: &Cli) -> Result<String, CacheCmdError> {
-    let cache_settings = common_args.cache_settings().context(CacheSettingsSnafu)?;
-    let cache = cache_settings.try_into_cache().await.context(CacheSnafu)?;
+#[instrument(skip_all)]
+async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CacheCmdError> {
+    info!("Cleaning cached files");
 
-    cache.purge().await.context(CacheSnafu)?;
+    cache
+        .purge(args.only_remove_old_files)
+        .await
+        .context(CacheSnafu)?;
+
     Ok("Cleaned cached files".into())
 }

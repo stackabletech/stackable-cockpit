@@ -78,14 +78,24 @@ async fn main() -> Result<(), CliError> {
         eprintln!("{err}")
     };
 
+    let cache = cli
+        .cache_settings()
+        .unwrap()
+        .try_into_cache()
+        .await
+        .unwrap();
+
+    // TODO (Techassi): Do we still want to auto purge when running cache commands?
+    cache.auto_purge().await.unwrap();
+
     let output = match &cli.subcommand {
         Commands::Operator(args) => args.run(&cli).await.context(OperatorSnafu)?,
-        Commands::Release(args) => args.run(&cli).await.context(ReleaseSnafu)?,
-        Commands::Stack(args) => args.run(&cli).await.context(StackSnafu)?,
+        Commands::Release(args) => args.run(&cli, cache).await.context(ReleaseSnafu)?,
+        Commands::Stack(args) => args.run(&cli, cache).await.context(StackSnafu)?,
         Commands::Stacklets(args) => args.run(&cli).await.context(StackletsSnafu)?,
-        Commands::Demo(args) => args.run(&cli).await.context(DemoSnafu)?,
+        Commands::Demo(args) => args.run(&cli, cache).await.context(DemoSnafu)?,
         Commands::Completions(args) => args.run().context(CompletionsSnafu)?,
-        Commands::Cache(args) => args.run(&cli).await.context(CacheSnafu)?,
+        Commands::Cache(args) => args.run(cache).await.context(CacheSnafu)?,
     };
 
     println!("{output}");

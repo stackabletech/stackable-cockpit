@@ -53,6 +53,11 @@ impl FileTransferClient {
         Ok(Self { client, cache })
     }
 
+    pub fn new_with(cache: Cache) -> Self {
+        let client = reqwest::Client::new();
+        Self { client, cache }
+    }
+
     /// Retrieves data from `path_or_url` which can either be a [`PathBuf`]
     /// or a [`Url`]. The `processor` defines how the data is processed, for
     /// example as plain text data, YAML content or even templated.

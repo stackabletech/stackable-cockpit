@@ -1,6 +1,8 @@
 use std::{
+    ffi::OsString,
+    num::ParseIntError,
     path::{Path, PathBuf},
-    time::{Duration, SystemTime, SystemTimeError},
+    time::{Duration, SystemTime, SystemTimeError, UNIX_EPOCH},
 };
 
 use sha2::{Digest, Sha256};
@@ -8,7 +10,10 @@ use snafu::{ResultExt, Snafu};
 use tokio::{fs, io};
 use url::Url;
 
-use crate::constants::DEFAULT_CACHE_MAX_AGE;
+use crate::constants::{
+    CACHE_LAST_AUTO_PURGE_FILEPATH, CACHE_PROTECTED_FILES, DEFAULT_AUTO_PURGE_INTERVAL,
+    DEFAULT_CACHE_MAX_AGE,
+};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -20,12 +25,19 @@ pub enum Error {
     #[snafu(display("system time error"))]
     SystemTimeError { source: SystemTimeError },
 
+    #[snafu(display("failed to parse string as integer"))]
+    ParseIntError { source: ParseIntError },
+
     #[snafu(display("tried to write file with disabled cache"))]
     WriteDisabled,
+
+    #[snafu(display("failed to convert OsString into string"))]
+    OsStringConvertError,
 }
 
 #[derive(Debug)]
 pub struct Cache {
+    pub(crate) auto_purge_interval: Duration,
     pub(crate) backend: CacheBackend,
     pub(crate) max_age: Duration,
 }
@@ -97,15 +109,14 @@ impl Cache {
                 let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
 
                 while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
-                    files.push((
-                        entry.path(),
-                        entry
-                            .metadata()
-                            .await
-                            .context(CacheIoSnafu)?
-                            .modified()
-                            .context(CacheIoSnafu)?,
-                    ))
+                    let metadata = entry.metadata().await.context(CacheIoSnafu)?;
+
+                    // Skip the last-auto-purge file
+                    if metadata.is_file() && is_protected_file(entry.file_name())? {
+                        continue;
+                    }
+
+                    files.push((entry.path(), metadata.modified().context(CacheIoSnafu)?))
                 }
 
                 files.sort();
@@ -117,18 +128,70 @@ impl Cache {
 
     /// Removes all cached files by deleting the base cache folder and then
     /// recreating it.
-    pub async fn purge(&self) -> Result<()> {
+    pub async fn purge(&self, only_old_files: bool) -> Result<()> {
         match &self.backend {
             CacheBackend::Disk { base_path } => {
-                fs::remove_dir_all(base_path).await.context(CacheIoSnafu)?;
-                fs::create_dir_all(base_path).await.context(CacheIoSnafu)
+                let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
+
+                while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
+                    let metadata = entry.metadata().await.context(CacheIoSnafu)?;
+
+                    // Skip the last-auto-purge file
+                    if metadata.is_file() && is_protected_file(entry.file_name())? {
+                        continue;
+                    }
+
+                    // With --old / --outdated
+                    if only_old_files
+                        && metadata
+                            .modified()
+                            .context(CacheIoSnafu)?
+                            .elapsed()
+                            .context(SystemTimeSnafu)?
+                            > self.max_age
+                    {
+                        fs::remove_file(entry.path()).await.context(CacheIoSnafu)?;
+                        continue;
+                    }
+
+                    // Without --old / --outdated
+                    fs::remove_file(entry.path()).await.context(CacheIoSnafu)?;
+                }
+
+                Ok(())
             }
-            CacheBackend::Disabled => todo!(),
+            CacheBackend::Disabled => Ok(()),
         }
     }
 
-    fn new(backend: CacheBackend, max_age: Duration) -> Self {
-        Self { backend, max_age }
+    pub async fn auto_purge(&self) -> Result<()> {
+        match &self.backend {
+            CacheBackend::Disk { base_path } => {
+                let cache_auto_purge_filepath = base_path.join(CACHE_LAST_AUTO_PURGE_FILEPATH);
+                let timestamp = fs::read_to_string(&cache_auto_purge_filepath)
+                    .await
+                    .context(CacheIoSnafu)?;
+
+                let timestamp: u64 = timestamp.parse().context(ParseIntSnafu)?;
+                let timestamp = UNIX_EPOCH + Duration::from_secs(timestamp);
+
+                if timestamp.elapsed().context(SystemTimeSnafu)? >= self.auto_purge_interval {
+                    self.purge(true).await?;
+                    write_cache_auto_purge_file(cache_auto_purge_filepath).await?;
+                }
+
+                Ok(())
+            }
+            CacheBackend::Disabled => Ok(()),
+        }
+    }
+
+    fn new(backend: CacheBackend, max_age: Duration, auto_purge_interval: Duration) -> Self {
+        Self {
+            auto_purge_interval,
+            backend,
+            max_age,
+        }
     }
 
     async fn read(file_path: PathBuf) -> Result<String> {
@@ -163,6 +226,7 @@ pub enum CacheStatus<T> {
 
 #[derive(Debug, Clone)]
 pub struct CacheSettings {
+    pub auto_purge_interval: Duration,
     pub backend: CacheBackend,
     pub max_age: Duration,
 }
@@ -170,6 +234,7 @@ pub struct CacheSettings {
 impl From<CacheBackend> for CacheSettings {
     fn from(backend: CacheBackend) -> Self {
         Self {
+            auto_purge_interval: DEFAULT_AUTO_PURGE_INTERVAL,
             max_age: DEFAULT_CACHE_MAX_AGE,
             backend,
         }
@@ -195,9 +260,27 @@ impl CacheSettings {
         match &self.backend {
             CacheBackend::Disk { base_path } => {
                 fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
-                Ok(Cache::new(self.backend, self.max_age))
+                let cache_auto_purge_filepath = base_path.join(CACHE_LAST_AUTO_PURGE_FILEPATH);
+
+                // Only create file if not already present
+                if !fs::try_exists(&cache_auto_purge_filepath)
+                    .await
+                    .context(CacheIoSnafu)?
+                {
+                    write_cache_auto_purge_file(cache_auto_purge_filepath).await?;
+                }
+
+                Ok(Cache::new(
+                    self.backend,
+                    self.max_age,
+                    self.auto_purge_interval,
+                ))
             }
-            CacheBackend::Disabled => Ok(Cache::new(self.backend, self.max_age)),
+            CacheBackend::Disabled => Ok(Cache::new(
+                self.backend,
+                self.max_age,
+                self.auto_purge_interval,
+            )),
         }
     }
 }
@@ -206,4 +289,27 @@ impl CacheSettings {
 pub enum CacheBackend {
     Disk { base_path: PathBuf },
     Disabled,
+}
+
+async fn write_cache_auto_purge_file(path: PathBuf) -> Result<()> {
+    fs::write(
+        path,
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .context(SystemTimeSnafu)?
+            .as_secs()
+            .to_string()
+            .as_bytes(),
+    )
+    .await
+    .context(CacheIoSnafu)
+}
+
+fn is_protected_file(filename: OsString) -> Result<bool> {
+    Ok(CACHE_PROTECTED_FILES.contains(
+        &filename
+            .into_string()
+            .map_err(|_| Error::OsStringConvertError)?
+            .as_str(),
+    ))
 }

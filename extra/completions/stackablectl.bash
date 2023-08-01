@@ -378,7 +378,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__clean)
-            opts="-h -V --help --version"
+            opts="-h -V --outdated --old --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

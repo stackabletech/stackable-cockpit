@@ -13,11 +13,11 @@ use stackable_cockpit::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
-    xfer::{FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
 use tracing::{debug, info, instrument};
 
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -114,9 +114,6 @@ pub enum DemoCmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("cache settings resolution error"), context(false))]
-    CacheSettingsError { source: CacheSettingsError },
-
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
 
@@ -126,12 +123,10 @@ pub enum DemoCmdError {
 
 impl DemoArgs {
     #[instrument]
-    pub async fn run(&self, common_args: &Cli) -> Result<String, DemoCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, DemoCmdError> {
         debug!("Handle demo args");
 
-        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
-            .await
-            .context(TransferSnafu)?;
+        let transfer_client = FileTransferClient::new_with(cache);
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
