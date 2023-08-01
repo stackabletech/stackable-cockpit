@@ -7,6 +7,9 @@ import { Header } from './components/header';
 import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
+import { attachDevtoolsOverlay } from '@solid-devtools/overlay';
+
+attachDevtoolsOverlay();
 
 const App = () => {
   return (
