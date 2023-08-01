@@ -1,6 +1,7 @@
 import { FluentBundle, FluentResource } from '@fluent/bundle';
 import { mapBundleSync } from '@fluent/sequence';
-import { Accessor, JSX, createContext, useContext } from 'solid-js';
+import { negotiateLanguages } from '@fluent/langneg';
+import { Accessor, JSX, createContext, createMemo, useContext } from 'solid-js';
 import { createLocalStorageSignal } from '../utils/localstorage';
 import { Option } from '../types';
 
@@ -23,7 +24,7 @@ const bundles = Object.fromEntries(
   }),
 );
 
-const fallbackLanguages = ['en'];
+const fallbackLanguage = 'en';
 export const LanguageContext = createContext<
   [
     Accessor<string[]>,
@@ -37,8 +38,15 @@ export const LanguageContext = createContext<
 export const LanguageProvider = (props: { children: JSX.Element }) => {
   const [userLanguage, setUserLanguage] =
     createLocalStorageSignal('user.language');
-  const activeLanguages = () =>
-    userLanguage().mapOr(fallbackLanguages, (ul) => [ul, ...fallbackLanguages]);
+  const activeLanguages = createMemo(() =>
+    userLanguage().mapOrElse(
+      () =>
+        negotiateLanguages(navigator.languages, Object.keys(bundles), {
+          defaultLocale: fallbackLanguage,
+        }),
+      (ul) => [ul, fallbackLanguage],
+    ),
+  );
   const availableLanguages = () => bundles;
   return (
     <LanguageContext.Provider
