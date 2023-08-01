@@ -59,8 +59,6 @@ export const Header = () => {
       </h1>
       <ul class='flex-auto m-0 p-0 flex'>
         <NavItem href='/stacklets'>{translate('stacklets-list')}</NavItem>
-        <NavItem href='/listeners'>Listeners</NavItem>
-        <NavItem href='/stacks'>Stacks</NavItem>
         <li class='flex-grow' />
         <LanguagePicker />
         <NavItem onClick={() => logOut()}>{translate('log-out')}</NavItem>

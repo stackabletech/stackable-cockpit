@@ -1,8 +1,6 @@
 import { For, createResource } from 'solid-js';
 import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
-import { ButtonLink } from '../../components/button';
-import { AddSymbol } from '../../components/symbols';
 import styles from './list.module.css';
 import { translate } from '../../localization';
 
@@ -42,9 +40,11 @@ export const Stacklets = () => {
           }, */
         ]}
         extraButtons={
-          <ButtonLink href='/stacklets/add' role='primary'>
-            <AddSymbol /> {translate('stacklets-add')}
-          </ButtonLink>
+          <>
+            {/* <ButtonLink href='/stacklets/add' role='primary'>
+              <AddSymbol /> {translate('stacklets-add')}
+            </ButtonLink> */}
+          </>
         }
         refresh={refetch}
         isLoading={stacklets.loading}
