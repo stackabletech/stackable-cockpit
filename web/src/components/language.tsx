@@ -1,5 +1,5 @@
 import { For, useContext } from 'solid-js';
-import { LanguageContext } from '../localization';
+import { LanguageContext, translate } from '../localization';
 import { Some } from '../types/option';
 
 export const LanguagePicker = () => {
@@ -10,7 +10,7 @@ export const LanguagePicker = () => {
       <For each={Object.keys(availableLanguages())}>
         {(language) => (
           <option value={language} selected={activeLanguages()[0] === language}>
-            {language}
+            {translate('language-name', {}, { overrideLanguages: [language] })}
           </option>
         )}
       </For>

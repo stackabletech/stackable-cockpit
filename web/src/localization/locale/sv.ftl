@@ -1,3 +1,5 @@
+language-name = Svenska
+
 product = Produkt
 namespace = Namnrymd
 name = Namn

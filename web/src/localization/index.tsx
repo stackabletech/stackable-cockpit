@@ -52,14 +52,18 @@ export const LanguageProvider = (props: { children: JSX.Element }) => {
 export const translate = (
   name: string,
   variables?: { [variable: string]: any },
+  opts?: { overrideLanguages?: string[] },
 ) => {
   const [languages] = useContext(LanguageContext)!;
+  const languageChain = opts?.overrideLanguages ?? languages();
   const bundle = mapBundleSync(
-    languages().map((language) => bundles[language]),
+    languageChain.map((language) => bundles[language]),
     name,
   );
   if (bundle == null) {
-    throw new Error(`No translation found for ${name}`);
+    throw new Error(
+      `No translation found for ${name} (language chain: ${languageChain})`,
+    );
   }
   return bundle.formatPattern(bundle.getMessage(name)!.value!, variables);
 };

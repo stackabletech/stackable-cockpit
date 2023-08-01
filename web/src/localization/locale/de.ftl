@@ -1,3 +1,5 @@
+language-name = Deutsch
+
 product = Produkt
 namespace = Namensraum
 name = Name
