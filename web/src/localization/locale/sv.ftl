@@ -1,17 +1,17 @@
 language-name = Svenska
 
-product = Produkt
-namespace = Namnrymd
-name = Namn
-status = Status
-
-stacklets-list = Stackletar
-stacklets-add = Lägg till Stacklet
-
-log-in = Logga in
-log-out = Logga ut
-username = Användarnamn
-password = Lösenord
-logging-in = Loggar in...
-
 refresh = Ladda om
+
+stacklet--list = Stackletar
+stacklet--add = Lägg till Stacklet
+
+stacklet--product = Produkt
+stacklet--namespace = Namnrymd
+stacklet--name = Namn
+stacklet--status = Status
+
+login--log-in = Logga in
+login--log-out = Logga ut
+login--username = Användarnamn
+login--password = Lösenord
+login--logging-in = Loggar in...

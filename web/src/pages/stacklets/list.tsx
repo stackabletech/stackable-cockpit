@@ -12,22 +12,22 @@ export const Stacklets = () => {
         items={stacklets() || []}
         columns={[
           {
-            label: translate('product'),
+            label: translate('stacklet--product'),
             get: (x) => x.product,
             sortBy: (x) => x.product,
           },
           {
-            label: translate('namespace'),
+            label: translate('stacklet--namespace'),
             get: (x) => x.namespace || '(Cluster-scoped)',
             sortBy: (x) => x.namespace || '',
           },
           {
-            label: translate('name'),
+            label: translate('stacklet--name'),
             get: (x) => x.name,
             sortBy: (x) => x.name,
           },
           {
-            label: translate('status'),
+            label: translate('stacklet--status'),
             get: (x) => <StackletConditions conditions={x.conditions} />,
           },
           /* {
@@ -42,7 +42,7 @@ export const Stacklets = () => {
         extraButtons={
           <>
             {/* <ButtonLink href='/stacklets/add' role='primary'>
-              <AddSymbol /> {translate('stacklets-add')}
+              <AddSymbol /> {translate('stacklet--add')}
             </ButtonLink> */}
           </>
         }

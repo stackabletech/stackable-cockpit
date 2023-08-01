@@ -58,10 +58,12 @@ export const Header = () => {
         </A>
       </h1>
       <ul class='flex-auto m-0 p-0 flex'>
-        <NavItem href='/stacklets'>{translate('stacklets-list')}</NavItem>
+        <NavItem href='/stacklets'>{translate('stacklet--list')}</NavItem>
         <li class='flex-grow' />
         <LanguagePicker />
-        <NavItem onClick={() => logOut()}>{translate('log-out')}</NavItem>
+        <NavItem onClick={() => logOut()}>
+          {translate('login--log-out')}
+        </NavItem>
       </ul>
     </nav>
   );

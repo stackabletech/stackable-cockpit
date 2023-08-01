@@ -1,13 +1,14 @@
 language-name = Deutsch
 
-product = Produkt
-namespace = Namensraum
-name = Name
-status = Status
-
-stacklets-list = Stacklets
-stacklets-add = Stacklet hinzufügen
-
-log-out = Abmelden
-
 refresh = Aktualisieren
+
+stacklet--list = Stacklets
+stacklet--add = Stacklet hinzufügen
+
+stacklet--product = Produkt
+stacklet--namespace = Namensraum
+stacklet--name = Name
+stacklet--status = Status
+
+
+login--log-out = Abmelden

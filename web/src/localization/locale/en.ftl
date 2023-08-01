@@ -1,17 +1,17 @@
 language-name = English
 
-product = Product
-namespace = Namespace
-name = Name
-status = Status
-
-stacklets-list = Stacklets
-stacklets-add = Add Stacklet
-
-log-in = Log in
-log-out = Log out
-username = Username
-password = Password
-logging-in = Logging in...
-
 refresh = Refresh
+
+stacklet--list = Stacklets
+stacklet--add = Add Stacklet
+
+stacklet--product = Product
+stacklet--namespace = Namespace
+stacklet--name = Name
+stacklet--status = Status
+
+login--log-in = Log in
+login--log-out = Log out
+login--username = Username
+login--password = Password
+login--logging-in = Logging in...

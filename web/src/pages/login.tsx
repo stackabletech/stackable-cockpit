@@ -52,7 +52,7 @@ export const LoginPage = () => {
             alt='Stackable'
           />
         </h1>
-        <h2 class='mt-0 mb-1'>{translate('log-in')}</h2>
+        <h2 class='mt-0 mb-1'>{translate('login--log-in')}</h2>
         <form
           class='grid'
           style={{
@@ -61,7 +61,7 @@ export const LoginPage = () => {
           }}
         >
           <label class='me-2' for={usernameId}>
-            {translate('username')}
+            {translate('login--username')}
           </label>
           <input
             id={usernameId}
@@ -69,7 +69,7 @@ export const LoginPage = () => {
             onInput={(event) => setUsername(event.target.value)}
           />
           <label class='me-2' for={passwordId}>
-            {translate('password')}
+            {translate('login--password')}
           </label>
           <input
             id={passwordId}
@@ -82,13 +82,13 @@ export const LoginPage = () => {
             style={{ 'grid-column': 'span 2' }}
           >
             <Show when={loginMessage.loading}>
-              <div>{translate('logging-in')}</div>
+              <div>{translate('login--logging-in')}</div>
             </Show>
             <Show when={loginMessage()}>
               <div class='c-red'>{loginMessage()}</div>
             </Show>
             <Button onClick={clickLogin} role='primary'>
-              {translate('log-in')}
+              {translate('login--log-in')}
             </Button>
           </div>
         </form>
