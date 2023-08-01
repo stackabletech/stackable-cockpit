@@ -81,9 +81,10 @@ export const translate = (
     name,
   );
   if (bundle == undefined) {
-    throw new Error(
+    console.error(
       `No translation found for ${name} (language chain: ${languageChain.toString()})`,
     );
+    return `#${name}#`;
   }
   const pattern = bundle.getMessage(name)?.value;
   if (pattern == undefined) {
