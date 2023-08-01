@@ -1,6 +1,8 @@
 import { FluentBundle, FluentResource } from '@fluent/bundle';
 import { mapBundleSync } from '@fluent/sequence';
-import { JSX, createContext, useContext } from 'solid-js';
+import { Accessor, JSX, createContext, useContext } from 'solid-js';
+import { createLocalStorageSignal } from '../utils/localstorage';
+import { Option } from '../types';
 
 const ftls = import.meta.glob('./locale/*.ftl', { eager: true, as: 'raw' });
 const bundles = Object.fromEntries(
@@ -21,24 +23,39 @@ const bundles = Object.fromEntries(
   }),
 );
 
-const LanguageContext = createContext(['en']);
+const fallbackLanguages = ['en'];
+export const LanguageContext = createContext<
+  [
+    Accessor<string[]>,
+    {
+      setUserLanguage: (language: Option<string>) => void;
+      availableLanguages: () => { [language: string]: FluentBundle };
+    },
+  ]
+>();
 
-export const LanguageProvider = (props: {
-  languages: string[];
-  children: JSX.Element;
-}) => (
-  <LanguageContext.Provider value={props.languages}>
-    {props.children}
-  </LanguageContext.Provider>
-);
+export const LanguageProvider = (props: { children: JSX.Element }) => {
+  const [userLanguage, setUserLanguage] =
+    createLocalStorageSignal('user.language');
+  const activeLanguages = () =>
+    userLanguage().mapOr(fallbackLanguages, (ul) => [ul, ...fallbackLanguages]);
+  const availableLanguages = () => bundles;
+  return (
+    <LanguageContext.Provider
+      value={[activeLanguages, { setUserLanguage, availableLanguages }]}
+    >
+      {props.children}
+    </LanguageContext.Provider>
+  );
+};
 
 export const translate = (
   name: string,
   variables?: { [variable: string]: any },
 ) => {
-  const languages = useContext(LanguageContext);
+  const [languages] = useContext(LanguageContext)!;
   const bundle = mapBundleSync(
-    languages.map((language) => bundles[language]),
+    languages().map((language) => bundles[language]),
     name,
   );
   if (bundle == null) {

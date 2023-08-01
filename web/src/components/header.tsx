@@ -3,6 +3,7 @@ import { ParentProps, Show } from 'solid-js';
 import logo from '../resources/logo.png';
 import { logOut } from '../api/session';
 import { translate } from '../localization';
+import { LanguagePicker } from './language';
 
 interface NavItemProps {
   href?: string;
@@ -61,6 +62,7 @@ export const Header = () => {
         <NavItem href='/listeners'>Listeners</NavItem>
         <NavItem href='/stacks'>Stacks</NavItem>
         <li class='flex-grow' />
+        <LanguagePicker />
         <NavItem onClick={() => logOut()}>{translate('log-out')}</NavItem>
       </ul>
     </nav>
