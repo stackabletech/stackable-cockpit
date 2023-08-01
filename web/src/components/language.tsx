@@ -1,10 +1,10 @@
-import { For, useContext } from 'solid-js';
-import { LanguageContext, translate } from '../localization';
+import { For } from 'solid-js';
+import { requireLanguageContext, translate } from '../localization';
 import { Some } from '../types/option';
 
 export const LanguagePicker = () => {
   const [activeLanguages, { setUserLanguage, availableLanguages }] =
-    useContext(LanguageContext)!;
+    requireLanguageContext();
   return (
     <select onInput={(event) => setUserLanguage(Some(event.target.value))}>
       <For each={Object.keys(availableLanguages())}>

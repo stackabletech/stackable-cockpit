@@ -30,6 +30,7 @@
         }
       }
     ],
+    "unicorn/no-useless-undefined": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
