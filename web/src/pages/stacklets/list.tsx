@@ -1,8 +1,6 @@
 import { For, createResource } from 'solid-js';
 import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
-import { ButtonLink } from '../../components/button';
-import { AddSymbol } from '../../components/symbols';
 import styles from './list.module.css';
 
 export const Stacklets = () => {
