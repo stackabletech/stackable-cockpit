@@ -1,4 +1,4 @@
-module go-helm-wrapper
+module rust/stackable/go-helm-wrapper
 
 go 1.20
 

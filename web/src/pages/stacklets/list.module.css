@@ -1,0 +1,6 @@
+.inline-list-item {
+  display: inline;
+}
+.inline-list-item:not(:last-child)::after {
+  content: ', ';
+}

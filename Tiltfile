@@ -13,9 +13,7 @@ custom_build(
     'nix run -f . regenerateNixLockfiles && nix-build . -A docker --argstr dockerName "${EXPECTED_REGISTRY}/' + operator_name + '" && ./result/load-image | docker load',
     deps=[
       # Rust
-      'src', 'bins', 'Cargo.toml', 'Cargo.lock', 'build.rs', 'vendor',
-      # Helm wrapper
-      'go-helm-wrapper',
+      'rust', 'Cargo.toml', 'Cargo.lock', 'vendor',
       # Web UI
       'web', 'yarn.lock',
       # Nix

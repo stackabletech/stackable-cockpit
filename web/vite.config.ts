@@ -6,8 +6,13 @@ export default defineConfig({
   plugins: [solidPlugin(), UnoCSS()],
   server: {
     proxy: {
-      // Forward API requests to stackabled
+      // Forward API requests to stackable-cockpitd
       '/api': 'http://127.0.0.1:8000',
+    },
+  },
+  css: {
+    modules: {
+      localsConvention: 'camelCaseOnly',
     },
   },
 });

@@ -1,8 +1,9 @@
-import { createResource } from 'solid-js';
-import { getStacklets } from '../../api/stacklets';
+import { For, createResource } from 'solid-js';
+import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
 import { ButtonLink } from '../../components/button';
 import { AddSymbol } from '../../components/symbols';
+import styles from './list.module.css';
 
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
@@ -18,24 +19,26 @@ export const Stacklets = () => {
           },
           {
             label: 'Namespace',
-            get: (x) => x.metadata.namespace,
-            sortBy: (x) => x.metadata.namespace,
+            get: (x) => x.namespace || '(Cluster-scoped)',
+            sortBy: (x) => x.namespace || '',
           },
           {
             label: 'Name',
-            get: (x) => x.metadata.name,
-            sortBy: (x) => x.metadata.name,
+            get: (x) => x.name,
+            sortBy: (x) => x.name,
           },
           {
+            label: 'Status',
+            get: (x) => <StackletConditions conditions={x.conditions} />,
+          },
+          /* {
             label: 'Actions',
             get: (x) => (
-              <ButtonLink
-                href={`/stacklets/${x.metadata.namespace}/${x.metadata.name}/connect`}
-              >
+              <ButtonLink href={`/stacklets/${x.namespace}/${x.name}/connect`}>
                 Connect
               </ButtonLink>
             ),
-          },
+          }, */
         ]}
         extraButtons={
           <ButtonLink href='/stacklets/add' role='primary'>
@@ -48,3 +51,27 @@ export const Stacklets = () => {
     </>
   );
 };
+
+const StackletConditions = (props: { conditions: DisplayCondition[] }) => (
+  <ul class='p-0 m-0'>
+    <For each={props.conditions}>
+      {(cond) => (
+        <li class={styles.inlineListItem}>
+          <StackletCondition condition={cond} />
+        </li>
+      )}
+    </For>
+  </ul>
+);
+
+const StackletCondition = (props: { condition: DisplayCondition }) => (
+  <span
+    classList={{
+      'c-green': props.condition.is_good === true,
+      'c-red': props.condition.is_good === false,
+    }}
+    title={props.condition.message || undefined}
+  >
+    {props.condition.condition}
+  </span>
+);

@@ -58,8 +58,8 @@ WORKDIR /src
 COPY . /src
 
 # hadolint ignore=SC1091
-## PATCH: disabled cyclonedx, run yarn install, build stackabled with ui feature enabled
-RUN . "$HOME/.cargo/env" && yarn && cargo build --release --workspace --features stackabled/ui
+## PATCH: disabled cyclonedx, run yarn install, build stackable-cockpitd with ui feature enabled
+RUN . "$HOME/.cargo/env" && yarn && cargo build --release --workspace --features stackable-cockpitd/ui
 # ONBUILD RUN . "$HOME/.cargo/env" && cargo auditable build --release --workspace && cargo cyclonedx --output-pattern package --all --output-cdx
 
 # Copy the "interesting" files into /app.
@@ -109,5 +109,5 @@ RUN groupadd -g 1000 stackable && adduser -u 1000 -g stackable -c 'Stackable Ope
 
 USER stackable:stackable
 
-ENTRYPOINT ["stackabled"]
+ENTRYPOINT ["stackable-cockpitd"]
 CMD []
