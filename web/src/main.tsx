@@ -43,7 +43,7 @@ if (root == undefined) {
 } else {
   render(
     () => (
-      <LanguageProvider languages={['sv', 'en']}>
+      <LanguageProvider>
         <Router base='/ui'>
           <App />
         </Router>
