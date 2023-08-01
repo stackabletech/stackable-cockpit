@@ -9,6 +9,7 @@ import {
 import logo from '../resources/logo.png';
 import { isLoggedIn, logIn, validateSessionOrLogOut } from '../api/session';
 import { Button } from '../components/button';
+import { translate } from '../localization';
 
 interface LoginPageOrProps {
   children: JSX.Element;
@@ -51,7 +52,7 @@ export const LoginPage = () => {
             alt='Stackable'
           />
         </h1>
-        <h2 class='mt-0 mb-1'>Login</h2>
+        <h2 class='mt-0 mb-1'>{translate('log-in')}</h2>
         <form
           class='grid'
           style={{
@@ -60,7 +61,7 @@ export const LoginPage = () => {
           }}
         >
           <label class='me-2' for={usernameId}>
-            Username
+            {translate('username')}
           </label>
           <input
             id={usernameId}
@@ -68,7 +69,7 @@ export const LoginPage = () => {
             onInput={(event) => setUsername(event.target.value)}
           />
           <label class='me-2' for={passwordId}>
-            Password
+            {translate('password')}
           </label>
           <input
             id={passwordId}
@@ -81,13 +82,13 @@ export const LoginPage = () => {
             style={{ 'grid-column': 'span 2' }}
           >
             <Show when={loginMessage.loading}>
-              <div>logging in...</div>
+              <div>{translate('logging-in')}</div>
             </Show>
             <Show when={loginMessage()}>
               <div class='c-red'>{loginMessage()}</div>
             </Show>
             <Button onClick={clickLogin} role='primary'>
-              Log in
+              {translate('log-in')}
             </Button>
           </div>
         </form>
