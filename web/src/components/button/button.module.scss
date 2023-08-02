@@ -1,0 +1,52 @@
+@import '@/scss/colors.scss';
+
+.btn {
+  padding: 8px 16px;
+  font-size: 14px;
+  line-height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color color 0.1s;
+  display: flex;
+  align-items: center;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    margin: 0 8px 0 0;
+  }
+
+  &-primary {
+    @include theme('button') {
+      background-color: t('primary-bg');
+      color: t('primary-text');
+    }
+
+    &:hover,
+    &:active {
+      @include theme('button') {
+        background-color: t('primary-bg-hover');
+      }
+    }
+  }
+
+  &-secondary {
+    border-width: 1px;
+    border-style: solid;
+
+    @include theme('button') {
+      background-color: t('secondary-bg');
+      border-color: t('secondary-border');
+      color: t('secondary-text');
+    }
+
+    &:hover,
+    &:active {
+      @include theme('button') {
+        background-color: t('secondary-bg-hover');
+        color: t('secondary-text-hover');
+      }
+    }
+  }
+}

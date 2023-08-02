@@ -1,4 +1,4 @@
-@function color($color, $opacity) {
+@function color($color, $opacity: 100) {
   @if $opacity != 100 {
     @return rgba($color, #{$opacity}\%);
   }
@@ -22,3 +22,41 @@ $color-stackable-blue-light: #1880bd;
 $color-stackable-blue-dark: #0b689f;
 
 $color-white: #ffffff;
+
+$themes: (
+  dark: (
+    button: (
+      'primary-text': $color-white,
+      'primary-text-hover': $color-white,
+      'primary-bg': $color-stackable-blue-light,
+      'primary-bg-hover': $color-stackable-blue-dark,
+      'secondary-text': $color-gray-400,
+      'secondary-text-hover': $color-white,
+      'secondary-bg': $color-gray-800,
+      'secondary-bg-hover': $color-gray-700,
+      'secondary-border': $color-gray-600,
+    ),
+  ),
+  light: (
+    button: (),
+  ),
+);
+
+@mixin theme($scope) {
+  $scope: $scope !global;
+
+  @each $theme, $map in $themes {
+    $theme-map: $map !global;
+
+    :global(.#{$theme}) & {
+      @content;
+    }
+  }
+
+  $theme-map: null !global;
+  $scope: null !global;
+}
+
+@function t($key) {
+  @return map-get(map-get($theme-map, $scope), $key);
+}

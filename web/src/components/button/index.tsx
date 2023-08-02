@@ -1,6 +1,8 @@
 import { A } from '@solidjs/router';
 import { JSX } from 'solid-js';
 
+import styles from './button.module.scss';
+
 /// Special types of buttons that need specific callouts
 export type ButtonRole = 'primary';
 
@@ -13,12 +15,10 @@ const buttonProps = (props: VisualButtonProps) => {
   const roleClasses =
     // buttonProps is only called within a reactive scope
     // eslint-disable-next-line solid/reactivity
-    props.role === 'primary'
-      ? 'bg-stackable-blue-light hover-bg-stackable-blue-dark active-stackable-blue-dark border-stackable-blue-dark'
-      : 'bg-gray-700 hover-bg-gray-600 active-bg-gray-500 border-gray-600';
+    props.role === 'primary' ? styles.btnPrimary : styles.btnSecondary;
 
   return {
-    class: `p-2 text-size-4 c-white rounded border-1 border-solid  cursor-pointer decoration-none ${roleClasses}`,
+    class: `${styles.btn} ${roleClasses}`,
   };
 };
 

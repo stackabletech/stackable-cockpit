@@ -1,7 +1,7 @@
 import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
-import { Button } from './button';
-import { SearchInput } from './form/search';
-import { LoadingBar } from './loading';
+import { SearchInput } from '@/components/form/search';
+import { LoadingBar } from '@/components/loading';
+import { Button } from '@/components/button';
 
 export interface DataTableColumn<T> {
   label: string;

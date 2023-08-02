@@ -9,13 +9,15 @@ import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
 
+import './scss/base.scss';
+
 const Home = () => {
   return <>lorem ipsum dolor sit amet</>;
 };
 
 const App = () => {
   return (
-    <div class='bg-gray-900 min-h-screen c-white'>
+    <div class='bg-gray-900 min-h-screen c-white dark'>
       <LoginPageOr>
         <Header />
         <div class='max-w-5xl mx-a mt-16'>

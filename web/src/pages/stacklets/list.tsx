@@ -42,7 +42,8 @@ export const Stacklets = () => {
         ]}
         extraButtons={
           <ButtonLink href='/stacklets/add' role='primary'>
-            <AddSymbol /> Add stacklet
+            <AddSymbol />
+            <span>Add stacklet</span>
           </ButtonLink>
         }
         refresh={refetch}
