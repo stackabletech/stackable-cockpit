@@ -36,6 +36,11 @@ $themes: (
       'secondary-bg-hover': $color-gray-700,
       'secondary-border': $color-gray-600,
     ),
+    text-input: (
+      'placeholder': $color-gray-400,
+      'bg': $color-gray-700,
+      'text': $color-white,
+    ),
   ),
   light: (
     button: (),

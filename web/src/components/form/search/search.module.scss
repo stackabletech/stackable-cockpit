@@ -1,0 +1,28 @@
+@import '@/scss/colors';
+
+.input-search {
+  position: relative;
+
+  .icon {
+    position: absolute;
+    inset: 0 auto 0 0;
+  }
+
+  input {
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 20px;
+    border-radius: 4px;
+
+    @include theme('text-input') {
+      background-color: t('bg');
+      color: t('text');
+    }
+
+    &::placeholder {
+      @include theme('text-input') {
+        color: t('placeholder');
+      }
+    }
+  }
+}
