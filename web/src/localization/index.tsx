@@ -13,8 +13,9 @@ const translationBundles = Object.fromEntries(
   Object.entries(fluentTranslationFiles).map(([fileName, ftl]) => {
     const localeName = fileName.replace(
       /^.*\/(.+)\..*$/,
-      (_, language: string) => language,
+      (_, locale: string) => locale,
     );
+
     const resource = new FluentResource(ftl);
     const bundle = new FluentBundle(localeName);
     const errors = bundle.addResource(resource);
@@ -24,6 +25,7 @@ const translationBundles = Object.fromEntries(
         { cause: errors[0] },
       );
     }
+
     return [localeName, bundle];
   }),
 );
@@ -75,27 +77,30 @@ export const LanguageProvider = (props: { children: JSX.Element }) => {
 };
 
 export const translate = (
-  name: string,
+  translatableName: string,
   variables?: Record<string, FluentVariable>,
   options?: { overrideLocales?: string[] },
 ) => {
   const context = requireLanguageContext();
   const localeChain = options?.overrideLocales ?? context.activeLocales();
+
   const bundle = mapBundleSync(
     localeChain.map((locale) => translationBundles[locale]),
-    name,
+    translatableName,
   );
   if (bundle == undefined) {
     console.error(
-      `No translation found for ${name} (locale chain: ${localeChain.toString()})`,
+      `No translation found for ${translatableName} (locale chain: ${localeChain.toString()})`,
     );
-    return `#${name}#`;
+    return `#${translatableName}#`;
   }
-  const pattern = bundle.getMessage(name)?.value;
+
+  const pattern = bundle.getMessage(translatableName)?.value;
   if (pattern == undefined) {
     throw new Error(
-      `Translation pattern for ${name} has no value (in bundle ${bundle.locales.toString()})`,
+      `Translation pattern for ${translatableName} has no value (in bundle ${bundle.locales.toString()})`,
     );
   }
+
   return bundle.formatPattern(pattern, variables);
 };
