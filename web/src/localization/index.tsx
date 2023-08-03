@@ -30,7 +30,7 @@ const translationBundles = Object.fromEntries(
   }),
 );
 
-const fallbackLocale = 'en';
+const FALLBACK_LOCALE = 'en';
 interface LanguageContext {
   activeLocales(): string[];
   setUserLocale(language: Option<string>): void;
@@ -57,10 +57,10 @@ export const LanguageProvider = (props: { children: JSX.Element }) => {
           navigator.languages,
           Object.keys(translationBundles),
           {
-            defaultLocale: fallbackLocale,
+            defaultLocale: FALLBACK_LOCALE,
           },
         ),
-      (ul) => [ul, fallbackLocale],
+      (ul) => [ul, FALLBACK_LOCALE],
     ),
   );
   return (
