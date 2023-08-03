@@ -57,7 +57,7 @@ async fn main() -> Result<(), Whatever> {
         .route("/", get(|| async { Redirect::permanent("/ui/") }));
 
     let listen_addr = SocketAddr::new(cli.address, cli.port);
-    info!("Starting server on {listen_addr}");
+    info!(addr = %listen_addr, "Starting server");
 
     // Needed in next axum version
     // let listener = TcpListener::bind("127.0.0.1:8000").await?;
