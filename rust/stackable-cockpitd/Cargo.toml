@@ -16,6 +16,7 @@ utoipa = { workspace = true, features = ["axum_extras"] }
 stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
 clap = { workspace = true, features = ["env"] }
 tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
 snafu = { workspace = true }
 tokio = { workspace = true }
 stackable-cockpit-web = { path = "../../web", optional = true }

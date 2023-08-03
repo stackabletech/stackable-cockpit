@@ -12,6 +12,8 @@ use stackable_cockpitd::{
     api_doc, handlers,
     middleware::{self, authentication::Authenticator},
 };
+use tracing::{info, metadata::LevelFilter};
+use tracing_subscriber::fmt;
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::cli::Cli;
@@ -22,6 +24,18 @@ mod cli;
 #[snafu::report]
 async fn main() -> Result<(), Whatever> {
     let cli = Cli::parse();
+
+    // Construct the tracing subscriber
+    let format = fmt::format()
+        .with_level(false)
+        .with_ansi(true)
+        .without_time();
+
+    tracing_subscriber::fmt()
+        .with_max_level(LevelFilter::INFO)
+        .event_format(format)
+        .pretty()
+        .init();
 
     let authn =
         Authenticator::load_htpasswd(&cli.htpasswd).whatever_context("failed to load htpasswd")?;
@@ -42,10 +56,13 @@ async fn main() -> Result<(), Whatever> {
         .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", api_doc::openapi()))
         .route("/", get(|| async { Redirect::permanent("/ui/") }));
 
+    let listen_addr = SocketAddr::new(cli.address, cli.port);
+    info!("Starting server on {listen_addr}");
+
     // Needed in next axum version
     // let listener = TcpListener::bind("127.0.0.1:8000").await?;
 
-    if let Err(err) = Server::bind(&SocketAddr::new(cli.address, cli.port))
+    if let Err(err) = Server::bind(&listen_addr)
         .serve(router.into_make_service())
         .with_graceful_shutdown(wait_for_shutdown_signal())
         .await
