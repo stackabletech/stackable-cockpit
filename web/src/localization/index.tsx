@@ -39,7 +39,7 @@ interface LanguageContext {
 const LanguageContext = createContext<LanguageContext>();
 export const requireLanguageContext = () => {
   const langContext = useContext(LanguageContext);
-  if (langContext == undefined) {
+  if (langContext === undefined) {
     throw new Error(
       'LanguageContext is required but no LanguageProvider is currently active',
     );
@@ -88,7 +88,7 @@ export const translate = (
     localeChain.map((locale) => translationBundles[locale]),
     translatableName,
   );
-  if (bundle == undefined) {
+  if (bundle === null) {
     console.error(
       `No translation found for ${translatableName} (locale chain: ${localeChain.toString()})`,
     );
@@ -96,7 +96,7 @@ export const translate = (
   }
 
   const pattern = bundle.getMessage(translatableName)?.value;
-  if (pattern == undefined) {
+  if (pattern === undefined || pattern === null) {
     throw new Error(
       `Translation pattern for ${translatableName} has no value (in bundle ${bundle.locales.toString()})`,
     );
