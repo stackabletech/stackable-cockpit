@@ -8,6 +8,9 @@ import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
 import { LanguageProvider } from './localization';
+import { attachDevtoolsOverlay } from '@solid-devtools/overlay';
+
+attachDevtoolsOverlay();
 
 const App = () => {
   return (
