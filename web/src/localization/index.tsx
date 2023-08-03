@@ -1,40 +1,40 @@
-import { FluentBundle, FluentResource } from '@fluent/bundle';
+import { FluentBundle, FluentResource, FluentVariable } from '@fluent/bundle';
 import { mapBundleSync } from '@fluent/sequence';
 import { negotiateLanguages } from '@fluent/langneg';
-import { Accessor, JSX, createContext, createMemo, useContext } from 'solid-js';
+import { JSX, createContext, createMemo, useContext } from 'solid-js';
 import { createLocalStorageSignal } from '../utils/localstorage';
 import { Option } from '../types';
 
-const ftls = import.meta.glob('./locale/*.ftl', { eager: true, as: 'raw' });
-const bundles = Object.fromEntries(
-  Object.entries(ftls).map(([fileName, ftl]) => {
-    const languageName = fileName.replace(
+const fluentTranslationFiles = import.meta.glob('./locale/*.ftl', {
+  eager: true,
+  as: 'raw',
+});
+const translationBundles = Object.fromEntries(
+  Object.entries(fluentTranslationFiles).map(([fileName, ftl]) => {
+    const localeName = fileName.replace(
       /^.*\/(.+)\..*$/,
       (_, language: string) => language,
     );
     const resource = new FluentResource(ftl);
-    const bundle = new FluentBundle(languageName);
+    const bundle = new FluentBundle(localeName);
     const errors = bundle.addResource(resource);
     if (errors.length > 0) {
       throw new Error(
-        `Failed to load translation bundle ${fileName} as ${languageName}`,
+        `Failed to load translation bundle ${fileName} as ${localeName}`,
         { cause: errors[0] },
       );
     }
-    return [languageName, bundle];
+    return [localeName, bundle];
   }),
 );
 
-const fallbackLanguage = 'en';
-const LanguageContext = createContext<
-  [
-    Accessor<string[]>,
-    {
-      setUserLanguage: (language: Option<string>) => void;
-      availableLanguages: () => { [language: string]: FluentBundle };
-    },
-  ]
->();
+const fallbackLocale = 'en';
+interface LanguageContext {
+  activeLocales(): string[];
+  setUserLocale(language: Option<string>): void;
+  availableLocales(): Record<string, FluentBundle>;
+}
+const LanguageContext = createContext<LanguageContext>();
 export const requireLanguageContext = () => {
   const langContext = useContext(LanguageContext);
   if (langContext == undefined) {
@@ -46,23 +46,28 @@ export const requireLanguageContext = () => {
 };
 
 export const LanguageProvider = (props: { children: JSX.Element }) => {
-  const [userLanguage, setUserLanguage] =
+  const [userLanguage, setUserLocale] =
     createLocalStorageSignal('user.language');
-  const activeLanguages = createMemo(() =>
+  const activeLocales = createMemo(() =>
     userLanguage().mapOrElse(
       () =>
-        negotiateLanguages(navigator.languages, Object.keys(bundles), {
-          defaultLocale: fallbackLanguage,
-        }),
-      (ul) => [ul, fallbackLanguage],
+        negotiateLanguages(
+          navigator.languages,
+          Object.keys(translationBundles),
+          {
+            defaultLocale: fallbackLocale,
+          },
+        ),
+      (ul) => [ul, fallbackLocale],
     ),
   );
   return (
     <LanguageContext.Provider
-      value={[
-        activeLanguages,
-        { setUserLanguage, availableLanguages: () => bundles },
-      ]}
+      value={{
+        activeLocales,
+        setUserLocale,
+        availableLocales: () => translationBundles,
+      }}
     >
       {props.children}
     </LanguageContext.Provider>
@@ -71,24 +76,26 @@ export const LanguageProvider = (props: { children: JSX.Element }) => {
 
 export const translate = (
   name: string,
-  variables?: { [variable: string]: string | number },
-  options?: { overrideLanguages?: string[] },
+  variables?: Record<string, FluentVariable>,
+  options?: { overrideLocales?: string[] },
 ) => {
-  const [languages] = requireLanguageContext();
-  const languageChain = options?.overrideLanguages ?? languages();
+  const context = requireLanguageContext();
+  const localeChain = options?.overrideLocales ?? context.activeLocales();
   const bundle = mapBundleSync(
-    languageChain.map((language) => bundles[language]),
+    localeChain.map((locale) => translationBundles[locale]),
     name,
   );
   if (bundle == undefined) {
     console.error(
-      `No translation found for ${name} (language chain: ${languageChain.toString()})`,
+      `No translation found for ${name} (locale chain: ${localeChain.toString()})`,
     );
     return `#${name}#`;
   }
   const pattern = bundle.getMessage(name)?.value;
   if (pattern == undefined) {
-    throw new Error('Translation pattern for ${name} has no value');
+    throw new Error(
+      `Translation pattern for ${name} has no value (in bundle ${bundle.locales.toString()})`,
+    );
   }
   return bundle.formatPattern(pattern, variables);
 };

@@ -1,4 +1,4 @@
-language-name = Svenska
+locale-name = Svenska
 
 refresh = Ladda om
 

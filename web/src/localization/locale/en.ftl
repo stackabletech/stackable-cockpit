@@ -1,4 +1,4 @@
-language-name = English
+locale-name = English
 
 refresh = Refresh
 

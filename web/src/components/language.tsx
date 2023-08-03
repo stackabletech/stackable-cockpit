@@ -3,14 +3,18 @@ import { requireLanguageContext, translate } from '../localization';
 import { Some } from '../types/option';
 
 export const LanguagePicker = () => {
-  const [activeLanguages, { setUserLanguage, availableLanguages }] =
-    requireLanguageContext();
+  const context = requireLanguageContext();
   return (
-    <select onInput={(event) => setUserLanguage(Some(event.target.value))}>
-      <For each={Object.keys(availableLanguages())}>
-        {(language) => (
-          <option value={language} selected={activeLanguages()[0] === language}>
-            {translate('language-name', {}, { overrideLanguages: [language] })}
+    <select
+      onInput={(event) => context.setUserLocale(Some(event.target.value))}
+    >
+      <For each={Object.keys(context.availableLocales())}>
+        {(locale) => (
+          <option
+            value={locale}
+            selected={context.activeLocales()[0] === locale}
+          >
+            {translate('locale-name', {}, { overrideLocales: [locale] })}
           </option>
         )}
       </For>

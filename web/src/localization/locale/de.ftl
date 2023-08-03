@@ -1,4 +1,4 @@
-language-name = Deutsch
+locale-name = Deutsch
 
 refresh = Aktualisieren
 
