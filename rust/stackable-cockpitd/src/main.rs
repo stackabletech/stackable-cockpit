@@ -12,8 +12,8 @@ use stackable_cockpitd::{
     api_doc, handlers,
     middleware::{self, authentication::Authenticator},
 };
-use tracing::{info, metadata::LevelFilter};
-use tracing_subscriber::fmt;
+use tracing::info;
+use tracing_subscriber::{fmt, EnvFilter};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::cli::Cli;
@@ -32,7 +32,7 @@ async fn main() -> Result<(), Whatever> {
         .without_time();
 
     tracing_subscriber::fmt()
-        .with_max_level(LevelFilter::INFO)
+        .with_env_filter(EnvFilter::from_default_env())
         .event_format(format)
         .pretty()
         .init();
