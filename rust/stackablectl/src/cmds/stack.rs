@@ -16,7 +16,10 @@ use stackable_cockpit::{
     xfer::{FileTransferClient, FileTransferError},
 };
 
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::{
+    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
+    cli::{CacheSettingsError, Cli, OutputType},
+};
 
 #[derive(Debug, Args)]
 pub struct StackArgs {
@@ -60,11 +63,11 @@ pub struct StackInstallArgs {
     stack_name: String,
 
     /// List of parameters to use when installing the stack
-    #[arg(short, long)]
+    #[arg(long)]
     stack_parameters: Vec<String>,
 
     /// List of parameters to use when installing the stack
-    #[arg(short, long)]
+    #[arg(long)]
     #[arg(long_help = "List of parameters to use when installing the stack
 
 All parameters must have the format '<parameter>=<value>'. Multiple parameters
@@ -79,6 +82,9 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
+
+    #[command(flatten)]
+    namespace: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -231,14 +237,14 @@ async fn install_cmd(
         Some(stack_spec) => {
             // Install the stack
             stack_spec
-                .install(release_list, &common_args.operator_namespace)
+                .install(release_list, &args.namespace.operator_namespace)
                 .context(StackSnafu)?;
 
             // Install stack manifests
             stack_spec
                 .install_stack_manifests(
                     &args.stack_parameters,
-                    &common_args.operator_namespace,
+                    &args.namespace.operator_namespace,
                     transfer_client,
                 )
                 .await

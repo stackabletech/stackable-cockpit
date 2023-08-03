@@ -3,8 +3,9 @@ use std::time::Duration;
 pub const REDACTED_PASSWORD: &str = "<redacted>";
 pub const PASSWORD_LEN: usize = 32;
 
-pub const DEFAULT_STACKABLE_NAMESPACE: &str = "stackable";
-pub const DEFAULT_NAMESPACE: &str = "default";
+pub const DEFAULT_OPERATOR_NAMESPACE: &str = "stackable-operators";
+// TODO (Techassi): Change this to "stackable-demos" once we switch to this version
+pub const DEFAULT_PRODUCT_NAMESPACE: &str = "default";
 
 pub const DEFAULT_LOCAL_CLUSTER_NAME: &str = "stackable-data-platform";
 

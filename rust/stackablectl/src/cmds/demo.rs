@@ -17,7 +17,10 @@ use stackable_cockpit::{
 };
 use tracing::{debug, info, instrument};
 
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::{
+    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
+    cli::{CacheSettingsError, Cli, OutputType},
+};
 
 #[derive(Debug, Args)]
 pub struct DemoArgs {
@@ -77,15 +80,18 @@ Use \"stackablectl demo describe <DEMO>\" to display details about the specified
     demo_name: String,
 
     /// List of parameters to use when installing the stack
-    #[arg(short, long)]
+    #[arg(long)]
     stack_parameters: Vec<String>,
 
     /// List of parameters to use when installing the demo
-    #[arg(short, long)]
+    #[arg(long)]
     parameters: Vec<String>,
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
+
+    #[command(flatten)]
+    namespace: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Args)]
@@ -267,14 +273,14 @@ async fn install_cmd(
 
     // Install the stack
     stack_spec
-        .install(release_list, &common_args.operator_namespace)
+        .install(release_list, &args.namespace.product_namespace)
         .context(StackSnafu)?;
 
     // Install stack manifests
     stack_spec
         .install_stack_manifests(
             &args.stack_parameters,
-            &common_args.operator_namespace,
+            &args.namespace.product_namespace,
             transfer_client,
         )
         .await
@@ -286,7 +292,7 @@ async fn install_cmd(
             &demo_spec.manifests,
             &demo_spec.parameters,
             &args.parameters,
-            &common_args.operator_namespace,
+            &args.namespace.product_namespace,
             transfer_client,
         )
         .await
