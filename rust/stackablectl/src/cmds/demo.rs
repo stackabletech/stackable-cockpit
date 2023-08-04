@@ -7,8 +7,10 @@ use snafu::{ResultExt, Snafu};
 
 use stackable_cockpit::{
     common::ListError,
+    constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
         demo::DemoList,
+        namespace,
         release::ReleaseList,
         stack::{StackError, StackList},
     },
@@ -41,8 +43,6 @@ pub enum DemoCommands {
     /// Install a specific demo
     #[command(aliases(["i", "in"]))]
     Install(DemoInstallArgs),
-    // #[command(aliases(["rm", "un"]))]
-    // Uninstall(DemoUninstallArgs),
 }
 
 #[derive(Debug, Args)]
@@ -91,7 +91,7 @@ Use \"stackablectl demo describe <DEMO>\" to display details about the specified
     local_cluster: CommonClusterArgs,
 
     #[command(flatten)]
-    namespace: CommonNamespaceArgs,
+    namespaces: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Args)]
@@ -271,18 +271,29 @@ async fn install_cmd(
         .await
         .context(CommonClusterArgsSnafu)?;
 
+    let operator_namespace = args
+        .namespaces
+        .operator_namespace
+        .clone()
+        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
+
+    let product_namespace = args
+        .namespaces
+        .product_namespace
+        .clone()
+        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+
+    let namespaces = namespace::list().await;
+    println!("{:?}", namespaces);
+
     // Install the stack
     stack_spec
-        .install(release_list, &args.namespace.product_namespace)
+        .install(release_list, &operator_namespace)
         .context(StackSnafu)?;
 
     // Install stack manifests
     stack_spec
-        .install_stack_manifests(
-            &args.stack_parameters,
-            &args.namespace.product_namespace,
-            transfer_client,
-        )
+        .install_stack_manifests(&args.stack_parameters, &product_namespace, transfer_client)
         .await
         .context(StackSnafu)?;
 
@@ -292,7 +303,7 @@ async fn install_cmd(
             &demo_spec.manifests,
             &demo_spec.parameters,
             &args.parameters,
-            &args.namespace.product_namespace,
+            &product_namespace,
             transfer_client,
         )
         .await

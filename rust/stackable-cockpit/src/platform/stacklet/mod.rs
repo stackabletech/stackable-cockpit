@@ -60,6 +60,7 @@ pub async fn list(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletErro
     stacklets.extend(minio::list(&kube_client, namespace).await?);
     stacklets.extend(opensearch::list(&kube_client, namespace).await?);
     stacklets.extend(prometheus::list(&kube_client, namespace).await?);
+
     Ok(stacklets)
 }
 

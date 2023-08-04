@@ -4,7 +4,7 @@ use bcrypt::DEFAULT_COST;
 use rand::distributions::{Alphanumeric, DistString};
 use tera::{Context, Function, Tera, Value};
 
-use crate::constants::PASSWORD_LEN;
+use crate::constants::PASSWORD_LENGTH;
 
 pub fn render(content: &str, parameters: &HashMap<String, String>) -> Result<String, tera::Error> {
     // Create templating context
@@ -21,7 +21,7 @@ pub fn render(content: &str, parameters: &HashMap<String, String>) -> Result<Str
 
 fn random_password() -> impl Function {
     |_args: &HashMap<String, Value>| -> tera::Result<Value> {
-        let password = Alphanumeric.sample_string(&mut rand::thread_rng(), PASSWORD_LEN);
+        let password = Alphanumeric.sample_string(&mut rand::thread_rng(), PASSWORD_LENGTH);
         Ok(password.into())
     }
 }

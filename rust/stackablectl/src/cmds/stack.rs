@@ -8,6 +8,7 @@ use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::ListError,
+    constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
         release::ReleaseList,
         stack::{StackError, StackList},
@@ -84,7 +85,7 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
     local_cluster: CommonClusterArgs,
 
     #[command(flatten)]
-    namespace: CommonNamespaceArgs,
+    namespaces: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -233,24 +234,53 @@ async fn install_cmd(
         .await
         .context(CommonClusterArgsSnafu)?;
 
+    let operator_namespace = args
+        .namespaces
+        .operator_namespace
+        .clone()
+        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
+
+    let product_namespace = args
+        .namespaces
+        .product_namespace
+        .clone()
+        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             // Install the stack
             stack_spec
-                .install(release_list, &args.namespace.operator_namespace)
+                .install(release_list, &operator_namespace)
                 .context(StackSnafu)?;
 
             // Install stack manifests
             stack_spec
                 .install_stack_manifests(
                     &args.stack_parameters,
-                    &args.namespace.operator_namespace,
+                    &product_namespace,
                     transfer_client,
                 )
                 .await
                 .context(StackSnafu)?;
 
-            Ok(format!("Install stack {}", args.stack_name))
+            let output = format!(
+                "Installed stack {}\n\n\
+            Use \"stackablectl operator installed{}\" to display the installed operators\n\
+            Use \"stackablectl stacklet list{}\" to display the installed stacklets",
+                args.stack_name,
+                if args.namespaces.operator_namespace.is_some() {
+                    format!(" --operator-namespace {}", operator_namespace)
+                } else {
+                    "".into()
+                },
+                if args.namespaces.product_namespace.is_some() {
+                    format!(" --product-namespace {}", product_namespace)
+                } else {
+                    "".into()
+                }
+            );
+
+            Ok(output)
         }
         None => Ok("No such stack".into()),
     }

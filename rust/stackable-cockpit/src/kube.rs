@@ -3,7 +3,7 @@ use std::string::FromUtf8Error;
 use k8s_openapi::{
     api::{
         apps::v1::{Deployment, DeploymentCondition, StatefulSet, StatefulSetCondition},
-        core::v1::{Secret, Service},
+        core::v1::{Namespace, Secret, Service},
     },
     apimachinery::pkg::apis::meta::v1::Condition,
 };
@@ -21,6 +21,9 @@ use stackable_operator::status::condition::ClusterCondition;
 use utoipa::ToSchema;
 
 use crate::constants::REDACTED_PASSWORD;
+
+pub type ListResult<T, E = KubeClientError> = Result<ObjectList<T>, E>;
+pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum KubeClientError {
@@ -60,7 +63,7 @@ pub struct KubeClient {
 impl KubeClient {
     /// Tries to create a new default Kubernetes client and immediately runs
     /// a discovery.
-    pub async fn new() -> Result<Self, KubeClientError> {
+    pub async fn new() -> Result<Self> {
         let client = Client::try_default().await.context(KubeSnafu)?;
         let discovery = Discovery::new(client.clone())
             .run()
@@ -73,11 +76,7 @@ impl KubeClient {
     /// Deploys manifests defined the in raw `manifests` YAML string. This
     /// method will fail if it is unable to parse the manifests, unable to
     /// resolve GVKs or unable to patch the dynamic objects.
-    pub async fn deploy_manifests(
-        &self,
-        manifests: &str,
-        namespace: &str,
-    ) -> Result<(), KubeClientError> {
+    pub async fn deploy_manifests(&self, manifests: &str, namespace: &str) -> Result<()> {
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
             let mut object = DynamicObject::deserialize(manifest).context(YamlSnafu)?;
             let object_type = object.types.as_ref().ok_or(
@@ -154,7 +153,7 @@ impl KubeClient {
         &self,
         namespace: Option<&str>,
         list_params: &ListParams,
-    ) -> Result<ObjectList<Service>, KubeClientError> {
+    ) -> ListResult<Service> {
         let service_api: Api<Service> = match namespace {
             Some(namespace) => Api::namespaced(self.client.clone(), namespace),
             None => Api::all(self.client.clone()),
@@ -174,7 +173,7 @@ impl KubeClient {
         secret_namespace: &str,
         username_key: &str,
         password_key: Option<&str>,
-    ) -> Result<Option<(String, String)>, KubeClientError> {
+    ) -> Result<Option<(String, String)>> {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
         let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
@@ -204,7 +203,7 @@ impl KubeClient {
         &self,
         namespace: Option<&str>,
         list_params: &ListParams,
-    ) -> Result<ObjectList<Deployment>, KubeClientError> {
+    ) -> ListResult<Deployment> {
         let deployment_api: Api<Deployment> = match namespace {
             Some(namespace) => Api::namespaced(self.client.clone(), namespace),
             None => Api::all(self.client.clone()),
@@ -219,7 +218,7 @@ impl KubeClient {
         &self,
         namespace: Option<&str>,
         list_params: &ListParams,
-    ) -> Result<ObjectList<StatefulSet>, KubeClientError> {
+    ) -> ListResult<StatefulSet> {
         let stateful_set_api: Api<StatefulSet> = match namespace {
             Some(namespace) => Api::namespaced(self.client.clone(), namespace),
             None => Api::all(self.client.clone()),
@@ -231,6 +230,16 @@ impl KubeClient {
             .context(KubeSnafu)?;
 
         Ok(stateful_sets)
+    }
+
+    pub async fn list_namespaces(&self) -> ListResult<Namespace> {
+        let namespace_api: Api<Namespace> = Api::all(self.client.clone());
+        let namespaces = namespace_api
+            .list(&ListParams::default())
+            .await
+            .context(KubeSnafu)?;
+
+        Ok(namespaces)
     }
 
     /// Extracts the GVK from [`TypeMeta`].

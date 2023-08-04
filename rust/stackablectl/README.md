@@ -78,6 +78,8 @@ File options:
 
 Helm repository options:
       --helm-repo-stable <URL>
+          Provide a custom Helm stable repository URL
+
           [default: https://repo.stackable.tech/repository/helm-stable/]
 
       --helm-repo-test <URL>

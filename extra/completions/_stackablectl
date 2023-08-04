@@ -23,7 +23,7 @@ _stackablectl() {
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -51,7 +51,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -86,7 +86,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -113,7 +113,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -127,8 +127,8 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
@@ -144,7 +144,7 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -158,8 +158,8 @@ minikube\:"Use a minikube cluster"))' \
 ;;
 (uninstall)
 _arguments "${_arguments_options[@]}" \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -168,7 +168,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -188,8 +188,8 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -198,7 +198,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -263,7 +263,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -298,7 +298,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -325,7 +325,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -343,8 +343,8 @@ _arguments "${_arguments_options[@]}" \
 '*--include=[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
 '*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
 '*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
@@ -360,7 +360,7 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -374,8 +374,8 @@ minikube\:"Use a minikube cluster"))' \
 ;;
 (uninstall)
 _arguments "${_arguments_options[@]}" \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -384,7 +384,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -446,7 +446,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -481,7 +481,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -508,7 +508,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -531,9 +531,11 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -542,7 +544,7 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -600,7 +602,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -627,9 +629,11 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -638,11 +642,9 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
-'-a[Will display services of all namespaces, not only the current one]' \
-'--all-namespaces[Will display services of all namespaces, not only the current one]' \
 '-c[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
 '--color[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -691,7 +693,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -726,7 +728,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -753,7 +755,7 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -776,9 +778,11 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
-'-n+[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -787,7 +791,7 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -845,7 +849,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -874,7 +878,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -895,7 +899,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -916,7 +920,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -973,7 +977,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -1002,7 +1006,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -1023,7 +1027,7 @@ _arguments "${_arguments_options[@]}" \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
-'--helm-repo-stable=[]:URL:_urls' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \

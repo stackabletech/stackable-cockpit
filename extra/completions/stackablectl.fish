@@ -2,7 +2,7 @@ complete -c stackablectl -n "__fish_use_subcommand" -s l -l log-level -d 'Log le
 complete -c stackablectl -n "__fish_use_subcommand" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_use_subcommand" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_use_subcommand" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_use_subcommand" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -21,7 +21,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fis
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from installed; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -39,7 +39,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_se
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -51,14 +51,14 @@ complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_se
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l operator-namespace -l operator-ns -d 'Namespace in the cluster used to deploy the operators' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>,minikube	Use a minikube cluster}"
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
@@ -67,19 +67,19 @@ complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_se
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -l operator-namespace -l operator-ns -d 'Namespace in the cluster used to deploy the operators' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -87,12 +87,12 @@ complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_se
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from uninstall" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -s o -l output -r -f -a "{plain	Print output formatted as plain text,json	Print output formatted as JSON,yaml	Print output formatted as YAML}"
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -l operator-namespace -l operator-ns -d 'Namespace in the cluster used to deploy the operators' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from operator; and __fish_seen_subcommand_from installed" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -109,7 +109,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from uninstall; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -126,7 +126,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_see
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -138,7 +138,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_see
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -147,7 +147,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_see
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s i -l include -d 'Whitelist of product operators to install' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s e -l exclude -d 'Blacklist of product operators to install' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l operator-namespace -l operator-ns -d 'Namespace in the cluster used to deploy the operators' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s c -l cluster -d 'Type of local cluster to use for testing' -r -f -a "{kind	Use a kind cluster\, see <https://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>,minikube	Use a minikube cluster}"
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
@@ -156,19 +156,19 @@ complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_see
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -l operator-namespace -l operator-ns -d 'Namespace in the cluster used to deploy the operators' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from release; and __fish_seen_subcommand_from uninstall" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -184,7 +184,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_s
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -200,7 +200,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -212,7 +212,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -225,13 +225,13 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l cluster-cp-nodes -d 'Number of control plane nodes in the local cluster' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l product-namespace -d 'Namespace in the cluster used to deploy the products' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s n -l product-namespace -l product-ns -d 'Namespace where the products (e.g. stacks or demos) are deployed' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stack; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -246,7 +246,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fi
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -256,16 +256,15 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fi
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -f -a "list" -d 'List deployed services'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "{plain	Print output formatted as plain text,json	Print output formatted as JSON,yaml	Print output formatted as YAML}"
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l product-namespace -d 'Namespace in the cluster used to deploy the products' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s n -l product-namespace -l product-ns -d 'Namespace where the products (e.g. stacks or demos) are deployed' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s a -l all-namespaces -d 'Will display services of all namespaces, not only the current one'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -s c -l color -d 'Controls if the output will use color. This only applies to the output type \'plain\''
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklets; and __fish_seen_subcommand_from list" -l offline -d 'Do not request any remote files via the network'
@@ -277,7 +276,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_se
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from describe; and not __fish_seen_subcommand_from install; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -293,7 +292,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_s
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -305,7 +304,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_s
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -318,13 +317,13 @@ complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_s
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-name -d 'Name of the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l cluster-cp-nodes -d 'Number of control plane nodes in the local cluster' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s n -l operator-namespace -d 'Namespace in the cluster used to deploy the operators' -r
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l product-namespace -d 'Namespace in the cluster used to deploy the products' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s n -l product-namespace -l product-ns -d 'Namespace where the products (e.g. stacks or demos) are deployed' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from demo; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -339,7 +338,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and not __fish_seen_subcommand_from bash; and not __fish_seen_subcommand_from fish; and not __fish_seen_subcommand_from zsh; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -354,7 +353,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from bash" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -365,7 +364,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from fish" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -376,7 +375,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from completions; and __fish_seen_subcommand_from zsh" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -391,7 +390,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_s
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -405,7 +404,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
@@ -416,7 +415,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -l helm-repo-stable -r -f
+complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'

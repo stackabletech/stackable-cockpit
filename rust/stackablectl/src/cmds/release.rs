@@ -74,7 +74,7 @@ pub struct ReleaseInstallArgs {
     excluded_products: Vec<String>,
 
     /// Namespace in the cluster used to deploy the operators
-    #[arg(short = 'n', long, default_value = DEFAULT_OPERATOR_NAMESPACE)]
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
     pub operator_namespace: String,
 
     #[command(flatten)]
@@ -88,7 +88,7 @@ pub struct ReleaseUninstallArgs {
     release: String,
 
     /// Namespace in the cluster used to deploy the operators
-    #[arg(short = 'n', long, default_value = DEFAULT_OPERATOR_NAMESPACE)]
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
     pub operator_namespace: String,
 }
 
