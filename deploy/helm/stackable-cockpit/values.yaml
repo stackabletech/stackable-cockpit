@@ -54,6 +54,9 @@ tolerations: []
 
 affinity: {}
 
+service:
+  type: ClusterIP
+
 # CHANGE ME BEFORE DEPLOYING
 # default: admin:changeme
 htpasswd: |
