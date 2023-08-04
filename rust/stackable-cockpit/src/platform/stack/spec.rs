@@ -98,8 +98,18 @@ pub struct StackSpecV2 {
 
 impl StackSpecV2 {
     #[instrument(skip_all)]
-    pub fn install(&self, release_list: ReleaseList, namespace: &str) -> Result<(), StackError> {
+    pub fn install(
+        &self,
+        release_list: ReleaseList,
+        namespace: &str,
+        skip_release_install: bool,
+    ) -> Result<(), StackError> {
         info!("Installing stack");
+
+        if skip_release_install {
+            info!("Skipping release install during stack install process");
+            return Ok(());
+        }
 
         // Get the release by name
         let release = release_list

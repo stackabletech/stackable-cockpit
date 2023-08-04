@@ -547,6 +547,7 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--skip-release[Skip the installation of the release during the stack install process]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -794,6 +795,7 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--skip-release[Skip the installation of the release during the stack install process]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \

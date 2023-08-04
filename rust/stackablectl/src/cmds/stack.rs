@@ -63,6 +63,19 @@ pub struct StackInstallArgs {
     /// Name of the stack to describe
     stack_name: String,
 
+    /// Skip the installation of the release during the stack install process
+    #[arg(
+        long,
+        long_help = "Skip the installation of the release during the stack install process
+
+Use \"stackablectl operator install [OPTIONS] <OPERATORS>...\" to install
+required operators manually. Operators MUST be installed in the correct version.
+
+Use \"stackablectl operator install --help\" to display more information on how
+to specify operator versions."
+    )]
+    skip_release: bool,
+
     /// List of parameters to use when installing the stack
     #[arg(long)]
     stack_parameters: Vec<String>,
@@ -250,7 +263,7 @@ async fn install_cmd(
         Some(stack_spec) => {
             // Install the stack
             stack_spec
-                .install(release_list, &operator_namespace)
+                .install(release_list, &operator_namespace, args.skip_release)
                 .context(StackSnafu)?;
 
             // Install stack manifests

@@ -80,6 +80,19 @@ Use \"stackablectl demo describe <DEMO>\" to display details about the specified
     )]
     demo_name: String,
 
+    /// Skip the installation of the release during the stack install process
+    #[arg(
+        long,
+        long_help = "Skip the installation of the release during the stack install process
+
+Use \"stackablectl operator install [OPTIONS] <OPERATORS>...\" to install
+required operators manually. Operators MUST be installed in the correct version.
+
+Use \"stackablectl operator install --help\" to display more information on how
+to specify operator versions."
+    )]
+    skip_release: bool,
+
     /// List of parameters to use when installing the stack
     #[arg(long)]
     stack_parameters: Vec<String>,
@@ -297,7 +310,7 @@ async fn install_cmd(
 
     // Install the stack
     stack_spec
-        .install(release_list, &operator_namespace)
+        .install(release_list, &operator_namespace, args.skip_release)
         .context(StackSnafu)?;
 
     // Install stack manifests
@@ -318,5 +331,22 @@ async fn install_cmd(
         .await
         .context(StackSnafu)?;
 
-    Ok("".into())
+    let output = format!(
+        "Installed demo {}\n\n\
+        Use \"stackablectl operator installed{}\" to display the installed operators\n\
+        Use \"stackablectl stacklet list{}\" to display the installed stacklets",
+        args.demo_name,
+        if args.namespaces.operator_namespace.is_some() {
+            format!(" --operator-namespace {}", operator_namespace)
+        } else {
+            "".into()
+        },
+        if args.namespaces.product_namespace.is_some() {
+            format!(" --product-namespace {}", product_namespace)
+        } else {
+            "".into()
+        }
+    );
+
+    Ok(output)
 }

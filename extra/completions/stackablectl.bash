@@ -1082,7 +1082,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__install)
-            opts="-c -n -l -d -s -r -h -V --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2824,7 +2824,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-c -n -l -d -s -r -h -V --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
