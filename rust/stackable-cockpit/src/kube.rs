@@ -8,8 +8,8 @@ use k8s_openapi::{
     apimachinery::pkg::apis::meta::v1::Condition,
 };
 use kube::{
-    api::{ListParams, Patch, PatchParams},
-    core::{DynamicObject, GroupVersionKind, ObjectList, TypeMeta},
+    api::{ListParams, Patch, PatchParams, PostParams},
+    core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
     discovery::Scope,
     Api, Client, Discovery, ResourceExt,
 };
@@ -114,7 +114,7 @@ impl KubeClient {
         Ok(())
     }
 
-    /// List objects by looking up a GVK via the discovery. It returns an
+    /// Lists objects by looking up a GVK via the discovery. It returns an
     /// optional list of dynamic objects. The method returns [`Ok(None)`]
     /// if the client was unable to resolve the GVK. An error is returned
     /// when the client failed to list the objects.
@@ -145,7 +145,7 @@ impl KubeClient {
         Ok(Some(objects))
     }
 
-    /// List services by matching labels. The services can me matched by the
+    /// Lists services by matching labels. The services can be matched by the
     /// product labels. [`ListParamsExt`] provides a utility function to
     /// create [`ListParams`] based on a product name and optional instance
     /// name.
@@ -199,6 +199,9 @@ impl KubeClient {
         Ok(Some((username, password)))
     }
 
+    /// Lists deployments by matching labels. The services can be matched by the
+    /// app labels. [`ListParamsExt`] provides a utility function to create
+    /// [`ListParams`] based on a app name and other labels.
     pub async fn list_deployments(
         &self,
         namespace: Option<&str>,
@@ -214,6 +217,9 @@ impl KubeClient {
         Ok(deployments)
     }
 
+    /// Lists stateful sets by matching labels. The services can be matched by
+    /// the app labels. [`ListParamsExt`] provides a utility function to create
+    /// [`ListParams`] based on a app name and other labels.
     pub async fn list_stateful_sets(
         &self,
         namespace: Option<&str>,
@@ -232,6 +238,7 @@ impl KubeClient {
         Ok(stateful_sets)
     }
 
+    /// Lists all namespaces present in the cluster.
     pub async fn list_namespaces(&self) -> ListResult<Namespace> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
         let namespaces = namespace_api
@@ -240,6 +247,31 @@ impl KubeClient {
             .context(KubeSnafu)?;
 
         Ok(namespaces)
+    }
+
+    /// Creates a namespace with `name` in the cluster. This method will return
+    /// an error if the namespace already exists. Instead of using this method
+    /// directly, it is advised to use [`namespace::create_if_needed`][1]
+    /// instead.
+    ///
+    /// [1]: crate::platform::namespace
+    pub async fn create_namespace(&self, name: String) -> Result<()> {
+        let namespace_api: Api<Namespace> = Api::all(self.client.clone());
+        namespace_api
+            .create(
+                &PostParams::default(),
+                &Namespace {
+                    metadata: ObjectMeta {
+                        name: Some(name),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )
+            .await
+            .context(KubeSnafu)?;
+
+        Ok(())
     }
 
     /// Extracts the GVK from [`TypeMeta`].

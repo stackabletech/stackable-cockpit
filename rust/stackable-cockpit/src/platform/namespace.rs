@@ -1,15 +1,19 @@
-use crate::kube::KubeClient;
+use crate::kube::{KubeClient, KubeClientError};
 
-pub async fn list() -> Vec<String> {
-    // TODO (Techassi): Remove unwraps
-    let client = KubeClient::new().await.unwrap();
+/// Creates a namespace with `name` if needed (not already present in the
+/// cluster).
+pub async fn create_if_needed(name: String) -> Result<(), KubeClientError> {
+    let client = KubeClient::new().await?;
+    let namespaces = client.list_namespaces().await?;
 
-    let namespaces = client.list_namespaces().await.unwrap();
-    let mut ns = Vec::new();
+    let exists = namespaces.iter().any(|ns| match &ns.metadata.name {
+        Some(ns_name) => ns_name == &name,
+        None => false,
+    });
 
-    for namespace in namespaces {
-        ns.push(namespace.metadata.name.unwrap_or("Unknown".into()))
+    if !exists {
+        client.create_namespace(name).await?
     }
 
-    ns
+    Ok(())
 }

@@ -8,6 +8,7 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     common::ListError,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
+    kube::KubeClientError,
     platform::{
         demo::DemoList,
         namespace,
@@ -126,8 +127,11 @@ pub enum DemoCmdError {
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
 
-    #[snafu(display("transfer error"))]
+    #[snafu(display("file transfer error"))]
     TransferError { source: FileTransferError },
+
+    #[snafu(display("kube client error"))]
+    KubeClientError { source: KubeClientError },
 }
 
 impl DemoArgs {
@@ -277,14 +281,19 @@ async fn install_cmd(
         .clone()
         .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
 
+    namespace::create_if_needed(operator_namespace.clone())
+        .await
+        .context(KubeClientSnafu)?;
+
     let product_namespace = args
         .namespaces
         .product_namespace
         .clone()
         .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
 
-    let namespaces = namespace::list().await;
-    println!("{:?}", namespaces);
+    namespace::create_if_needed(operator_namespace.clone())
+        .await
+        .context(KubeClientSnafu)?;
 
     // Install the stack
     stack_spec
