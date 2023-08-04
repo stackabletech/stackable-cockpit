@@ -14,12 +14,18 @@ rules:
       - watch
   - apiGroups:
       - airflow.stackable.tech
-      - superset.stackable.tech
+      - druid.stackable.tech
+      - hbase.stackable.tech
+      - hdfs.stackable.tech
       - hive.stackable.tech
+      - kafka.stackable.tech
+      - nifi.stackable.tech
       - opa.stackable.tech
-      - secrets.stackable.tech
+      - spark.stackable.tech
       - superset.stackable.tech
       - trino.stackable.tech
+      - zookeeper.stackable.tech
+      - secrets.stackable.tech
       - authentication.stackable.tech
       - s3.stackable.tech
     resources:
