@@ -12,7 +12,7 @@ use stackable_cockpitd::{
     api_doc, handlers,
     middleware::{self, authentication::Authenticator},
 };
-use tracing::info;
+use tracing::{info, metadata::LevelFilter};
 use tracing_subscriber::{fmt, EnvFilter};
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -26,13 +26,13 @@ async fn main() -> Result<(), Whatever> {
     let cli = Cli::parse();
 
     // Construct the tracing subscriber
-    let format = fmt::format()
-        .with_level(false)
-        .with_ansi(true)
-        .without_time();
+    let format = fmt::format().with_ansi(true);
+    let filter = EnvFilter::builder()
+        .with_default_directive(LevelFilter::INFO.into())
+        .from_env_lossy();
 
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::from_default_env())
+        .with_env_filter(filter)
         .event_format(format)
         .pretty()
         .init();
