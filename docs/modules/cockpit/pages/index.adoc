@@ -1,0 +1,3 @@
+= Stackable Cockpit
+
+This is a visual dashboard to monitor and control Stackable Data Platform clusters.
