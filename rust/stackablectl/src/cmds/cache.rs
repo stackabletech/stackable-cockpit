@@ -85,7 +85,7 @@ async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CacheC
     info!("Cleaning cached files");
 
     cache
-        .purge(args.only_remove_old_files)
+        .purge(args.only_remove_old_files.into())
         .await
         .context(CacheSnafu)?;
 

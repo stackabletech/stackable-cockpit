@@ -8,6 +8,7 @@ use std::{
 use sha2::{Digest, Sha256};
 use snafu::{ResultExt, Snafu};
 use tokio::{fs, io};
+use tracing::debug;
 use url::Url;
 
 use crate::constants::{
@@ -111,15 +112,14 @@ impl Cache {
                 while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
                     let metadata = entry.metadata().await.context(CacheIoSnafu)?;
 
-                    // Skip the last-auto-purge file
-                    if metadata.is_file() && is_protected_file(entry.file_name())? {
+                    // Skip protected files
+                    if is_protected_file(entry.file_name())? {
                         continue;
                     }
 
                     files.push((entry.path(), metadata.modified().context(CacheIoSnafu)?))
                 }
 
-                files.sort();
                 Ok(files)
             }
             CacheBackend::Disabled => Ok(vec![]),
@@ -128,7 +128,7 @@ impl Cache {
 
     /// Removes all cached files by deleting the base cache folder and then
     /// recreating it.
-    pub async fn purge(&self, only_old_files: bool) -> Result<()> {
+    pub async fn purge(&self, delete_filter: DeleteFilter) -> Result<()> {
         match &self.backend {
             CacheBackend::Disk { base_path } => {
                 let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
@@ -136,26 +136,26 @@ impl Cache {
                 while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
                     let metadata = entry.metadata().await.context(CacheIoSnafu)?;
 
-                    // Skip the last-auto-purge file
-                    if metadata.is_file() && is_protected_file(entry.file_name())? {
-                        continue;
-                    }
+                    let should_delete_file = match delete_filter {
+                        // Skip the last-auto-purge file
+                        _ if is_protected_file(entry.file_name())? => false,
 
-                    // With --old / --outdated
-                    if only_old_files
-                        && metadata
-                            .modified()
-                            .context(CacheIoSnafu)?
-                            .elapsed()
-                            .context(SystemTimeSnafu)?
-                            > self.max_age
-                    {
+                        // Without --old / --outdated
+                        DeleteFilter::All => true,
+                        // with --old/--outdated
+                        DeleteFilter::OnlyExpired => {
+                            metadata
+                                .modified()
+                                .context(CacheIoSnafu)?
+                                .elapsed()
+                                .context(SystemTimeSnafu)?
+                                > self.max_age
+                        }
+                    };
+
+                    if should_delete_file {
                         fs::remove_file(entry.path()).await.context(CacheIoSnafu)?;
-                        continue;
                     }
-
-                    // Without --old / --outdated
-                    fs::remove_file(entry.path()).await.context(CacheIoSnafu)?;
                 }
 
                 Ok(())
@@ -176,7 +176,9 @@ impl Cache {
                 let timestamp = UNIX_EPOCH + Duration::from_secs(timestamp);
 
                 if timestamp.elapsed().context(SystemTimeSnafu)? >= self.auto_purge_interval {
-                    self.purge(true).await?;
+                    debug!("Auto-purging outdated cache files");
+
+                    self.purge(DeleteFilter::OnlyExpired).await?;
                     write_cache_auto_purge_file(cache_auto_purge_filepath).await?;
                 }
 
@@ -289,6 +291,21 @@ impl CacheSettings {
 pub enum CacheBackend {
     Disk { base_path: PathBuf },
     Disabled,
+}
+
+pub enum DeleteFilter {
+    All,
+    OnlyExpired,
+}
+
+impl From<bool> for DeleteFilter {
+    fn from(value: bool) -> Self {
+        if value {
+            Self::OnlyExpired
+        } else {
+            Self::All
+        }
+    }
 }
 
 async fn write_cache_auto_purge_file(path: PathBuf) -> Result<()> {
