@@ -159,6 +159,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_s
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -l old -l outdated -d 'Only remove outdated files in the cache'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s h -l help -d 'Print help'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from clean" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from help; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "list" -d 'List cached files'
