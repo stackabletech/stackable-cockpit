@@ -298,9 +298,12 @@ pub enum DeleteFilter {
     OnlyExpired,
 }
 
-impl From<bool> for DeleteFilter {
-    fn from(value: bool) -> Self {
-        if value {
+impl DeleteFilter {
+    /// Create a [`DeleteFilter`] based on the provided boolean value. Returns
+    /// [`DeleteFilter::OnlyExpired`] when `only_expired` is `true`, otherwise
+    /// [`DeleteFilter::All`].
+    pub fn from_bool(only_expired: bool) -> Self {
+        if only_expired {
             Self::OnlyExpired
         } else {
             Self::All

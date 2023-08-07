@@ -3,7 +3,7 @@ use std::time::Duration;
 use clap::{Args, Subcommand};
 use comfy_table::{presets::UTF8_FULL, ColumnConstraint, Table, Width};
 use snafu::{ResultExt, Snafu};
-use stackable_cockpit::xfer::cache::{self, Cache};
+use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
 use tracing::{info, instrument};
 
 use crate::cli::CacheSettingsError;
@@ -85,7 +85,7 @@ async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CacheC
     info!("Cleaning cached files");
 
     cache
-        .purge(args.only_remove_old_files.into())
+        .purge(DeleteFilter::from_bool(args.only_remove_old_files))
         .await
         .context(CacheSnafu)?;
 
