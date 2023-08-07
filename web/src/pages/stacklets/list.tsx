@@ -2,6 +2,7 @@ import { For, createResource } from 'solid-js';
 import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
 import styles from './list.module.css';
+import { translate } from '../../localization';
 
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
@@ -11,22 +12,22 @@ export const Stacklets = () => {
         items={stacklets() || []}
         columns={[
           {
-            label: 'Product',
+            label: translate('stacklet--product'),
             get: (x) => x.product,
             sortBy: (x) => x.product,
           },
           {
-            label: 'Namespace',
+            label: translate('stacklet--namespace'),
             get: (x) => x.namespace || '(Cluster-scoped)',
             sortBy: (x) => x.namespace || '',
           },
           {
-            label: 'Name',
+            label: translate('stacklet--name'),
             get: (x) => x.name,
             sortBy: (x) => x.name,
           },
           {
-            label: 'Status',
+            label: translate('stacklet--status'),
             get: (x) => <StackletConditions conditions={x.conditions} />,
           },
           /* {
@@ -41,7 +42,7 @@ export const Stacklets = () => {
         extraButtons={
           <>
             {/* <ButtonLink href='/stacklets/add' role='primary'>
-              <AddSymbol /> Add stacklet
+              <AddSymbol /> {translate('stacklet--add')}
             </ButtonLink> */}
           </>
         }
