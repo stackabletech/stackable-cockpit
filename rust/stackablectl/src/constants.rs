@@ -11,6 +11,8 @@ pub const REMOTE_STACK_FILE: &str =
 pub const REMOTE_RELEASE_FILE: &str =
     "https://raw.githubusercontent.com/stackabletech/release/main/releases.yaml";
 
+pub const HELM_REPO_URL_MULTIARCH: &str =
+    "https://repo.stackable.tech/repository/helm-experimental/";
 pub const HELM_REPO_URL_STABLE: &str = "https://repo.stackable.tech/repository/helm-stable/";
 pub const HELM_REPO_URL_TEST: &str = "https://repo.stackable.tech/repository/helm-test/";
 pub const HELM_REPO_URL_DEV: &str = "https://repo.stackable.tech/repository/helm-dev/";

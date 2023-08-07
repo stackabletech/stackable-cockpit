@@ -89,6 +89,11 @@ Options:
 
           [default: https://repo.stackable.tech/repository/helm-dev/]
 
+      --helm-repo-multiarch <URL>
+          Provide a custom Helm multiarch repository URL
+
+          [default: https://repo.stackable.tech/repository/helm-experimental/]
+
   -h, --help
           Print help (see a summary with '-h')
 

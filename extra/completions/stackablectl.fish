@@ -6,6 +6,7 @@ complete -c stackablectl -n "__fish_use_subcommand" -s r -l release-file -d 'Pro
 complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_use_subcommand" -l helm-repo-multiarch -d 'Provide a custom Helm multiarch repository URL' -r -f
 complete -c stackablectl -n "__fish_use_subcommand" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_use_subcommand" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_use_subcommand" -s h -l help -d 'Print help (see more with \'--help\')'

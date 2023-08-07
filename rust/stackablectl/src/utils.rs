@@ -2,10 +2,12 @@ use std::env;
 
 use snafu::Snafu;
 use stackable_cockpit::constants::{
-    HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    HELM_REPO_NAME_DEV, HELM_REPO_NAME_MULTIARCH, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
 };
 
-use crate::constants::{HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST};
+use crate::constants::{
+    HELM_REPO_URL_DEV, HELM_REPO_URL_MULTIARCH, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST,
+};
 
 #[derive(Debug, Snafu)]
 #[snafu(display("Invalid Helm repo name ({name}), cannot resolve to repo URL"))]
@@ -23,6 +25,7 @@ where
     let repo_name = repo_name.as_ref();
 
     match repo_name {
+        HELM_REPO_NAME_MULTIARCH => Ok(HELM_REPO_URL_MULTIARCH),
         HELM_REPO_NAME_STABLE => Ok(HELM_REPO_URL_STABLE),
         HELM_REPO_NAME_TEST => Ok(HELM_REPO_URL_TEST),
         HELM_REPO_NAME_DEV => Ok(HELM_REPO_URL_DEV),

@@ -6,7 +6,8 @@ use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
     constants::{
-        DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+        DEFAULT_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_MULTIARCH, HELM_REPO_NAME_STABLE,
+        HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError},
     utils::path::{
@@ -22,8 +23,8 @@ use crate::{
     },
     constants::{
         CACHE_HOME_PATH, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
-        HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST, REMOTE_DEMO_FILE,
-        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
+        HELM_REPO_URL_DEV, HELM_REPO_URL_MULTIARCH, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST,
+        REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
     },
 };
 
@@ -108,6 +109,10 @@ to provide multiple additional release files.")]
     #[arg(long, value_name = "URL", value_hint = ValueHint::Url, default_value = HELM_REPO_URL_DEV)]
     pub helm_repo_dev: String,
 
+    /// Provide a custom Helm multiarch repository URL
+    #[arg(long, value_name = "URL", value_hint = ValueHint::Url, default_value = HELM_REPO_URL_MULTIARCH)]
+    pub helm_repo_multiarch: String,
+
     #[command(subcommand)]
     pub subcommand: Commands,
 }
@@ -181,6 +186,9 @@ impl Cli {
 
         // Dev repository
         helm::add_repo(HELM_REPO_NAME_DEV, &self.helm_repo_dev)?;
+
+        // Multiarch repository
+        helm::add_repo(HELM_REPO_NAME_MULTIARCH, &self.helm_repo_multiarch)?;
 
         Ok(())
     }
