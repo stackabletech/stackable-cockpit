@@ -283,7 +283,7 @@ async fn install_cmd(
         .clone()
         .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
 
-    namespace::create_if_needed(operator_namespace.clone())
+    namespace::create_if_needed(product_namespace.clone())
         .await
         .context(KubeClientSnafu)?;
 
