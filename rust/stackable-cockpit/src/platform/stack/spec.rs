@@ -65,6 +65,12 @@ pub enum StackError {
 
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
+
+    #[snafu(display("cannot install stack in namespace '{requested}', only {} supported", supported.join(", ")))]
+    UnsupportedNamespace {
+        requested: String,
+        supported: Vec<String>,
+    },
 }
 
 /// This struct describes a stack with the v2 spec
@@ -78,6 +84,11 @@ pub struct StackSpecV2 {
     /// The release used by the stack, e.g. 23.4
     #[serde(rename = "stackableRelease")]
     pub release: String,
+
+    /// Supported namespaces this stack can run in. An empty list indicates that
+    /// the stack can run in any namespace.
+    #[serde(default)]
+    pub supported_namespaces: Vec<String>,
 
     /// A variable number of operators
     #[serde(rename = "stackableOperators")]
@@ -109,6 +120,17 @@ impl StackSpecV2 {
         if skip_release_install {
             info!("Skipping release installation during stack installation process");
             return Ok(());
+        }
+
+        // Returns an error if the stack doesn't support to be installed in the
+        // requested namespace
+        if !self.supported_namespaces.is_empty()
+            && !self.supported_namespaces.contains(&namespace.to_string())
+        {
+            return Err(StackError::UnsupportedNamespace {
+                supported: self.supported_namespaces.clone(),
+                requested: namespace.to_string(),
+            });
         }
 
         // Get the release by name

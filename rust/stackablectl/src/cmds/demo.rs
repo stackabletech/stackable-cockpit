@@ -4,21 +4,21 @@ use comfy_table::{
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
+use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::ListError,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     kube::KubeClientError,
     platform::{
-        demo::DemoList,
+        demo::{DemoError, DemoList},
         namespace,
         release::ReleaseList,
-        stack::{StackError, StackList},
+        stack::StackList,
     },
     utils::path::PathOrUrlParseError,
     xfer::{FileTransferClient, FileTransferError},
 };
-use tracing::{debug, info, instrument};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -128,8 +128,8 @@ pub enum DemoCmdError {
     #[snafu(display("list error"))]
     ListError { source: ListError },
 
-    #[snafu(display("stack error"))]
-    StackError { source: StackError },
+    #[snafu(display("demo error"))]
+    DemoError { source: DemoError },
 
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
@@ -248,32 +248,16 @@ async fn install_cmd(
 ) -> Result<String, DemoCmdError> {
     info!("Installing demo {}", args.demo_name);
 
-    // Get the demo spec by name from the list
     let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
 
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
-
-    // Build demo list based on the (default) remote demo file, and additional files provided by the
-    // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
+    // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
-
     let stack_list = StackList::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 
-    // Get the stack spec based on the name defined in the demo spec
-    let stack_spec = stack_list
-        .get(&demo_spec.stack)
-        .ok_or(DemoCmdError::NoSuchStack {
-            name: demo_spec.stack.clone(),
-        })?;
-
-    // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = common_args
         .get_release_files()
         .context(PathOrUrlParseSnafu)?;
@@ -308,28 +292,19 @@ async fn install_cmd(
         .await
         .context(KubeClientSnafu)?;
 
-    // Install the stack
-    stack_spec
-        .install(release_list, &operator_namespace, args.skip_release)
-        .context(StackSnafu)?;
-
-    // Install stack manifests
-    stack_spec
-        .install_stack_manifests(&args.stack_parameters, &product_namespace, transfer_client)
-        .await
-        .context(StackSnafu)?;
-
-    // Install demo manifests
-    stack_spec
-        .install_demo_manifests(
-            &demo_spec.manifests,
-            &demo_spec.parameters,
-            &args.parameters,
+    demo_spec
+        .install(
+            stack_list,
+            release_list,
+            &operator_namespace,
             &product_namespace,
+            &args.stack_parameters,
+            &args.parameters,
             transfer_client,
+            args.skip_release,
         )
         .await
-        .context(StackSnafu)?;
+        .context(DemoSnafu)?;
 
     let output = format!(
         "Installed demo {}\n\n\
