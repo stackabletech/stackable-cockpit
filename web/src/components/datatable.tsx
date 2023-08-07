@@ -2,6 +2,7 @@ import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
 import { Button } from './button';
 import { SearchInput } from './form/search';
 import { LoadingBar } from './loading';
+import { translate } from '../localization';
 
 export interface DataTableColumn<T> {
   label: string;
@@ -57,7 +58,9 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
         <div class='flex-grow' />
         {props.extraButtons}
         <Show when={props.refresh}>
-          <Button onClick={() => props.refresh?.()}>Refresh</Button>
+          <Button onClick={() => props.refresh?.()}>
+            {translate('refresh')}
+          </Button>
         </Show>
       </div>
       <table class='font-sans border-collapse text-left w-full'>

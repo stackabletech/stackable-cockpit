@@ -2,6 +2,8 @@ import { A } from '@solidjs/router';
 import { ParentProps, Show } from 'solid-js';
 import logo from '../resources/logo.png';
 import { logOut } from '../api/session';
+import { translate } from '../localization';
+import { LanguagePicker } from './language';
 
 interface NavItemProps {
   href?: string;
@@ -56,9 +58,12 @@ export const Header = () => {
         </A>
       </h1>
       <ul class='flex-auto m-0 p-0 flex'>
-        <NavItem href='/stacklets'>Stacklets</NavItem>
+        <NavItem href='/stacklets'>{translate('stacklet--list')}</NavItem>
         <li class='flex-grow' />
-        <NavItem onClick={() => logOut()}>Log out</NavItem>
+        <LanguagePicker />
+        <NavItem onClick={() => logOut()}>
+          {translate('login--log-out')}
+        </NavItem>
       </ul>
     </nav>
   );
