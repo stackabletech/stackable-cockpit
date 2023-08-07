@@ -145,8 +145,8 @@ impl KubeClient {
         Ok(Some(objects))
     }
 
-    /// Lists services by matching labels. The services can be matched by the
-    /// product labels. [`ListParamsExt`] provides a utility function to
+    /// Lists [`Service`]s by matching labels. The services can be matched by
+    /// the product labels. [`ListParamsExt`] provides a utility function to
     /// create [`ListParams`] based on a product name and optional instance
     /// name.
     pub async fn list_services(
@@ -199,9 +199,9 @@ impl KubeClient {
         Ok(Some((username, password)))
     }
 
-    /// Lists Deployments by matching labels. The services can be matched by the
-    /// app labels. [`ListParamsExt`] provides a utility function to create
-    /// [`ListParams`] based on a app name and other labels.
+    /// Lists [`Deployment`]s by matching labels. The services can be matched
+    /// by the app labels. [`ListParamsExt`] provides a utility function to
+    /// create [`ListParams`] based on a app name and other labels.
     pub async fn list_deployments(
         &self,
         namespace: Option<&str>,
@@ -217,9 +217,9 @@ impl KubeClient {
         Ok(deployments)
     }
 
-    /// Lists StatefulSets by matching labels. The services can be matched by
-    /// the app labels. [`ListParamsExt`] provides a utility function to create
-    /// [`ListParams`] based on a app name and other labels.
+    /// Lists [`StatefulSet`]s by matching labels. The services can be matched
+    /// by the app labels. [`ListParamsExt`] provides a utility function to
+    /// create [`ListParams`] based on a app name and other labels.
     pub async fn list_stateful_sets(
         &self,
         namespace: Option<&str>,
@@ -238,20 +238,16 @@ impl KubeClient {
         Ok(stateful_sets)
     }
 
-    /// Lists all namespaces present in the cluster.
-    pub async fn list_namespaces(&self) -> ListResult<Namespace> {
+    /// Returns a [`Namespace`] identified by name. If this namespace doesn't
+    /// exist, this method returns [`None`].
+    pub async fn get_namespace(&self, name: &str) -> Result<Option<Namespace>> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
-        let namespaces = namespace_api
-            .list(&ListParams::default())
-            .await
-            .context(KubeSnafu)?;
-
-        Ok(namespaces)
+        namespace_api.get_opt(name).await.context(KubeSnafu)
     }
 
-    /// Creates a namespace with `name` in the cluster. This method will return
-    /// an error if the namespace already exists. Instead of using this method
-    /// directly, it is advised to use [`namespace::create_if_needed`][1]
+    /// Creates a [`Namespace`] with `name` in the cluster. This method will
+    /// return an error if the namespace already exists. Instead of using this
+    /// method directly, it is advised to use [`namespace::create_if_needed`][1]
     /// instead.
     ///
     /// [1]: crate::platform::namespace
@@ -274,7 +270,16 @@ impl KubeClient {
         Ok(())
     }
 
-    /// Extracts the GVK from [`TypeMeta`].
+    /// Creates a [`Namespace`] only if not already present in the current cluster.
+    pub async fn create_namespace_if_needed(&self, name: String) -> Result<()> {
+        if self.get_namespace(&name).await?.is_none() {
+            self.create_namespace(name).await?
+        }
+
+        Ok(())
+    }
+
+    /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].
     fn gvk_of_typemeta(type_meta: &TypeMeta) -> GroupVersionKind {
         match type_meta.api_version.split_once('/') {
             Some((group, version)) => GroupVersionKind::gvk(group, version, &type_meta.kind),
