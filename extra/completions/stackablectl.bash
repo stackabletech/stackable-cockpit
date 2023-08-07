@@ -414,7 +414,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__clean)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --outdated --old --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

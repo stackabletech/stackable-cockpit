@@ -1032,6 +1032,8 @@ _arguments "${_arguments_options[@]}" \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--old[Only remove outdated files in the cache]' \
+'--outdated[Only remove outdated files in the cache]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \

@@ -16,12 +16,12 @@ use stackable_cockpit::{
         stack::{StackError, StackList},
     },
     utils::path::PathOrUrlParseError,
-    xfer::{FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
-    cli::{CacheSettingsError, Cli, OutputType},
+    cli::{Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -120,9 +120,6 @@ pub enum StackCmdError {
     #[snafu(display("list error"))]
     ListError { source: ListError },
 
-    #[snafu(display("cache settings resolution error"), context(false))]
-    CacheSettingsError { source: CacheSettingsError },
-
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
 
@@ -134,13 +131,10 @@ pub enum StackCmdError {
 }
 
 impl StackArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, StackCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, StackCmdError> {
         debug!("Handle stack args");
 
-        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
-            .await
-            .context(TransferSnafu)?;
-
+        let transfer_client = FileTransferClient::new_with(cache);
         let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
 
         let stack_list = StackList::build(&files, &transfer_client)

@@ -11,12 +11,12 @@ use stackable_cockpit::{
     constants::DEFAULT_OPERATOR_NAMESPACE,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
-    xfer::{FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
-    cli::{CacheSettingsError, Cli, OutputType},
+    cli::{Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -103,9 +103,6 @@ pub enum ReleaseCmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
-    #[snafu(display("cache settings resolution error"), context(false))]
-    CacheSettingsError { source: CacheSettingsError },
-
     #[snafu(display("list error"))]
     ListError { source: ListError },
 
@@ -123,12 +120,10 @@ pub enum ReleaseCmdError {
 }
 
 impl ReleaseArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, ReleaseCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, ReleaseCmdError> {
         debug!("Handle release args");
 
-        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
-            .await
-            .context(TransferSnafu)?;
+        let transfer_client = FileTransferClient::new_with(cache);
 
         let files = common_args
             .get_release_files()
