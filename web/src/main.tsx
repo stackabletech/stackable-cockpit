@@ -7,6 +7,7 @@ import { Header } from './components/header';
 import { StackletConnectionDetails } from './pages/stacklets/connect';
 import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
+import { LanguageProvider } from './localization';
 import { attachDevtoolsOverlay } from '@solid-devtools/overlay';
 
 attachDevtoolsOverlay();
@@ -39,9 +40,11 @@ if (root == undefined) {
 } else {
   render(
     () => (
-      <Router base='/ui'>
-        <App />
-      </Router>
+      <LanguageProvider>
+        <Router base='/ui'>
+          <App />
+        </Router>
+      </LanguageProvider>
     ),
     root,
   );
