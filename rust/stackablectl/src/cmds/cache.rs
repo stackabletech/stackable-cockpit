@@ -84,10 +84,12 @@ async fn list_cmd(cache: Cache) -> Result<String, CacheCmdError> {
 async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CacheCmdError> {
     info!("Cleaning cached files");
 
-    cache
-        .purge(DeleteFilter::from_bool(args.only_remove_old_files))
-        .await
-        .context(CacheSnafu)?;
+    let delete_filter = if args.only_remove_old_files {
+        DeleteFilter::OnlyExpired
+    } else {
+        DeleteFilter::All
+    };
 
+    cache.purge(delete_filter).await.context(CacheSnafu)?;
     Ok("Cleaned cached files".into())
 }

@@ -166,25 +166,21 @@ impl Cache {
             CacheBackend::Disk { base_path } => {
                 let cache_auto_purge_filepath = base_path.join(CACHE_LAST_AUTO_PURGE_FILEPATH);
 
-                // Only create file if not already present
-                if !fs::try_exists(&cache_auto_purge_filepath)
-                    .await
-                    .context(CacheIoSnafu)?
-                {
-                    write_cache_auto_purge_file(&cache_auto_purge_filepath).await?;
-                }
-
                 // Read and covert timestamp
-                let timestamp = fs::read_to_string(&cache_auto_purge_filepath)
-                    .await
-                    .context(CacheIoSnafu)?;
-
-                let timestamp: u64 = timestamp.parse().context(ParseIntSnafu)?;
-                let timestamp = UNIX_EPOCH + Duration::from_secs(timestamp);
+                let last_purged_at = match fs::read_to_string(&cache_auto_purge_filepath).await {
+                    Ok(timestamp) => Some(
+                        UNIX_EPOCH + Duration::from_secs(timestamp.parse().context(ParseIntSnafu)?),
+                    ),
+                    Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
+                    Err(err) => return Err(err).context(CacheIoSnafu),
+                };
 
                 // If the auto purge interval elapsed, run purge and write
                 // back the new timestamp
-                if timestamp.elapsed().context(SystemTimeSnafu)? >= self.auto_purge_interval {
+                if last_purged_at
+                    .and_then(|ts| ts.elapsed().ok())
+                    .map_or(true, |elapsed| elapsed >= self.auto_purge_interval)
+                {
                     debug!("Auto-purging outdated cache files");
 
                     self.purge(DeleteFilter::OnlyExpired).await?;
@@ -296,19 +292,6 @@ pub enum CacheBackend {
 pub enum DeleteFilter {
     All,
     OnlyExpired,
-}
-
-impl DeleteFilter {
-    /// Create a [`DeleteFilter`] based on the provided boolean value. Returns
-    /// [`DeleteFilter::OnlyExpired`] when `only_expired` is `true`, otherwise
-    /// [`DeleteFilter::All`].
-    pub fn from_bool(only_expired: bool) -> Self {
-        if only_expired {
-            Self::OnlyExpired
-        } else {
-            Self::All
-        }
-    }
 }
 
 async fn write_cache_auto_purge_file(path: &Path) -> Result<()> {
