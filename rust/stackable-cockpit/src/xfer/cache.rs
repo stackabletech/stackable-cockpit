@@ -31,9 +31,6 @@ pub enum Error {
 
     #[snafu(display("tried to write file with disabled cache"))]
     WriteDisabled,
-
-    #[snafu(display("failed to convert OsString into string"))]
-    OsStringConvertError,
 }
 
 #[derive(Debug)]
@@ -113,7 +110,7 @@ impl Cache {
                     let metadata = entry.metadata().await.context(CacheIoSnafu)?;
 
                     // Skip protected files
-                    if is_protected_file(entry.file_name())? {
+                    if is_protected_file(entry.file_name()) {
                         continue;
                     }
 
@@ -137,8 +134,8 @@ impl Cache {
                     let metadata = entry.metadata().await.context(CacheIoSnafu)?;
 
                     let should_delete_file = match delete_filter {
-                        // Skip the last-auto-purge file
-                        _ if is_protected_file(entry.file_name())? => false,
+                        // Skip protected files
+                        _ if is_protected_file(entry.file_name()) => false,
 
                         // Without --old / --outdated
                         DeleteFilter::All => true,
@@ -168,6 +165,16 @@ impl Cache {
         match &self.backend {
             CacheBackend::Disk { base_path } => {
                 let cache_auto_purge_filepath = base_path.join(CACHE_LAST_AUTO_PURGE_FILEPATH);
+
+                // Only create file if not already present
+                if !fs::try_exists(&cache_auto_purge_filepath)
+                    .await
+                    .context(CacheIoSnafu)?
+                {
+                    write_cache_auto_purge_file(&cache_auto_purge_filepath).await?;
+                }
+
+                // Read and covert timestamp
                 let timestamp = fs::read_to_string(&cache_auto_purge_filepath)
                     .await
                     .context(CacheIoSnafu)?;
@@ -175,11 +182,13 @@ impl Cache {
                 let timestamp: u64 = timestamp.parse().context(ParseIntSnafu)?;
                 let timestamp = UNIX_EPOCH + Duration::from_secs(timestamp);
 
+                // If the auto purge interval elapsed, run purge and write
+                // back the new timestamp
                 if timestamp.elapsed().context(SystemTimeSnafu)? >= self.auto_purge_interval {
                     debug!("Auto-purging outdated cache files");
 
                     self.purge(DeleteFilter::OnlyExpired).await?;
-                    write_cache_auto_purge_file(cache_auto_purge_filepath).await?;
+                    write_cache_auto_purge_file(&cache_auto_purge_filepath).await?;
                 }
 
                 Ok(())
@@ -262,15 +271,6 @@ impl CacheSettings {
         match &self.backend {
             CacheBackend::Disk { base_path } => {
                 fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
-                let cache_auto_purge_filepath = base_path.join(CACHE_LAST_AUTO_PURGE_FILEPATH);
-
-                // Only create file if not already present
-                if !fs::try_exists(&cache_auto_purge_filepath)
-                    .await
-                    .context(CacheIoSnafu)?
-                {
-                    write_cache_auto_purge_file(cache_auto_purge_filepath).await?;
-                }
 
                 Ok(Cache::new(
                     self.backend,
@@ -308,7 +308,7 @@ impl From<bool> for DeleteFilter {
     }
 }
 
-async fn write_cache_auto_purge_file(path: PathBuf) -> Result<()> {
+async fn write_cache_auto_purge_file(path: &Path) -> Result<()> {
     fs::write(
         path,
         SystemTime::now()
@@ -322,11 +322,8 @@ async fn write_cache_auto_purge_file(path: PathBuf) -> Result<()> {
     .context(CacheIoSnafu)
 }
 
-fn is_protected_file(filename: OsString) -> Result<bool> {
-    Ok(CACHE_PROTECTED_FILES.contains(
-        &filename
-            .into_string()
-            .map_err(|_| Error::OsStringConvertError)?
-            .as_str(),
-    ))
+fn is_protected_file(filename: OsString) -> bool {
+    // Non-UTF-8 filenames can't possibly be on the protected list
+    let Some(filename) = filename.to_str() else { return false; };
+    CACHE_PROTECTED_FILES.contains(&filename)
 }
