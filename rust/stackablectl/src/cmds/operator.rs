@@ -16,7 +16,11 @@ use stackable_cockpit::{
         DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, HelmError, HelmRelease, HelmRepo},
-    platform::operator::{OperatorSpec, VALID_OPERATORS},
+    kube::KubeClientError,
+    platform::{
+        namespace,
+        operator::{OperatorSpec, VALID_OPERATORS},
+    },
     utils,
 };
 
@@ -140,6 +144,9 @@ pub enum OperatorCmdError {
 
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
+
+    #[snafu(display("kube client error"))]
+    KubeClientError { source: KubeClientError },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -268,6 +275,10 @@ async fn install_cmd(
         .install_if_needed(None)
         .await
         .context(CommonClusterArgsSnafu)?;
+
+    namespace::create_if_needed(args.operator_namespace.clone())
+        .await
+        .context(KubeClientSnafu)?;
 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);

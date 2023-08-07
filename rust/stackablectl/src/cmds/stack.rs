@@ -9,7 +9,9 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::ListError,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
+    kube::KubeClientError,
     platform::{
+        namespace,
         release::ReleaseList,
         stack::{StackError, StackList},
     },
@@ -126,6 +128,9 @@ pub enum StackCmdError {
 
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
+
+    #[snafu(display("kube client error"))]
+    KubeClientError { source: KubeClientError },
 }
 
 impl StackArgs {
@@ -253,11 +258,19 @@ async fn install_cmd(
         .clone()
         .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
 
+    namespace::create_if_needed(operator_namespace.clone())
+        .await
+        .context(KubeClientSnafu)?;
+
     let product_namespace = args
         .namespaces
         .product_namespace
         .clone()
         .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+
+    namespace::create_if_needed(product_namespace.clone())
+        .await
+        .context(KubeClientSnafu)?;
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
