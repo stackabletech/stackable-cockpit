@@ -107,7 +107,7 @@ impl StackSpecV2 {
         info!("Installing stack");
 
         if skip_release_install {
-            info!("Skipping release install during stack install process");
+            info!("Skipping release installation during stack installation process");
             return Ok(());
         }
 

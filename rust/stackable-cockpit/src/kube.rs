@@ -199,7 +199,7 @@ impl KubeClient {
         Ok(Some((username, password)))
     }
 
-    /// Lists deployments by matching labels. The services can be matched by the
+    /// Lists Deployments by matching labels. The services can be matched by the
     /// app labels. [`ListParamsExt`] provides a utility function to create
     /// [`ListParams`] based on a app name and other labels.
     pub async fn list_deployments(
@@ -217,7 +217,7 @@ impl KubeClient {
         Ok(deployments)
     }
 
-    /// Lists stateful sets by matching labels. The services can be matched by
+    /// Lists StatefulSets by matching labels. The services can be matched by
     /// the app labels. [`ListParamsExt`] provides a utility function to create
     /// [`ListParams`] based on a app name and other labels.
     pub async fn list_stateful_sets(
