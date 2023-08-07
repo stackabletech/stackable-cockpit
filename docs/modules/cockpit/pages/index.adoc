@@ -1,0 +1,6 @@
+= Stackable Cockpit
+
+This is a visual dashboard to monitor and control Stackable Data Platform clusters.
+
+NOTE: The Stackable Cockpit is currently an early preview, and is not yet a
+      fully supported component of the Stackable Data Platform.
