@@ -9,10 +9,9 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::ListError,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    kube::KubeClientError,
     platform::{
         demo::{DemoError, DemoList},
-        namespace,
+        namespace::{self, NamespaceError},
         release::ReleaseList,
         stack::StackList,
     },
@@ -140,8 +139,8 @@ pub enum DemoCmdError {
     #[snafu(display("file transfer error"))]
     TransferError { source: FileTransferError },
 
-    #[snafu(display("kube client error"))]
-    KubeClientError { source: KubeClientError },
+    #[snafu(display("failed to create namespace"))]
+    NamespaceError { source: NamespaceError },
 }
 
 impl DemoArgs {
@@ -275,7 +274,7 @@ async fn install_cmd(
 
     namespace::create_if_needed(operator_namespace.clone())
         .await
-        .context(KubeClientSnafu)?;
+        .context(NamespaceSnafu)?;
 
     let product_namespace = args
         .namespaces
@@ -285,7 +284,7 @@ async fn install_cmd(
 
     namespace::create_if_needed(product_namespace.clone())
         .await
-        .context(KubeClientSnafu)?;
+        .context(NamespaceSnafu)?;
 
     demo_spec
         .install(
