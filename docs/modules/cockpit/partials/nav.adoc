@@ -1,2 +1,1 @@
-* xref:cockpit:index.adoc[]
 * xref:cockpit:installation.adoc[]
