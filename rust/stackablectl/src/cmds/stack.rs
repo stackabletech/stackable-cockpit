@@ -223,7 +223,7 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
     }
 }
 
-#[instrument]
+#[instrument(skip(common_args, stack_list, transfer_client))]
 async fn install_cmd(
     args: &StackInstallArgs,
     common_args: &Cli,
@@ -270,7 +270,12 @@ async fn install_cmd(
         Some(stack_spec) => {
             // Install the stack
             stack_spec
-                .install(release_list, &operator_namespace, args.skip_release)
+                .install(
+                    release_list,
+                    &operator_namespace,
+                    &product_namespace,
+                    args.skip_release,
+                )
                 .context(StackSnafu)?;
 
             // Install stack manifests

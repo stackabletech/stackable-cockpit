@@ -66,7 +66,7 @@ pub enum StackError {
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
 
-    #[snafu(display("cannot install stack in namespace '{requested}', only {} supported", supported.join(", ")))]
+    #[snafu(display("cannot install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,
@@ -108,11 +108,12 @@ pub struct StackSpecV2 {
 }
 
 impl StackSpecV2 {
-    #[instrument(skip_all)]
+    #[instrument(skip(release_list))]
     pub fn install(
         &self,
         release_list: ReleaseList,
-        namespace: &str,
+        operator_namespace: &str,
+        product_namespace: &str,
         skip_release_install: bool,
     ) -> Result<(), StackError> {
         info!("Installing stack");
@@ -123,13 +124,13 @@ impl StackSpecV2 {
         }
 
         // Returns an error if the stack doesn't support to be installed in the
-        // requested namespace
-        if !self.supported_namespaces.is_empty()
-            && !self.supported_namespaces.contains(&namespace.to_string())
-        {
+        // requested product namespace. When installing a demo, this check is
+        // already done on the demo spec level, however we still need to check
+        // here, as stacks can be installed on their own.
+        if !self.supports_namespace(product_namespace) {
             return Err(StackError::UnsupportedNamespace {
                 supported: self.supported_namespaces.clone(),
-                requested: namespace.to_string(),
+                requested: product_namespace.to_string(),
             });
         }
 
@@ -140,7 +141,7 @@ impl StackSpecV2 {
 
         // Install the release
         release
-            .install(&self.operators, &[], namespace)
+            .install(&self.operators, &[], operator_namespace)
             .context(ReleaseInstallSnafu)?;
 
         Ok(())
@@ -150,7 +151,7 @@ impl StackSpecV2 {
     pub async fn install_stack_manifests(
         &self,
         parameters: &[String],
-        namespace: &str,
+        product_namespace: &str,
         transfer_client: &FileTransferClient,
     ) -> Result<(), StackError> {
         info!("Installing stack manifests");
@@ -160,7 +161,13 @@ impl StackSpecV2 {
             .into_params(&self.parameters)
             .context(ParameterSnafu)?;
 
-        Self::install_manifests(&self.manifests, &parameters, namespace, transfer_client).await?;
+        Self::install_manifests(
+            &self.manifests,
+            &parameters,
+            product_namespace,
+            transfer_client,
+        )
+        .await?;
         Ok(())
     }
 
@@ -170,7 +177,7 @@ impl StackSpecV2 {
         manifests: &Vec<ManifestSpec>,
         valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
-        namespace: &str,
+        product_namespace: &str,
         transfer_client: &FileTransferClient,
     ) -> Result<(), StackError> {
         info!("Installing demo manifests");
@@ -180,7 +187,7 @@ impl StackSpecV2 {
             .into_params(valid_demo_parameters)
             .context(ParameterSnafu)?;
 
-        Self::install_manifests(manifests, &parameters, namespace, transfer_client).await?;
+        Self::install_manifests(manifests, &parameters, product_namespace, transfer_client).await?;
         Ok(())
     }
 
@@ -189,7 +196,7 @@ impl StackSpecV2 {
     async fn install_manifests(
         manifests: &Vec<ManifestSpec>,
         parameters: &HashMap<String, String>,
-        namespace: &str,
+        product_namespace: &str,
         transfer_client: &FileTransferClient,
     ) -> Result<(), StackError> {
         debug!("Installing demo / stack manifests");
@@ -228,7 +235,7 @@ impl StackSpecV2 {
                             chart_version: Some(&helm_chart.version),
                         },
                         Some(&values_yaml),
-                        namespace,
+                        product_namespace,
                         false,
                     )
                     .context(HelmSnafu)?;
@@ -248,7 +255,7 @@ impl StackSpecV2 {
 
                     let kube_client = kube::KubeClient::new().await.context(KubeSnafu)?;
                     kube_client
-                        .deploy_manifests(&manifests, namespace)
+                        .deploy_manifests(&manifests, product_namespace)
                         .await
                         .context(KubeSnafu)?
                 }
@@ -256,5 +263,10 @@ impl StackSpecV2 {
         }
 
         Ok(())
+    }
+
+    fn supports_namespace(&self, namespace: impl Into<String>) -> bool {
+        self.supported_namespaces.is_empty()
+            || self.supported_namespaces.contains(&namespace.into())
     }
 }

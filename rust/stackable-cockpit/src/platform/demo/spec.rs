@@ -60,7 +60,7 @@ pub enum DemoError {
     #[snafu(display("stack error"))]
     StackError { source: StackError },
 
-    #[snafu(display("cannot install demo in namespace '{requested}', only {} supported", supported.join(", ")))]
+    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,
@@ -82,11 +82,7 @@ impl DemoSpecV2 {
     ) -> Result<(), DemoError> {
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
-        if !self.supported_namespaces.is_empty()
-            && !self
-                .supported_namespaces
-                .contains(&product_namespace.to_string())
-        {
+        if !self.supports_namespace(product_namespace) {
             return Err(DemoError::UnsupportedNamespace {
                 requested: product_namespace.to_string(),
                 supported: self.supported_namespaces.clone(),
@@ -100,7 +96,12 @@ impl DemoSpecV2 {
 
         // Install the stack
         stack_spec
-            .install(release_list, operator_namespace, skip_release)
+            .install(
+                release_list,
+                operator_namespace,
+                product_namespace,
+                skip_release,
+            )
             .context(StackSnafu)?;
 
         // Install stack manifests
@@ -122,5 +123,10 @@ impl DemoSpecV2 {
             .context(StackSnafu)?;
 
         Ok(())
+    }
+
+    fn supports_namespace(&self, namespace: impl Into<String>) -> bool {
+        self.supported_namespaces.is_empty()
+            || self.supported_namespaces.contains(&namespace.into())
     }
 }
