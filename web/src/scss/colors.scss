@@ -16,6 +16,7 @@ $color-gray-400: #9ca3af;
 $color-gray-300: #d1d5db;
 $color-gray-200: #e5e7eb;
 $color-gray-100: #f3f4f6;
+$color-gray-50: #f9fafb;
 
 /*Stackable brand color swatch*/
 $color-stackable-blue-light: #1880bd;
@@ -24,8 +25,8 @@ $color-stackable-blue-dark: #0b689f;
 $color-white: #ffffff;
 
 $themes: (
-  dark: (
-    button: (
+  'dark': (
+    'button': (
       'primary-text': $color-white,
       'primary-text-hover': $color-white,
       'primary-bg': $color-stackable-blue-light,
@@ -36,14 +37,22 @@ $themes: (
       'secondary-bg-hover': $color-gray-700,
       'secondary-border': $color-gray-600,
     ),
-    text-input: (
+    'text-input': (
       'placeholder': $color-gray-400,
+      'icon': $color-gray-400,
       'bg': $color-gray-700,
       'text': $color-white,
     ),
   ),
-  light: (
-    button: (),
+  'light': (
+    'button': (),
+    'text-input': (
+      'placeholder': $color-gray-500,
+      'border': $color-gray-400,
+      'icon': $color-gray-500,
+      'text': $color-gray-900,
+      'bg': $color-gray-50,
+    ),
   ),
 );
 

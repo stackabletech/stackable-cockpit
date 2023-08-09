@@ -14,22 +14,10 @@ export const SearchInput = (props: SearchInputProps) => {
         <SearchSymbol />
       </div>
       <input
-        class='inline flex-grow h-full b-none bg-transparent c-gray-200'
         placeholder='Search'
         value={props.query}
         onInput={(event) => props.setQuery(event.currentTarget.value)}
       />
     </div>
-    // <label class='bg-gray-600 rounded flex flex-items-center c-gray-200'>
-    //   <div class='p-1'>
-    //     <SearchSymbol />
-    //   </div>
-    //   <input
-    //     class='inline flex-grow h-full b-none bg-transparent c-gray-200'
-    //     placeholder='Search'
-    //     value={props.query}
-    //     onInput={(event) => props.setQuery(event.currentTarget.value)}
-    //   />
-    // </label>
   );
 };
