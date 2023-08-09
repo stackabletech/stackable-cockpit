@@ -144,8 +144,11 @@ pub enum OperatorCmdError {
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
 
-    #[snafu(display("failed to create namespace"))]
-    NamespaceError { source: NamespaceError },
+    #[snafu(display("failed to create namespace {namespace}"))]
+    NamespaceError {
+        source: NamespaceError,
+        namespace: String,
+    },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -277,7 +280,9 @@ async fn install_cmd(
 
     namespace::create_if_needed(args.operator_namespace.clone())
         .await
-        .context(NamespaceSnafu)?;
+        .context(NamespaceSnafu {
+            namespace: args.operator_namespace.clone(),
+        })?;
 
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);

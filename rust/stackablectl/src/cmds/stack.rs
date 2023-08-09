@@ -125,8 +125,11 @@ pub enum StackCmdError {
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
 
-    #[snafu(display("failed to create namespace"))]
-    NamespaceError { source: NamespaceError },
+    #[snafu(display("failed to create namespace {namespace}"))]
+    NamespaceError {
+        source: NamespaceError,
+        namespace: String,
+    },
 }
 
 impl StackArgs {
@@ -253,7 +256,9 @@ async fn install_cmd(
 
     namespace::create_if_needed(operator_namespace.clone())
         .await
-        .context(NamespaceSnafu)?;
+        .context(NamespaceSnafu {
+            namespace: operator_namespace.clone(),
+        })?;
 
     let product_namespace = args
         .namespaces
@@ -263,7 +268,9 @@ async fn install_cmd(
 
     namespace::create_if_needed(product_namespace.clone())
         .await
-        .context(NamespaceSnafu)?;
+        .context(NamespaceSnafu {
+            namespace: product_namespace.clone(),
+        })?;
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
