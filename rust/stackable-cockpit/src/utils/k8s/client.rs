@@ -1,8 +1,8 @@
-use std::string::FromUtf8Error;
+use std::{iter::Sum, string::FromUtf8Error};
 
 use k8s_openapi::api::{
     apps::v1::{Deployment, StatefulSet},
-    core::v1::{Namespace, Secret, Service},
+    core::v1::{Namespace, Node, Secret, Service},
 };
 use kube::{
     api::{ListParams, Patch, PatchParams, PostParams},
@@ -12,6 +12,7 @@ use kube::{
 };
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
+use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
 
 use crate::constants::REDACTED_PASSWORD;
 
@@ -45,6 +46,11 @@ pub enum KubeClientError {
 pub struct KubeClient {
     client: Client,
     discovery: Discovery,
+}
+
+pub struct ClusterInfo {
+    cpus: CpuQuantity,
+    memory: MemoryQuantity,
 }
 
 impl KubeClient {
@@ -264,6 +270,31 @@ impl KubeClient {
         }
 
         Ok(())
+    }
+
+    pub async fn get_cluster_info(&self, name: &str) -> Result<ClusterInfo> {
+        let node_api: Api<Node> = Api::all(self.client.clone());
+        let nodes = node_api
+            .list(&ListParams::default())
+            .await
+            .context(KubeSnafu)?;
+
+        let allocatable = nodes
+            .into_iter()
+            .filter_map(|node| node.status)
+            .filter_map(|status| status.allocatable);
+
+        let cpus: CpuQuantity = allocatable
+            .clone()
+            .filter_map(|a| a.get("cpu"))
+            .map(|q| q.try_into().unwrap())
+            .sum();
+        let memory: MemoryQuantity = allocatable
+            .filter_map(|a| a.get("memory"))
+            .map(|q| q.try_into().unwrap())
+            .sum();
+
+        Ok(ClusterInfo { cpus, memory })
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].
