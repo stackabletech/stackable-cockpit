@@ -34,10 +34,11 @@ npm install -g yarn typescript
 ```shell
 git clone git@github.com:stackabletech/stackable-cockpit.git
 cd stackable-cockpit
+yarn install
 ```
 
-Before continuing with the build process, first execute `yarn install` to install all required NodeJS
-dependencies in the `node_modules` folder.
+Executing `yarn install` to install all required NodeJS
+dependencies in the `node_modules` folder is a prerequisite to build the Rust components.
 
 The admin UI is registered as a crate and is part of the build process, as the HTML/CSS/JS bundle is included in the final `stackable-cockpitd` binary.
 
