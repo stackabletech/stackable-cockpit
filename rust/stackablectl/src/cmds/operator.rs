@@ -144,7 +144,7 @@ pub enum OperatorCmdError {
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
 
-    #[snafu(display("failed to create namespace {namespace}"))]
+    #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceError {
         source: NamespaceError,
         namespace: String,

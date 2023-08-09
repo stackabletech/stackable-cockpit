@@ -125,7 +125,7 @@ pub enum StackCmdError {
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
 
-    #[snafu(display("failed to create namespace {namespace}"))]
+    #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceError {
         source: NamespaceError,
         namespace: String,

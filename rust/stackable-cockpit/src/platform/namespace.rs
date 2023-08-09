@@ -7,7 +7,7 @@ pub enum NamespaceError {
     #[snafu(display("kubernetes client error"))]
     KubeClientError { source: KubeClientError },
 
-    #[snafu(display("permission denied - try to create the namespace manually or choose an already existent, where you have access to"))]
+    #[snafu(display("permission denied - try to create the namespace manually or choose an already existing one to which you have access to"))]
     PermissionDenied,
 }
 
