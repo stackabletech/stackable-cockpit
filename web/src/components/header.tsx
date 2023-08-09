@@ -1,6 +1,6 @@
 import { A } from '@solidjs/router';
 import { ParentProps, Show } from 'solid-js';
-import logo from '../resources/logo.png';
+import logo from '../resources/logo.svg';
 import { logOut } from '../api/session';
 import { translate } from '../localization';
 import { LanguagePicker } from './language';
