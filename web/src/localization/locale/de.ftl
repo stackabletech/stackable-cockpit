@@ -10,6 +10,7 @@ stacklet--namespace = Namensraum
 stacklet--name = Name
 stacklet--status = Status
 
+login--log-in-needed = Anmeldung erforderlich
 login--log-in = Anmelden
 login--log-out = Abmelden
 login--username = Nutzername

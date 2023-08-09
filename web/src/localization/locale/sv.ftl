@@ -10,6 +10,7 @@ stacklet--namespace = Namnrymd
 stacklet--name = Namn
 stacklet--status = Status
 
+login--log-in-needed = Inloggning Krävs
 login--log-in = Logga in
 login--log-out = Logga ut
 login--username = Användarnamn
