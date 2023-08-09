@@ -25,8 +25,8 @@ interface.
 
 Don't forget to install global node dependencies:
 
-```
-$ npm install -g yarn typescript
+```shell
+npm install -g yarn typescript
 ```
 
 ### Getting started
