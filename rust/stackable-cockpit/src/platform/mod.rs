@@ -1,3 +1,4 @@
+pub mod cluster;
 pub mod demo;
 pub mod namespace;
 pub mod operator;

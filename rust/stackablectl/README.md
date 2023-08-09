@@ -10,6 +10,8 @@ The `stackablectl` binary provides extensive help and usage information. This he
 as any subcommands using the `--help` flag.
 
 ```plain
+Command line tool to interact with a Stackable Data Platform
+
 Usage: stackablectl [OPTIONS] <COMMAND>
 
 Commands:

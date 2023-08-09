@@ -12,7 +12,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-const USAGE_STRING: &str = "Usage: stackablectl [OPTIONS] <COMMAND>\n";
+const USAGE_STRING: &str = "Command line tool to interact with a Stackable Data Platform\n\nUsage: stackablectl [OPTIONS] <COMMAND>\n";
 
 #[derive(clap::Parser)]
 #[allow(clippy::enum_variant_names)]

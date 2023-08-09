@@ -12,9 +12,8 @@ use kube::{
 };
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
-use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
 
-use crate::constants::REDACTED_PASSWORD;
+use crate::{constants::REDACTED_PASSWORD, platform::cluster::ClusterInfo};
 
 pub type ListResult<T, E = KubeClientError> = Result<ObjectList<T>, E>;
 pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
@@ -46,13 +45,6 @@ pub enum KubeClientError {
 pub struct KubeClient {
     client: Client,
     discovery: Discovery,
-}
-
-#[derive(Debug)]
-pub struct ClusterInfo {
-    pub worker_count: usize,
-    pub cpus: CpuQuantity,
-    pub memory: MemoryQuantity,
 }
 
 impl KubeClient {
@@ -274,35 +266,18 @@ impl KubeClient {
         Ok(())
     }
 
+    /// Retrieves [`ClusterInfo`] which contains resource information for the
+    /// current cluster. It should be noted that [`ClusterInfo`] contains data
+    /// about allocatable resources. These values don't reflect currently
+    /// available resources.
     pub async fn get_cluster_info(&self) -> Result<ClusterInfo> {
         let node_api: Api<Node> = Api::all(self.client.clone());
         let nodes = node_api
             .list(&ListParams::default())
             .await
             .context(KubeSnafu)?;
-        // FIXME
-        let worker_count = nodes.items.len();
 
-        let allocatable = nodes
-            .into_iter()
-            .filter_map(|node| node.status)
-            .filter_map(|status| status.allocatable);
-
-        let cpus: CpuQuantity = allocatable
-            .clone()
-            .filter_map(|mut a| a.remove("cpu"))
-            .map(|q| CpuQuantity::try_from(q).unwrap())
-            .sum();
-        let memory: MemoryQuantity = allocatable
-            .filter_map(|mut a| a.remove("memory"))
-            .map(|q| q.try_into().unwrap())
-            .sum();
-
-        Ok(ClusterInfo {
-            worker_count,
-            cpus,
-            memory,
-        })
+        Ok(ClusterInfo::from_nodes(nodes))
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].

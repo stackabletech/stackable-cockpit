@@ -154,11 +154,6 @@ export interface operations {
    * @description Retrieves one demo identified by `name`.
    */
   get_demo: {
-    parameters: {
-      path: {
-        _name: string;
-      };
-    };
     responses: {
       /** @description Retrieving the demo with 'name' succeeded */
       200: {
@@ -214,11 +209,6 @@ export interface operations {
    * @description Retrieves one release identified by `name`.
    */
   get_release: {
-    parameters: {
-      path: {
-        _name: string;
-      };
-    };
     responses: {
     };
   };
