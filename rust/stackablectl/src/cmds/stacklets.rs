@@ -10,6 +10,7 @@ use stackable_cockpit::{
 };
 
 use crate::{
+    args::CommonNamespaceArgs,
     cli::{Cli, OutputType},
     utils::use_colored_output,
 };
@@ -29,10 +30,6 @@ pub enum StackletCommands {
 
 #[derive(Debug, Args)]
 pub struct StackletListArgs {
-    /// Will display services of all namespaces, not only the current one
-    #[arg(short, long)]
-    all_namespaces: bool,
-
     /// Controls if the output will use color. This only applies to the output
     /// type 'plain'.
     #[arg(short = 'c', long = "color")]
@@ -40,6 +37,9 @@ pub struct StackletListArgs {
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
+
+    #[command(flatten)]
+    namespaces: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -69,11 +69,9 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
-    let namespace = args
-        .all_namespaces
-        .then_some(common_args.operator_namespace.as_str());
-
-    let stacklets = list(namespace).await.context(StackletListSnafu)?;
+    let stacklets = list(args.namespaces.product_namespace.as_deref())
+        .await
+        .context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
         return Ok("No stacklets".into());

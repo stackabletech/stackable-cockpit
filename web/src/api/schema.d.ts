@@ -71,6 +71,11 @@ export interface components {
       parameters?: (components["schemas"]["Parameter"])[];
       /** @description The name of the underlying stack */
       stackableStack: string;
+      /**
+       * @description Supported namespaces this demo can run in. An empty list indicates that
+       * the demo can run in any namespace.
+       */
+      supportedNamespaces?: (string)[];
     };
     DisplayCondition: {
       condition: string;

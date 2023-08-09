@@ -12,14 +12,20 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
-    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    constants::{
+        DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    },
     helm::{self, HelmError, HelmRelease, HelmRepo},
-    platform::operator::{OperatorSpec, VALID_OPERATORS},
+    platform::{
+        namespace::{self, NamespaceError},
+        operator::{OperatorSpec, VALID_OPERATORS},
+    },
     utils,
 };
 
 use crate::{
-    cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType},
+    args::{CommonClusterArgs, CommonClusterArgsError},
+    cli::{Cli, OutputType},
     utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
@@ -31,7 +37,7 @@ pub struct OperatorArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum OperatorCommands {
-    /// List available (or installed) operators
+    /// List available operators
     #[command(alias("ls"))]
     List(OperatorListArgs),
 
@@ -47,7 +53,7 @@ pub enum OperatorCommands {
     #[command(aliases(["rm", "un"]))]
     Uninstall(OperatorUninstallArgs),
 
-    /// List installed operator (same as list -i)
+    /// List installed operators
     Installed(OperatorInstalledArgs),
 }
 
@@ -86,6 +92,10 @@ Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
     operators: Vec<OperatorSpec>,
 
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
+
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
 }
@@ -95,12 +105,20 @@ pub struct OperatorUninstallArgs {
     /// One or more operators to uninstall
     #[arg(required = true)]
     operators: Vec<OperatorSpec>,
+
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
 }
 
 #[derive(Debug, Args)]
 pub struct OperatorInstalledArgs {
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
+
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
 }
 
 #[derive(Debug, Snafu)]
@@ -125,6 +143,12 @@ pub enum OperatorCmdError {
 
     #[snafu(display("unable to format json output"))]
     JsonOutputFormatError { source: serde_json::Error },
+
+    #[snafu(display("failed to create namespace '{namespace}'"))]
+    NamespaceError {
+        source: NamespaceError,
+        namespace: String,
+    },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -254,10 +278,16 @@ async fn install_cmd(
         .await
         .context(CommonClusterArgsSnafu)?;
 
+    namespace::create_if_needed(args.operator_namespace.clone())
+        .await
+        .context(NamespaceSnafu {
+            namespace: args.operator_namespace.clone(),
+        })?;
+
     for operator in &args.operators {
         println!("Installing {} operator", operator.name);
 
-        match operator.install(&common_args.operator_namespace) {
+        match operator.install(&args.operator_namespace) {
             Ok(_) => println!("Installed {} operator", operator.name),
             Err(err) => {
                 return Err(OperatorCmdError::HelmError { source: err });
@@ -285,7 +315,7 @@ fn uninstall_cmd(
 
     for operator in &args.operators {
         operator
-            .uninstall(&common_args.operator_namespace)
+            .uninstall(&args.operator_namespace)
             .context(HelmSnafu)?;
     }
 
@@ -309,7 +339,7 @@ fn installed_cmd(
 
     type ReleaseList = IndexMap<String, HelmRelease>;
 
-    let installed: ReleaseList = helm::list_releases(&common_args.operator_namespace)
+    let installed: ReleaseList = helm::list_releases(&args.operator_namespace)
         .context(HelmSnafu)?
         .into_iter()
         .filter(|release| {

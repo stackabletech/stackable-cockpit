@@ -8,7 +8,9 @@ use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::ListError,
+    constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
+        namespace::{self, NamespaceError},
         release::ReleaseList,
         stack::{StackError, StackList},
     },
@@ -16,7 +18,10 @@ use stackable_cockpit::{
     xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
 
-use crate::cli::{Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::{
+    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
+    cli::{Cli, OutputType},
+};
 
 #[derive(Debug, Args)]
 pub struct StackArgs {
@@ -59,12 +64,25 @@ pub struct StackInstallArgs {
     /// Name of the stack to describe
     stack_name: String,
 
+    /// Skip the installation of the release during the stack install process
+    #[arg(
+        long,
+        long_help = "Skip the installation of the release during the stack install process
+
+Use \"stackablectl operator install [OPTIONS] <OPERATORS>...\" to install
+required operators manually. Operators MUST be installed in the correct version.
+
+Use \"stackablectl operator install --help\" to display more information on how
+to specify operator versions."
+    )]
+    skip_release: bool,
+
     /// List of parameters to use when installing the stack
-    #[arg(short, long)]
+    #[arg(long)]
     stack_parameters: Vec<String>,
 
     /// List of parameters to use when installing the stack
-    #[arg(short, long)]
+    #[arg(long)]
     #[arg(long_help = "List of parameters to use when installing the stack
 
 All parameters must have the format '<parameter>=<value>'. Multiple parameters
@@ -79,6 +97,9 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
+
+    #[command(flatten)]
+    namespaces: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -103,6 +124,12 @@ pub enum StackCmdError {
 
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
+
+    #[snafu(display("failed to create namespace '{namespace}'"))]
+    NamespaceError {
+        source: NamespaceError,
+        namespace: String,
+    },
 }
 
 impl StackArgs {
@@ -198,7 +225,7 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
     }
 }
 
-#[instrument]
+#[instrument(skip(common_args, stack_list, transfer_client))]
 async fn install_cmd(
     args: &StackInstallArgs,
     common_args: &Cli,
@@ -221,24 +248,70 @@ async fn install_cmd(
         .await
         .context(CommonClusterArgsSnafu)?;
 
+    let operator_namespace = args
+        .namespaces
+        .operator_namespace
+        .clone()
+        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
+
+    namespace::create_if_needed(operator_namespace.clone())
+        .await
+        .context(NamespaceSnafu {
+            namespace: operator_namespace.clone(),
+        })?;
+
+    let product_namespace = args
+        .namespaces
+        .product_namespace
+        .clone()
+        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+
+    namespace::create_if_needed(product_namespace.clone())
+        .await
+        .context(NamespaceSnafu {
+            namespace: product_namespace.clone(),
+        })?;
+
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             // Install the stack
             stack_spec
-                .install(release_list, &common_args.operator_namespace)
+                .install(
+                    release_list,
+                    &operator_namespace,
+                    &product_namespace,
+                    args.skip_release,
+                )
                 .context(StackSnafu)?;
 
             // Install stack manifests
             stack_spec
                 .install_stack_manifests(
                     &args.stack_parameters,
-                    &common_args.operator_namespace,
+                    &product_namespace,
                     transfer_client,
                 )
                 .await
                 .context(StackSnafu)?;
 
-            Ok(format!("Install stack {}", args.stack_name))
+            let output = format!(
+                "Installed stack {}\n\n\
+            Use \"stackablectl operator installed{}\" to display the installed operators\n\
+            Use \"stackablectl stacklet list{}\" to display the installed stacklets",
+                args.stack_name,
+                if args.namespaces.operator_namespace.is_some() {
+                    format!(" --operator-namespace {}", operator_namespace)
+                } else {
+                    "".into()
+                },
+                if args.namespaces.product_namespace.is_some() {
+                    format!(" --product-namespace {}", product_namespace)
+                } else {
+                    "".into()
+                }
+            );
+
+            Ok(output)
         }
         None => Ok("No such stack".into()),
     }

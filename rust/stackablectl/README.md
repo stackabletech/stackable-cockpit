@@ -35,12 +35,14 @@ Options:
       --offline
           Do not request any remote files via the network
 
-  -n, --operator-namespace <OPERATOR_NAMESPACE>
-          Namespace in the cluster used to deploy the products and operators
+  -h, --help
+          Print help (see a summary with '-h')
 
-          [default: default]
+  -V, --version
+          Print version
 
-  -d, --demo-file <DEMO_FILES>
+File options:
+  -d, --demo-file <DEMO_FILE>
           Provide one or more additional (custom) demo file(s)
 
           Demos are loaded in the following order: Remote (default) demo file, custom
@@ -48,10 +50,10 @@ Options:
           lastly demo files provided via the '-d/--demo-file' argument(s). If there are
           demos with the same name, the last demo definition will be used.
 
-          Use "stackablectl -d path/to/demos1.yaml -d path/to/demos2.yaml [OPTIONS] <COMMAND>"
+          Use "stackablectl [OPTIONS] <COMMAND> -d path/to/demos1.yaml -d path/to/demos2.yaml"
           to provide multiple additional demo files.
 
-  -s, --stack-file <STACK_FILES>
+  -s, --stack-file <STACK_FILE>
           Provide one or more additional (custom) stack file(s)
 
           Stacks are loaded in the following order: Remote (default) stack file, custom
@@ -59,10 +61,10 @@ Options:
           lastly demo files provided via the '-s/--stack-file' argument(s). If there are
           stacks with the same name, the last stack definition will be used.
 
-          Use "stackablectl -s path/to/stacks1.yaml -s path/to/stacks2.yaml [OPTIONS] <COMMAND>"
+          Use "stackablectl [OPTIONS] <COMMAND> -s path/to/stacks1.yaml -s path/to/stacks2.yaml"
           to provide multiple additional stack files.
 
-  -r, --release-file <RELEASE_FILES>
+  -r, --release-file <RELEASE_FILE>
           Provide one or more additional (custom) release file(s)
 
           Releases are loaded in the following order: Remote (default) release file,
@@ -71,9 +73,10 @@ Options:
           argument(s). If there are releases with the same name, the last release
           definition will be used.
 
-          Use "stackablectl -r path/to/releases1.yaml -r path/to/releases2.yaml [OPTIONS] <COMMAND>"
+          Use "stackablectl [OPTIONS] <COMMAND> -r path/to/releases1.yaml -r path/to/releases2.yaml"
           to provide multiple additional release files.
 
+Helm repository options:
       --helm-repo-stable <URL>
           Provide a custom Helm stable repository URL
 
@@ -88,12 +91,6 @@ Options:
           Provide a custom Helm dev repository URL
 
           [default: https://repo.stackable.tech/repository/helm-dev/]
-
-  -h, --help
-          Print help (see a summary with '-h')
-
-  -V, --version
-          Print version
 ```
 
 ## Dev Setup

@@ -1,10 +1,14 @@
 use std::time::Duration;
 
 pub const REDACTED_PASSWORD: &str = "<redacted>";
-pub const PASSWORD_LEN: usize = 32;
+pub const PASSWORD_LENGTH: usize = 32;
 
-pub const DEFAULT_STACKABLE_NAMESPACE: &str = "stackable";
-pub const DEFAULT_NAMESPACE: &str = "default";
+pub const DEFAULT_OPERATOR_NAMESPACE: &str = "stackable-operators";
+// TODO (Techassi): Change this to "stackable" once we switch to this version.
+// Currently lots of demos can only run in the default namespace, so we have to
+// keep "default" here, until we switch the demos. We can't switch them right
+// now, as the old stackablectl would break.
+pub const DEFAULT_PRODUCT_NAMESPACE: &str = "default";
 
 pub const DEFAULT_LOCAL_CLUSTER_NAME: &str = "stackable-data-platform";
 
