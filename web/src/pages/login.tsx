@@ -52,7 +52,9 @@ export const LoginPage = () => {
             alt='Stackable'
           />
         </h1>
-        <h2 class='mt-4 mb-3 text-xl font-normal'>{translate('login--log-in-needed')}</h2>
+        <h2 class='mt-4 mb-3 text-xl font-normal'>
+          {translate('login--log-in-needed')}
+        </h2>
         <form
           class='grid gap-y-2'
           style={{
