@@ -53,6 +53,13 @@ cargo build --release -p stackable-cockpitd --features ui # Builds the Stackable
 cd web && yarn run build && cd -                          # Builds the admin UI
 ```
 
+### Tilt and nix
+
+As re-building Docker images continuously and getting them to a k8s cluster is a hassle,
+there is a workflow using Tilt and nix.
+
+Run it via `make run-dev`. Some preparations are required for this to work.
+
 ### Pre-commit hooks and xtasks
 
 This repository uses multiple pre-commit hooks to run checks, formatting and code-generation on different files.
