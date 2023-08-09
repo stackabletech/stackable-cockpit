@@ -14,7 +14,7 @@ attachDevtoolsOverlay();
 
 const App = () => {
   return (
-    <div class='bg-gray-900 min-h-screen c-white'>
+    <div class='bg-gray-900 min-h-screen c-white flex flex-col'>
       <LoginPageOr>
         <Header />
         <div class='max-w-5xl mx-a mt-16'>

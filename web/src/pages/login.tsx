@@ -42,8 +42,8 @@ export const LoginPage = () => {
   const usernameId = createUniqueId();
   const passwordId = createUniqueId();
   return (
-    <div class='p-16'>
-      <div class='p-4 pt-0 max-w-2xl bg-gray-800 m-auto flex flex-col flex-items-center'>
+    <div class='p-20 min-w-2xl m-auto pt-2'>
+      <div class='rounded-xl px-7 pb-6 pt-9 bg-gray-800 m-auto flex flex-col flex-items-center'>
         <h1 class='m-0'>
           <img
             src={logo}
@@ -52,15 +52,15 @@ export const LoginPage = () => {
             alt='Stackable'
           />
         </h1>
-        <h2 class='mt-0 mb-1'>{translate('login--log-in')}</h2>
+        <h2 class='mt-4 mb-3 text-xl font-normal'>{translate('login--log-in-needed')}</h2>
         <form
-          class='grid'
+          class='grid gap-y-2'
           style={{
             'grid-template-columns': '[label] auto [field] 1fr',
             width: '100%',
           }}
         >
-          <label class='me-2' for={usernameId}>
+          <label class='me-2 text-lg' for={usernameId}>
             {translate('login--username')}
           </label>
           <input
@@ -68,7 +68,7 @@ export const LoginPage = () => {
             value={username()}
             onInput={(event) => setUsername(event.target.value)}
           />
-          <label class='me-2' for={passwordId}>
+          <label class='me-2 text-lg' for={passwordId}>
             {translate('login--password')}
           </label>
           <input
@@ -78,7 +78,7 @@ export const LoginPage = () => {
             onInput={(event) => setPassword(event.target.value)}
           />
           <div
-            class='flex flex-col flex-items-center mt-2'
+            class='flex flex-col flex-items-center mt-4'
             style={{ 'grid-column': 'span 2' }}
           >
             <Show when={loginMessage.loading}>
