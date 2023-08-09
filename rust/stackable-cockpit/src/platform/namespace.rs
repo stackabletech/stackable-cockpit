@@ -1,6 +1,6 @@
 use snafu::{ResultExt, Snafu};
 
-use crate::kube::{KubeClient, KubeClientError};
+use crate::utils::k8s::{KubeClient, KubeClientError};
 
 #[derive(Debug, Snafu)]
 pub enum NamespaceError {

@@ -10,12 +10,12 @@ use utoipa::ToSchema;
 use crate::{
     common::ManifestSpec,
     helm::{self, HelmChart, HelmError},
-    kube::{self, KubeClientError},
     platform::{
         demo::DemoParameter,
         release::{ReleaseInstallError, ReleaseList},
     },
     utils::{
+        k8s::{KubeClient, KubeClientError},
         params::{
             IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
         },
@@ -253,7 +253,7 @@ impl StackSpecV2 {
                         .await
                         .context(TransferSnafu)?;
 
-                    let kube_client = kube::KubeClient::new().await.context(KubeSnafu)?;
+                    let kube_client = KubeClient::new().await.context(KubeSnafu)?;
                     kube_client
                         .deploy_manifests(&manifests, product_namespace)
                         .await
