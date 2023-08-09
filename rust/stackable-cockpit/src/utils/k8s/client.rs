@@ -1,4 +1,4 @@
-use std::{iter::Sum, string::FromUtf8Error};
+use std::string::FromUtf8Error;
 
 use k8s_openapi::api::{
     apps::v1::{Deployment, StatefulSet},
@@ -48,9 +48,11 @@ pub struct KubeClient {
     discovery: Discovery,
 }
 
+#[derive(Debug)]
 pub struct ClusterInfo {
-    cpus: CpuQuantity,
-    memory: MemoryQuantity,
+    pub worker_count: usize,
+    pub cpus: CpuQuantity,
+    pub memory: MemoryQuantity,
 }
 
 impl KubeClient {
@@ -272,12 +274,14 @@ impl KubeClient {
         Ok(())
     }
 
-    pub async fn get_cluster_info(&self, name: &str) -> Result<ClusterInfo> {
+    pub async fn get_cluster_info(&self) -> Result<ClusterInfo> {
         let node_api: Api<Node> = Api::all(self.client.clone());
         let nodes = node_api
             .list(&ListParams::default())
             .await
             .context(KubeSnafu)?;
+        // FIXME
+        let worker_count = nodes.items.len();
 
         let allocatable = nodes
             .into_iter()
@@ -286,15 +290,19 @@ impl KubeClient {
 
         let cpus: CpuQuantity = allocatable
             .clone()
-            .filter_map(|a| a.get("cpu"))
-            .map(|q| q.try_into().unwrap())
+            .filter_map(|mut a| a.remove("cpu"))
+            .map(|q| CpuQuantity::try_from(q).unwrap())
             .sum();
         let memory: MemoryQuantity = allocatable
-            .filter_map(|a| a.get("memory"))
+            .filter_map(|mut a| a.remove("memory"))
             .map(|q| q.try_into().unwrap())
             .sum();
 
-        Ok(ClusterInfo { cpus, memory })
+        Ok(ClusterInfo {
+            worker_count,
+            cpus,
+            memory,
+        })
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].

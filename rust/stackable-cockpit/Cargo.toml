@@ -1,7 +1,11 @@
 [package]
 name = "stackable-cockpit"
+description = "Shared library for ckockpit-related utilities"
 version.workspace = true
-edition = "2021"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
 publish = false
 
 [features]
@@ -9,22 +13,23 @@ full = ["openapi"]
 openapi = ["dep:utoipa"]
 
 [dependencies]
-tokio = { workspace = true, features = ["process"] }
-utoipa = { workspace = true, optional = true }
-stackable-operator = { workspace = true }
 helm-sys = { path = "../helm-sys" }
-k8s-openapi = { workspace = true }
-serde_json = { workspace = true }
-serde_yaml = { workspace = true }
-indexmap = { workspace = true }
-reqwest = { workspace = true }
-tracing = { workspace = true }
-bcrypt = { workspace = true }
-snafu = { workspace = true }
-which = { workspace = true }
-serde = { workspace = true }
-tera = { workspace = true }
-kube = { workspace = true }
-rand = { workspace = true }
-sha2 = { workspace = true }
-url = { workspace = true }
+
+bcrypt.workspace = true
+indexmap.workspace = true
+k8s-openapi.workspace = true
+kube.workspace = true
+rand.workspace = true
+reqwest.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+serde.workspace = true
+sha2.workspace = true
+snafu.workspace = true
+stackable-operator.workspace = true
+tera.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+url.workspace = true
+utoipa = { workspace = true, optional = true }
+which.workspace = true

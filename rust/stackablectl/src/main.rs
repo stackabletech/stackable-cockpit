@@ -1,6 +1,7 @@
 use clap::Parser;
 use dotenvy::dotenv;
 use snafu::{ResultExt, Snafu};
+use stackable_cockpit::utils::k8s::KubeClient;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
@@ -40,6 +41,10 @@ enum CliError {
 #[snafu::report]
 #[tokio::main]
 async fn main() -> Result<(), CliError> {
+    let client = KubeClient::new().await.unwrap();
+    let cluster_info = client.get_cluster_info().await.unwrap();
+    println!("{cluster_info:?}");
+
     // Parse the CLI args and commands
     let cli = cli::Cli::parse();
 
