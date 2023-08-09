@@ -19,9 +19,15 @@ interface.
 
 ### Prerequisites
 
-- A working (and up2date) NodeJS installation, with Yarn as the preferred package manager
+- A working (and up2date) NodeJS installation (`v18, lts/hydrogen`), with Yarn as the preferred package manager
 - A working (and up2date) Rust installation including rustc, clippy, and cargo
-- Optional, but strongly advised: a working [pre-commit][pre-commit] installation
+- Optional, but strongly advised: a working [pre-commit][pre-commit] installation. You can find instructions in the pre-commit section on how to get it working.
+
+Don't forget to install global node dependencies:
+
+```
+$ npm install -g yarn typescript
+```
 
 ### Getting started
 
@@ -30,9 +36,10 @@ git clone git@github.com:stackabletech/stackable-cockpit.git
 cd stackable-cockpit
 ```
 
-The admin UI is registered as a crate and is part of the build process, as the HTML/CSS/JS bundle is included in the
-final `stackable-cockpitd` binary. To get the build process running, first execute `yarn install` to install all required NodeJS
+Before continuing with the build process, first execute `yarn install` to install all required NodeJS
 dependencies in the `node_modules` folder.
+
+The admin UI is registered as a crate and is part of the build process, as the HTML/CSS/JS bundle is included in the final `stackable-cockpitd` binary.
 
 ---
 
@@ -47,8 +54,13 @@ cd web && yarn run build && cd -                          # Builds the admin UI
 
 ### Pre-commit hooks and xtasks
 
-This repository uses multiple pre-commit hooks to run checks, formatting and code-generation on different files. The
-hooks are:
+This repository uses multiple pre-commit hooks to run checks, formatting and code-generation on different files.
+
+For pre-commit, please install the tool on your machine. You can install the hooks by running
+`pre-commit install` in the project directory. You can try executing all
+hooks with `pre-commit run`.
+
+The hooks are:
 
 - [`trailing-whitespace`](https://github.com/pre-commit/pre-commit-hooks#trailing-whitespace): Trims trailing whitespace
   in all files
