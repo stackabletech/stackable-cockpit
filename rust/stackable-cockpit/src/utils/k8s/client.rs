@@ -13,7 +13,10 @@ use kube::{
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
 
-use crate::{constants::REDACTED_PASSWORD, platform::cluster::ClusterInfo};
+use crate::{
+    constants::REDACTED_PASSWORD,
+    platform::cluster::{ClusterError, ClusterInfo},
+};
 
 pub type ListResult<T, E = KubeClientError> = Result<ObjectList<T>, E>;
 pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
@@ -40,6 +43,9 @@ pub enum KubeClientError {
 
     #[snafu(display("missing namespace for service '{service}'"))]
     MissingServiceNamespace { service: String },
+
+    #[snafu(display("failed to retrieve cluster information"))]
+    ClusterError { source: ClusterError },
 }
 
 pub struct KubeClient {
@@ -277,7 +283,7 @@ impl KubeClient {
             .await
             .context(KubeSnafu)?;
 
-        Ok(ClusterInfo::from_nodes(nodes))
+        ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].
