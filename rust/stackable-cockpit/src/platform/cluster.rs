@@ -15,7 +15,8 @@ pub enum ClusterError {
     },
 }
 
-/// [`ClusterInfo`] contains information about the Kubernetes cluster
+/// [`ClusterInfo`] contains information about the Kubernetes cluster, such as the number of nodes and
+/// allocatable resources.
 #[derive(Debug)]
 pub struct ClusterInfo {
     /// All nodes of the cluster regardless of their type
