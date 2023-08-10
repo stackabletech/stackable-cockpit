@@ -18,6 +18,9 @@ use crate::{
     platform::cluster::{ClusterError, ClusterInfo},
 };
 
+#[cfg(doc)]
+use crate::utils::k8s::ListParamsExt;
+
 pub type ListResult<T, E = KubeClientError> = Result<ObjectList<T>, E>;
 pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
 
