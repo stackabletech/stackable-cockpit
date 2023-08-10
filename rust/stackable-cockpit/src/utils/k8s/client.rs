@@ -1,11 +1,8 @@
 use std::string::FromUtf8Error;
 
-use k8s_openapi::{
-    api::{
-        apps::v1::{Deployment, DeploymentCondition, StatefulSet, StatefulSetCondition},
-        core::v1::{Namespace, Secret, Service},
-    },
-    apimachinery::pkg::apis::meta::v1::Condition,
+use k8s_openapi::api::{
+    apps::v1::{Deployment, StatefulSet},
+    core::v1::{Namespace, Node, Secret, Service},
 };
 use kube::{
     api::{ListParams, Patch, PatchParams, PostParams},
@@ -13,14 +10,16 @@ use kube::{
     discovery::Scope,
     Api, Client, Discovery, ResourceExt,
 };
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
-use stackable_operator::status::condition::ClusterCondition;
 
-#[cfg(feature = "openapi")]
-use utoipa::ToSchema;
+use crate::{
+    constants::REDACTED_PASSWORD,
+    platform::cluster::{ClusterError, ClusterInfo},
+};
 
-use crate::constants::REDACTED_PASSWORD;
+#[cfg(doc)]
+use crate::utils::k8s::ListParamsExt;
 
 pub type ListResult<T, E = KubeClientError> = Result<ObjectList<T>, E>;
 pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
@@ -47,12 +46,9 @@ pub enum KubeClientError {
 
     #[snafu(display("missing namespace for service '{service}'"))]
     MissingServiceNamespace { service: String },
-}
 
-pub enum ProductLabel {
-    Both,
-    Name,
-    App,
+    #[snafu(display("failed to retrieve cluster information"))]
+    ClusterError { source: ClusterError },
 }
 
 pub struct KubeClient {
@@ -279,145 +275,25 @@ impl KubeClient {
         Ok(())
     }
 
+    /// Retrieves [`ClusterInfo`] which contains resource information for the
+    /// current cluster. It should be noted that [`ClusterInfo`] contains data
+    /// about allocatable resources. These values don't reflect currently
+    /// available resources.
+    pub async fn get_cluster_info(&self) -> Result<ClusterInfo> {
+        let node_api: Api<Node> = Api::all(self.client.clone());
+        let nodes = node_api
+            .list(&ListParams::default())
+            .await
+            .context(KubeSnafu)?;
+
+        ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
+    }
+
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].
     fn gvk_of_typemeta(type_meta: &TypeMeta) -> GroupVersionKind {
         match type_meta.api_version.split_once('/') {
             Some((group, version)) => GroupVersionKind::gvk(group, version, &type_meta.kind),
             None => GroupVersionKind::gvk("", &type_meta.api_version, &type_meta.kind),
         }
-    }
-}
-
-pub trait ListParamsExt {
-    fn from_product(
-        product_name: &str,
-        instance_name: Option<&str>,
-        product_label: ProductLabel,
-    ) -> ListParams {
-        let mut params = ListParams::default();
-
-        if matches!(product_label, ProductLabel::Name | ProductLabel::Both) {
-            params.add_label(format!("app.kubernetes.io/name={product_name}"));
-        }
-
-        if matches!(product_label, ProductLabel::App | ProductLabel::Both) {
-            params.add_label(format!("app.kubernetes.io/app={product_name}"));
-        }
-
-        if let Some(instance_name) = instance_name {
-            // NOTE (Techassi): This bothers me a little, but .labels consumes self
-            params.add_label(format!("app.kubernetes.io/instance={instance_name}"));
-        }
-
-        params
-    }
-
-    /// Adds a label to the label selectors.
-    fn add_label(&mut self, label: impl Into<String>);
-}
-
-impl ListParamsExt for ListParams {
-    fn add_label(&mut self, label: impl Into<String>) {
-        match self.label_selector.as_mut() {
-            Some(labels) => labels.push_str(format!(",{}", label.into()).as_str()),
-            None => self.label_selector = Some(label.into()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
-#[cfg_attr(feature = "openapi", derive(ToSchema))]
-pub struct DisplayCondition {
-    pub message: Option<String>,
-    pub is_good: Option<bool>,
-    pub condition: String,
-}
-
-impl DisplayCondition {
-    pub fn new(condition: String, message: Option<String>, is_good: Option<bool>) -> Self {
-        Self {
-            condition,
-            message,
-            is_good,
-        }
-    }
-}
-
-/// This trait unifies the different conditions, like [`Condition`],
-/// [`DeploymentCondition`], [`ClusterCondition`]. The method `plain` returns
-/// a plain text representation of the list of conditions. This list ist suited
-/// for terminal output, i.e. stackablectl.
-pub trait ConditionsExt
-where
-    Self: IntoIterator,
-    Self::Item: ConditionExt,
-{
-    /// Returns a plain list of conditions.
-    fn plain(&self) -> Vec<DisplayCondition>;
-}
-
-impl ConditionsExt for Vec<Condition> {
-    fn plain(&self) -> Vec<DisplayCondition> {
-        self.iter()
-            .map(|c| {
-                DisplayCondition::new(
-                    format!("{}: {}", c.type_, c.status),
-                    Some(c.message.clone()),
-                    c.is_good(),
-                )
-            })
-            .collect()
-    }
-}
-
-impl ConditionsExt for Vec<DeploymentCondition> {
-    fn plain(&self) -> Vec<DisplayCondition> {
-        self.iter()
-            .map(|c| {
-                DisplayCondition::new(
-                    format!("{}: {}", c.type_, c.status),
-                    c.message.clone(),
-                    c.is_good(),
-                )
-            })
-            .collect()
-    }
-}
-
-impl ConditionsExt for Vec<ClusterCondition> {
-    fn plain(&self) -> Vec<DisplayCondition> {
-        self.iter()
-            .map(|c| DisplayCondition::new(c.display_short(), c.message.clone(), Some(c.is_good())))
-            .collect()
-    }
-}
-
-impl ConditionsExt for Vec<StatefulSetCondition> {
-    fn plain(&self) -> Vec<DisplayCondition> {
-        self.iter()
-            .map(|c| {
-                DisplayCondition::new(
-                    format!("{}: {}", c.type_, c.status),
-                    c.message.clone(),
-                    c.is_good(),
-                )
-            })
-            .collect()
-    }
-}
-
-pub trait ConditionExt {
-    fn is_good(&self) -> Option<bool> {
-        None
-    }
-}
-
-impl ConditionExt for StatefulSetCondition {}
-impl ConditionExt for DeploymentCondition {}
-impl ConditionExt for Condition {}
-
-impl ConditionExt for ClusterCondition {
-    fn is_good(&self) -> Option<bool> {
-        Some(self.is_good())
     }
 }

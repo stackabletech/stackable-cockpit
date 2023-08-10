@@ -1,25 +1,30 @@
 [package]
 name = "stackablectl"
+description = "Command line tool to interact with the Stackable Data Platform"
 version.workspace = true
-edition = "2021"
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
 publish = false
 
 [dependencies]
 stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
-comfy-table = { version = "6.2.0", features = ["custom_styling"] }
-tracing-subscriber = { workspace = true }
-clap_complete = { workspace = true }
-lazy_static = { workspace = true }
-serde_json = { workspace = true }
-serde_yaml = { workspace = true }
-indexmap = { workspace = true }
-dotenvy = { workspace = true }
-reqwest = { workspace = true }
-tracing = { workspace = true }
-semver = { workspace = true }
-snafu = { workspace = true }
-tokio = { workspace = true }
-serde = { workspace = true }
-clap = { workspace = true }
-xdg = { workspace = true }
-nu-ansi-term = "0.48.0"
+
+clap_complete.workspace = true
+clap.workspace = true
+comfy-table.workspace = true
+dotenvy.workspace = true
+indexmap.workspace = true
+lazy_static.workspace = true
+nu-ansi-term.workspace = true
+reqwest.workspace = true
+semver.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+serde.workspace = true
+snafu.workspace = true
+tokio.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true
+xdg.workspace = true

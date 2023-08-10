@@ -10,8 +10,10 @@ use utoipa::ToSchema;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    kube::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
-    utils::string::Casing,
+    utils::{
+        k8s::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
+        string::Casing,
+    },
 };
 
 mod grafana;

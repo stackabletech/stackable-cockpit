@@ -5,8 +5,8 @@ use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use stackable_cockpit::{
-    kube::DisplayCondition,
     platform::stacklet::{list, StackletError},
+    utils::k8s::DisplayCondition,
 };
 
 use crate::{

@@ -1,4 +1,5 @@
 pub mod check;
+pub mod k8s;
 pub mod params;
 pub mod path;
 pub mod string;

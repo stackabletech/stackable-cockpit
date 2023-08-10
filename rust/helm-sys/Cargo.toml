@@ -1,11 +1,14 @@
 [package]
 name = "helm-sys"
-version = "0.0.0-dev"
-edition = "2021"
+description = "Rust wrapper around Helm Go library"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+edition.workspace = true
+repository.workspace = true
 publish = false
+
 links = "helm"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [build-dependencies]
-gobuild = "0.1.0-alpha.1"
+gobuild.workspace = true
