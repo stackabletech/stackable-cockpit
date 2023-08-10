@@ -41,10 +41,6 @@ enum CliError {
 #[snafu::report]
 #[tokio::main]
 async fn main() -> Result<(), CliError> {
-    let client = KubeClient::new().await.unwrap();
-    let cluster_info = client.get_cluster_info().await.unwrap();
-    println!("{cluster_info:?}");
-
     // Parse the CLI args and commands
     let cli = cli::Cli::parse();
 

@@ -15,8 +15,7 @@ pub enum ClusterError {
     },
 }
 
-/// [`ClusterInfo`] contains information about the allocatable amount of CPUs
-/// and memory. Additionally, it contains the number of worker nodes.
+/// [`ClusterInfo`] contains information about the Kubernetes cluster
 #[derive(Debug)]
 pub struct ClusterInfo {
     /// All nodes of the cluster regardless of their type
@@ -24,7 +23,7 @@ pub struct ClusterInfo {
     /// Nodes that have no taints set, this e.g. excludes kind master nodes.
     /// The idea is, that our stacks/demos don't specify any tolerations, so these nodes are
     /// not available when installing a stack or demo.
-    pub untainted_worker_count: usize,
+    pub untainted_node_count: usize,
     /// Sum of allocatable cpu resources on all untainted nodes. Please note that allocatable
     /// is comparable to the total capacity of the node, not the free capacity!
     pub untainted_allocatable_cpu: CpuQuantity,
@@ -40,15 +39,15 @@ impl ClusterInfo {
         // FIXME (Techassi): Also retrieve number of control plane nodes
         let node_count = nodes.items.len();
 
-        let untainted_workers = nodes.into_iter().filter(|node| {
+        let untainted_nodes = nodes.into_iter().filter(|node| {
             node.spec
                 .as_ref()
                 .and_then(|spec| spec.taints.as_ref().map(|taints| taints.is_empty()))
                 .unwrap_or(true)
         });
-        let untainted_worker_count = untainted_workers.clone().count();
+        let untainted_node_count = untainted_nodes.clone().count();
 
-        let untainted_allocatable = untainted_workers
+        let untainted_allocatable = untainted_nodes
             .filter_map(|node| node.status)
             .filter_map(|status| status.allocatable);
 
@@ -67,7 +66,7 @@ impl ClusterInfo {
 
         Ok(ClusterInfo {
             node_count,
-            untainted_worker_count,
+            untainted_node_count,
             untainted_allocatable_cpu,
             untainted_allocatable_memory,
         })
