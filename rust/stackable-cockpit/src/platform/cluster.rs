@@ -47,22 +47,26 @@ impl ClusterInfo {
         });
         let untainted_node_count = untainted_nodes.clone().count();
 
-        let untainted_allocatable = untainted_nodes
+        let untainted_allocatable: Vec<_> = untainted_nodes
+            .into_iter()
             .filter_map(|node| node.status)
-            .filter_map(|status| status.allocatable);
+            .filter_map(|status| status.allocatable)
+            .collect();
 
-        let untainted_allocatable_cpu: CpuQuantity = untainted_allocatable
-            .clone()
-            .filter_map(|mut a| a.remove("cpu"))
-            .map(CpuQuantity::try_from)
-            .sum::<Result<CpuQuantity, _>>()
-            .context(ParseNodeCpuSnafu)?;
+        let mut untainted_allocatable_memory = MemoryQuantity::from_mebi(0.0);
+        let mut untainted_allocatable_cpu = CpuQuantity::from_millis(0);
 
-        let untainted_allocatable_memory: MemoryQuantity = untainted_allocatable
-            .filter_map(|mut a| a.remove("memory"))
-            .map(MemoryQuantity::try_from)
-            .sum::<Result<MemoryQuantity, _>>()
-            .context(ParseNodeMemorySnafu)?;
+        for mut node in untainted_allocatable {
+            if let Some(q) = node.remove("cpu") {
+                let cpu = CpuQuantity::try_from(q).context(ParseNodeCpuSnafu)?;
+                untainted_allocatable_cpu += cpu;
+            }
+
+            if let Some(q) = node.remove("memory") {
+                let memory = MemoryQuantity::try_from(q).context(ParseNodeMemorySnafu)?;
+                untainted_allocatable_memory += memory;
+            }
+        }
 
         Ok(ClusterInfo {
             node_count,
