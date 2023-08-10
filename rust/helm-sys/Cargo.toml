@@ -1,6 +1,6 @@
 [package]
 name = "helm-sys"
-description = "Rust wrapper around helm go library"
+description = "Rust wrapper around Helm Go library"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
