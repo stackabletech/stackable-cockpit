@@ -1,7 +1,6 @@
 use clap::Parser;
 use dotenvy::dotenv;
 use snafu::{ResultExt, Snafu};
-use stackable_cockpit::utils::k8s::KubeClient;
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
 
