@@ -1,6 +1,6 @@
 [package]
 name = "stackable-cockpitd"
-description = "Stackable cockpit daemon (rest api) + (optional) website for cockpit"
+description = "Stackable cockpit daemon bundling the HTTP REST API and UI"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
