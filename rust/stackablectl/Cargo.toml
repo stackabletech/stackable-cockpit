@@ -1,6 +1,6 @@
 [package]
 name = "stackablectl"
-description = "Command line tool to interact with a Stackable Data Platform"
+description = "Command line tool to interact with the Stackable Data Platform"
 version.workspace = true
 authors.workspace = true
 license.workspace = true

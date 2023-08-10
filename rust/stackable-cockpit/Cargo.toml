@@ -1,6 +1,6 @@
 [package]
 name = "stackable-cockpit"
-description = "Shared library for ckockpit-related utilities"
+description = "Shared library which powers cockpitd and stackablectl"
 version.workspace = true
 authors.workspace = true
 license.workspace = true
