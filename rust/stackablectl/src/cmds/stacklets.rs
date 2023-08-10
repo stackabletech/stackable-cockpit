@@ -87,21 +87,44 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
             // and their condition.
             let mut table = Table::new();
             table
-                .set_header(vec!["PRODUCT", "NAME", "NAMESPACE", "CONDITIONS"])
+                .set_header(vec![
+                    "PRODUCT",
+                    "NAME",
+                    "NAMESPACE",
+                    "ENDPOINTS",
+                    "CONDITIONS",
+                ])
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL);
 
             let mut error_list = Vec::new();
             let mut error_index = 1;
 
+            let max_endpoint_name_length = stacklets
+                .iter()
+                .flat_map(|s| &s.endpoints)
+                .map(|(endpoint_name, _)| endpoint_name.len())
+                .max()
+                .unwrap_or_default();
+
             for stacklet in stacklets {
                 let ConditionOutput { summary, errors } =
                     render_conditions(stacklet.conditions, &mut error_index, use_color);
+
+                let endpoints = stacklet
+                    .endpoints
+                    .iter()
+                    .map(|(name, url)| {
+                        format!("{name:width$}{url}", width = max_endpoint_name_length + 1)
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n");
 
                 table.add_row(vec![
                     stacklet.product,
                     stacklet.name,
                     stacklet.namespace.unwrap_or_default(),
+                    endpoints,
                     summary,
                 ]);
 

@@ -1,5 +1,5 @@
 use indexmap::IndexMap;
-use kube::{core::GroupVersionKind, ResourceExt};
+use kube::{api::ListParams, core::GroupVersionKind, ResourceExt};
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
@@ -11,7 +11,10 @@ use utoipa::ToSchema;
 use crate::{
     constants::PRODUCT_NAMES,
     utils::{
-        k8s::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
+        k8s::{
+            get_service_endpoint_urls, ConditionsExt, DisplayCondition, KubeClient,
+            KubeClientError, ListParamsExt, ProductLabel, ServiceError,
+        },
         string::Casing,
     },
 };
@@ -34,7 +37,11 @@ pub struct Stacklet {
     /// Name of the product.
     pub product: String,
 
-    /// Multiple cluster conditions
+    /// Endpoint addresses the product is reachable at.
+    /// The key is the service name (e.g. `web-ui`), the value is the URL.
+    pub endpoints: IndexMap<String, String>,
+
+    /// Multiple cluster conditions.
     pub conditions: Vec<DisplayCondition>,
 }
 
@@ -48,6 +55,9 @@ pub enum StackletError {
 
     #[snafu(display("JSON error"))]
     JsonError { source: serde_json::Error },
+
+    #[snafu(display("service error"))]
+    ServiceError { source: ServiceError },
 }
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
@@ -104,10 +114,29 @@ async fn list_stackable_stacklets(
                 None => continue,
             };
 
+            let service_list_params =
+                ListParams::from_product(product_name, Some(&object_name), ProductLabel::Name);
+            let services = kube_client
+                .list_services(Some(&object_namespace), &service_list_params)
+                .await
+                .context(KubeSnafu)?;
+            let mut endpoints = IndexMap::new();
+            for service in services {
+                let service_endpoint_urls = get_service_endpoint_urls(&service, &object_name).await;
+                match service_endpoint_urls {
+                    Ok(service_endpoint_urls) => endpoints.extend(service_endpoint_urls),
+                    Err(err) => warn!(
+                        "Failed to get endpoint_urls of service {service_name}: {err}",
+                        service_name = service.name_unchecked(),
+                    ),
+                }
+            }
+
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),
                 name: object_name,
                 product: product_name.to_string(),
+                endpoints,
                 conditions: conditions.plain(),
             });
         }

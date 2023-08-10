@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use k8s_openapi::api::apps::v1::{DeploymentCondition, StatefulSetCondition};
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
@@ -32,6 +33,7 @@ pub(super) async fn list(
             name: deployment.name_any(),
             namespace: deployment.namespace(),
             product: "minio".to_string(),
+            endpoints: IndexMap::new(),
             conditions: conditions.plain(),
         })
     }
@@ -51,6 +53,7 @@ pub(super) async fn list(
             name: stateful_set.name_any(),
             namespace: stateful_set.namespace(),
             product: "minio".to_string(),
+            endpoints: IndexMap::new(),
             conditions: conditions.plain(),
         })
     }

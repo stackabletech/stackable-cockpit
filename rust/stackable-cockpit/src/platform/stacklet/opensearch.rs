@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
@@ -29,6 +30,7 @@ pub(super) async fn list(
             name: service.name_any(),
             namespace: service.namespace(),
             product: "opensearch-dashboards".to_string(),
+            endpoints: IndexMap::new(),
             conditions: conditions.plain(),
         })
     }

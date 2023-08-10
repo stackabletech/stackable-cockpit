@@ -4,7 +4,7 @@ use snafu::ResultExt;
 
 use crate::{
     platform::stacklet::{KubeSnafu, Stacklet, StackletError},
-    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
+    utils::k8s::{get_service_endpoint_urls, ConditionsExt, KubeClient},
 };
 
 pub(super) async fn list(
@@ -13,11 +13,11 @@ pub(super) async fn list(
 ) -> Result<Vec<Stacklet>, StackletError> {
     let mut stacklets = Vec::new();
 
-    let params = ListParams::from_product(
-        "kube-prometheus-stack-prometheus",
-        Some("prometheus"),
-        ProductLabel::App,
-    );
+    // The helm-chart uses `app` instead of `app.kubernetes.io/app`, so we can't use `ListParams::from_product` here
+    let params = ListParams {
+        label_selector: Some("app=kube-prometheus-stack-prometheus".to_string()),
+        ..Default::default()
+    };
 
     let services = kube_client
         .list_services(namespace, &params)
@@ -25,15 +25,20 @@ pub(super) async fn list(
         .context(KubeSnafu)?;
 
     for service in services {
+        let service_name = service.name_any();
         let conditions: Vec<Condition> = match &service.status {
             Some(status) => status.conditions.clone().unwrap_or(vec![]),
             None => vec![],
         };
+        let endpoints = get_service_endpoint_urls(&service, &service_name)
+            .await
+            .map_err(|err| StackletError::ServiceError { source: err })?;
 
         stacklets.push(Stacklet {
             name: service.name_any(),
             namespace: service.namespace(),
             product: "prometheus".to_string(),
+            endpoints,
             conditions: conditions.plain(),
         })
     }
