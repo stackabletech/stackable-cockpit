@@ -8,6 +8,7 @@ stacklet--add = Lägg till Stacklet
 stacklet--product = Produkt
 stacklet--namespace = Namnrymd
 stacklet--name = Namn
+stacklet--endpoints = Endpoints
 stacklet--status = Status
 
 login--log-in = Logga in
