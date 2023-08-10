@@ -84,57 +84,37 @@ pub async fn get_service_endpoint_urls_for_loadbalancer(
 ) -> Result<IndexMap<String, String>, ServiceError> {
     let mut endpoints = IndexMap::new();
 
-    let lb_ip = service
+    let lb_host = service
         .status
         .as_ref()
-        .unwrap()
-        .load_balancer
-        .as_ref()
-        .unwrap()
-        .ingress
-        .as_ref()
-        .unwrap()
-        .get(0)
-        .unwrap()
-        .ip
-        .as_ref()
-        .unwrap();
+        .and_then(|s| s.load_balancer.as_ref())
+        .and_then(|l| l.ingress.as_ref())
+        .and_then(|l| l.get(0));
 
-    for service_port in service_spec.ports.iter().flatten() {
-        let lb_port = service_port.port;
+    if let Some(lb_host) = lb_host {
+        let lb_host = lb_host.hostname.as_ref().or(lb_host.ip.as_ref());
+        if let Some(lb_host) = lb_host {
+            for service_port in service_spec.ports.iter().flatten() {
+                let lb_port = service_port.port;
 
-        let endpoint_name = service_name
-            .trim_start_matches(referenced_object_name)
-            .trim_start_matches('-');
+                let endpoint_name = service_name
+                    .trim_start_matches(referenced_object_name)
+                    .trim_start_matches('-');
 
-        let port_name = service_port
-            .name
-            .clone()
-            .unwrap_or_else(|| lb_port.to_string());
-        let endpoint_name = if endpoint_name.is_empty() {
-            port_name.clone()
-        } else {
-            format!("{endpoint_name}-{port_name}")
-        };
+                let port_name = service_port
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| lb_port.to_string());
+                let endpoint_name = if endpoint_name.is_empty() {
+                    port_name.clone()
+                } else {
+                    format!("{endpoint_name}-{port_name}")
+                };
 
-        // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022/08/10
-        // For Superset: https://github.com/stackabletech/superset-operator/issues/248
-        // For Airflow: https://github.com/stackabletech/airflow-operator/issues/146
-        // As we still support older operator versions we need to also include the "old" way of naming
-        let endpoint = if port_name == "http"
-            || port_name.starts_with("http-")
-            || port_name == "ui"
-            || port_name == "airflow"
-            || port_name == "superset"
-        {
-            format!("http://{lb_ip}:{lb_port}")
-        } else if port_name == "https" || port_name.starts_with("https-") {
-            format!("https://{lb_ip}:{lb_port}")
-        } else {
-            format!("{lb_ip}:{lb_port}")
-        };
-
-        endpoints.insert(endpoint_name, endpoint);
+                let endpoint = endpoint_url(lb_host, lb_port, &port_name);
+                endpoints.insert(endpoint_name, endpoint);
+            }
+        }
     }
 
     Ok(endpoints)
@@ -198,23 +178,7 @@ pub async fn get_service_endpoint_urls_for_nodeport(
                     format!("{endpoint_name}-{port_name}")
                 };
 
-                // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022/08/10
-                // For Superset: https://github.com/stackabletech/superset-operator/issues/248
-                // For Airflow: https://github.com/stackabletech/airflow-operator/issues/146
-                // As we still support older operator versions we need to also include the "old" way of naming
-                let endpoint = if port_name == "http"
-                    || port_name.starts_with("http-")
-                    || port_name == "ui"
-                    || port_name == "airflow"
-                    || port_name == "superset"
-                {
-                    format!("http://{node_ip}:{node_port}")
-                } else if port_name == "https" || port_name.starts_with("https-") {
-                    format!("https://{node_ip}:{node_port}")
-                } else {
-                    format!("{node_ip}:{node_port}")
-                };
-
+                let endpoint = endpoint_url(&node_ip, node_port, &port_name);
                 endpoints.insert(endpoint_name, endpoint);
             }
             None => debug!("Could not get endpoint_url as service {service_name} has no nodePort"),
@@ -233,7 +197,8 @@ async fn get_node_ip(client: &Client, node_name: &str) -> Result<String, Service
     }
 }
 
-// TODO(sbernauer): Add caching
+// TODO(sbernauer): Add caching. Not going to do so now, as listener-op
+// will replace this code entirely anyway.
 async fn get_node_name_ip_mapping(
     client: &Client,
 ) -> Result<HashMap<String, String>, ServiceError> {
@@ -266,6 +231,25 @@ async fn get_node_name_ip_mapping(
     }
 
     Ok(result)
+}
+
+fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> String {
+    // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022/08/10
+    // For Superset: https://github.com/stackabletech/superset-operator/issues/248
+    // For Airflow: https://github.com/stackabletech/airflow-operator/issues/146
+    // As we still support older operator versions we need to also include the "old" way of naming
+    if port_name == "http"
+        || port_name.starts_with("http-")
+        || port_name == "ui"
+        || port_name == "airflow"
+        || port_name == "superset"
+    {
+        format!("http://{endpoint_host}:{endpoint_port}")
+    } else if port_name == "https" || port_name.starts_with("https-") {
+        format!("https://{endpoint_host}:{endpoint_port}")
+    } else {
+        format!("{endpoint_host}:{endpoint_port}")
+    }
 }
 
 async fn get_client() -> Result<Client, ServiceError> {
