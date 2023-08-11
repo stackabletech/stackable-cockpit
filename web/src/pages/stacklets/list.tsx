@@ -84,15 +84,15 @@ const StackletCondition = (props: { condition: DisplayCondition }) => (
 const StackletEndpoints = (props: {
   endpoints: { [key: string]: string | undefined };
 }) => (
-  <For each={Object.entries(props.endpoints)}>
-    {(item) => (
-      <ul class='p-0 m-0'>
+  <ul class='p-0 m-0'>
+    <For each={Object.entries(props.endpoints)}>
+      {(item) => (
         <li class={styles.inlineListItem}>
           <a class='c-white' href={item[1]}>
             {item[0]}
           </a>
         </li>
-      </ul>
-    )}
-  </For>
+      )}
+    </For>
+  </ul>
 );
