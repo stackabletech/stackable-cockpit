@@ -400,7 +400,7 @@ jobs:
       #     echo 'Running in MSYS2!'
       #     cargo build --target=${{ matrix.target }}
       #   shell: msys2 {0}
-        run: cargo build --release -p stackablectl
+      -  run: cargo build --release -p stackablectl
 
 # Commented out, as this was always failing.
 # We can comment it in again once want our image to be certified
