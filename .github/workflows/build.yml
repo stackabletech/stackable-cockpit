@@ -366,40 +366,15 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           submodules: recursive
-      # - uses: actions/setup-go@v3
-      #   with:
-      #     go-version: '^1.19.2'
       - uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: ${{ env.RUST_VERSION }}
           target: ${{ matrix.target }}
           override: true
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: build-stackablectl-${{ matrix.target }}
-      # - name: Prepare Ubuntu env
-      #   if: matrix.os == 'ubuntu-latest'
-      #   run: sudo apt install -y musl-tools
-      # - name: Prepare Windows env
-      #   if: matrix.os == 'windows-latest'
-      #   uses: msys2/setup-msys2@v2
-      #   with:
-      #     msystem: MINGW64
-      #     update: true
-      #     install: base-devel mingw-w64-x86_64-go mingw-w64-x86_64-rust
-      # - name: Build for non-Windows
-      #   if: matrix.os != 'windows-latest'
-      #   uses: actions-rs/cargo@v1
-      #   with:
-      #     command: build
-      #     args: --target=${{ matrix.target }}
-      # - name: Build for Windows
-      #   if: matrix.os == 'windows-latest'
-      #   run: |
-      #     echo 'Running in MSYS2!'
-      #     cargo build --target=${{ matrix.target }}
-      #   shell: msys2 {0}
       -  run: cargo build -p stackablectl
 
 # Commented out, as this was always failing.
