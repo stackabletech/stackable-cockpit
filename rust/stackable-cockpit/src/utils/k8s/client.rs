@@ -295,17 +295,9 @@ impl KubeClient {
         ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
     }
 
-    pub async fn get_endpoints(
-        &self,
-        service_name: &str,
-        namespace: Option<&str>,
-    ) -> Result<Endpoints> {
-        let endpoints_api: Api<Endpoints> = match namespace {
-            Some(namespace) => Api::namespaced(self.client.clone(), namespace),
-            None => Api::all(self.client.clone()),
-        };
-
-        endpoints_api.get(service_name).await.context(KubeSnafu)
+    pub async fn get_endpoint(&self, namespace: &str, name: &str) -> Result<Endpoints> {
+        let endpoints_api: Api<Endpoints> = Api::namespaced(self.client.clone(), namespace);
+        endpoints_api.get(name).await.context(KubeSnafu)
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].
