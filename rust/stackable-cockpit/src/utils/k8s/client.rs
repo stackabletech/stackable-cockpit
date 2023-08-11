@@ -2,7 +2,7 @@ use std::string::FromUtf8Error;
 
 use k8s_openapi::api::{
     apps::v1::{Deployment, StatefulSet},
-    core::v1::{Namespace, Node, Secret, Service},
+    core::v1::{Endpoints, Namespace, Node, Secret, Service},
 };
 use kube::{
     api::{ListParams, Patch, PatchParams, PostParams},
@@ -234,6 +234,17 @@ impl KubeClient {
         Ok(stateful_sets)
     }
 
+    pub async fn list_nodes(&self) -> ListResult<Node> {
+        let node_api: Api<Node> = Api::all(self.client.clone());
+
+        let nodes = node_api
+            .list(&ListParams::default())
+            .await
+            .context(KubeSnafu)?;
+
+        Ok(nodes)
+    }
+
     /// Returns a [`Namespace`] identified by name. If this namespace doesn't
     /// exist, this method returns [`None`].
     pub async fn get_namespace(&self, name: &str) -> Result<Option<Namespace>> {
@@ -280,13 +291,21 @@ impl KubeClient {
     /// about allocatable resources. These values don't reflect currently
     /// available resources.
     pub async fn get_cluster_info(&self) -> Result<ClusterInfo> {
-        let node_api: Api<Node> = Api::all(self.client.clone());
-        let nodes = node_api
-            .list(&ListParams::default())
-            .await
-            .context(KubeSnafu)?;
-
+        let nodes = self.list_nodes().await?;
         ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
+    }
+
+    pub async fn get_endpoints(
+        &self,
+        service_name: &str,
+        namespace: Option<&str>,
+    ) -> Result<Endpoints> {
+        let endpoints_api: Api<Endpoints> = match namespace {
+            Some(namespace) => Api::namespaced(self.client.clone(), namespace),
+            None => Api::all(self.client.clone()),
+        };
+
+        endpoints_api.get(service_name).await.context(KubeSnafu)
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].

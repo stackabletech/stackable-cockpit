@@ -3,10 +3,11 @@ use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
 use crate::{
-    platform::stacklet::{KubeSnafu, Stacklet, StackletError},
-    utils::k8s::{
-        get_service_endpoint_urls, ConditionsExt, KubeClient, ListParamsExt, ProductLabel,
+    platform::{
+        service::get_service_endpoint_urls,
+        stacklet::{KubeSnafu, Stacklet, StackletError},
     },
+    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
 };
 
 pub(super) async fn list(
@@ -27,16 +28,17 @@ pub(super) async fn list(
             Some(status) => status.conditions.clone().unwrap_or(vec![]),
             None => vec![],
         };
-        let endpoints = get_service_endpoint_urls(&service, &service_name)
+
+        let endpoints = get_service_endpoint_urls(kube_client, &service, &service_name)
             .await
             .map_err(|err| StackletError::ServiceError { source: err })?;
 
         stacklets.push(Stacklet {
-            name: service_name,
+            conditions: conditions.plain(),
             namespace: service.namespace(),
             product: "grafana".to_string(),
+            name: service_name,
             endpoints,
-            conditions: conditions.plain(),
         })
     }
 

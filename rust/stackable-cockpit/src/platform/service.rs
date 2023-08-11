@@ -8,15 +8,17 @@
 use std::collections::HashMap;
 
 use indexmap::IndexMap;
-use k8s_openapi::api::core::v1::{Endpoints, Node, Service, ServiceSpec};
-use kube::{api::ListParams, Api, Client, ResourceExt};
+use k8s_openapi::api::core::v1::{Service, ServiceSpec};
+use kube::{api::ListParams, ResourceExt};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, warn};
+
+use crate::utils::k8s::{KubeClient, KubeClientError, ListParamsExt, ProductLabel};
 
 #[derive(Debug, Snafu)]
 pub enum ServiceError {
     #[snafu(display("kube error: {source}"))]
-    KubeError { source: kube::error::Error },
+    KubeClientError { source: KubeClientError },
 
     #[snafu(display("missing namespace for service '{service}'"))]
     MissingServiceNamespace { service: String },
@@ -37,13 +39,43 @@ pub enum ServiceError {
     NodeMissingInIpMapping { node_name: String },
 }
 
+pub async fn get_service_endpoints(
+    product_name: &str,
+    object_name: &str,
+    object_namespace: &str,
+) -> Result<IndexMap<String, String>, ServiceError> {
+    let kube_client = KubeClient::new().await.context(KubeClientSnafu)?;
+
+    let service_list_params =
+        ListParams::from_product(product_name, Some(object_name), ProductLabel::Name);
+
+    let services = kube_client
+        .list_services(Some(object_namespace), &service_list_params)
+        .await
+        .context(KubeClientSnafu)?;
+
+    let mut endpoints = IndexMap::new();
+
+    for service in services {
+        match get_service_endpoint_urls(&kube_client, &service, object_name).await {
+            Ok(urls) => endpoints.extend(urls),
+            Err(err) => warn!(
+                "Failed to get endpoint_urls of service {service_name}: {err}",
+                service_name = service.name_unchecked(),
+            ),
+        }
+    }
+
+    Ok(endpoints)
+}
+
 pub async fn get_service_endpoint_urls(
+    kube_client: &KubeClient,
     service: &Service,
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, ServiceError> {
-    let client = get_client().await?;
     let service_name = service.name_unchecked();
-    let namespace = service.namespace().context(MissingServiceNamespaceSnafu {
+    let service_namespace = service.namespace().context(MissingServiceNamespaceSnafu {
         service: service_name.clone(),
     })?;
     let service_spec = service.spec.as_ref().context(MissingServiceSpecSnafu {
@@ -53,10 +85,10 @@ pub async fn get_service_endpoint_urls(
     let endpoints = match service_spec.type_.as_deref() {
         Some("NodePort") => {
             get_service_endpoint_urls_for_nodeport(
-                client,
+                kube_client,
                 &service_name,
                 service_spec,
-                &namespace,
+                &service_namespace,
                 referenced_object_name,
             )
             .await?
@@ -72,6 +104,76 @@ pub async fn get_service_endpoint_urls(
         }
         _ => IndexMap::new(),
     };
+
+    Ok(endpoints)
+}
+
+pub async fn get_service_endpoint_urls_for_nodeport(
+    kube_client: &KubeClient,
+    service_name: &str,
+    service_spec: &ServiceSpec,
+    service_namespace: &str,
+    referenced_object_name: &str,
+) -> Result<IndexMap<String, String>, ServiceError> {
+    let endpoints = kube_client
+        .get_endpoints(service_name, Some(service_namespace))
+        .await
+        .context(KubeClientSnafu)?;
+
+    let node_name = match &endpoints.subsets {
+        Some(subsets) if subsets.len() == 1 => match &subsets[0].addresses {
+            Some(addresses) if !addresses.is_empty() => match &addresses[0].node_name {
+                Some(node_name) => node_name,
+                None => {
+                    warn!("Could not determine the node the endpoint {service_name} is running on because the address of the subset didn't had a node name");
+                    return Ok(IndexMap::new());
+                }
+            },
+            Some(_) => {
+                warn!("Could not determine the node the endpoint {service_name} is running on because the subset had no addresses");
+                return Ok(IndexMap::new());
+            }
+            None => {
+                warn!("Could not determine the node the endpoint {service_name} is running on because subset had no addresses. Is the service {service_name} up and running?");
+                return Ok(IndexMap::new());
+            }
+        },
+        Some(subsets) => {
+            warn!("Could not determine the node the endpoint {service_name} is running on because endpoints consists of {num_subsets} subsets", num_subsets=subsets.len());
+            return Ok(IndexMap::new());
+        }
+        None => {
+            warn!("Could not determine the node the endpoint {service_name} is running on because the endpoint has no subset. Is the service {service_name} up and running?");
+            return Ok(IndexMap::new());
+        }
+    };
+
+    let node_ip = get_node_ip(kube_client, node_name).await?;
+
+    let mut endpoints = IndexMap::new();
+    for service_port in service_spec.ports.iter().flatten() {
+        match service_port.node_port {
+            Some(node_port) => {
+                let endpoint_name = service_name
+                    .trim_start_matches(referenced_object_name)
+                    .trim_start_matches('-');
+
+                let port_name = service_port
+                    .name
+                    .clone()
+                    .unwrap_or_else(|| service_port.port.to_string());
+                let endpoint_name = if endpoint_name.is_empty() {
+                    port_name.clone()
+                } else {
+                    format!("{endpoint_name}-{port_name}")
+                };
+
+                let endpoint = endpoint_url(&node_ip, node_port, &port_name);
+                endpoints.insert(endpoint_name, endpoint);
+            }
+            None => debug!("Could not get endpoint_url as service {service_name} has no nodePort"),
+        }
+    }
 
     Ok(endpoints)
 }
@@ -120,76 +222,8 @@ pub async fn get_service_endpoint_urls_for_loadbalancer(
     Ok(endpoints)
 }
 
-pub async fn get_service_endpoint_urls_for_nodeport(
-    client: Client,
-    service_name: &str,
-    service_spec: &ServiceSpec,
-    namespace: &str,
-    referenced_object_name: &str,
-) -> Result<IndexMap<String, String>, ServiceError> {
-    let endpoints_api: Api<Endpoints> = Api::namespaced(client.clone(), namespace);
-    let endpoints = endpoints_api.get(service_name).await.context(KubeSnafu)?;
-
-    let node_name = match &endpoints.subsets {
-        Some(subsets) if subsets.len() == 1 => match &subsets[0].addresses {
-            Some(addresses) if !addresses.is_empty() => match &addresses[0].node_name {
-                Some(node_name) => node_name,
-                None => {
-                    warn!("Could not determine the node the endpoint {service_name} is running on because the address of the subset didn't had a node name");
-                    return Ok(IndexMap::new());
-                }
-            },
-            Some(_) => {
-                warn!("Could not determine the node the endpoint {service_name} is running on because the subset had no addresses");
-                return Ok(IndexMap::new());
-            }
-            None => {
-                warn!("Could not determine the node the endpoint {service_name} is running on because subset had no addresses. Is the service {service_name} up and running?");
-                return Ok(IndexMap::new());
-            }
-        },
-        Some(subsets) => {
-            warn!("Could not determine the node the endpoint {service_name} is running on because endpoints consists of {num_subsets} subsets", num_subsets=subsets.len());
-            return Ok(IndexMap::new());
-        }
-        None => {
-            warn!("Could not determine the node the endpoint {service_name} is running on because the endpoint has no subset. Is the service {service_name} up and running?");
-            return Ok(IndexMap::new());
-        }
-    };
-
-    let node_ip = get_node_ip(&client, node_name).await?;
-
-    let mut endpoints = IndexMap::new();
-    for service_port in service_spec.ports.iter().flatten() {
-        match service_port.node_port {
-            Some(node_port) => {
-                let endpoint_name = service_name
-                    .trim_start_matches(referenced_object_name)
-                    .trim_start_matches('-');
-
-                let port_name = service_port
-                    .name
-                    .clone()
-                    .unwrap_or_else(|| service_port.port.to_string());
-                let endpoint_name = if endpoint_name.is_empty() {
-                    port_name.clone()
-                } else {
-                    format!("{endpoint_name}-{port_name}")
-                };
-
-                let endpoint = endpoint_url(&node_ip, node_port, &port_name);
-                endpoints.insert(endpoint_name, endpoint);
-            }
-            None => debug!("Could not get endpoint_url as service {service_name} has no nodePort"),
-        }
-    }
-
-    Ok(endpoints)
-}
-
-async fn get_node_ip(client: &Client, node_name: &str) -> Result<String, ServiceError> {
-    let node_name_ip_mapping = get_node_name_ip_mapping(client).await?;
+async fn get_node_ip(kube_client: &KubeClient, node_name: &str) -> Result<String, ServiceError> {
+    let node_name_ip_mapping = get_node_name_ip_mapping(kube_client).await?;
 
     match node_name_ip_mapping.get(node_name) {
         Some(node_ip) => Ok(node_ip.to_string()),
@@ -200,13 +234,9 @@ async fn get_node_ip(client: &Client, node_name: &str) -> Result<String, Service
 // TODO(sbernauer): Add caching. Not going to do so now, as listener-op
 // will replace this code entirely anyway.
 async fn get_node_name_ip_mapping(
-    client: &Client,
+    kube_client: &KubeClient,
 ) -> Result<HashMap<String, String>, ServiceError> {
-    let node_api: Api<Node> = Api::all(client.clone());
-    let nodes = node_api
-        .list(&ListParams::default())
-        .await
-        .context(KubeSnafu)?;
+    let nodes = kube_client.list_nodes().await.context(KubeClientSnafu)?;
 
     let mut result = HashMap::new();
     for node in nodes {
@@ -250,8 +280,4 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
     } else {
         format!("{endpoint_host}:{endpoint_port}")
     }
-}
-
-async fn get_client() -> Result<Client, ServiceError> {
-    Client::try_default().await.context(KubeSnafu)
 }
