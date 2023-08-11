@@ -88,7 +88,7 @@ const StackletEndpoints = (props: {
     {(item) => (
       <ul class='p-0 m-0'>
         <li class={styles.inlineListItem}>
-          <a href={item[1]}>{item[0]}</a>
+          <a class="c-white" href={item[1]}>{item[0]}</a>
         </li>
       </ul>
     )}
