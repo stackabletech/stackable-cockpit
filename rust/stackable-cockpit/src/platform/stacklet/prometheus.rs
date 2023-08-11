@@ -1,4 +1,3 @@
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
@@ -7,7 +6,7 @@ use crate::{
         service::get_service_endpoint_urls,
         stacklet::{KubeSnafu, Stacklet, StackletError},
     },
-    utils::k8s::{ConditionsExt, KubeClient},
+    utils::k8s::KubeClient,
 };
 
 pub(super) async fn list(
@@ -17,11 +16,7 @@ pub(super) async fn list(
     let mut stacklets = Vec::new();
 
     // The helm-chart uses `app` instead of `app.kubernetes.io/app`, so we can't use `ListParams::from_product` here
-    let params = ListParams {
-        label_selector: Some("app=kube-prometheus-stack-prometheus".to_string()),
-        ..Default::default()
-    };
-
+    let params = ListParams::default().labels("app=kube-prometheus-stack-prometheus");
     let services = kube_client
         .list_services(namespace, &params)
         .await
@@ -29,11 +24,6 @@ pub(super) async fn list(
 
     for service in services {
         let service_name = service.name_any();
-        let conditions: Vec<Condition> = match &service.status {
-            Some(status) => status.conditions.clone().unwrap_or(vec![]),
-            None => vec![],
-        };
-
         let endpoints = get_service_endpoint_urls(kube_client, &service, &service_name)
             .await
             .map_err(|err| StackletError::ServiceError { source: err })?;
@@ -41,7 +31,7 @@ pub(super) async fn list(
         stacklets.push(Stacklet {
             product: "prometheus".to_string(),
             namespace: service.namespace(),
-            conditions: conditions.plain(),
+            conditions: Vec::new(),
             name: service.name_any(),
             endpoints,
         })

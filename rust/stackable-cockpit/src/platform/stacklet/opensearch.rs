@@ -1,11 +1,10 @@
 use indexmap::IndexMap;
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
 use crate::{
     platform::stacklet::{KubeSnafu, Stacklet, StackletError},
-    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
+    utils::k8s::{KubeClient, ListParamsExt, ProductLabel},
 };
 
 pub(super) async fn list(
@@ -21,17 +20,12 @@ pub(super) async fn list(
         .context(KubeSnafu)?;
 
     for service in services {
-        let conditions: Vec<Condition> = match &service.status {
-            Some(status) => status.conditions.clone().unwrap_or(vec![]),
-            None => vec![],
-        };
-
         stacklets.push(Stacklet {
             name: service.name_any(),
             namespace: service.namespace(),
             product: "opensearch-dashboards".to_string(),
             endpoints: IndexMap::new(),
-            conditions: conditions.plain(),
+            conditions: Vec::new(),
         })
     }
 

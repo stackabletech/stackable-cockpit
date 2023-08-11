@@ -1,4 +1,3 @@
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
@@ -7,7 +6,7 @@ use crate::{
         service::get_service_endpoint_urls,
         stacklet::{KubeSnafu, Stacklet, StackletError},
     },
-    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
+    utils::k8s::{KubeClient, ListParamsExt, ProductLabel},
 };
 
 pub(super) async fn list(
@@ -24,17 +23,12 @@ pub(super) async fn list(
 
     for service in services {
         let service_name = service.name_any();
-        let conditions: Vec<Condition> = match &service.status {
-            Some(status) => status.conditions.clone().unwrap_or(vec![]),
-            None => vec![],
-        };
-
         let endpoints = get_service_endpoint_urls(kube_client, &service, &service_name)
             .await
             .map_err(|err| StackletError::ServiceError { source: err })?;
 
         stacklets.push(Stacklet {
-            conditions: conditions.plain(),
+            conditions: Vec::new(),
             namespace: service.namespace(),
             product: "grafana".to_string(),
             name: service_name,
