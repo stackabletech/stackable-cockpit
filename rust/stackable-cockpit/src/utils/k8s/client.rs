@@ -295,7 +295,7 @@ impl KubeClient {
         ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
     }
 
-    pub async fn get_endpoint(&self, namespace: &str, name: &str) -> Result<Endpoints> {
+    pub async fn get_endpoints(&self, namespace: &str, name: &str) -> Result<Endpoints> {
         let endpoints_api: Api<Endpoints> = Api::namespaced(self.client.clone(), namespace);
         endpoints_api.get(name).await.context(KubeSnafu)
     }

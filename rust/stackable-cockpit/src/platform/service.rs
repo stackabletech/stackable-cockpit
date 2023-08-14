@@ -116,7 +116,7 @@ pub async fn get_service_endpoint_urls_for_nodeport(
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, ServiceError> {
     let endpoints = kube_client
-        .get_endpoint(service_namespace, service_name)
+        .get_endpoints(service_namespace, service_name)
         .await
         .context(KubeClientSnafu)?;
 
