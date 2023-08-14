@@ -371,16 +371,14 @@ jobs:
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           submodules: recursive
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
-          profile: minimal
           toolchain: ${{ env.RUST_VERSION }}
-          target: ${{ matrix.target }}
-          override: true
+          targets: ${{ matrix.target }}
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: build-stackablectl-${{ matrix.target }}
-      - run: cargo build -p stackablectl
+      - run: cargo build --target ${{ matrix.target }} -p stackablectl
 
 # Commented out, as this was always failing.
 # We can comment it in again once want our image to be certified
