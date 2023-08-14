@@ -1,4 +1,4 @@
-import { For, createResource } from 'solid-js';
+import { For, Show, createResource } from 'solid-js';
 import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
 import styles from './list.module.css';
@@ -88,9 +88,20 @@ const StackletEndpoints = (props: {
     <For each={Object.entries(props.endpoints)}>
       {(item) => (
         <li class={styles.inlineListItem}>
-          <a class='c-white' href={item[1]}>
-            {item[0]}
-          </a>
+          <Show
+            when={
+              item[1]?.startsWith('http://') || item[1]?.startsWith('https://')
+            }
+            fallback={
+              <span class='c-white'>
+                {item[0]}: {item[1]}
+              </span>
+            }
+          >
+            <a class='c-white' href={item[1]}>
+              {item[0]}
+            </a>
+          </Show>
         </li>
       )}
     </For>
