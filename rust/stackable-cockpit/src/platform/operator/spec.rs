@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use snafu::Snafu;
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 use crate::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
@@ -188,7 +188,7 @@ impl OperatorSpec {
             true,
         ) {
             Ok(status) => {
-                println!("{status}");
+                debug!("{status}");
                 Ok(())
             }
             Err(err) => Err(err),

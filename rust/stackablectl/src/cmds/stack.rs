@@ -276,12 +276,13 @@ async fn install_cmd(
         Some(stack_spec) => {
             // Install the stack
             stack_spec
-                .install(
+                .install_release(
                     release_list,
                     &operator_namespace,
                     &product_namespace,
                     args.skip_release,
                 )
+                .await
                 .context(StackSnafu)?;
 
             // Install stack manifests

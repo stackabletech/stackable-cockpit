@@ -1,7 +1,13 @@
-use k8s_openapi::api::core::v1::Node;
+use std::fmt::Display;
+
+use k8s_openapi::{api::core::v1::Node, apimachinery::pkg::api::resource::Quantity};
 use kube::core::ObjectList;
+use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
+use tracing::warn;
+
+use crate::utils::k8s::{KubeClient, KubeClientError};
 
 #[derive(Debug, Snafu)]
 pub enum ClusterError {
@@ -75,5 +81,67 @@ impl ClusterInfo {
             untainted_allocatable_cpu,
             untainted_allocatable_memory,
         })
+    }
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct ResourceRequests {
+    pub cpu: Quantity,
+    pub memory: Quantity,
+    pub pvc: Quantity,
+}
+
+impl Display for ResourceRequests {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "CPU: {}, Memory: {}, PVC space: {}",
+            self.cpu.0, self.memory.0, self.pvc.0
+        )
+    }
+}
+
+/// This error indicates that the ResourceRequirements of a stack or a demo
+/// can not be parsed
+#[derive(Debug, Snafu)]
+pub enum ResourceRequestsError {
+    #[snafu(display("kube error: {source}"), context(false))]
+    KubeError { source: KubeClientError },
+    #[snafu(display("failed to parse cpu resource requirements"))]
+    ParseCpuResourceRequirements {
+        source: stackable_operator::error::Error,
+    },
+    #[snafu(display("failed to parse memory resource requirements"))]
+    ParseMemoryResourceRequirements {
+        source: stackable_operator::error::Error,
+    },
+}
+
+impl ResourceRequests {
+    /// `object_name` should be `Stack` or `Demo`.
+    pub async fn warn_when_cluster_too_small(
+        &self,
+        object_name: &str,
+    ) -> Result<(), ResourceRequestsError> {
+        let kube_client = KubeClient::new().await?;
+        let cluster_info = kube_client.get_cluster_info().await?;
+
+        let stack_cpu =
+            CpuQuantity::try_from(&self.cpu).context(ParseCpuResourceRequirementsSnafu)?;
+        let stack_memory =
+            MemoryQuantity::try_from(&self.memory).context(ParseMemoryResourceRequirementsSnafu)?;
+
+        if stack_cpu > cluster_info.untainted_allocatable_cpu {
+            warn!(
+                "{object_name} has resource requirements [{self}], but cluster seems to have only {} cores",
+                cluster_info.untainted_allocatable_cpu.as_cpu_count()
+            );
+        }
+        if stack_memory > cluster_info.untainted_allocatable_memory {
+            warn!("{object_name} has resource requirements [{self}], but cluster seems to have only {} of memory",
+            Quantity::from(cluster_info.untainted_allocatable_memory).0);
+        }
+
+        Ok(())
     }
 }

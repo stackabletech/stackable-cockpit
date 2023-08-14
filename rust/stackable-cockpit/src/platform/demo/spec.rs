@@ -7,6 +7,7 @@ use utoipa::ToSchema;
 use crate::{
     common::ManifestSpec,
     platform::{
+        cluster::{ResourceRequests, ResourceRequestsError},
         release::ReleaseList,
         stack::{StackError, StackList},
     },
@@ -47,6 +48,9 @@ pub struct DemoSpecV2 {
     #[serde(default)]
     pub manifests: Vec<ManifestSpec>,
 
+    /// The resource requests the demo imposes on a Kubernetes cluster
+    pub resource_requests: Option<ResourceRequests>,
+
     /// A variable number of supported parameters
     #[serde(default)]
     pub parameters: Vec<Parameter>,
@@ -59,6 +63,9 @@ pub enum DemoError {
 
     #[snafu(display("stack error"))]
     StackError { source: StackError },
+
+    #[snafu(display("failed to parse demo resource requirements"))]
+    ParseDemoResourceRequirements { source: ResourceRequestsError },
 
     #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
@@ -89,6 +96,13 @@ impl DemoSpecV2 {
             });
         }
 
+        if let Some(resource_requests) = &self.resource_requests {
+            resource_requests
+                .warn_when_cluster_too_small("Demo")
+                .await
+                .context(ParseDemoResourceRequirementsSnafu)?;
+        };
+
         // Get the stack spec based on the name defined in the demo spec
         let stack_spec = stack_list.get(&self.stack).ok_or(DemoError::NoSuchStack {
             name: self.stack.clone(),
@@ -96,12 +110,13 @@ impl DemoSpecV2 {
 
         // Install the stack
         stack_spec
-            .install(
+            .install_release(
                 release_list,
                 operator_namespace,
                 product_namespace,
                 skip_release,
             )
+            .await
             .context(StackSnafu)?;
 
         // Install stack manifests

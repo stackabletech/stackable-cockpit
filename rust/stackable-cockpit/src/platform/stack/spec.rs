@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
+use std::collections::HashMap;
 use tracing::{debug, info, instrument};
 
 #[cfg(feature = "openapi")]
@@ -11,6 +10,7 @@ use crate::{
     common::ManifestSpec,
     helm::{self, HelmChart, HelmError},
     platform::{
+        cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoParameter,
         release::{ReleaseInstallError, ReleaseList},
     },
@@ -60,6 +60,9 @@ pub enum StackError {
     #[snafu(display("yaml error: {source}"))]
     YamlError { source: serde_yaml::Error },
 
+    #[snafu(display("failed to parse stack resource requirements"))]
+    ParseStackResourceRequirements { source: ResourceRequestsError },
+
     #[snafu(display("path or url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
@@ -102,26 +105,24 @@ pub struct StackSpecV2 {
     #[serde(default)]
     pub manifests: Vec<ManifestSpec>,
 
+    /// The resource requests the stack imposes on a Kubernetes cluster
+    pub resource_requests: Option<ResourceRequests>,
+
     /// A variable number of supported parameters
     #[serde(default)]
     pub parameters: Vec<StackParameter>,
 }
 
 impl StackSpecV2 {
-    #[instrument(skip(release_list))]
-    pub fn install(
+    #[instrument(skip(self, release_list))]
+    pub async fn install_release(
         &self,
         release_list: ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
         skip_release_install: bool,
     ) -> Result<(), StackError> {
-        info!("Installing stack");
-
-        if skip_release_install {
-            info!("Skipping release installation during stack installation process");
-            return Ok(());
-        }
+        info!("Installing release for stack");
 
         // Returns an error if the stack doesn't support to be installed in the
         // requested product namespace. When installing a demo, this check is
@@ -132,6 +133,18 @@ impl StackSpecV2 {
                 supported: self.supported_namespaces.clone(),
                 requested: product_namespace.to_string(),
             });
+        }
+
+        if let Some(resource_requests) = &self.resource_requests {
+            resource_requests
+                .warn_when_cluster_too_small("Stack")
+                .await
+                .context(ParseStackResourceRequirementsSnafu)?;
+        };
+
+        if skip_release_install {
+            info!("Skipping release installation during stack installation process");
+            return Ok(());
         }
 
         // Get the release by name
