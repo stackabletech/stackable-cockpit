@@ -1,5 +1,6 @@
 locale-name = Deutsch
 
+search-placeholder = Suche...
 refresh = Aktualisieren
 
 stacklet--list = Stacklets

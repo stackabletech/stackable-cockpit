@@ -20,24 +20,7 @@
     }
   }
 
-  input {
+  .text-input {
     padding: 10px 12px 10px 40px;
-    font-size: 14px;
-    line-height: 16px;
-    border-radius: 4px;
-    border: none;
-
-    @include theme('text-input') {
-      background-color: t('bg');
-      color: t('text');
-    }
-
-    &::placeholder {
-      line-height: 16px;
-
-      @include theme('text-input') {
-        color: t('placeholder');
-      }
-    }
   }
 }

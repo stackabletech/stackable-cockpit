@@ -1,8 +1,9 @@
+import { TextInput, TextInputProps } from '@/components/form/text-input';
 import { SearchSymbol } from '@/components/symbols';
 
 import styles from './search.module.scss';
 
-interface SearchInputProps {
+interface SearchInputProps extends Omit<TextInputProps, 'placeholder'> {
   query: string;
   setQuery: (query: string) => void;
 }
@@ -13,10 +14,9 @@ export const SearchInput = (props: SearchInputProps) => {
       <div class='icon'>
         <SearchSymbol />
       </div>
-      <input
-        placeholder='Search'
-        value={props.query}
-        onInput={(event) => props.setQuery(event.currentTarget.value)}
+      <TextInput
+        onInput={(event) => props.setQuery(event.target.value)}
+        placeholder='Search...'
       />
     </div>
   );

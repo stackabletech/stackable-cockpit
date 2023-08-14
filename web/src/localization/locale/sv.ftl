@@ -1,5 +1,6 @@
 locale-name = Svenska
 
+search-placeholder = Search...
 refresh = Ladda om
 
 stacklet--list = Stackletar

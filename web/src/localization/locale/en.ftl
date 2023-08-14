@@ -1,5 +1,6 @@
 locale-name = English
 
+search-placeholder = Search...
 refresh = Refresh
 
 stacklet--list = Stacklets
