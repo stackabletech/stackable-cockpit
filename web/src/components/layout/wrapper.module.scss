@@ -1,0 +1,14 @@
+@import '@/scss/colors';
+@import '@/scss/layout';
+
+main {
+  grid-template-columns: repeat(8, 1fr);
+  max-width: $layout-wrapper-max-width;
+  display: grid;
+  margin: 0 auto;
+  gap: 16px;
+
+  &.full-height {
+    min-height: 100vh;
+  }
+}

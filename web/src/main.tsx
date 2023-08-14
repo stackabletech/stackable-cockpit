@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import '@unocss/reset/sanitize/sanitize.css';
 import 'virtual:uno.css';
+
 import { render } from 'solid-js/web';
 import { Route, Router, Routes } from '@solidjs/router';
+
+import { Stacklets, StackletConnectionDetails } from './pages/stacklets';
+import { Wrapper } from './components/layout';
 import { Listeners } from './pages/listeners';
 import { Header } from './components/header';
-import { StackletConnectionDetails } from './pages/stacklets/connect';
-import { Stacklets } from './pages/stacklets/list';
 import { LoginPageOr } from './pages/login';
 
 import './scss/base.scss';
@@ -17,7 +19,7 @@ const Home = () => {
 
 const App = () => {
   return (
-    <div class='bg-gray-900 min-h-screen c-white dark'>
+    <Wrapper>
       <LoginPageOr>
         <Header />
         <div class='max-w-5xl mx-a mt-16'>
@@ -32,7 +34,7 @@ const App = () => {
           </Routes>
         </div>
       </LoginPageOr>
-    </div>
+    </Wrapper>
   );
 };
 

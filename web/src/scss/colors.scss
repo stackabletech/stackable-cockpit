@@ -26,6 +26,9 @@ $color-white: #ffffff;
 
 $themes: (
   'dark': (
+    'base': (
+      'bg': $color-gray-900,
+    ),
     'button': (
       'primary-text': $color-white,
       'primary-text-hover': $color-white,
@@ -45,6 +48,9 @@ $themes: (
     ),
   ),
   'light': (
+    'base': (
+      'bg': $color-gray-100,
+    ),
     'button': (),
     'text-input': (
       'placeholder': $color-gray-500,
@@ -62,6 +68,7 @@ $themes: (
   @each $theme, $map in $themes {
     $theme-map: $map !global;
 
+    /* This breaks when importing in main.tsx without the use of CSS modules, great -.- */
     :global(.#{$theme}) & {
       @content;
     }
