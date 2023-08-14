@@ -3,8 +3,8 @@ use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
 use crate::{
-    kube::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
     platform::stacklet::{KubeSnafu, Stacklet, StackletError},
+    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
 };
 
 pub(super) async fn list(

@@ -2,8 +2,8 @@ use clap::{Args, ValueEnum};
 use snafu::{ensure, ResultExt, Snafu};
 
 use stackable_cockpit::{
-    cluster::{KindCluster, KindClusterError, MinikubeCluster, MinikubeClusterError},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
+    engine::{KindCluster, KindClusterError, MinikubeCluster, MinikubeClusterError},
 };
 
 #[derive(Debug, Snafu)]
@@ -26,6 +26,7 @@ pub enum CommonClusterArgsError {
 }
 
 #[derive(Debug, Args)]
+#[command(next_help_heading = "Cluster options")]
 pub struct CommonClusterArgs {
     /// Type of local cluster to use for testing
     #[arg(short = 'c', long = "cluster", value_name = "CLUSTER_TYPE")]

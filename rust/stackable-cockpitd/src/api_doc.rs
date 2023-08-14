@@ -1,8 +1,7 @@
 use stackable_cockpit::{
     common::ManifestSpec,
-    kube::DisplayCondition,
     platform::{demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet},
-    utils::params::Parameter,
+    utils::{k8s::DisplayCondition, params::Parameter},
 };
 use utoipa::{
     openapi::security::{HttpAuthScheme, SecurityScheme},

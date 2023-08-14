@@ -1,21 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import '@unocss/reset/sanitize/sanitize.css';
+import './scss/base.scss';
 import 'virtual:uno.css';
 
 import { render } from 'solid-js/web';
-import { Route, Router, Routes } from '@solidjs/router';
+import { Navigate, Route, Router, Routes } from '@solidjs/router';
 
 import { Stacklets, StackletConnectionDetails } from './pages/stacklets';
 import { Wrapper } from './components/layout';
-import { Listeners } from './pages/listeners';
 import { Header } from './components/header';
 import { LoginPageOr } from './pages/login';
 
-import './scss/base.scss';
+import { LanguageProvider } from './localization';
+import { attachDevtoolsOverlay } from '@solid-devtools/overlay';
 
-const Home = () => {
-  return <>lorem ipsum dolor sit amet</>;
-};
+attachDevtoolsOverlay();
 
 const App = () => {
   return (
@@ -29,8 +28,7 @@ const App = () => {
               component={StackletConnectionDetails}
             />
             <Route path='/stacklets' component={Stacklets} />
-            <Route path='/listeners' component={Listeners} />
-            <Route path='/' component={Home} />
+            <Route path='/' component={() => <Navigate href='/stacklets' />} />
           </Routes>
         </div>
       </LoginPageOr>
@@ -46,9 +44,11 @@ if (root == undefined) {
 } else {
   render(
     () => (
-      <Router base='/ui'>
-        <App />
-      </Router>
+      <LanguageProvider>
+        <Router base='/ui'>
+          <App />
+        </Router>
+      </LanguageProvider>
     ),
     root,
   );

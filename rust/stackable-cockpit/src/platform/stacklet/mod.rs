@@ -10,8 +10,10 @@ use utoipa::ToSchema;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    kube::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
-    utils::string::Casing,
+    utils::{
+        k8s::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
+        string::Casing,
+    },
 };
 
 mod grafana;
@@ -60,6 +62,7 @@ pub async fn list(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletErro
     stacklets.extend(minio::list(&kube_client, namespace).await?);
     stacklets.extend(opensearch::list(&kube_client, namespace).await?);
     stacklets.extend(prometheus::list(&kube_client, namespace).await?);
+
     Ok(stacklets)
 }
 

@@ -3,8 +3,8 @@ use tokio::process::Command;
 use tracing::{debug, info, instrument};
 
 use crate::{
-    cluster::{check_if_docker_is_running, DockerError},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
+    engine::{check_if_docker_is_running, DockerError},
     utils::check::binaries_present,
 };
 

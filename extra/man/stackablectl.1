@@ -2,10 +2,11 @@
 .el .ds Aq '
 .TH stackablectl 1  "stackablectl 0.0.0-dev" 
 .SH NAME
-stackablectl
+stackablectl \- Command line tool to interact with the Stackable Data Platform
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-n\fR|\fB\-\-operator\-namespace\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
+Command line tool to interact with the Stackable Data Platform
 .SH OPTIONS
 .TP
 \fB\-l\fR, \fB\-\-log\-level\fR=\fILOG_LEVEL\fR
@@ -20,10 +21,7 @@ Cached files are saved at \*(Aq$XDG_CACHE_HOME/stackablectl\*(Aq, which is usual
 \fB\-\-offline\fR
 Do not request any remote files via the network
 .TP
-\fB\-n\fR, \fB\-\-operator\-namespace\fR=\fIOPERATOR_NAMESPACE\fR [default: default]
-Namespace in the cluster used to deploy the products and operators
-.TP
-\fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILES\fR
+\fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILE\fR
 Provide one or more additional (custom) demo file(s)
 
 Demos are loaded in the following order: Remote (default) demo file, custom
@@ -31,10 +29,10 @@ demo files provided via the \*(AqSTACKABLE_DEMO_FILES\*(Aq environment variable,
 lastly demo files provided via the \*(Aq\-d/\-\-demo\-file\*(Aq argument(s). If there are
 demos with the same name, the last demo definition will be used.
 
-Use "stackablectl \-d path/to/demos1.yaml \-d path/to/demos2.yaml [OPTIONS] <COMMAND>"
+Use "stackablectl [OPTIONS] <COMMAND> \-d path/to/demos1.yaml \-d path/to/demos2.yaml"
 to provide multiple additional demo files.
 .TP
-\fB\-s\fR, \fB\-\-stack\-file\fR=\fISTACK_FILES\fR
+\fB\-s\fR, \fB\-\-stack\-file\fR=\fISTACK_FILE\fR
 Provide one or more additional (custom) stack file(s)
 
 Stacks are loaded in the following order: Remote (default) stack file, custom
@@ -42,10 +40,10 @@ stack files provided via the \*(AqSTACKABLE_STACK_FILES\*(Aq environment variabl
 lastly demo files provided via the \*(Aq\-s/\-\-stack\-file\*(Aq argument(s). If there are
 stacks with the same name, the last stack definition will be used.
 
-Use "stackablectl \-s path/to/stacks1.yaml \-s path/to/stacks2.yaml [OPTIONS] <COMMAND>"
+Use "stackablectl [OPTIONS] <COMMAND> \-s path/to/stacks1.yaml \-s path/to/stacks2.yaml"
 to provide multiple additional stack files.
 .TP
-\fB\-r\fR, \fB\-\-release\-file\fR=\fIRELEASE_FILES\fR
+\fB\-r\fR, \fB\-\-release\-file\fR=\fIRELEASE_FILE\fR
 Provide one or more additional (custom) release file(s)
 
 Releases are loaded in the following order: Remote (default) release file,
@@ -54,7 +52,7 @@ variable, and lastly release files provided via the \*(Aq\-r/\-\-release\-file\*
 argument(s). If there are releases with the same name, the last release
 definition will be used.
 
-Use "stackablectl \-r path/to/releases1.yaml \-r path/to/releases2.yaml [OPTIONS] <COMMAND>"
+Use "stackablectl [OPTIONS] <COMMAND> \-r path/to/releases1.yaml \-r path/to/releases2.yaml"
 to provide multiple additional release files.
 .TP
 \fB\-\-helm\-repo\-stable\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-stable/]
@@ -98,3 +96,5 @@ stackablectl\-help(1)
 Print this message or the help of the given subcommand(s)
 .SH VERSION
 v0.0.0\-dev
+.SH AUTHORS
+Stackable GmbH <info@stackable.tech>

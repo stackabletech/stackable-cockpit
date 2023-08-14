@@ -17,14 +17,12 @@ _stackablectl() {
     _arguments "${_arguments_options[@]}" \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
-'-n+[Namespace in the cluster used to deploy the products and operators]:OPERATOR_NAMESPACE: ' \
-'--operator-namespace=[Namespace in the cluster used to deploy the products and operators]:OPERATOR_NAMESPACE: ' \
-'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
-'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILES:_files' \
-'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
-'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILES:_files' \
-'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILES:_files' \
-'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILES:_files' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -45,8 +43,21 @@ _stackablectl() {
         case $line[1] in
             (operator)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackablectl__operator_commands" \
@@ -67,6 +78,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -81,6 +105,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -90,6 +127,8 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
@@ -97,6 +136,19 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -106,8 +158,23 @@ minikube\:"Use a minikube cluster"))' \
 ;;
 (uninstall)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 '*::operators -- One or more operators to uninstall:' \
@@ -121,6 +188,21 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -173,8 +255,21 @@ esac
 ;;
 (release)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackablectl__release_commands" \
@@ -195,6 +290,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -209,6 +317,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -222,6 +343,8 @@ _arguments "${_arguments_options[@]}" \
 '*--include=[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
 '*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
 '*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
@@ -229,6 +352,19 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -238,8 +374,23 @@ minikube\:"Use a minikube cluster"))' \
 ;;
 (uninstall)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ':RELEASE -- Name of the release to uninstall:' \
@@ -287,8 +438,21 @@ esac
 ;;
 (stack)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackablectl__stack_commands" \
@@ -309,6 +473,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -323,6 +500,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -332,9 +522,7 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
-'*-s+[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
 '*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
-'*-p+[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the stack]:PARAMETERS: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
@@ -343,6 +531,25 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--skip-release[Skip the installation of the release during the stack install process]' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -388,6 +595,19 @@ esac
 ;;
 (stacklets)
 _arguments "${_arguments_options[@]}" \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -410,10 +630,26 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-a[Will display services of all namespaces, not only the current one]' \
-'--all-namespaces[Will display services of all namespaces, not only the current one]' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '-c[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
 '--color[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -450,8 +686,21 @@ esac
 ;;
 (demo)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackablectl__demo_commands" \
@@ -472,6 +721,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -486,6 +748,19 @@ yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -495,9 +770,7 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (install)
 _arguments "${_arguments_options[@]}" \
-'*-s+[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
 '*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
-'*-p+[List of parameters to use when installing the demo]:PARAMETERS: ' \
 '*--parameters=[List of parameters to use when installing the demo]:PARAMETERS: ' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
@@ -506,6 +779,25 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
+'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--skip-release[Skip the installation of the release during the stack install process]' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -551,8 +843,21 @@ esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackablectl__completions_commands" \
@@ -567,24 +872,63 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (bash)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
 ;;
 (fish)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
 ;;
 (zsh)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
@@ -627,8 +971,21 @@ esac
 ;;
 (cache)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 ":: :_stackablectl__cache_commands" \
@@ -643,16 +1000,44 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
 ;;
 (clean)
 _arguments "${_arguments_options[@]}" \
-'-h[Print help]' \
-'--help[Print help]' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--old[Only remove outdated files in the cache]' \
+'--outdated[Only remove outdated files in the cache]' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
 && ret=0
@@ -1150,11 +1535,11 @@ _stackablectl__help__help_commands() {
 (( $+functions[_stackablectl__operator__help_commands] )) ||
 _stackablectl__operator__help_commands() {
     local commands; commands=(
-'list:List available (or installed) operators' \
+'list:List available operators' \
 'describe:Print out detailed operator information' \
 'install:Install one or more operators' \
 'uninstall:Uninstall one or more operators' \
-'installed:List installed operator (same as list -i)' \
+'installed:List installed operators' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl operator help commands' commands "$@"
@@ -1376,22 +1761,22 @@ _stackablectl__stacklets__list_commands() {
 (( $+functions[_stackablectl__help__operator_commands] )) ||
 _stackablectl__help__operator_commands() {
     local commands; commands=(
-'list:List available (or installed) operators' \
+'list:List available operators' \
 'describe:Print out detailed operator information' \
 'install:Install one or more operators' \
 'uninstall:Uninstall one or more operators' \
-'installed:List installed operator (same as list -i)' \
+'installed:List installed operators' \
     )
     _describe -t commands 'stackablectl help operator commands' commands "$@"
 }
 (( $+functions[_stackablectl__operator_commands] )) ||
 _stackablectl__operator_commands() {
     local commands; commands=(
-'list:List available (or installed) operators' \
+'list:List available operators' \
 'describe:Print out detailed operator information' \
 'install:Install one or more operators' \
 'uninstall:Uninstall one or more operators' \
-'installed:List installed operator (same as list -i)' \
+'installed:List installed operators' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl operator commands' commands "$@"

@@ -8,12 +8,16 @@ use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::ListError,
+    constants::DEFAULT_OPERATOR_NAMESPACE,
     platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     utils::path::PathOrUrlParseError,
-    xfer::{FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
 
-use crate::cli::{CacheSettingsError, Cli, CommonClusterArgs, CommonClusterArgsError, OutputType};
+use crate::{
+    args::{CommonClusterArgs, CommonClusterArgsError},
+    cli::{Cli, OutputType},
+};
 
 #[derive(Debug, Args)]
 pub struct ReleaseArgs {
@@ -69,6 +73,10 @@ pub struct ReleaseInstallArgs {
     #[arg(short, long = "exclude", group = "products")]
     excluded_products: Vec<String>,
 
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
+
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
 }
@@ -78,6 +86,10 @@ pub struct ReleaseUninstallArgs {
     /// Name of the release to uninstall
     #[arg(name = "RELEASE")]
     release: String,
+
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
 }
 
 #[derive(Debug, Snafu)]
@@ -90,9 +102,6 @@ pub enum ReleaseCmdError {
 
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
-
-    #[snafu(display("cache settings resolution error"), context(false))]
-    CacheSettingsError { source: CacheSettingsError },
 
     #[snafu(display("list error"))]
     ListError { source: ListError },
@@ -111,12 +120,10 @@ pub enum ReleaseCmdError {
 }
 
 impl ReleaseArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, ReleaseCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, ReleaseCmdError> {
         debug!("Handle release args");
 
-        let transfer_client = FileTransferClient::new(common_args.cache_settings()?)
-            .await
-            .context(TransferSnafu)?;
+        let transfer_client = FileTransferClient::new_with(cache);
 
         let files = common_args
             .get_release_files()
@@ -134,9 +141,7 @@ impl ReleaseArgs {
             ReleaseCommands::List(args) => list_cmd(args, release_list).await,
             ReleaseCommands::Describe(args) => describe_cmd(args, release_list).await,
             ReleaseCommands::Install(args) => install_cmd(args, common_args, release_list).await,
-            ReleaseCommands::Uninstall(args) => {
-                uninstall_cmd(args, common_args, release_list).await
-            }
+            ReleaseCommands::Uninstall(args) => uninstall_cmd(args, release_list).await,
         }
     }
 }
@@ -242,7 +247,7 @@ async fn install_cmd(
                 .install(
                     &args.included_products,
                     &args.excluded_products,
-                    &common_args.operator_namespace,
+                    &args.operator_namespace,
                 )
                 .context(ReleaseInstallSnafu)?;
 
@@ -254,7 +259,6 @@ async fn install_cmd(
 
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
-    common_args: &Cli,
     release_list: ReleaseList,
 ) -> Result<String, ReleaseCmdError> {
     info!("Installing release");
@@ -262,7 +266,7 @@ async fn uninstall_cmd(
     match release_list.get(&args.release) {
         Some(release) => {
             release
-                .uninstall(&common_args.operator_namespace)
+                .uninstall(&args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
             Ok("Installed release".into())

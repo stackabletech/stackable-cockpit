@@ -5,8 +5,8 @@ use tokio::{io::AsyncWriteExt, process::Command};
 use tracing::{debug, info, instrument};
 
 use crate::{
-    cluster::{check_if_docker_is_running, kind::config::KindClusterConfig, DockerError},
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
+    engine::{check_if_docker_is_running, kind::config::KindClusterConfig, DockerError},
     utils::check::binaries_present_with_name,
 };
 

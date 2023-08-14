@@ -1,0 +1,50 @@
+= Installation
+
+The Stackable Cockpit is normally installed using Helm.
+
+== Prerequisites
+
+You will need:
+
+* a Kubernetes cluster
+* kubectl
+* Helm
+* htpasswd (from Apache HTTPD)
+
+Resource sizing depends on cluster type(s), usage and scope, but as a starting point we recommend a minimum of the following resources for this service:
+
+* 0.2 cores (e.g. i5 or similar)
+* 256MB RAM
+
+== Authentication
+
+The Stackable Cockpit authenticates users using a htpasswd database. This file can be
+created and maintained using the `htpasswd` tool:
+
+[source,console]
+----
+$ htpasswd -Bc my-htpasswd first-user
+$ htpasswd -B my-htpasswd second-user
+----
+
+NOTE: Stackable Cockpit _only_ supports bcrypt passwords (controlled by the
+      `-B` flag).
+
+== Installing
+
+First ensure that you have installed the Stackable Operators Helm repository:
+
+[source,console]
+----
+$ helm repo add stackable https://repo.stackable.tech/repository/helm-stable/
+----
+
+Then install the Stackable Cockpit:
+
+[source,console]
+----
+$ helm upgrade listener-operator stackable/stackable-cockpit --install \
+  --set-file htpasswd=my-htpasswd
+----
+
+Helm will deploy the service in Kubernetes containers. You're now ready to access the cockpit!
