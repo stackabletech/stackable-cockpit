@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use tracing::{debug, info, instrument};
+use tracing::{debug, info, instrument, log::warn};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -61,8 +61,8 @@ pub enum StackError {
     #[snafu(display("yaml error: {source}"))]
     YamlError { source: serde_yaml::Error },
 
-    #[snafu(display("failed to parse stack resource requirements"))]
-    ParseStackResourceRequirements { source: ResourceRequestsError },
+    #[snafu(display("stack resource requests error"), context(false))]
+    StackResourceRequestsError { source: ResourceRequestsError },
 
     #[snafu(display("path or url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
@@ -137,10 +137,20 @@ impl StackSpecV2 {
         }
 
         if let Some(resource_requests) = &self.resource_requests {
-            resource_requests
-                .warn_when_cluster_too_small("Stack")
-                .await
-                .context(ParseStackResourceRequirementsSnafu)?;
+            match resource_requests.validate_cluster_size("stack").await {
+                Ok(_) => {}
+                Err(errors) => {
+                    for err in errors {
+                        match err {
+                            ResourceRequestsError::InsufficientCpu { .. }
+                            | ResourceRequestsError::InsufficientMemory { .. } => {
+                                warn!("{err}");
+                            }
+                            err => return Err(err.into()),
+                        }
+                    }
+                }
+            }
         };
 
         if skip_release_install {

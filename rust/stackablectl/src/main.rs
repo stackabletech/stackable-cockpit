@@ -49,7 +49,10 @@ async fn main() -> Result<(), CliError> {
     }
 
     // Construct the tracing subscriber
-    let format = fmt::format().with_ansi(true).without_time();
+    let format = fmt::format()
+        .with_ansi(true)
+        .without_time()
+        .with_target(false);
 
     tracing_subscriber::fmt()
         .with_max_level(match cli.log_level {

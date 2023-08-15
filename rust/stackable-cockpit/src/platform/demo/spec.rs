@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 
+use tracing::warn;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -64,8 +65,8 @@ pub enum DemoError {
     #[snafu(display("stack error"))]
     StackError { source: StackError },
 
-    #[snafu(display("failed to parse demo resource requirements"))]
-    ParseDemoResourceRequirements { source: ResourceRequestsError },
+    #[snafu(display("demo resource requests error"), context(false))]
+    DemoResourceRequestsError { source: ResourceRequestsError },
 
     #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
@@ -97,10 +98,20 @@ impl DemoSpecV2 {
         }
 
         if let Some(resource_requests) = &self.resource_requests {
-            resource_requests
-                .warn_when_cluster_too_small("Demo")
-                .await
-                .context(ParseDemoResourceRequirementsSnafu)?;
+            match resource_requests.validate_cluster_size("demo").await {
+                Ok(_) => {}
+                Err(errors) => {
+                    for err in errors {
+                        match err {
+                            ResourceRequestsError::InsufficientCpu { .. }
+                            | ResourceRequestsError::InsufficientMemory { .. } => {
+                                warn!("{err}");
+                            }
+                            err => return Err(err.into()),
+                        }
+                    }
+                }
+            }
         };
 
         // Get the stack spec based on the name defined in the demo spec

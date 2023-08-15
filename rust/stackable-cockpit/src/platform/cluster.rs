@@ -5,7 +5,6 @@ use kube::core::ObjectList;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
-use tracing::warn;
 
 use crate::utils::k8s::{KubeClient, KubeClientError};
 
@@ -118,33 +117,78 @@ pub enum ResourceRequestsError {
     ParseMemoryResourceRequirements {
         source: stackable_operator::error::Error,
     },
+
+    #[snafu(display(
+        "The {object_name} has the resource requirements [{resource_requests}], but cluster seems to have only {} cores", cores.as_cpu_count()
+    ))]
+    InsufficientCpu {
+        object_name: String,
+        resource_requests: ResourceRequests,
+        cores: CpuQuantity,
+    },
+
+    #[snafu(display(
+        "The {object_name} has the resource requirements [{resource_requests}], but cluster seems to have only {} of memory", memory
+    ))]
+    InsufficientMemory {
+        object_name: String,
+        resource_requests: ResourceRequests,
+        memory: MemoryQuantity,
+    },
 }
 
 impl ResourceRequests {
     /// `object_name` should be `Stack` or `Demo`.
-    pub async fn warn_when_cluster_too_small(
+    pub async fn validate_cluster_size(
         &self,
         object_name: &str,
-    ) -> Result<(), ResourceRequestsError> {
-        let kube_client = KubeClient::new().await?;
-        let cluster_info = kube_client.get_cluster_info().await?;
+    ) -> Result<(), Vec<ResourceRequestsError>> {
+        let mut errors = Vec::new();
+        let kube_client = match KubeClient::new().await {
+            Ok(kube_client) => kube_client,
+            Err(err) => return Err(vec![err.into()]),
+        };
+        let cluster_info = match kube_client.get_cluster_info().await {
+            Ok(cluster_info) => cluster_info,
+            Err(err) => return Err(vec![err.into()]),
+        };
 
-        let stack_cpu =
-            CpuQuantity::try_from(&self.cpu).context(ParseCpuResourceRequirementsSnafu)?;
-        let stack_memory =
-            MemoryQuantity::try_from(&self.memory).context(ParseMemoryResourceRequirementsSnafu)?;
+        let stack_cpu = match CpuQuantity::try_from(&self.cpu) {
+            Ok(stack_cpu) => stack_cpu,
+            Err(err) => {
+                return Err(vec![ResourceRequestsError::ParseCpuResourceRequirements {
+                    source: err,
+                }])
+            }
+        };
+        let stack_memory = match MemoryQuantity::try_from(&self.memory) {
+            Ok(stack_memory) => stack_memory,
+            Err(err) => {
+                return Err(vec![
+                    ResourceRequestsError::ParseMemoryResourceRequirements { source: err },
+                ])
+            }
+        };
 
         if stack_cpu > cluster_info.untainted_allocatable_cpu {
-            warn!(
-                "{object_name} has resource requirements [{self}], but cluster seems to have only {} cores",
-                cluster_info.untainted_allocatable_cpu.as_cpu_count()
-            );
+            errors.push(ResourceRequestsError::InsufficientCpu {
+                object_name: object_name.to_string(),
+                resource_requests: self.clone(),
+                cores: cluster_info.untainted_allocatable_cpu,
+            });
         }
         if stack_memory > cluster_info.untainted_allocatable_memory {
-            warn!("{object_name} has resource requirements [{self}], but cluster seems to have only {} of memory",
-            Quantity::from(cluster_info.untainted_allocatable_memory).0);
+            errors.push(ResourceRequestsError::InsufficientMemory {
+                object_name: object_name.to_string(),
+                resource_requests: self.clone(),
+                memory: cluster_info.untainted_allocatable_memory,
+            });
         }
 
-        Ok(())
+        if errors.is_empty() {
+            Ok(())
+        } else {
+            Err(errors)
+        }
     }
 }
