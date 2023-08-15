@@ -15,6 +15,7 @@ pub enum ClusterError {
     ParseNodeCpu {
         source: stackable_operator::error::Error,
     },
+
     #[snafu(display("failed to parse node memory"))]
     ParseNodeMemory {
         source: stackable_operator::error::Error,
@@ -107,10 +108,12 @@ impl Display for ResourceRequests {
 pub enum ResourceRequestsError {
     #[snafu(display("kube error: {source}"), context(false))]
     KubeError { source: KubeClientError },
+
     #[snafu(display("failed to parse cpu resource requirements"))]
     ParseCpuResourceRequirements {
         source: stackable_operator::error::Error,
     },
+
     #[snafu(display("failed to parse memory resource requirements"))]
     ParseMemoryResourceRequirements {
         source: stackable_operator::error::Error,
