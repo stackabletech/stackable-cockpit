@@ -115,16 +115,7 @@ pub struct StackSpecV2 {
 }
 
 impl StackSpecV2 {
-    #[instrument(skip(self, release_list))]
-    pub async fn install_release(
-        &self,
-        release_list: ReleaseList,
-        operator_namespace: &str,
-        product_namespace: &str,
-        skip_release_install: bool,
-    ) -> Result<(), StackError> {
-        info!("Installing release for stack");
-
+    pub async fn check_perquisites(&self, product_namespace: &str) -> Result<(), StackError> {
         // Returns an error if the stack doesn't support to be installed in the
         // requested product namespace. When installing a demo, this check is
         // already done on the demo spec level, however we still need to check
@@ -151,7 +142,20 @@ impl StackSpecV2 {
                     }
                 }
             }
-        };
+        }
+
+        Ok(())
+    }
+
+    #[instrument(skip(self, release_list))]
+    pub async fn install_release(
+        &self,
+        release_list: ReleaseList,
+        operator_namespace: &str,
+        product_namespace: &str,
+        skip_release_install: bool,
+    ) -> Result<(), StackError> {
+        info!("Installing release for stack");
 
         if skip_release_install {
             info!("Skipping release installation during stack installation process");

@@ -76,18 +76,7 @@ pub enum DemoError {
 }
 
 impl DemoSpecV2 {
-    #[allow(clippy::too_many_arguments)]
-    pub async fn install(
-        &self,
-        stack_list: StackList,
-        release_list: ReleaseList,
-        operator_namespace: &str,
-        product_namespace: &str,
-        stack_parameters: &[String],
-        demo_parameters: &[String],
-        transfer_client: &FileTransferClient,
-        skip_release: bool,
-    ) -> Result<(), DemoError> {
+    pub async fn check_perquisites(&self, product_namespace: &str) -> Result<(), DemoError> {
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
         if !self.supports_namespace(product_namespace) {
@@ -112,14 +101,36 @@ impl DemoSpecV2 {
                     }
                 }
             }
-        };
+        }
 
+        Ok(())
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    pub async fn install(
+        &self,
+        stack_list: StackList,
+        release_list: ReleaseList,
+        operator_namespace: &str,
+        product_namespace: &str,
+        stack_parameters: &[String],
+        demo_parameters: &[String],
+        transfer_client: &FileTransferClient,
+        skip_release: bool,
+    ) -> Result<(), DemoError> {
         // Get the stack spec based on the name defined in the demo spec
         let stack_spec = stack_list.get(&self.stack).ok_or(DemoError::NoSuchStack {
             name: self.stack.clone(),
         })?;
 
-        // Install the stack
+        // Check perquisites
+        stack_spec
+            .check_perquisites(product_namespace)
+            .await
+            .context(StackSnafu)?;
+        self.check_perquisites(product_namespace).await?;
+
+        // Install release
         stack_spec
             .install_release(
                 release_list,
@@ -130,7 +141,7 @@ impl DemoSpecV2 {
             .await
             .context(StackSnafu)?;
 
-        // Install stack manifests
+        // Install stack
         stack_spec
             .install_stack_manifests(stack_parameters, product_namespace, transfer_client)
             .await
