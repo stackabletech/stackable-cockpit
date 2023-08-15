@@ -46,7 +46,7 @@ const NavItem = (props: ParentProps<NavItemProps>) => {
 
 export const Header = () => {
   return (
-    <nav class='flex bg-gray-600 h-16 px-4'>
+    <nav class='flex bg-gray-800 px-6 py-2'>
       <h1 class='m-0 c-white'>
         <A class='flex flex-items-center h-full' href='/'>
           <img
@@ -54,6 +54,7 @@ export const Header = () => {
             elementtiming='logo'
             fetchpriority='auto'
             alt='Stackable'
+            class='h-20px'
           />
         </A>
       </h1>

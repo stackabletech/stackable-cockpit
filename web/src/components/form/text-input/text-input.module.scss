@@ -6,6 +6,7 @@
   line-height: 16px;
   border-radius: 4px;
   border: none;
+  height: 36px;
 
   @include theme('text-input') {
     background-color: t('bg');

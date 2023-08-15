@@ -1,0 +1,19 @@
+@import '@/scss/colors';
+
+.table-header {
+  width: 100%;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+
+  @include theme('table-header') {
+    background-color: t('bg');
+  }
+
+  &-buttons {
+    display: flex;
+    gap: 12px;
+  }
+}

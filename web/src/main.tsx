@@ -18,28 +18,26 @@ attachDevtoolsOverlay();
 
 const App = () => {
   return (
-    <Wrapper>
-      <LoginPageOr>
-        <Header />
-        <div class='max-w-5xl mx-a mt-16'>
-          <Routes>
-            <Route
-              path='/stacklets/:namespace/:name/connect'
-              component={StackletConnectionDetails}
-            />
-            <Route path='/stacklets' component={Stacklets} />
-            <Route path='/' component={() => <Navigate href='/stacklets' />} />
-          </Routes>
-        </div>
-      </LoginPageOr>
-    </Wrapper>
+    <LoginPageOr>
+      <Header />
+      <Wrapper>
+        <Routes>
+          <Route
+            path='/stacklets/:namespace/:name/connect'
+            component={StackletConnectionDetails}
+          />
+          <Route path='/stacklets' component={Stacklets} />
+          <Route path='/' component={() => <Navigate href='/stacklets' />} />
+        </Routes>
+      </Wrapper>
+    </LoginPageOr>
   );
 };
 
 const root = document.querySelector('#app');
 if (root == undefined) {
   throw new Error(
-    'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got mispelled?',
+    'Root element not found. Did you forget to add it to your index.html? Or maybe the id attribute got misspelled?',
   );
 } else {
   render(

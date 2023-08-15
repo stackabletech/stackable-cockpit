@@ -4,8 +4,7 @@ import { SearchSymbol } from '@/components/symbols';
 import styles from './search.module.scss';
 
 interface SearchInputProps extends Omit<TextInputProps, 'placeholder'> {
-  query: string;
-  setQuery: (query: string) => void;
+  onQuery: (query: string) => void;
 }
 
 export const SearchInput = (props: SearchInputProps) => {
@@ -15,7 +14,7 @@ export const SearchInput = (props: SearchInputProps) => {
         <SearchSymbol />
       </div>
       <TextInput
-        onInput={(event) => props.setQuery(event.target.value)}
+        onInput={(event) => props.onQuery(event.target.value)}
         placeholder='Search...'
       />
     </div>

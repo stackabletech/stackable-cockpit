@@ -51,7 +51,7 @@ export function DataTable<T>(props: DataTableProps<T>): JSX.Element {
         <Show when={props.searchQuery !== undefined}>
           <SearchInput
             query={props.searchQuery || ''}
-            setQuery={(q) => props.setSearchQuery?.(q)}
+            onQuery={(q) => props.setSearchQuery?.(q)}
           />
         </Show>
         <div class='flex-grow' />

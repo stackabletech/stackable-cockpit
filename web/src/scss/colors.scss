@@ -46,6 +46,9 @@ $themes: (
       'bg': $color-gray-700,
       'text': $color-white,
     ),
+    'table-header': (
+      'bg': $color-gray-800,
+    ),
   ),
   'light': (
     'base': (
@@ -58,6 +61,9 @@ $themes: (
       'icon': $color-gray-500,
       'text': $color-gray-900,
       'bg': $color-gray-50,
+    ),
+    'table-header': (
+      'bg': $color-white,
     ),
   ),
 );

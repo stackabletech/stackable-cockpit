@@ -1,6 +1,7 @@
 @import '@/scss/colors';
 
 .input-search {
+  display: inline-block;
   position: relative;
 
   :global(.icon) {
@@ -20,7 +21,7 @@
     }
   }
 
-  .text-input {
+  input {
     padding: 10px 12px 10px 40px;
   }
 }

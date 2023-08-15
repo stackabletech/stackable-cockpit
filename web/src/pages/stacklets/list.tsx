@@ -1,13 +1,16 @@
 import { For, createResource } from 'solid-js';
-import { DisplayCondition, getStacklets } from '../../api/stacklets';
-import { DataTable } from '../../components/datatable';
+
+import { DisplayCondition, getStacklets } from '@/api/stacklets';
+import { translate } from '@/localization';
+
+import { DataTable } from '@/components/datatable';
+
 import styles from './list.module.css';
-import { translate } from '../../localization';
 
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
   return (
-    <>
+    <div class='col-span-full'>
       <DataTable
         items={stacklets() || []}
         columns={[
@@ -48,7 +51,7 @@ export const Stacklets = () => {
         refresh={refetch}
         isLoading={stacklets.loading}
       />
-    </>
+    </div>
   );
 };
 
