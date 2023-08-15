@@ -2796,7 +2796,7 @@ dependencies = [
 [[package]]
 name = "stackable-operator"
 version = "0.46.0"
-source = "git+https://github.com/stackabletech//operator-rs.git?branch=feat/display-memory#7453174737312bcbae75157443e02981e3a1849e"
+source = "git+https://github.com/stackabletech//operator-rs.git#2416f89f2dc52dfb2f43da1f95998567b1069d84"
 dependencies = [
  "chrono",
  "clap",
@@ -2830,7 +2830,7 @@ dependencies = [
 [[package]]
 name = "stackable-operator-derive"
 version = "0.46.0"
-source = "git+https://github.com/stackabletech//operator-rs.git?branch=feat/display-memory#7453174737312bcbae75157443e02981e3a1849e"
+source = "git+https://github.com/stackabletech//operator-rs.git#2416f89f2dc52dfb2f43da1f95998567b1069d84"
 dependencies = [
  "darling 0.20.3",
  "proc-macro2",
