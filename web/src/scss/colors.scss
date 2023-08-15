@@ -46,8 +46,10 @@ $themes: (
       'bg': $color-gray-700,
       'text': $color-white,
     ),
-    'table-header': (
-      'bg': $color-gray-800,
+    'table': (
+      'bg-header': $color-gray-800,
+      'bg-row': $color-gray-800,
+      'bg-row-header': $color-gray-700,
     ),
   ),
   'light': (
@@ -62,8 +64,10 @@ $themes: (
       'text': $color-gray-900,
       'bg': $color-gray-50,
     ),
-    'table-header': (
-      'bg': $color-white,
+    'table': (
+      'bg-header': $color-white,
+      'bg-row': $color-white,
+      'bg-row-header': $color-gray-50,
     ),
   ),
 );

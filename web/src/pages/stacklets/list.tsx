@@ -10,46 +10,32 @@ import styles from './list.module.css';
 export const Stacklets = () => {
   const [stacklets, { refetch }] = createResource(getStacklets);
   return (
-    <div class='col-span-full'>
+    <div class='col-span-full mt-8'>
       <DataTable
         items={stacklets() || []}
         columns={[
           {
-            label: translate('stacklet--product'),
-            get: (x) => x.product,
+            name: translate('stacklet--product'),
+            value: (x) => x.product,
             sortBy: (x) => x.product,
           },
           {
-            label: translate('stacklet--namespace'),
-            get: (x) => x.namespace || '(Cluster-scoped)',
+            name: translate('stacklet--namespace'),
+            value: (x) => x.namespace || '(Cluster-scoped)',
             sortBy: (x) => x.namespace || '',
           },
           {
-            label: translate('stacklet--name'),
-            get: (x) => x.name,
+            name: translate('stacklet--name'),
+            value: (x) => x.name,
             sortBy: (x) => x.name,
           },
           {
-            label: translate('stacklet--status'),
-            get: (x) => <StackletConditions conditions={x.conditions} />,
+            name: translate('stacklet--status'),
+            value: (x) => <StackletConditions conditions={x.conditions} />,
           },
-          /* {
-            label: 'Actions',
-            get: (x) => (
-              <ButtonLink href={`/stacklets/${x.namespace}/${x.name}/connect`}>
-                Connect
-              </ButtonLink>
-            ),
-          }, */
         ]}
-        // extraButtons={
-        //   <ButtonLink href='/stacklets/add' role='primary'>
-        //     <AddSymbol />
-        //     <span>Add stacklet</span>
-        //   </ButtonLink>
-        // }
         refresh={refetch}
-        isLoading={stacklets.loading}
+        // isLoading={stacklets.loading}
       />
     </div>
   );

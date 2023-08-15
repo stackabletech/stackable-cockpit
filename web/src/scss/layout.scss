@@ -1,1 +1,7 @@
 $layout-wrapper-max-width: 1536px;
+
+@mixin responsive($max-width) {
+  @media (max-width: $max-width) {
+    @content;
+  }
+}

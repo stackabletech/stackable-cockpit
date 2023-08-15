@@ -2,15 +2,17 @@ import { JSX, Show } from 'solid-js';
 
 import styles from './header.module.scss';
 import { SearchInput } from '@/components/form/search';
+import { Button } from '@/components/button';
 
 export interface DataTableHeaderProps {
   searchbar?: DataTableHeaderSearchbarProps;
   buttons?: JSX.Element;
+  refresh?: () => void;
 }
 
 export interface DataTableHeaderSearchbarProps {
-  enabled?: boolean;
   onQuery?: (query: string) => void;
+  enabled?: boolean;
 }
 
 export const DataTableHeader = (props: DataTableHeaderProps) => {
@@ -22,6 +24,9 @@ export const DataTableHeader = (props: DataTableHeaderProps) => {
         </Show>
       </div>
       <div class={styles.tableHeaderButtons}>
+        <Show when={props.refresh}>
+          {(refresh) => <Button text='Refresh' onClick={() => refresh()} />}
+        </Show>
         <Show when={props.buttons}>{(buttons) => buttons()}</Show>
       </div>
     </div>

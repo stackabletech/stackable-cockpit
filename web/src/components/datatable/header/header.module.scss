@@ -8,8 +8,8 @@
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
 
-  @include theme('table-header') {
-    background-color: t('bg');
+  @include theme('table') {
+    background-color: t('bg-header');
   }
 
   &-buttons {

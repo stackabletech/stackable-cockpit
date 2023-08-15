@@ -8,6 +8,10 @@ main {
   margin: 0 auto;
   gap: 16px;
 
+  @include responsive($layout-wrapper-max-width) {
+    padding: 0 24px;
+  }
+
   &.full-height {
     min-height: 100vh;
   }
