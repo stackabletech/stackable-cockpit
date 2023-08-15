@@ -115,7 +115,15 @@ pub struct StackSpecV2 {
 }
 
 impl StackSpecV2 {
-    pub async fn check_perquisites(&self, product_namespace: &str) -> Result<(), StackError> {
+    /// Checks if the prerequisites to run this stack are met. These checks
+    /// include:
+    ///
+    /// - Does the stack support to be installed in the requested namespace?
+    /// - Does the cluster have enough resources available to run this stack?
+    #[instrument(skip_all)]
+    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), StackError> {
+        debug!("Checking prerequisites before installing stack");
+
         // Returns an error if the stack doesn't support to be installed in the
         // requested product namespace. When installing a demo, this check is
         // already done on the demo spec level, however we still need to check
@@ -127,19 +135,17 @@ impl StackSpecV2 {
             });
         }
 
+        // Checks if the available cluster resources are sufficient to deploy
+        // the demo.
         if let Some(resource_requests) = &self.resource_requests {
-            match resource_requests.validate_cluster_size("stack").await {
-                Ok(_) => {}
-                Err(errors) => {
-                    for err in errors {
-                        match err {
-                            ResourceRequestsError::InsufficientCpu { .. }
-                            | ResourceRequestsError::InsufficientMemory { .. } => {
-                                warn!("{err}");
-                            }
-                            err => return Err(err.into()),
+            if let Err(err) = resource_requests.validate_cluster_size("stack").await {
+                match err {
+                    ResourceRequestsError::ValidationErrors { errors } => {
+                        for error in errors {
+                            warn!("{error}");
                         }
                     }
+                    err => return Err(err.into()),
                 }
             }
         }
@@ -156,6 +162,9 @@ impl StackSpecV2 {
         skip_release_install: bool,
     ) -> Result<(), StackError> {
         info!("Installing release for stack");
+
+        // Check prerequisites
+        self.check_prerequisites(product_namespace).await?;
 
         if skip_release_install {
             info!("Skipping release installation during stack installation process");

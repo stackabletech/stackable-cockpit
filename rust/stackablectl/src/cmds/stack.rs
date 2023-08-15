@@ -276,7 +276,7 @@ async fn install_cmd(
         Some(stack_spec) => {
             // Check perquisites
             stack_spec
-                .check_perquisites(&product_namespace)
+                .check_prerequisites(&product_namespace)
                 .await
                 .context(StackSnafu)?;
 

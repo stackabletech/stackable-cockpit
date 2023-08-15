@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
+use tracing::{debug, instrument, warn};
 
-use tracing::warn;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -76,7 +76,15 @@ pub enum DemoError {
 }
 
 impl DemoSpecV2 {
-    pub async fn check_perquisites(&self, product_namespace: &str) -> Result<(), DemoError> {
+    /// Checks if the prerequisites to run this demo are met. These checks
+    /// include:
+    ///
+    /// - Does the demo support to be installed in the requested namespace?
+    /// - Does the cluster have enough resources available to run this demo?
+    #[instrument(skip_all)]
+    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), DemoError> {
+        debug!("Checking prerequisites before installing demo");
+
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
         if !self.supports_namespace(product_namespace) {
@@ -86,19 +94,17 @@ impl DemoSpecV2 {
             });
         }
 
+        // Checks if the available cluster resources are sufficient to deploy
+        // the demo.
         if let Some(resource_requests) = &self.resource_requests {
-            match resource_requests.validate_cluster_size("demo").await {
-                Ok(_) => {}
-                Err(errors) => {
-                    for err in errors {
-                        match err {
-                            ResourceRequestsError::InsufficientCpu { .. }
-                            | ResourceRequestsError::InsufficientMemory { .. } => {
-                                warn!("{err}");
-                            }
-                            err => return Err(err.into()),
+            if let Err(err) = resource_requests.validate_cluster_size("demo").await {
+                match err {
+                    ResourceRequestsError::ValidationErrors { errors } => {
+                        for error in errors {
+                            warn!("{error}");
                         }
                     }
+                    err => return Err(err.into()),
                 }
             }
         }
@@ -123,12 +129,8 @@ impl DemoSpecV2 {
             name: self.stack.clone(),
         })?;
 
-        // Check perquisites
-        stack_spec
-            .check_perquisites(product_namespace)
-            .await
-            .context(StackSnafu)?;
-        self.check_perquisites(product_namespace).await?;
+        // Check prerequisites
+        self.check_prerequisites(product_namespace).await?;
 
         // Install release
         stack_spec
