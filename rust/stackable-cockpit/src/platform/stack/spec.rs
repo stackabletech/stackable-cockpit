@@ -1,6 +1,7 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use std::collections::HashMap;
 use tracing::{debug, info, instrument};
 
 #[cfg(feature = "openapi")]
