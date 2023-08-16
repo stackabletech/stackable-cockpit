@@ -715,70 +715,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
 
 [[package]]
-name = "encoding"
-version = "0.2.33"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b0d943856b990d12d3b55b359144ff341533e516d94098b1d3fc1ac666d36ec"
-dependencies = [
- "encoding-index-japanese",
- "encoding-index-korean",
- "encoding-index-simpchinese",
- "encoding-index-singlebyte",
- "encoding-index-tradchinese",
-]
-
-[[package]]
-name = "encoding-index-japanese"
-version = "1.20141219.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04e8b2ff42e9a05335dbf8b5c6f7567e5591d0d916ccef4e0b1710d32a0d0c91"
-dependencies = [
- "encoding_index_tests",
-]
-
-[[package]]
-name = "encoding-index-korean"
-version = "1.20141219.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4dc33fb8e6bcba213fe2f14275f0963fd16f0a02c878e3095ecfdf5bee529d81"
-dependencies = [
- "encoding_index_tests",
-]
-
-[[package]]
-name = "encoding-index-simpchinese"
-version = "1.20141219.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d87a7194909b9118fc707194baa434a4e3b0fb6a5a757c73c3adb07aa25031f7"
-dependencies = [
- "encoding_index_tests",
-]
-
-[[package]]
-name = "encoding-index-singlebyte"
-version = "1.20141219.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3351d5acffb224af9ca265f435b859c7c01537c0849754d3db3fdf2bfe2ae84a"
-dependencies = [
- "encoding_index_tests",
-]
-
-[[package]]
-name = "encoding-index-tradchinese"
-version = "1.20141219.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd0e20d5688ce3cab59eb3ef3a2083a5c77bf496cb798dc6fcdb75f323890c18"
-dependencies = [
- "encoding_index_tests",
-]
-
-[[package]]
-name = "encoding_index_tests"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a246d82be1c9d791c5dfde9a2bd045fc3cbba3fa2b11ad558f27d01712f00569"
-
-[[package]]
 name = "encoding_rs"
 version = "0.8.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -816,9 +752,9 @@ dependencies = [
 
 [[package]]
 name = "fancy-regex"
-version = "0.8.0"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d95b4efe5be9104a4a18a9916e86654319895138be727b229820c39257c30dda"
+checksum = "b95f7c0680e4142284cf8b22c14a476e87d61b004a3a0861872b32ef7ead40a2"
 dependencies = [
  "bit-set",
  "regex",
@@ -1365,11 +1301,11 @@ checksum = "af150ab688ff2122fcef229be89cb50dd66af9e01a4ff320cc137eecc9bacc38"
 
 [[package]]
 name = "java-properties"
-version = "1.4.1"
+version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1904d8654a1ef51034d02d5a9411b50bf91bea15b0ab644ae179d1325976263"
+checksum = "37bf6f484471c451f2b51eabd9e66b3fa7274550c5ec4b6c3d6070840945117f"
 dependencies = [
- "encoding",
+ "encoding_rs",
  "lazy_static",
  "regex",
 ]
@@ -1463,7 +1399,7 @@ dependencies = [
  "secrecy",
  "serde",
  "serde_json",
- "serde_yaml 0.9.25",
+ "serde_yaml",
  "thiserror",
  "tokio",
  "tokio-util",
@@ -2100,8 +2036,8 @@ dependencies = [
 
 [[package]]
 name = "product-config"
-version = "0.4.0"
-source = "git+https://github.com/stackabletech/product-config.git?tag=0.4.0#e1e5938b4f6120f85a088194e86d22433fdba731"
+version = "0.5.0"
+source = "git+https://github.com/stackabletech/product-config.git?tag=0.5.0#439869d9e6a72fb6d912f6e494649a2f74f41d25"
 dependencies = [
  "fancy-regex",
  "java-properties",
@@ -2109,7 +2045,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "serde_yaml 0.8.26",
+ "serde_yaml",
  "thiserror",
  "xml-rs",
 ]
@@ -2567,18 +2503,6 @@ dependencies = [
 
 [[package]]
 name = "serde_yaml"
-version = "0.8.26"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "578a7433b776b56a35785ed5ce9a7e777ac0598aac5a6dd1b4b18a307c7fc71b"
-dependencies = [
- "indexmap 1.9.3",
- "ryu",
- "serde",
- "yaml-rust",
-]
-
-[[package]]
-name = "serde_yaml"
 version = "0.9.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a49e178e4452f45cb61d0cd8cebc1b0fafd3e41929e996cef79aa3aca91f574"
@@ -2751,7 +2675,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "serde_yaml 0.9.25",
+ "serde_yaml",
  "sha2",
  "snafu",
  "stackable-operator",
@@ -2795,8 +2719,8 @@ dependencies = [
 
 [[package]]
 name = "stackable-operator"
-version = "0.46.0"
-source = "git+https://github.com/stackabletech//operator-rs.git#2416f89f2dc52dfb2f43da1f95998567b1069d84"
+version = "0.47.0"
+source = "git+https://github.com/stackabletech/operator-rs.git?tag=0.47.0#b58f31eb70cd295d882367e13cf60a538ff79b51"
 dependencies = [
  "chrono",
  "clap",
@@ -2816,7 +2740,7 @@ dependencies = [
  "schemars",
  "serde",
  "serde_json",
- "serde_yaml 0.9.25",
+ "serde_yaml",
  "snafu",
  "stackable-operator-derive",
  "strum 0.25.0",
@@ -2829,8 +2753,8 @@ dependencies = [
 
 [[package]]
 name = "stackable-operator-derive"
-version = "0.46.0"
-source = "git+https://github.com/stackabletech//operator-rs.git#2416f89f2dc52dfb2f43da1f95998567b1069d84"
+version = "0.47.0"
+source = "git+https://github.com/stackabletech/operator-rs.git?tag=0.47.0#b58f31eb70cd295d882367e13cf60a538ff79b51"
 dependencies = [
  "darling 0.20.3",
  "proc-macro2",
@@ -2853,7 +2777,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
- "serde_yaml 0.9.25",
+ "serde_yaml",
  "snafu",
  "stackable-cockpit",
  "tokio",
@@ -3815,15 +3739,6 @@ dependencies = [
  "snafu",
  "stackable-cockpitd",
  "stackablectl",
-]
-
-[[package]]
-name = "yaml-rust"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
-dependencies = [
- "linked-hash-map",
 ]
 
 [[package]]
