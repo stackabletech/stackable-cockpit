@@ -103,7 +103,10 @@ export interface components {
     ReleaseSpec: {
       /** @description A short description of this release */
       description: string;
-      products: components["schemas"]["IndexMap"];
+      /** @description List of products and their version in this release */
+      products: {
+        [key: string]: components["schemas"]["ProductSpec"] | undefined;
+      };
       /** @description Date this released was released */
       releaseDate: string;
     };
@@ -112,8 +115,15 @@ export interface components {
     };
     SessionToken: string;
     Stacklet: {
-      /** @description Multiple cluster conditions */
+      /** @description Multiple cluster conditions. */
       conditions: (components["schemas"]["DisplayCondition"])[];
+      /**
+       * @description Endpoint addresses the product is reachable at.
+       * The key is the service name (e.g. `web-ui`), the value is the URL.
+       */
+      endpoints: {
+        [key: string]: string | undefined;
+      };
       /** @description Name of the stacklet. */
       name: string;
       /** @description Some CRDs are cluster scoped. */

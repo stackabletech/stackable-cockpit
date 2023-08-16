@@ -10,6 +10,7 @@ use utoipa::ToSchema;
 
 use crate::{
     constants::PRODUCT_NAMES,
+    platform::service::{get_service_endpoints, ServiceError},
     utils::{
         k8s::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
         string::Casing,
@@ -34,7 +35,11 @@ pub struct Stacklet {
     /// Name of the product.
     pub product: String,
 
-    /// Multiple cluster conditions
+    /// Endpoint addresses the product is reachable at.
+    /// The key is the service name (e.g. `web-ui`), the value is the URL.
+    pub endpoints: IndexMap<String, String>,
+
+    /// Multiple cluster conditions.
     pub conditions: Vec<DisplayCondition>,
 }
 
@@ -48,6 +53,9 @@ pub enum StackletError {
 
     #[snafu(display("JSON error"))]
     JsonError { source: serde_json::Error },
+
+    #[snafu(display("service error"))]
+    ServiceError { source: ServiceError },
 }
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
@@ -104,11 +112,16 @@ async fn list_stackable_stacklets(
                 None => continue,
             };
 
+            let endpoints = get_service_endpoints(product_name, &object_name, &object_namespace)
+                .await
+                .context(ServiceSnafu)?;
+
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),
-                name: object_name,
                 product: product_name.to_string(),
                 conditions: conditions.plain(),
+                name: object_name,
+                endpoints,
             });
         }
     }
