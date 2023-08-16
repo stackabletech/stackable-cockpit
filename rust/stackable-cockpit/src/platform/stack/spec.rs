@@ -163,9 +163,6 @@ impl StackSpecV2 {
     ) -> Result<(), StackError> {
         info!("Installing release for stack");
 
-        // Check prerequisites
-        self.check_prerequisites(product_namespace).await?;
-
         if skip_release_install {
             info!("Skipping release installation during stack installation process");
             return Ok(());

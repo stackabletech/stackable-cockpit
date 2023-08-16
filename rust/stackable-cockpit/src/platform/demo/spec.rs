@@ -130,6 +130,10 @@ impl DemoSpecV2 {
         })?;
 
         // Check prerequisites
+        stack_spec
+            .check_prerequisites(product_namespace)
+            .await
+            .context(StackSnafu)?;
         self.check_prerequisites(product_namespace).await?;
 
         // Install release
