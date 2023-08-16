@@ -56,11 +56,10 @@ impl ClusterInfo {
         });
         let untainted_node_count = untainted_nodes.clone().count();
 
-        let untainted_allocatable: Vec<_> = untainted_nodes
+        let untainted_allocatable = untainted_nodes
             .into_iter()
             .filter_map(|node| node.status)
-            .filter_map(|status| status.allocatable)
-            .collect();
+            .filter_map(|status| status.allocatable);
 
         let mut untainted_allocatable_memory = MemoryQuantity::from_mebi(0.0);
         let mut untainted_allocatable_cpu = CpuQuantity::from_millis(0);
