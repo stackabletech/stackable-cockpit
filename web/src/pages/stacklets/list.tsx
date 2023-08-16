@@ -1,4 +1,4 @@
-import { For, createResource } from 'solid-js';
+import { For, Show, createResource } from 'solid-js';
 
 import { DisplayCondition, getStacklets } from '@/api/stacklets';
 import { translate } from '@/localization';
@@ -8,6 +8,7 @@ import { DataTable } from '@/components/datatable';
 import styles from './list.module.css';
 
 export const Stacklets = () => {
+  // TODO (Techassi): Let's find a way to throttle spamming the refresh by making sure the request is done
   const [stacklets, { refetch }] = createResource(getStacklets);
   return (
     <div class='col-span-full mt-8'>
@@ -42,15 +43,17 @@ export const Stacklets = () => {
 };
 
 const StackletConditions = (props: { conditions: DisplayCondition[] }) => (
-  <ul class='p-0 m-0'>
-    <For each={props.conditions}>
-      {(cond) => (
-        <li class={styles.inlineListItem}>
-          <StackletCondition condition={cond} />
-        </li>
-      )}
-    </For>
-  </ul>
+  <Show when={props.conditions.length > 0} fallback={<span>-</span>}>
+    <ul class='p-0 m-0'>
+      <For each={props.conditions}>
+        {(cond) => (
+          <li class={styles.inlineListItem}>
+            <StackletCondition condition={cond} />
+          </li>
+        )}
+      </For>
+    </ul>
+  </Show>
 );
 
 const StackletCondition = (props: { condition: DisplayCondition }) => (

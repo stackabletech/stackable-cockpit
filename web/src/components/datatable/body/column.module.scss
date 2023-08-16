@@ -1,0 +1,40 @@
+@import '@/scss/colors';
+
+.column {
+  display: flex;
+  flex-direction: column;
+
+  @include theme('table') {
+    background-color: t('bg-col');
+    color: t('col-text');
+  }
+
+  &-header,
+  %column-header {
+    margin: 0;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: bold;
+    padding: 12px 16px;
+
+    @include theme('table') {
+      background-color: t('bg-col-header');
+      color: t('col-text-header');
+    }
+
+    &-sortable {
+      @extend %column-header;
+
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  &-cell {
+    padding: 12px 16px;
+
+    @include theme('table') {
+      border-bottom: 1px solid t('cell-border');
+    }
+  }
+}

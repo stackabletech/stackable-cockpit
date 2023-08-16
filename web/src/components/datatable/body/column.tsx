@@ -1,4 +1,6 @@
-import { For, JSX } from 'solid-js';
+import { For, JSX, Show } from 'solid-js';
+
+import styles from './column.module.scss';
 
 export interface DataTableColumnSpec<T> {
   value: (r: T) => JSX.Element;
@@ -12,11 +14,26 @@ export interface DataTableColumnProps<T> extends DataTableColumnSpec<T> {
 
 export const DataTableColumn = <T,>(props: DataTableColumnProps<T>) => {
   return (
-    <div class='flex flex-col'>
-      <h4 class='m-0 text-sm py-3 pl-4 text-gray-400 font-bold bg-gray-700'>
-        {props.name}
-      </h4>
-      <For each={props.items}>{(item) => <div>{props.value(item)}</div>}</For>
+    <div class={styles.column}>
+      <Show
+        when={props.sortBy}
+        fallback={<h4 class={styles.columnHeader}>{props.name}</h4>}
+      >
+        <h4
+          class={styles.columnHeaderSortable}
+          onClick={(event) => sortByColumn(event, props.sortBy)}
+        >
+          {props.name}
+        </h4>
+      </Show>
+      <For each={props.items}>
+        {(item) => <div class={styles.columnCell}>{props.value(item)}</div>}
+      </For>
     </div>
   );
+};
+
+const sortByColumn = <T,>(event: Event, _sortBy?: (r: T) => string) => {
+  event.preventDefault();
+  console.log('Hey');
 };

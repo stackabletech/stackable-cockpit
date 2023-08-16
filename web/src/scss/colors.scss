@@ -48,8 +48,11 @@ $themes: (
     ),
     'table': (
       'bg-header': $color-gray-800,
-      'bg-row': $color-gray-800,
-      'bg-row-header': $color-gray-700,
+      'bg-col': $color-gray-800,
+      'bg-col-header': $color-gray-700,
+      'col-text': $color-gray-400,
+      'col-text-header': $color-gray-400,
+      'cell-border': $color-gray-700,
     ),
   ),
   'light': (
@@ -66,8 +69,11 @@ $themes: (
     ),
     'table': (
       'bg-header': $color-white,
-      'bg-row': $color-white,
-      'bg-row-header': $color-gray-50,
+      'bg-col': $color-white,
+      'bg-col-header': $color-gray-50,
+      'col-text': $color-gray-400,
+      'col-text-header': $color-gray-700,
+      'cell-border': $color-gray-200,
     ),
   ),
 );

@@ -24,9 +24,7 @@ export const DataTableHeader = (props: DataTableHeaderProps) => {
         </Show>
       </div>
       <div class={styles.tableHeaderButtons}>
-        <Show when={props.refresh}>
-          {(refresh) => <Button text='Refresh' onClick={() => refresh()} />}
-        </Show>
+        <Button text='Refresh' onClick={() => props.refresh?.()} />
         <Show when={props.buttons}>{(buttons) => buttons()}</Show>
       </div>
     </div>
