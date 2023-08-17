@@ -99,7 +99,7 @@ impl ResourceRequests {
 
         // The above errors are "hard" errors which cannot be recovered and
         // should be handled by the caller. The errors below get collected
-        // before returning to provider the caller (and user) with more
+        // before returning to provide the caller (and user) with more
         // information during troubleshooting.
         let mut errors = Vec::new();
 
