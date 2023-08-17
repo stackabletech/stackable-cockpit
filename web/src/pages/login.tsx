@@ -4,12 +4,12 @@ import { translate } from '@/localization';
 
 import { PasswordInput } from '@/components/form/password-input';
 import { TextInput } from '@/components/form/text-input';
-import { Button } from '@/components/button';
-
-import loginImage from '@/resources/login.png';
-import logo from '@/resources/logo.png';
 import { LanguagePicker } from '@/components/language';
 import { Wrapper } from '@/components/layout';
+import { Button } from '@/components/button';
+import { Logo } from '@/components/logo';
+
+import loginImage from '@/resources/login.png';
 
 interface LoginPageOrProps {
   children: JSX.Element;
@@ -59,13 +59,7 @@ export const LoginPage = () => {
           </div>
           <div class='bg-gray-800 p-4 flex flex-col justify-between rounded-r-lg'>
             <div class='flex justify-between items-center'>
-              <img
-                src={logo}
-                elementtiming='logo'
-                fetchpriority='auto'
-                alt='Stackable Logo'
-                class='h-20px'
-              />
+              <Logo />
               <LanguagePicker />
             </div>
             <div>
