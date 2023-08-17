@@ -108,6 +108,17 @@ export interface components {
       /** @description Date this released was released */
       releaseDate: string;
     };
+    /**
+     * @description Demos and stacks can define how much cluster resources they need to run
+     * via their definition. The struct [`ResourceRequests`] contains information
+     * how many CPU cores and how much memory and disk space are required to run
+     * the demo/stack.
+     */
+    ResourceRequests: {
+      cpu: string;
+      memory: string;
+      pvc: string;
+    };
     Session: {
       sessionToken: components["schemas"]["SessionToken"];
     };

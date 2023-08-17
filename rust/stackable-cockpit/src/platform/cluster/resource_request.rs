@@ -1,5 +1,8 @@
 use std::fmt::Display;
 
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
+
 use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
@@ -12,9 +15,15 @@ use crate::utils::k8s::{KubeClient, KubeClientError};
 /// how many CPU cores and how much memory and disk space are required to run
 /// the demo/stack.
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct ResourceRequests {
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub memory: Quantity,
+
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub cpu: Quantity,
+
+    #[cfg_attr(feature = "openapi", schema(value_type = String))]
     pub pvc: Quantity,
 }
 
