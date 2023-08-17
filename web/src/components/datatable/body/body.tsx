@@ -1,8 +1,10 @@
 import {
-  DataTableColumn,
+  DataTableHeaderRow,
   DataTableColumnSpec,
-} from '@/components/datatable/body/column';
-import { For } from 'solid-js';
+  DataTableDataRows,
+} from '@/components/datatable';
+
+import styles from './body.module.scss';
 
 export interface DataTableBodyProps<T> {
   columns: DataTableColumnSpec<T>[];
@@ -11,10 +13,9 @@ export interface DataTableBodyProps<T> {
 
 export const DataTableBody = <T,>(props: DataTableBodyProps<T>) => {
   return (
-    <div class='grid grid-flow-col justify-stretch'>
-      <For each={props.columns}>
-        {(column) => <DataTableColumn {...column} items={props.items} />}
-      </For>
-    </div>
+    <table class={styles.dataTable}>
+      <DataTableHeaderRow columns={props.columns} />
+      <DataTableDataRows {...props} />
+    </table>
   );
 };
