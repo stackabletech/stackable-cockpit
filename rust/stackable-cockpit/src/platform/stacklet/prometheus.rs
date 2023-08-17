@@ -1,10 +1,12 @@
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
 use crate::{
-    platform::stacklet::{KubeSnafu, Stacklet, StackletError},
-    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
+    platform::{
+        service::get_service_endpoint_urls,
+        stacklet::{KubeSnafu, Stacklet, StackletError},
+    },
+    utils::k8s::KubeClient,
 };
 
 pub(super) async fn list(
@@ -13,28 +15,25 @@ pub(super) async fn list(
 ) -> Result<Vec<Stacklet>, StackletError> {
     let mut stacklets = Vec::new();
 
-    let params = ListParams::from_product(
-        "kube-prometheus-stack-prometheus",
-        Some("prometheus"),
-        ProductLabel::App,
-    );
-
+    // The helm-chart uses `app` instead of `app.kubernetes.io/app`, so we can't use `ListParams::from_product` here
+    let params = ListParams::default().labels("app=kube-prometheus-stack-prometheus");
     let services = kube_client
         .list_services(namespace, &params)
         .await
         .context(KubeSnafu)?;
 
     for service in services {
-        let conditions: Vec<Condition> = match &service.status {
-            Some(status) => status.conditions.clone().unwrap_or(vec![]),
-            None => vec![],
-        };
+        let service_name = service.name_any();
+        let endpoints = get_service_endpoint_urls(kube_client, &service, &service_name)
+            .await
+            .map_err(|err| StackletError::ServiceError { source: err })?;
 
         stacklets.push(Stacklet {
-            name: service.name_any(),
-            namespace: service.namespace(),
             product: "prometheus".to_string(),
-            conditions: conditions.plain(),
+            namespace: service.namespace(),
+            conditions: Vec::new(),
+            name: service.name_any(),
+            endpoints,
         })
     }
 

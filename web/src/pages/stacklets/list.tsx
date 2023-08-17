@@ -1,4 +1,4 @@
-import { For, createResource } from 'solid-js';
+import { For, Show, createResource } from 'solid-js';
 import { DisplayCondition, getStacklets } from '../../api/stacklets';
 import { DataTable } from '../../components/datatable';
 import styles from './list.module.css';
@@ -25,6 +25,10 @@ export const Stacklets = () => {
             label: translate('stacklet--name'),
             get: (x) => x.name,
             sortBy: (x) => x.name,
+          },
+          {
+            label: translate('stacklet--endpoints'),
+            get: (x) => <StackletEndpoints endpoints={x.endpoints} />,
           },
           {
             label: translate('stacklet--status'),
@@ -75,4 +79,31 @@ const StackletCondition = (props: { condition: DisplayCondition }) => (
   >
     {props.condition.condition}
   </span>
+);
+
+const StackletEndpoints = (props: {
+  endpoints: { [key: string]: string | undefined };
+}) => (
+  <ul class='p-0 m-0'>
+    <For each={Object.entries(props.endpoints)}>
+      {(item) => (
+        <li class={styles.inlineListItem}>
+          <Show
+            when={
+              item[1]?.startsWith('http://') || item[1]?.startsWith('https://')
+            }
+            fallback={
+              <span class='c-white'>
+                {item[0]}: {item[1]}
+              </span>
+            }
+          >
+            <a class='c-white' href={item[1]}>
+              {item[0]}
+            </a>
+          </Show>
+        </li>
+      )}
+    </For>
+  </ul>
 );
