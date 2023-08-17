@@ -2,8 +2,6 @@
 
 .btn {
   padding: 8px 16px;
-  font-size: 14px;
-  line-height: 20px;
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;
@@ -11,6 +9,14 @@
   display: flex;
   align-items: center;
   border: none;
+
+  span {
+    font-size: 14px;
+    line-height: 20px;
+
+    /* We want 500 here, but the medium font isn't loaded for whatever reason */
+    font-weight: 600;
+  }
 
   svg {
     width: 16px;

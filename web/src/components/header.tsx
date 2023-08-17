@@ -14,8 +14,10 @@ interface NavItemProps {
 
 const NavItem = (props: NavItemProps) => {
   return (
-    <li class='block h-auto ml-4'>
-      <A href={props.href || ''}>{props.text}</A>
+    <li>
+      <A href={props.href} class='text-gray-300 no-underline text-14px'>
+        {props.text}
+      </A>
     </li>
   );
 };
@@ -23,18 +25,21 @@ const NavItem = (props: NavItemProps) => {
 export const Header = () => {
   return (
     <header class='bg-gray-800 px-6 py-2'>
-      <nav class='flex'>
-        <Logo withLink={true} />
-        <ul class='flex-auto m-0 p-0 flex'>
-          <NavItem href='/stacklets' text={translate('stacklet--list')} />
-          <li class='flex-grow' />
+      <nav class='flex justify-between items-center'>
+        <div class='flex'>
+          <Logo withLink={true} />
+          <ul class='ml-9 flex m-0 gap-3'>
+            <NavItem href='/stacklets' text={translate('stacklet--list')} />
+          </ul>
+        </div>
+        <div class='flex gap-3'>
           <LanguagePicker />
           <Button
             text={translate('login--log-out')}
             role='secondary'
             onClick={logOut}
           />
-        </ul>
+        </div>
       </nav>
     </header>
   );
