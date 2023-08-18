@@ -384,7 +384,7 @@ jobs:
         with:
           msystem: MINGW64
           update: true
-          install: base-devel mingw-w64-x86_64-go mingw-w64-x86_64-rust
+          install: base-devel libresolv mingw-w64-x86_64-go mingw-w64-x86_64-rust
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackablectl
