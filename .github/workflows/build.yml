@@ -378,17 +378,20 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackablectl
 # Windows
-      - name: Prepare Windows env
-        if: matrix.os == 'windows-latest'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: MINGW64
-          update: true
-          install: base-devel mingw-w64-x86_64-libressl mingw-w64-x86_64-ldns mingw-w64-x86_64-go mingw-w64-x86_64-rust
+      # - name: Prepare Windows env
+      #   if: matrix.os == 'windows-latest'
+      #   uses: msys2/setup-msys2@v2
+      #   with:
+      #     msystem: MINGW64
+      #     update: true
+      #     install: base-devel mingw-w64-x86_64-libressl mingw-w64-x86_64-ldns mingw-w64-x86_64-go mingw-w64-x86_64-rust
+      # - name: Build for Windows
+      #   if: matrix.os == 'windows-latest'
+      #   run: cargo build --target ${{ matrix.target }} -p stackablectl
+      #   shell: msys2 {0}
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackablectl
-        shell: msys2 {0}
 # End of OS differences
 
 # Commented out, as this was always failing.
