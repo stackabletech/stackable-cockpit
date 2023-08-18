@@ -376,11 +376,9 @@ jobs:
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: build-stackablectl-${{ matrix.target }}
-# Normal OS
       - name: Build for non-Windows
         if: matrix.os != 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackablectl
-# Windows
       # - name: Prepare Windows env
       #   if: matrix.os == 'windows-latest'
       #   uses: msys2/setup-msys2@v2
@@ -396,7 +394,6 @@ jobs:
       - name: Build for Windows
         if: matrix.os == 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackablectl
-# End of OS differences
 
 # Commented out, as this was always failing.
 # We can comment it in again once want our image to be certified
