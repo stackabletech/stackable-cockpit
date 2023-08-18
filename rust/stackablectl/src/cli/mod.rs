@@ -1,8 +1,8 @@
 use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use directories::BaseDirs;
-use snafu::{OptionExt, Snafu};
+use directories::ProjectDirs;
+use snafu::Snafu;
 use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
@@ -22,8 +22,9 @@ use crate::{
         release::ReleaseArgs, stack::StackArgs, stacklets::StackletsArgs,
     },
     constants::{
-        CACHE_HOME_PATH, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
-        REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
+        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
+        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
 };
 
@@ -124,9 +125,14 @@ impl Cli {
         if self.no_cache {
             Ok(CacheSettings::disabled())
         } else {
-            let dirs = BaseDirs::new().context(cache_settings_error::BaseDirsSnafu)?;
-            let cache_dir = dirs.cache_dir().join(CACHE_HOME_PATH);
-            Ok(CacheSettings::disk(cache_dir))
+            let project_dir = ProjectDirs::from(
+                USER_DIR_QUALIFIER,
+                USER_DIR_ORGANIZATION_NAME,
+                USER_DIR_APPLICATION_NAME,
+            )
+            .ok_or(CacheSettingsError::UserDir)?;
+
+            Ok(CacheSettings::disk(project_dir.cache_dir()))
         }
     }
 }
@@ -185,11 +191,9 @@ pub enum OutputType {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum CacheSettingsError {
-    #[snafu(display("unable to resolve base directories"))]
-    BaseDirs {},
+    #[snafu(display("unable to resolve user directories"))]
+    UserDir,
 }
-
-pub struct InheritStackDemoArgs {}
 
 /// Returns a list of paths or urls based on the default (remote) file and
 /// files provided via the env variable.
