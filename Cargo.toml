@@ -15,6 +15,7 @@ bcrypt = "0.15"
 clap = { version = "4.2.1", features = ["derive", "env"] }
 clap_complete = "4.2"
 comfy-table = { version = "7.0", features = ["custom_styling"] }
+directories = "5.0"
 dotenvy = "0.15"
 futures = "0.3"
 gobuild = "0.1.0-alpha.2"
@@ -45,7 +46,6 @@ utoipa = { version = "3.3", features = ["indexmap"] }
 utoipa-swagger-ui = { version = "3.1", features = ["axum"] }
 uuid = { version = "1.4.0", features = ["v4"] }
 which = "4.4"
-xdg = "2.4"
 
 [patch."https://github.com/stackabletech/operator-rs.git"]
 # TODO: Switch to released version

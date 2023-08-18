@@ -1,7 +1,8 @@
 use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use snafu::{ResultExt, Snafu};
+use directories::ProjectDirs;
+use snafu::Snafu;
 use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
@@ -21,8 +22,9 @@ use crate::{
         release::ReleaseArgs, stack::StackArgs, stacklets::StackletsArgs,
     },
     constants::{
-        CACHE_HOME_PATH, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
-        REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
+        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, XDG_APPLICATION_NAME, XDG_ORGANIZATION_NAME,
+        XDG_QUALIFIER,
     },
 };
 
@@ -123,9 +125,11 @@ impl Cli {
         if self.no_cache {
             Ok(CacheSettings::disabled())
         } else {
-            let xdg = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-                .context(cache_settings_error::XdgSnafu)?;
-            Ok(CacheSettings::disk(xdg.get_cache_home()))
+            let project_dir =
+                ProjectDirs::from(XDG_QUALIFIER, XDG_ORGANIZATION_NAME, XDG_APPLICATION_NAME)
+                    .ok_or(CacheSettingsError::Xdg)?;
+
+            Ok(CacheSettings::disk(project_dir.cache_dir()))
         }
     }
 }
@@ -185,7 +189,7 @@ pub enum OutputType {
 #[snafu(module)]
 pub enum CacheSettingsError {
     #[snafu(display("unable to resolve XDG directories"))]
-    Xdg { source: xdg::BaseDirectoriesError },
+    Xdg,
 }
 
 pub struct InheritStackDemoArgs {}
