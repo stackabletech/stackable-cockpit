@@ -31,23 +31,20 @@ allow = [
     "LicenseRef-webpki",
     "MIT",
     "Unicode-DFS-2016",
-    "Zlib"
+    "Zlib",
+    "MPL-2.0",
 ]
 private = { ignore = true }
 
 [[licenses.clarify]]
 name = "ring"
 expression = "LicenseRef-ring"
-license-files = [
-    { path = "LICENSE", hash = 0xbd0eed23 },
-]
+license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
 
 [[licenses.clarify]]
 name = "webpki"
 expression = "LicenseRef-webpki"
-license-files = [
-    { path = "LICENSE", hash = 0x001c7e6c },
-]
+license-files = [{ path = "LICENSE", hash = 0x001c7e6c }]
 
 [sources]
 unknown-registry = "deny"
