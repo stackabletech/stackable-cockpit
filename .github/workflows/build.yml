@@ -355,12 +355,10 @@ jobs:
         include:
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
-          # Currently Widnows build fails with
-          # cargo:warning=# runtime/cgo
-          # cargo:warning=cgo: C compiler "C:\\Program" not found: exec: "C:\\Program": file does not exist
-          #   error occurred: Command "go" "build" "-buildmode" "c-archive" "-o" "D:\\a\\stackable-cockpit\\stackable-cockpit\\target\\debug\\build\\helm-sys-cce901864d7b6e8c\\out\\libgo-helm-wrapper.a" "go-helm-wrapper/main.go" with args "go-helm-wrapper" did not execute successfully (status code exit code: 1).
-          # so that Windows build is disabled for now
+          # Commented out, as Windows build is currently not working
           # - target: x86_64-pc-windows-gnu
+          #   os: windows-latest
+          # - target: x86_64-pc-windows-msvc
           #   os: windows-latest
           - target: x86_64-apple-darwin
             os: macos-latest
@@ -378,7 +376,24 @@ jobs:
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: build-stackablectl-${{ matrix.target }}
-      - run: cargo build --target ${{ matrix.target }} -p stackablectl
+      - name: Build for non-Windows
+        if: matrix.os != 'windows-latest'
+        run: cargo build --target ${{ matrix.target }} -p stackablectl
+      # - name: Prepare Windows env
+      #   if: matrix.os == 'windows-latest'
+      #   uses: msys2/setup-msys2@v2
+      #   with:
+      #     msystem: MINGW64
+      #     update: true
+      #     install: base-devel mingw-w64-x86_64-go mingw-w64-x86_64-rust
+      #     # install: base-devel mingw-w64-x86_64-libressl mingw-w64-x86_64-ldns mingw-w64-x86_64-go mingw-w64-x86_64-rust
+      # - name: Build for Windows
+      #   if: matrix.os == 'windows-latest'
+      #   run: cargo build --target ${{ matrix.target }} -p stackablectl
+      #   shell: msys2 {0}
+      - name: Build for Windows
+        if: matrix.os == 'windows-latest'
+        run: cargo build --target ${{ matrix.target }} -p stackablectl
 
 # Commented out, as this was always failing.
 # We can comment it in again once want our image to be certified
