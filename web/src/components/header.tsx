@@ -1,70 +1,46 @@
 import { A } from '@solidjs/router';
-import { ParentProps, Show } from 'solid-js';
-import logo from '../resources/logo.png';
-import { logOut } from '../api/session';
-import { translate } from '../localization';
-import { LanguagePicker } from './language';
+
+import { translate } from '@/localization';
+import { logOut } from '@/api/session';
+
+import { LanguagePicker } from '@/components/language';
+import { Button } from '@/components/button';
+import { Logo } from '@/components/logo';
 
 interface NavItemProps {
-  href?: string;
-  onClick?: () => void;
+  href: string;
+  text: string;
 }
 
-const NavItem = (props: ParentProps<NavItemProps>) => {
-  const linkClass =
-    'p-4 b-0 cursor-pointer c-white flex flex-items-center h-full decoration-none bg-gray-900';
-  const inactiveClass = 'bg-opacity-30 hover:bg-opacity-50';
-
+const NavItem = (props: NavItemProps) => {
   return (
-    <li class='block h-auto ml-4'>
-      <Show
-        when={props.href !== undefined}
-        fallback={
-          <button
-            class={`${linkClass} ${inactiveClass}`}
-            onClick={(event) => {
-              event.preventDefault();
-              props.onClick?.();
-            }}
-          >
-            {props.children}
-          </button>
-        }
-      >
-        <A
-          href={props.href || ''}
-          class={linkClass}
-          inactiveClass={inactiveClass}
-          onClick={() => props.onClick?.()}
-        >
-          {props.children}
-        </A>
-      </Show>
+    <li>
+      <A href={props.href} class='text-gray-300 no-underline text-14px'>
+        {props.text}
+      </A>
     </li>
   );
 };
 
 export const Header = () => {
   return (
-    <nav class='flex bg-gray-600 h-16 px-4'>
-      <h1 class='m-0 c-white'>
-        <A class='flex flex-items-center h-full' href='/'>
-          <img
-            src={logo}
-            elementtiming='logo'
-            fetchpriority='auto'
-            alt='Stackable'
+    <header class='bg-gray-800 px-6 py-2'>
+      <nav class='flex justify-between items-center'>
+        <div class='flex'>
+          <Logo withLink={true} />
+          <ul class='ml-9 flex m-0 gap-3'>
+            <NavItem href='/stacklets' text={translate('stacklet--list')} />
+          </ul>
+        </div>
+        <div class='flex gap-3'>
+          <LanguagePicker />
+          <Button
+            text={translate('login--log-out')}
+            role='secondary'
+            onClick={logOut}
           />
-        </A>
-      </h1>
-      <ul class='flex-auto m-0 p-0 flex'>
-        <NavItem href='/stacklets'>{translate('stacklet--list')}</NavItem>
-        <li class='flex-grow' />
-        <LanguagePicker />
-        <NavItem onClick={() => logOut()}>
-          {translate('login--log-out')}
-        </NavItem>
-      </ul>
-    </nav>
+        </div>
+      </nav>
+    </header>
   );
 };

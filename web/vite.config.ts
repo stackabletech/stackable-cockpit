@@ -2,6 +2,8 @@ import { defineConfig } from 'vite';
 import solidPlugin from 'vite-plugin-solid';
 import UnoCSS from 'unocss/vite';
 
+import { fileURLToPath, URL } from 'node:url';
+
 export default defineConfig({
   plugins: [solidPlugin(), UnoCSS()],
   server: {
@@ -13,6 +15,11 @@ export default defineConfig({
   css: {
     modules: {
       localsConvention: 'camelCaseOnly',
+    },
+  },
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('src', import.meta.url)),
     },
   },
 });

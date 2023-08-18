@@ -1,0 +1,35 @@
+@import '@/scss/colors';
+
+.header-row,
+%row-base {
+  margin: 0;
+  font-size: 12px;
+  line-height: 20px;
+  font-weight: bold;
+  padding: 12px 16px;
+  text-align: left;
+  text-transform: uppercase;
+
+  @include theme('table') {
+    background-color: t('bg-header-row');
+    color: t('text-header-row');
+  }
+
+  &-sortable {
+    @extend %row-base;
+
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+
+.data-row {
+  padding: 12px 16px;
+  font-size: 14px;
+
+  @include theme('table') {
+    border-bottom: 1px solid t('border-data-row');
+    background-color: t('bg-data-row');
+    color: t('text-data-row');
+  }
+}

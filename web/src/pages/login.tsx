@@ -1,15 +1,15 @@
-import {
-  JSX,
-  Show,
-  createResource,
-  createSignal,
-  createUniqueId,
-  untrack,
-} from 'solid-js';
-import logo from '../resources/logo.png';
-import { isLoggedIn, logIn, validateSessionOrLogOut } from '../api/session';
-import { Button } from '../components/button';
-import { translate } from '../localization';
+import { JSX, Show, createResource, createSignal, untrack } from 'solid-js';
+import { isLoggedIn, logIn, validateSessionOrLogOut } from '@/api/session';
+import { translate } from '@/localization';
+
+import { PasswordInput } from '@/components/form/password-input';
+import { TextInput } from '@/components/form/text-input';
+import { LanguagePicker } from '@/components/language';
+import { Wrapper } from '@/components/layout';
+import { Button } from '@/components/button';
+import { Logo } from '@/components/logo';
+
+import loginImage from '@/resources/login.png';
 
 interface LoginPageOrProps {
   children: JSX.Element;
@@ -28,71 +28,71 @@ export const LoginPageOr = (props: LoginPageOrProps) => {
 export const LoginPage = () => {
   const [username, setUsername] = createSignal('');
   const [password, setPassword] = createSignal('');
+  const [loading, setLoading] = createSignal(false);
+
   const [currentAttempt, setCurrentAttempt] = createSignal(
     Promise.resolve<string | undefined>(undefined),
   );
   // Create attempts imperatively, use createResource to render the results
   const [loginMessage] = createResource(
     () => currentAttempt(),
-    (attempt) => attempt,
+    (attempt) => {
+      // We do this to have a better UX
+      setTimeout(() => setLoading(false), 300);
+      return attempt;
+    },
   );
   const clickLogin = () => {
+    setLoading(true);
     void setCurrentAttempt(() => logIn(username(), password()));
   };
-  const usernameId = createUniqueId();
-  const passwordId = createUniqueId();
   return (
-    <div class='p-16'>
-      <div class='p-4 pt-0 max-w-2xl bg-gray-800 m-auto flex flex-col flex-items-center'>
-        <h1 class='m-0'>
-          <img
-            src={logo}
-            elementtiming='logo'
-            fetchpriority='auto'
-            alt='Stackable'
-          />
-        </h1>
-        <h2 class='mt-0 mb-1'>{translate('login--log-in')}</h2>
-        <form
-          class='grid'
-          style={{
-            'grid-template-columns': '[label] auto [field] 1fr',
-            width: '100%',
-          }}
-        >
-          <label class='me-2' for={usernameId}>
-            {translate('login--username')}
-          </label>
-          <input
-            id={usernameId}
-            value={username()}
-            onInput={(event) => setUsername(event.target.value)}
-          />
-          <label class='me-2' for={passwordId}>
-            {translate('login--password')}
-          </label>
-          <input
-            id={passwordId}
-            type='password'
-            value={password()}
-            onInput={(event) => setPassword(event.target.value)}
-          />
-          <div
-            class='flex flex-col flex-items-center mt-2'
-            style={{ 'grid-column': 'span 2' }}
-          >
-            <Show when={loginMessage.loading}>
-              <div>{translate('login--logging-in')}</div>
-            </Show>
-            <Show when={loginMessage()}>
-              <div class='c-red'>{loginMessage()}</div>
-            </Show>
-            <Button onClick={clickLogin} role='primary'>
-              {translate('login--log-in')}
-            </Button>
+    <Wrapper>
+      <div class='col-start-3 col-span-4 flex items-center h-screen'>
+        <div class='w-full grid grid-cols-2'>
+          <div class='bg-stackable-blue-light py-4 rounded-l-lg min-h-300px'>
+            <img
+              src={loginImage}
+              alt='Login image'
+              class='h-full w-full object-cover'
+            />
           </div>
-        </form>
+          <div class='bg-gray-800 p-4 flex flex-col justify-between rounded-r-lg'>
+            <div class='flex justify-between items-center'>
+              <Logo />
+              <LanguagePicker />
+            </div>
+            <div>
+              <h2 class='m-0 mb-4 c-white font-medium font-base text-xl leading-6'>
+                {translate('login--log-in')}
+              </h2>
+              <form class='flex flex-col gap-4'>
+                <TextInput
+                  onInput={(event) => setUsername(event.target.value)}
+                  placeholder={translate('login--username')}
+                />
+                <PasswordInput
+                  onInput={(event) => setPassword(event.target.value)}
+                />
+                <div class='flex justify-end'>
+                  {/* <Show when={loginMessage.loading}>
+                  <div>logging in...</div>
+                </Show>
+                <Show when={loginMessage()}>
+                  <div class='c-red'>{loginMessage()}</div>
+                </Show> */}
+                  <Button
+                    text={translate('login--log-in')}
+                    onClick={clickLogin}
+                    loading={loading()}
+                    role='primary'
+                  />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
+    </Wrapper>
   );
 };

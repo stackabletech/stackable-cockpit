@@ -1,0 +1,99 @@
+@function color($color, $opacity: 100) {
+  @if $opacity != 100 {
+    @return rgba($color, #{$opacity}\%);
+  }
+
+  @return $color;
+}
+
+/*Gray color swatch*/
+$color-gray-900: #111827;
+$color-gray-800: #1f2937;
+$color-gray-700: #374151;
+$color-gray-600: #4b5563;
+$color-gray-500: #6b7280;
+$color-gray-400: #9ca3af;
+$color-gray-300: #d1d5db;
+$color-gray-200: #e5e7eb;
+$color-gray-100: #f3f4f6;
+$color-gray-50: #f9fafb;
+
+/*Stackable brand color swatch*/
+$color-stackable-blue-light: #1880bd;
+$color-stackable-blue-dark: #0b689f;
+
+$color-white: #ffffff;
+
+$themes: (
+  'dark': (
+    'base': (
+      'bg': $color-gray-900,
+    ),
+    'button': (
+      'primary-text': $color-white,
+      'primary-text-hover': $color-white,
+      'primary-bg': $color-stackable-blue-light,
+      'primary-bg-hover': $color-stackable-blue-dark,
+      'secondary-text': $color-gray-400,
+      'secondary-text-hover': $color-white,
+      'secondary-bg': $color-gray-800,
+      'secondary-bg-hover': $color-gray-700,
+      'secondary-border': $color-gray-600,
+    ),
+    'text-input': (
+      'placeholder': $color-gray-400,
+      'icon': $color-gray-400,
+      'bg': $color-gray-700,
+      'text': $color-white,
+    ),
+    'table': (
+      'bg-header': $color-gray-800,
+      'bg-header-row': $color-gray-700,
+      'text-header-row': $color-gray-400,
+      'bg-data-row': $color-gray-800,
+      'text-data-row': $color-gray-400,
+      'border-data-row': $color-gray-700,
+    ),
+  ),
+  'light': (
+    'base': (
+      'bg': $color-gray-100,
+    ),
+    'button': (),
+    'text-input': (
+      'placeholder': $color-gray-500,
+      'border': $color-gray-400,
+      'icon': $color-gray-500,
+      'text': $color-gray-900,
+      'bg': $color-gray-50,
+    ),
+    'table': (
+      'bg-header': $color-white,
+      'bg-header-row': $color-gray-50,
+      'text-header-row': $color-gray-700,
+      'bg-data-row': $color-white,
+      'text-data-row': $color-gray-400,
+      'border-data-row': $color-gray-200,
+    ),
+  ),
+);
+
+@mixin theme($scope) {
+  $scope: $scope !global;
+
+  @each $theme, $map in $themes {
+    $theme-map: $map !global;
+
+    /* This breaks when importing in main.tsx without the use of CSS modules, great -.- */
+    :global(.#{$theme}) & {
+      @content;
+    }
+  }
+
+  $theme-map: null !global;
+  $scope: null !global;
+}
+
+@function t($key) {
+  @return map-get(map-get($theme-map, $scope), $key);
+}

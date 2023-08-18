@@ -1,72 +1,63 @@
 import { For, Show, createResource } from 'solid-js';
-import { DisplayCondition, getStacklets } from '../../api/stacklets';
-import { DataTable } from '../../components/datatable';
+
+import { DisplayCondition, getStacklets } from '@/api/stacklets';
+import { translate } from '@/localization';
+
+import { DataTable } from '@/components/datatable';
+
 import styles from './list.module.css';
-import { translate } from '../../localization';
 
 export const Stacklets = () => {
+  // TODO (Techassi): Let's find a way to throttle spamming the refresh by making sure the request is done
   const [stacklets, { refetch }] = createResource(getStacklets);
   return (
-    <>
+    <div class='col-span-full mt-8'>
       <DataTable
         items={stacklets() || []}
         columns={[
           {
-            label: translate('stacklet--product'),
-            get: (x) => x.product,
+            name: translate('stacklet--product'),
+            value: (x) => x.product,
             sortBy: (x) => x.product,
           },
           {
-            label: translate('stacklet--namespace'),
-            get: (x) => x.namespace || '(Cluster-scoped)',
+            name: translate('stacklet--namespace'),
+            value: (x) => x.namespace || '(Cluster-scoped)',
             sortBy: (x) => x.namespace || '',
           },
           {
-            label: translate('stacklet--name'),
-            get: (x) => x.name,
+            name: translate('stacklet--name'),
+            value: (x) => x.name,
             sortBy: (x) => x.name,
           },
           {
-            label: translate('stacklet--endpoints'),
-            get: (x) => <StackletEndpoints endpoints={x.endpoints} />,
+            name: translate('stacklet--endpoints'),
+            value: (x) => <StackletEndpoints endpoints={x.endpoints} />,
           },
           {
-            label: translate('stacklet--status'),
-            get: (x) => <StackletConditions conditions={x.conditions} />,
+            name: translate('stacklet--status'),
+            value: (x) => <StackletConditions conditions={x.conditions} />,
           },
-          /* {
-            label: 'Actions',
-            get: (x) => (
-              <ButtonLink href={`/stacklets/${x.namespace}/${x.name}/connect`}>
-                Connect
-              </ButtonLink>
-            ),
-          }, */
         ]}
-        extraButtons={
-          <>
-            {/* <ButtonLink href='/stacklets/add' role='primary'>
-              <AddSymbol /> {translate('stacklet--add')}
-            </ButtonLink> */}
-          </>
-        }
         refresh={refetch}
-        isLoading={stacklets.loading}
+        // isLoading={stacklets.loading}
       />
-    </>
+    </div>
   );
 };
 
 const StackletConditions = (props: { conditions: DisplayCondition[] }) => (
-  <ul class='p-0 m-0'>
-    <For each={props.conditions}>
-      {(cond) => (
-        <li class={styles.inlineListItem}>
-          <StackletCondition condition={cond} />
-        </li>
-      )}
-    </For>
-  </ul>
+  <Show when={props.conditions.length > 0} fallback={<span>-</span>}>
+    <ul class='p-0 m-0'>
+      <For each={props.conditions}>
+        {(cond) => (
+          <li class={styles.inlineListItem}>
+            <StackletCondition condition={cond} />
+          </li>
+        )}
+      </For>
+    </ul>
+  </Show>
 );
 
 const StackletCondition = (props: { condition: DisplayCondition }) => (
