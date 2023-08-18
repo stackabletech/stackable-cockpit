@@ -38,6 +38,8 @@ rules:
       - ""
     resources:
       - services
+      - endpoints
+      - nodes
     verbs:
       - list
       - get
