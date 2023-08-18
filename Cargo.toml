@@ -51,3 +51,12 @@ xdg = "2.4"
 # TODO: Switch to released version
 # We did not want to draw a release of operator-rs just for https://github.com/stackabletech/operator-rs/pull/634
 # stackable-operator = { git = "https://github.com/stackabletech//operator-rs.git", branch = "main" }
+
+[profile.release.package.stackablectl]
+# opt-level = "z" # We don't use that as the binary saving is not *that* big (think of 1MB) and it's not worth it risiking performance for this
+strip = true
+# Can not using because of https://github.com/rust-lang/cargo/issues/8264#issuecomment-751931213
+# lto = true
+codegen-units = 1
+# Can not using because of https://github.com/rust-lang/cargo/issues/8264#issuecomment-751931213
+# panic = "abort"
