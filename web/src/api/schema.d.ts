@@ -105,7 +105,7 @@ export interface components {
       description: string;
       /** @description List of products and their version in this release */
       products: {
-        [key: string]: components["schemas"]["ProductSpec"] | undefined;
+        [key: string]: components["schemas"]["ProductSpec"];
       };
       /** @description Date this released was released */
       releaseDate: string;
@@ -122,7 +122,7 @@ export interface components {
        * The key is the service name (e.g. `web-ui`), the value is the URL.
        */
       endpoints: {
-        [key: string]: string | undefined;
+        [key: string]: string;
       };
       /** @description Name of the stacklet. */
       name: string;
