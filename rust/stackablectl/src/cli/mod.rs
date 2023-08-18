@@ -195,8 +195,6 @@ pub enum CacheSettingsError {
     UserDir,
 }
 
-pub struct InheritStackDemoArgs {}
-
 /// Returns a list of paths or urls based on the default (remote) file and
 /// files provided via the env variable.
 fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
