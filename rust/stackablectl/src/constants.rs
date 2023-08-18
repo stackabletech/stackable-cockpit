@@ -15,6 +15,6 @@ pub const HELM_REPO_URL_STABLE: &str = "https://repo.stackable.tech/repository/h
 pub const HELM_REPO_URL_TEST: &str = "https://repo.stackable.tech/repository/helm-test/";
 pub const HELM_REPO_URL_DEV: &str = "https://repo.stackable.tech/repository/helm-dev/";
 
-pub const XDG_APPLICATION_NAME: &str = "stackablectl";
-pub const XDG_ORGANIZATION_NAME: &str = "Stackable";
-pub const XDG_QUALIFIER: &str = "tech";
+pub const USER_DIR_APPLICATION_NAME: &str = "stackablectl";
+pub const USER_DIR_ORGANIZATION_NAME: &str = "Stackable";
+pub const USER_DIR_QUALIFIER: &str = "tech";

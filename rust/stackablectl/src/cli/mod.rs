@@ -23,8 +23,8 @@ use crate::{
     },
     constants::{
         ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
-        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, XDG_APPLICATION_NAME, XDG_ORGANIZATION_NAME,
-        XDG_QUALIFIER,
+        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
+        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
 };
 
@@ -125,9 +125,12 @@ impl Cli {
         if self.no_cache {
             Ok(CacheSettings::disabled())
         } else {
-            let project_dir =
-                ProjectDirs::from(XDG_QUALIFIER, XDG_ORGANIZATION_NAME, XDG_APPLICATION_NAME)
-                    .ok_or(CacheSettingsError::Xdg)?;
+            let project_dir = ProjectDirs::from(
+                USER_DIR_QUALIFIER,
+                USER_DIR_ORGANIZATION_NAME,
+                USER_DIR_APPLICATION_NAME,
+            )
+            .ok_or(CacheSettingsError::UserDir)?;
 
             Ok(CacheSettings::disk(project_dir.cache_dir()))
         }
@@ -188,8 +191,8 @@ pub enum OutputType {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum CacheSettingsError {
-    #[snafu(display("unable to resolve XDG directories"))]
-    Xdg,
+    #[snafu(display("unable to resolve user directories"))]
+    UserDir,
 }
 
 pub struct InheritStackDemoArgs {}
