@@ -1,7 +1,8 @@
 use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use snafu::{ResultExt, Snafu};
+use directories::BaseDirs;
+use snafu::{OptionExt, Snafu};
 use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
@@ -123,9 +124,9 @@ impl Cli {
         if self.no_cache {
             Ok(CacheSettings::disabled())
         } else {
-            let xdg = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-                .context(cache_settings_error::XdgSnafu)?;
-            Ok(CacheSettings::disk(xdg.get_cache_home()))
+            let dirs = BaseDirs::new().context(cache_settings_error::BaseDirsSnafu)?;
+            let cache_dir = dirs.cache_dir().join(CACHE_HOME_PATH);
+            Ok(CacheSettings::disk(cache_dir))
         }
     }
 }
@@ -184,8 +185,8 @@ pub enum OutputType {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum CacheSettingsError {
-    #[snafu(display("unable to resolve XDG directories"))]
-    Xdg { source: xdg::BaseDirectoriesError },
+    #[snafu(display("unable to resolve base directories"))]
+    BaseDirs {},
 }
 
 pub struct InheritStackDemoArgs {}
