@@ -1,7 +1,8 @@
 use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum};
-use snafu::{ResultExt, Snafu};
+use directories::ProjectDirs;
+use snafu::Snafu;
 use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
@@ -21,8 +22,9 @@ use crate::{
         release::ReleaseArgs, stack::StackArgs, stacklets::StackletsArgs,
     },
     constants::{
-        CACHE_HOME_PATH, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
-        REMOTE_DEMO_FILE, REMOTE_RELEASE_FILE, REMOTE_STACK_FILE,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
+        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
+        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
 };
 
@@ -123,9 +125,14 @@ impl Cli {
         if self.no_cache {
             Ok(CacheSettings::disabled())
         } else {
-            let xdg = xdg::BaseDirectories::with_prefix(CACHE_HOME_PATH)
-                .context(cache_settings_error::XdgSnafu)?;
-            Ok(CacheSettings::disk(xdg.get_cache_home()))
+            let project_dir = ProjectDirs::from(
+                USER_DIR_QUALIFIER,
+                USER_DIR_ORGANIZATION_NAME,
+                USER_DIR_APPLICATION_NAME,
+            )
+            .ok_or(CacheSettingsError::UserDir)?;
+
+            Ok(CacheSettings::disk(project_dir.cache_dir()))
         }
     }
 }
@@ -146,7 +153,7 @@ pub enum Commands {
 
     /// Interact with deployed stacklets, which are bundles of resources and
     /// containers required to run the product.
-    #[command(aliases(["stl", "sl"]))]
+    #[command(aliases(["stacklet", "stl", "sl"]))]
     #[command(
         long_about = "Interact with deployed stacklets, which are bundles of resources and containers
 required to run the product.
@@ -184,11 +191,9 @@ pub enum OutputType {
 #[derive(Debug, Snafu)]
 #[snafu(module)]
 pub enum CacheSettingsError {
-    #[snafu(display("unable to resolve XDG directories"))]
-    Xdg { source: xdg::BaseDirectoriesError },
+    #[snafu(display("unable to resolve user directories"))]
+    UserDir,
 }
-
-pub struct InheritStackDemoArgs {}
 
 /// Returns a list of paths or urls based on the default (remote) file and
 /// files provided via the env variable.

@@ -1,10 +1,12 @@
-use k8s_openapi::apimachinery::pkg::apis::meta::v1::Condition;
 use kube::{api::ListParams, ResourceExt};
 use snafu::ResultExt;
 
 use crate::{
-    platform::stacklet::{KubeSnafu, Stacklet, StackletError},
-    utils::k8s::{ConditionsExt, KubeClient, ListParamsExt, ProductLabel},
+    platform::{
+        service::get_service_endpoint_urls,
+        stacklet::{KubeSnafu, Stacklet, StackletError},
+    },
+    utils::k8s::{KubeClient, ListParamsExt, ProductLabel},
 };
 
 pub(super) async fn list(
@@ -20,17 +22,21 @@ pub(super) async fn list(
         .context(KubeSnafu)?;
 
     for service in services {
-        let conditions: Vec<Condition> = match &service.status {
-            Some(status) => status.conditions.clone().unwrap_or(vec![]),
-            None => vec![],
-        };
+        let service_name = service.name_any();
+        let endpoints = get_service_endpoint_urls(kube_client, &service, &service_name)
+            .await
+            .map_err(|err| StackletError::ServiceError { source: err })?;
+
+        // TODO: Add "Logs view" extra info from old stackablectl once "Extra info" field  is supported.
+        // see https://github.com/stackabletech/stackablectl/blob/eda45945cfcf5c6581cf1b88c782d98fada8065f/src/services/opensearch.rs#L41
 
         stacklets.push(Stacklet {
-            name: service.name_any(),
+            conditions: Vec::new(),
             namespace: service.namespace(),
             product: "opensearch-dashboards".to_string(),
-            conditions: conditions.plain(),
-        })
+            name: service_name,
+            endpoints,
+        });
     }
 
     Ok(stacklets)

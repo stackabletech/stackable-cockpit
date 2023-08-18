@@ -1,12 +1,8 @@
 import { splitProps } from 'solid-js';
+
 import { DataTableBody, DataTableColumnSpec } from './body';
 import { DataTableHeader, DataTableHeaderProps } from './header';
-
-// import { For, JSX, Show, createMemo, createSignal } from 'solid-js';
-
-// import { DataTableHeader } from '@/components/datatable/header';
-// import { LoadingBar } from '@/components/loading';
-// import { Button } from '@/components/button';
+import { DataTableFooter } from './footer';
 
 // export interface DataTableColumn<T> {
 //   label: string;
@@ -127,6 +123,7 @@ export const DataTable = <T,>(props: DataTableProps<T>) => {
     <>
       <DataTableHeader {...header} />
       <DataTableBody {...rest} />
+      <DataTableFooter />
     </>
   );
 };

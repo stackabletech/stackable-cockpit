@@ -31,6 +31,10 @@ export const Stacklets = () => {
             sortBy: (x) => x.name,
           },
           {
+            name: translate('stacklet--endpoints'),
+            value: (x) => <StackletEndpoints endpoints={x.endpoints} />,
+          },
+          {
             name: translate('stacklet--status'),
             value: (x) => <StackletConditions conditions={x.conditions} />,
           },
@@ -66,4 +70,31 @@ const StackletCondition = (props: { condition: DisplayCondition }) => (
   >
     {props.condition.condition}
   </span>
+);
+
+const StackletEndpoints = (props: {
+  endpoints: { [key: string]: string | undefined };
+}) => (
+  <ul class='p-0 m-0'>
+    <For each={Object.entries(props.endpoints)}>
+      {(item) => (
+        <li class={styles.inlineListItem}>
+          <Show
+            when={
+              item[1]?.startsWith('http://') || item[1]?.startsWith('https://')
+            }
+            fallback={
+              <span class='c-white'>
+                {item[0]}: {item[1]}
+              </span>
+            }
+          >
+            <a class='c-white' href={item[1]}>
+              {item[0]}
+            </a>
+          </Show>
+        </li>
+      )}
+    </For>
+  </ul>
 );
