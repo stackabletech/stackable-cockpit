@@ -2,6 +2,11 @@
 members = ["rust/*", "web", "."]
 
 [workspace.package]
+# Currently we version stackablectl separately from the other tools in this repo,
+# as we want to already ship a binary to enable easy testing.
+# We need to decide on a versioning strategy (e.g. version stackable-cokpit
+# using semver or use SDP releases) in the future. Once we have the decision
+# we can consolidate the stackablectl version.
 version = "0.0.0-dev"
 authors = ["Stackable GmbH <info@stackable.tech>"]
 license = "OSL-3.0"
