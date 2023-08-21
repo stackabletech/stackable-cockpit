@@ -111,7 +111,7 @@ impl ResourceRequests {
                 available: cluster_info.untainted_allocatable_cpu,
                 object_name: object_name.to_string(),
                 required: stack_cpu,
-                help_message: (rng.gen::<f32>() < 0.02).then_some(". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution".to_string()),
+                help_message: (rng.gen::<f32>() < 0.005).then_some(". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution".to_string()),
             });
         }
 
