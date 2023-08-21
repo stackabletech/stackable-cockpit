@@ -4,7 +4,7 @@ name: Stackablectl Release Pipeline
 on:
   push:
     tags:
-      - "stackablectl-[0-9]+.[0-9]+.[0-9]+"
+      - "stackablectl-[0-9]+.[0-9]+.[0-9]+.*"
 
 env:
   RUST_VERSION: 1.70.0

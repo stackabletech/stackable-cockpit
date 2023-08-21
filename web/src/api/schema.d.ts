@@ -69,6 +69,7 @@ export interface components {
       manifests?: components["schemas"]["ManifestSpec"][];
       /** @description A variable number of supported parameters */
       parameters?: components["schemas"]["Parameter"][];
+      resourceRequests?: components["schemas"]["ResourceRequests"] | null;
       /** @description The name of the underlying stack */
       stackableStack: string;
       /**
