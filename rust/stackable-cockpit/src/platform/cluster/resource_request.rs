@@ -1,5 +1,6 @@
 use std::fmt::Display;
 
+use rand::Rng;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -63,12 +64,13 @@ pub enum ResourceRequestsError {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsValidationError {
     #[snafu(display(
-        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster", required.as_cpu_count(), available.as_cpu_count()
+        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster{}", required.as_cpu_count(), available.as_cpu_count(), help_message.clone().unwrap_or_default()
     ))]
     InsufficientCpu {
         available: CpuQuantity,
         required: CpuQuantity,
         object_name: String,
+        help_message: Option<String>,
     },
 
     #[snafu(display(
@@ -104,10 +106,12 @@ impl ResourceRequests {
         let mut errors = Vec::new();
 
         if stack_cpu > cluster_info.untainted_allocatable_cpu {
+            let mut rng = rand::thread_rng();
             errors.push(ResourceRequestsValidationError::InsufficientCpu {
                 available: cluster_info.untainted_allocatable_cpu,
                 object_name: object_name.to_string(),
                 required: stack_cpu,
+                help_message: (rng.gen::<f32>() < 0.02).then_some(". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution".to_string()),
             });
         }
 
