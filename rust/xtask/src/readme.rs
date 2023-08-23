@@ -4,7 +4,8 @@ use clap::CommandFactory;
 use snafu::{ResultExt, Snafu};
 use stackablectl::cli::Cli;
 
-const USAGE_STRING: &str = "Command line tool to interact with the Stackable Data Platform\n\nUsage: stackablectl [OPTIONS] <COMMAND>\n";
+const USAGE_START_STRING: &str = "Command line tool to interact with the Stackable Data Platform\n\nUsage: stackablectl [OPTIONS] <COMMAND>\n";
+const USAGE_END_STRING: &str = "\n```";
 
 #[derive(Debug, Snafu)]
 pub enum GenReadmeError {
@@ -24,8 +25,8 @@ pub fn generate() -> Result<(), GenReadmeError> {
         .join("stackablectl/README.md");
 
     let mut readme = fs::read_to_string(&readme_path).context(IoSnafu)?;
-    let usage_start = readme.find(USAGE_STRING).unwrap();
-    let usage_end = readme[usage_start..].find("\n```").unwrap();
+    let usage_start = readme.find(USAGE_START_STRING).unwrap();
+    let usage_end = readme[usage_start..].find(USAGE_END_STRING).unwrap();
 
     readme.replace_range(usage_start..usage_start + usage_end, &usage_text);
     fs::write(readme_path, readme).context(IoSnafu)

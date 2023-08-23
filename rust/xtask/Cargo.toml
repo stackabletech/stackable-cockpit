@@ -5,10 +5,13 @@ edition = "2021"
 publish = false
 
 [dependencies]
-stackablectl = { path = "../stackablectl" }
-stackable-cockpitd = { path = "../stackable-cockpitd" }
-clap_complete =  { workspace = true }
-snafu = { workspace = true }
-clap.workspace = true
+clap_complete = { workspace = true }
 clap_mangen = "0.2.10"
+clap.workspace = true
+once_cell.workspace = true
+phf = { workspace = true, features = ["macros"] }
+regex.workspace = true
 serde_json.workspace = true
+snafu.workspace = true
+stackable-cockpitd = { path = "../stackable-cockpitd" }
+stackablectl = { path = "../stackablectl" }

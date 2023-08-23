@@ -2,10 +2,12 @@ use clap::Parser;
 use snafu::Snafu;
 
 use crate::{
-    completions::GenCompError, man::GenManError, openapi::GenOpenapiError, readme::GenReadmeError,
+    completions::GenCompError, docs::GenDocsError, man::GenManError, openapi::GenOpenapiError,
+    readme::GenReadmeError,
 };
 
 mod completions;
+mod docs;
 mod man;
 mod openapi;
 mod readme;
@@ -17,6 +19,7 @@ enum XtaskCommand {
     GenComp,
     GenOpenapi,
     GenCtlReadme,
+    GenDocs,
 }
 
 #[derive(Debug, Snafu)]
@@ -38,6 +41,9 @@ enum TaskError {
         context(false)
     )]
     Readme { source: GenReadmeError },
+
+    #[snafu(display("failed to generate stackablectl doc pages"), context(false))]
+    Docs { source: GenDocsError },
 }
 
 #[snafu::report]
@@ -47,6 +53,7 @@ fn main() -> Result<(), TaskError> {
         XtaskCommand::GenComp => completions::generate()?,
         XtaskCommand::GenOpenapi => openapi::generate()?,
         XtaskCommand::GenCtlReadme => readme::generate()?,
+        XtaskCommand::GenDocs => docs::generate()?,
     }
 
     Ok(())
