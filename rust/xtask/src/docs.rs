@@ -8,14 +8,14 @@ use snafu::{ResultExt, Snafu};
 use stackablectl::cli::Cli;
 
 const COMMANDS: phf::Map<&str, &str> = phf_map! {
-    "index" => ".",
+    "completions" => "completions",
+    "stacklets" => "stacklets",
     "operator" => "operator",
     "release" => "release",
     "stack" => "stack",
-    "stacklets" => "stacklets",
-    "demo" => "demo",
-    "completions" => "completions",
     "cache" => "cache",
+    "demo" => "demo",
+    "index" => ".",
 };
 
 static CODE_LISTING_PATTERN: Lazy<Regex> = Lazy::new(|| {

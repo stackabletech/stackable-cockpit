@@ -1,4 +1,4 @@
-= Demo
+= stackablectl demo
 
 A demo is an end-to-end demonstration of the usage of the Stackable data platform. It is tied to a specific stack of the
 Stackable data platform, which will provide the required products for the demo.
@@ -95,7 +95,6 @@ To list the available demos, run the following command:
 [source,console]
 ----
 $ stackablectl demo list
-
 ┌────┬───────────────────────┬─────────┬─────────────────────────────────────────────────────────┐
 │ #  ┆ NAME                  ┆ STACK   ┆ DESCRIPTION                                             │
 ╞════╪═══════════════════════╪═════════╪═════════════════════════════════════════════════════════╡
