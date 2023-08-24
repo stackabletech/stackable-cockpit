@@ -1,6 +1,8 @@
 use stackable_cockpit::{
     common::ManifestSpec,
-    platform::{demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet},
+    platform::{
+        cluster::ResourceRequests, demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet,
+    },
     utils::{k8s::DisplayCondition, params::Parameter},
 };
 use utoipa::{
@@ -31,9 +33,8 @@ use crate::{
     ),
     components(schemas(
         DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec,
-        Stacklet, DisplayCondition,
-        synthetic_types::ObjectMeta,
-        Session, SessionToken,
+        Stacklet, DisplayCondition, synthetic_types::ObjectMeta,
+        Session, SessionToken, ResourceRequests
     ))
 )]
 struct ApiDoc {}

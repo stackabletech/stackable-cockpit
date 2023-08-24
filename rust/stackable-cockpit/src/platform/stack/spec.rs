@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use tracing::{debug, info, instrument};
+use tracing::{debug, info, instrument, log::warn};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -11,6 +11,7 @@ use crate::{
     common::ManifestSpec,
     helm::{self, HelmChart, HelmError},
     platform::{
+        cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoParameter,
         release::{ReleaseInstallError, ReleaseList},
     },
@@ -60,6 +61,9 @@ pub enum StackError {
     #[snafu(display("yaml error: {source}"))]
     YamlError { source: serde_yaml::Error },
 
+    #[snafu(display("stack resource requests error"), context(false))]
+    StackResourceRequestsError { source: ResourceRequestsError },
+
     #[snafu(display("path or url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
@@ -102,26 +106,23 @@ pub struct StackSpecV2 {
     #[serde(default)]
     pub manifests: Vec<ManifestSpec>,
 
+    /// The resource requests the stack imposes on a Kubernetes cluster
+    pub resource_requests: Option<ResourceRequests>,
+
     /// A variable number of supported parameters
     #[serde(default)]
     pub parameters: Vec<StackParameter>,
 }
 
 impl StackSpecV2 {
-    #[instrument(skip(release_list))]
-    pub fn install(
-        &self,
-        release_list: ReleaseList,
-        operator_namespace: &str,
-        product_namespace: &str,
-        skip_release_install: bool,
-    ) -> Result<(), StackError> {
-        info!("Installing stack");
-
-        if skip_release_install {
-            info!("Skipping release installation during stack installation process");
-            return Ok(());
-        }
+    /// Checks if the prerequisites to run this stack are met. These checks
+    /// include:
+    ///
+    /// - Does the stack support to be installed in the requested namespace?
+    /// - Does the cluster have enough resources available to run this stack?
+    #[instrument(skip_all)]
+    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), StackError> {
+        debug!("Checking prerequisites before installing stack");
 
         // Returns an error if the stack doesn't support to be installed in the
         // requested product namespace. When installing a demo, this check is
@@ -132,6 +133,39 @@ impl StackSpecV2 {
                 supported: self.supported_namespaces.clone(),
                 requested: product_namespace.to_string(),
             });
+        }
+
+        // Checks if the available cluster resources are sufficient to deploy
+        // the demo.
+        if let Some(resource_requests) = &self.resource_requests {
+            if let Err(err) = resource_requests.validate_cluster_size("stack").await {
+                match err {
+                    ResourceRequestsError::ValidationErrors { errors } => {
+                        for error in errors {
+                            warn!("{error}");
+                        }
+                    }
+                    err => return Err(err.into()),
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    #[instrument(skip(self, release_list))]
+    pub async fn install_release(
+        &self,
+        release_list: ReleaseList,
+        operator_namespace: &str,
+        product_namespace: &str,
+        skip_release_install: bool,
+    ) -> Result<(), StackError> {
+        info!("Installing release for stack");
+
+        if skip_release_install {
+            info!("Skipping release installation during stack installation process");
+            return Ok(());
         }
 
         // Get the release by name

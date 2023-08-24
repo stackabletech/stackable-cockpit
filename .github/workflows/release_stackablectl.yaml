@@ -1,0 +1,67 @@
+---
+name: Stackablectl Release Pipeline
+
+on:
+  push:
+    tags:
+      - "stackablectl-[0-9]+.[0-9]+.[0-9]+**"
+
+env:
+  RUST_VERSION: 1.70.0
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  RUSTFLAGS: "-D warnings"
+  RUSTDOCFLAGS: "-D warnings"
+  RUST_LOG: "info"
+
+jobs:
+  release:
+    name: Release for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-20.04 # We don't use ubuntu-latest because we want to build against an old glibc version. (18.04 has glibc 2.27, 20.04 has glibc 2.31, 22.04 has glibc 2.35)
+            file-suffix: ""
+          # Commented out, as Windows build is currently not working
+          # - target: x86_64-pc-windows-gnu
+          #   os: windows-latest
+          #   file-suffix: ".exe"
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            file-suffix: ""
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            file-suffix: ""
+    steps:
+      - name: Checkout
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ matrix.target }}
+      - name: Build for non-Windows
+        if: matrix.os != 'windows-latest'
+        run: cargo build --target ${{ matrix.target }} --release -p stackablectl
+      - name: Prepare Windows env
+        if: matrix.os == 'windows-latest'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: base-devel mingw-w64-x86_64-go mingw-w64-x86_64-rust
+      - name: Build for Windows
+        if: matrix.os == 'windows-latest'
+        run: cargo build --target ${{ matrix.target }} --release -p stackablectl
+        shell: msys2 {0}
+      - name: Rename binary file
+        run: mv target/${{ matrix.target }}/release/stackablectl${{ matrix.file-suffix }} stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
+      - name: Upload Release binaries
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        with:
+          files: stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}

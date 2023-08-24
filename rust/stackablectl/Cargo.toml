@@ -1,7 +1,8 @@
 [package]
 name = "stackablectl"
 description = "Command line tool to interact with the Stackable Data Platform"
-version.workspace = true
+# See <project-root>/Cargo.toml
+version = "1.0.0-rc1"
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -19,6 +20,7 @@ dotenvy.workspace = true
 indexmap.workspace = true
 lazy_static.workspace = true
 nu-ansi-term.workspace = true
+rand.workspace = true
 reqwest.workspace = true
 semver.workspace = true
 serde_json.workspace = true

@@ -3,31 +3,39 @@ use kube::core::ObjectList;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
 
+mod resource_request;
+
+pub use resource_request::*;
+
 #[derive(Debug, Snafu)]
 pub enum ClusterError {
     #[snafu(display("failed to parse node cpu"))]
     ParseNodeCpu {
         source: stackable_operator::error::Error,
     },
+
     #[snafu(display("failed to parse node memory"))]
     ParseNodeMemory {
         source: stackable_operator::error::Error,
     },
 }
 
-/// [`ClusterInfo`] contains information about the Kubernetes cluster, such as the number of nodes and
-/// allocatable resources.
+/// [`ClusterInfo`] contains information about the Kubernetes cluster, such as
+/// the number of nodes and allocatable resources.
 #[derive(Debug)]
 pub struct ClusterInfo {
     /// All nodes of the cluster regardless of their type
     pub node_count: usize,
+
     /// Nodes that have no taints set, this e.g. excludes kind master nodes.
     /// The idea is, that our stacks/demos don't specify any tolerations, so these nodes are
     /// not available when installing a stack or demo.
     pub untainted_node_count: usize,
+
     /// Sum of allocatable cpu resources on all untainted nodes. Please note that allocatable
     /// is comparable to the total capacity of the node, not the free capacity!
     pub untainted_allocatable_cpu: CpuQuantity,
+
     /// Sum of allocatable memory resources on all untainted nodes. Please note that allocatable
     /// is comparable to the total capacity of the node, not the free capacity!
     pub untainted_allocatable_memory: MemoryQuantity,
@@ -48,11 +56,10 @@ impl ClusterInfo {
         });
         let untainted_node_count = untainted_nodes.clone().count();
 
-        let untainted_allocatable: Vec<_> = untainted_nodes
+        let untainted_allocatable = untainted_nodes
             .into_iter()
             .filter_map(|node| node.status)
-            .filter_map(|status| status.allocatable)
-            .collect();
+            .filter_map(|status| status.allocatable);
 
         let mut untainted_allocatable_memory = MemoryQuantity::from_mebi(0.0);
         let mut untainted_allocatable_cpu = CpuQuantity::from_millis(0);

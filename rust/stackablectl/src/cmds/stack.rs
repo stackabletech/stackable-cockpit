@@ -274,17 +274,24 @@ async fn install_cmd(
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
-            // Install the stack
+            // Check perquisites
             stack_spec
-                .install(
+                .check_prerequisites(&product_namespace)
+                .await
+                .context(StackSnafu)?;
+
+            // Install release
+            stack_spec
+                .install_release(
                     release_list,
                     &operator_namespace,
                     &product_namespace,
                     args.skip_release,
                 )
+                .await
                 .context(StackSnafu)?;
 
-            // Install stack manifests
+            // Install stack
             stack_spec
                 .install_stack_manifests(
                     &args.stack_parameters,
