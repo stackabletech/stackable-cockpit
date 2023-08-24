@@ -175,7 +175,7 @@ impl OperatorSpec {
         let version = self.version.as_deref();
 
         // Install using Helm
-        match helm::install_release_from_repo(
+        helm::install_release_from_repo(
             &self.name,
             &helm_name,
             helm::ChartVersion {
@@ -186,13 +186,9 @@ impl OperatorSpec {
             None,
             namespace,
             true,
-        ) {
-            Ok(status) => {
-                println!("{status}");
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }
+        )?;
+
+        Ok(())
     }
 
     /// Uninstalls the operator using Helm.

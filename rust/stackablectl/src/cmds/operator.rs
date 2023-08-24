@@ -285,10 +285,8 @@ async fn install_cmd(
         })?;
 
     for operator in &args.operators {
-        println!("Installing {} operator", operator.name);
-
         match operator.install(&args.operator_namespace) {
-            Ok(_) => println!("Installed {} operator", operator.name),
+            Ok(_) => println!("Installed {} operator", operator),
             Err(err) => {
                 return Err(OperatorCmdError::HelmError { source: err });
             }
