@@ -34,8 +34,7 @@ phf = "0.11"
 phf_codegen = "0.11"
 rand = "0.8"
 regex = "1.9"
-# We use the feature "rustls-tls-native-roots" instead of "rustls-tls" to avoid pulling in "webpki-roots" and hence MPL-2.0: https://github.com/rustls/webpki-roots/blob/main/LICENSE
-reqwest = { version = "0.11.16", default-features = false, features = ["rustls-tls-native-roots"] }
+reqwest = { version = "0.11", default-features = false, features = ["rustls-tls"] }
 semver = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
