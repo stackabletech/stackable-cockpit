@@ -8,3 +8,5 @@
 *** xref:stackablectl:commands/release.adoc[release]
 *** xref:stackablectl:commands/stack.adoc[stack]
 *** xref:stackablectl:commands/stacklets.adoc[stacklets]
+** Demos
+include::partial$demos.adoc[]

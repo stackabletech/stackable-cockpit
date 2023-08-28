@@ -1,0 +1,139 @@
+= airflow-scheduled-job
+
+This demo will
+
+* Install the required Stackable operators
+* Spin up the follow data products
+** *Postgresql*: An open-source database used for Airflow cluster- and job-metadata.
+** *Redis*: An in-memory data structure store used for queuing Airflow jobs
+** *Airflow*: An open-source workflow management platform for data engineering pipelines.
+* Mount two Airflow jobs (referred to as Directed Acyclic Graphs, or DAGs) for the cluster to use
+* Enable and schedule the jobs
+* Verify the job status with the Airflow Webserver UI
+
+You can see the deployed products as well as their relationship in the following diagram:
+
+image::demo-airflow-scheduled-job/overview.png[]
+
+[#system-requirements]
+== System requirements
+
+To run this demo, your system needs at least:
+
+* 2.5 https://kubernetes.io/docs/tasks/debug/debug-cluster/resource-metrics-pipeline/#cpu[cpu units] (core/hyperthread)
+* 9GiB memory
+* 24GiB disk storage
+
+[#installation]
+== Installation
+
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo].
+To put it simply you just have to run `stackablectl demo install airflow-scheduled-job`.
+
+== List deployed Stackable services
+
+To list the installed Stackable services run the following command:
+
+[source,console]
+----
+$ stackablectl stacklets list
+┌──────────┬───────────────┬───────────┬───────────────────────────────────────────┬─────────────────────────────────┐
+│ PRODUCT  ┆ NAME          ┆ NAMESPACE ┆ ENDPOINTS                                 ┆ CONDITIONS                      │
+╞══════════╪═══════════════╪═══════════╪═══════════════════════════════════════════╪═════════════════════════════════╡
+│ airflow  ┆ airflow       ┆ default   ┆ webserver-airflow http://172.18.0.2:31979 ┆ Available, Reconciling, Running │
+└──────────┴───────────────┴───────────┴───────────────────────────────────────────┴─────────────────────────────────┘
+----
+
+[NOTE]
+====
+When a product instance has not finished starting yet, the service will have no endpoint. Starting all the product
+instances might take a considerable amount of time depending on your internet connectivity. In case the product is not
+ready yet a warning might be shown.
+====
+
+== Airflow Webserver UI
+
+Superset gives the ability to execute SQL queries and build dashboards. Open the `airflow` endpoint `webserver-airflow`
+in your browser (`http://172.18.0.2:31979` in this case).
+
+image::demo-airflow-scheduled-job/airflow_1.png[]
+
+Log in with the username `admin` and password `adminadmin`. The overview screen shows the DAGs that have been mounted
+during the demo set-up (`date_demo`).
+
+image::demo-airflow-scheduled-job/airflow_2.png[]
+
+There are two things to notice here. Both DAGs have been enabled, as shown by the slider to the left of the DAG name
+(DAGs are initially all `paused` and can be activated either manually in the UI or via a REST call, as done in the setup
+for this demo):
+
+image::demo-airflow-scheduled-job/airflow_3.png[]
+
+Secondly, the `date_demo` job has been busy, with several runs already logged! The `sparkapp_dag` has only been run
+once. This is because they have been defined with different schedules.
+
+image::demo-airflow-scheduled-job/airflow_4.png[]
+
+Clicking on the number under `Runs` will display the individual job runs:
+
+image::demo-airflow-scheduled-job/airflow_5.png[]
+
+The `demo_date` job is running every minute. With Airflow, DAGs can be started manually or scheduled to run when certain
+conditions are fulfilled: in this case the DAG has been set up to run using a cron table, which is part of the DAG
+definition.
+
+=== `demo_date` DAG
+
+Let's drill down a bit deeper into this DAG. Click on one of the individual job runs shown in the previous step to
+display the job details. The DAG is displayed in the form of a graph (this job is so simple that it only has one step,
+called `run_every_minute`).
+
+image::demo-airflow-scheduled-job/airflow_6.png[]
+
+In the top right-hand corner there is some scheduling information, which tells us that this job will run every minute
+continuously:
+
+image::demo-airflow-scheduled-job/airflow_7.png[]
+
+Click on the `run_every_minute` box in the centre of the page and then select `Log`:
+
+image::demo-airflow-scheduled-job/airflow_8.png[]
+
+This will navigate to the worker where this job was run (with multiple workers the jobs will be queued and distributed
+to the next free worker) and display the log. In this case the output is a simple printout of the timestamp:
+
+image::demo-airflow-scheduled-job/airflow_9.png[]
+
+To look at the actual DAG code click on `Code`. Here we can see the crontab information used to schedule the job as well
+the `bash` command that provides the output:
+
+image::demo-airflow-scheduled-job/airflow_10.png[]
+
+=== `sparkapp_dag` DAG
+
+Go back to DAG overview screen. The `sparkapp_dag` job has a scheduled entry of `None` and a last-execution time
+(`2022-09-19, 07:36:55`). This allows a DAG to be executed exactly once, with neither schedule-based runs nor any
+https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html?highlight=backfill#backfill[backfill]. The DAG can
+always be triggered manually again via REST or from within the Webserver UI.
+
+image::demo-airflow-scheduled-job/airflow_11.png[]
+
+By navigating to the graphical overview of the job we can see that DAG has two steps, one to start the job - which runs
+asynchronously - and another to poll the running job to report on its status.
+
+image::demo-airflow-scheduled-job/airflow_12.png[]
+
+The logs for the first task - `spark-pi-submit` - indicate that it has been started, at which point the task exits
+without any further information:
+
+image::demo-airflow-scheduled-job/airflow_13.png[]
+
+The second task - `spark-pi-monitor` - polls this job and waits for a final result (in this case: `Success`). In this
+case, the actual result of the job (a value of `pi`) is logged by Spark in its driver pod, but more sophisticated jobs
+would persist this in a sink (e.g. a Kafka topic or HBase row) or use the result to trigger subsequent actions.
+
+image::demo-airflow-scheduled-job/airflow_14.png[]
+
+== Summary
+
+This demo showed how DAGs can be made available for Airflow, scheduled, run and then inspected with the Webserver UI.
