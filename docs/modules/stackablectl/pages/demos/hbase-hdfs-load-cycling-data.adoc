@@ -22,7 +22,7 @@ This demo will
 
 You can see the deployed products as well as their relationship in the following diagram:
 
-image::demo-hbase-hdfs-load-cycling-data/overview.png[]
+image::demos/hbase-hdfs-load-cycling-data/overview.png[]
 
 [#system-requirements]
 == System requirements
@@ -173,11 +173,11 @@ COLUMN FAMILIES DESCRIPTION
 The Hbase web UI will give you information on status and metrics of your Hbase cluster. If the UI is not available
 please do a port-forward `kubectl port-forward hbase-master-default-0 16010`. See below for the start page.
 
-image::demo-hbase-hdfs-load-cycling-data/hbase-ui-start-page.png[]
+image::demos/hbase-hdfs-load-cycling-data/hbase-ui-start-page.png[]
 
 From the start page you can check more details. For example details on the created table.
 
-image::demo-hbase-hdfs-load-cycling-data/hbase-table-ui.png[]
+image::demos/hbase-hdfs-load-cycling-data/hbase-table-ui.png[]
 
 == The HDFS UI
 [NOTE]
@@ -187,20 +187,20 @@ The hdfs services will be available with the next release 22-11 via `stackablect
 
 You can also see HDFS details via a UI. Below you will see the overview of your HDFS cluster
 
-image::demo-hbase-hdfs-load-cycling-data/hdfs-overview.png[]
+image::demos/hbase-hdfs-load-cycling-data/hdfs-overview.png[]
 
 The UI will give you information on the datanodes via the datanodes tab.
 
-image::demo-hbase-hdfs-load-cycling-data/hdfs-datanode.png[]
+image::demos/hbase-hdfs-load-cycling-data/hdfs-datanode.png[]
 
 You can also browse the directory with the UI.
 
-image::demo-hbase-hdfs-load-cycling-data/hdfs-data.png[]
+image::demos/hbase-hdfs-load-cycling-data/hdfs-data.png[]
 
 The raw data from the distcp job can be found here.
 
-image::demo-hbase-hdfs-load-cycling-data/hdfs-data-raw.png[]
+image::demos/hbase-hdfs-load-cycling-data/hdfs-data-raw.png[]
 
 The structure of the Hfiles can be seen here.
 
-image::demo-hbase-hdfs-load-cycling-data/hdfs-data-hfile.png[]
+image::demos/hbase-hdfs-load-cycling-data/hdfs-data-hfile.png[]

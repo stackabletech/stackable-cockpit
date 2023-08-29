@@ -122,7 +122,7 @@ http://localhost:8080
 
 You should see the JupyterHub login page.
 
-image::demo-jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_login.png[]
+image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_login.png[]
 
 Log in with username `admin` and password `adminadmin`. There should appear a new pod called `jupyter-admin` (operator
 pods are left out for clarity, you will see more Pods):
@@ -148,13 +148,13 @@ user-scheduler-8d888c6d4-qbqkq                   1/1     Running     0          
 
 You should arrive at your workspace:
 
-image::demo-jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_workspace.png[]
+image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_workspace.png[]
 
 Now you can click on the `notebooks` folder on the left and open the contained file and run it. Click on the double
 arrow to execute the Python scripts. You can inspect the `hdfs` folder as well where the `core-site.xml` and
 `hdfs-site.xml` from the discovery `ConfigMap` of the HDFS cluster are located.
 
-image::demo-jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_run_notebook.png[]
+image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_run_notebook.png[]
 
 
 [NOTE]
@@ -178,7 +178,7 @@ proportional to the anomaly "score".
 
 The notebook shows how to plot the outliers against a particular metric (e.g. "number of rides"):
 
-image::demo-jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_graph.png[]
+image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_graph.png[]
 
 However, this is mainly for convenience - the anomaly score is derived from the *_entire_* feature space i.e. it takes
 all dimensions (or features/columns) into account when scoring data. This means that not only are the results difficult
@@ -190,7 +190,7 @@ We can tackle the first of these issues by collapsing - or projecting - our data
 dimensions that can be plotted: once the script has finished successfully, plots should be displayed on the bottom that
 show the same data in 2D and 3D representation. The 3D plot should look like this:
 
-image::demo-jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_3d_isolation_forest.png[]
+image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_3d_isolation_forest.png[]
 
 It is clear that the model has detected outliers even though that would not have been immediately apparent from the
 time-series representation alone.

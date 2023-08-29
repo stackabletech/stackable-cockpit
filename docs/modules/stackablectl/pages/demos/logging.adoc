@@ -17,7 +17,7 @@ This demo will
 
 You can see the deployed products as well as their relationship in the following diagram:
 
-image::demo-logging/overview.png[]
+image::demos/logging/overview.png[]
 
 == OpenSearch Prerequisites
 
@@ -101,10 +101,10 @@ You can have a look at the log data within the OpenSearch Dashboards web interfa
 `stackablectl stacklets list` and opening the URL shown in the info column of the `opensearch-dashboards` entry. In this
 case it is http://172.18.0.5:31319/app/discover?security_tenant=global#/view/logs.
 
-image::demo-logging/login.png[]
+image::demos/logging/login.png[]
 
 Log in with the username `admin` and password `adminadmin`.
 
-image::demo-logging/logs.png[]
+image::demos/logging/logs.png[]
 
 Inspect the logs.

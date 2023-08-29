@@ -13,7 +13,7 @@ This demo will
 
 You can see the deployed products as well as their relationship in the following diagram:
 
-image::demo-airflow-scheduled-job/overview.png[]
+image::demos/airflow-scheduled-job/overview.png[]
 
 [#system-requirements]
 == System requirements
@@ -56,27 +56,27 @@ ready yet a warning might be shown.
 Superset gives the ability to execute SQL queries and build dashboards. Open the `airflow` endpoint `webserver-airflow`
 in your browser (`http://172.18.0.2:31979` in this case).
 
-image::demo-airflow-scheduled-job/airflow_1.png[]
+image::demos/airflow-scheduled-job/airflow_1.png[]
 
 Log in with the username `admin` and password `adminadmin`. The overview screen shows the DAGs that have been mounted
 during the demo set-up (`date_demo`).
 
-image::demo-airflow-scheduled-job/airflow_2.png[]
+image::demos/airflow-scheduled-job/airflow_2.png[]
 
 There are two things to notice here. Both DAGs have been enabled, as shown by the slider to the left of the DAG name
 (DAGs are initially all `paused` and can be activated either manually in the UI or via a REST call, as done in the setup
 for this demo):
 
-image::demo-airflow-scheduled-job/airflow_3.png[]
+image::demos/airflow-scheduled-job/airflow_3.png[]
 
 Secondly, the `date_demo` job has been busy, with several runs already logged! The `sparkapp_dag` has only been run
 once. This is because they have been defined with different schedules.
 
-image::demo-airflow-scheduled-job/airflow_4.png[]
+image::demos/airflow-scheduled-job/airflow_4.png[]
 
 Clicking on the number under `Runs` will display the individual job runs:
 
-image::demo-airflow-scheduled-job/airflow_5.png[]
+image::demos/airflow-scheduled-job/airflow_5.png[]
 
 The `demo_date` job is running every minute. With Airflow, DAGs can be started manually or scheduled to run when certain
 conditions are fulfilled: in this case the DAG has been set up to run using a cron table, which is part of the DAG
@@ -88,26 +88,26 @@ Let's drill down a bit deeper into this DAG. Click on one of the individual job 
 display the job details. The DAG is displayed in the form of a graph (this job is so simple that it only has one step,
 called `run_every_minute`).
 
-image::demo-airflow-scheduled-job/airflow_6.png[]
+image::demos/airflow-scheduled-job/airflow_6.png[]
 
 In the top right-hand corner there is some scheduling information, which tells us that this job will run every minute
 continuously:
 
-image::demo-airflow-scheduled-job/airflow_7.png[]
+image::demos/airflow-scheduled-job/airflow_7.png[]
 
 Click on the `run_every_minute` box in the centre of the page and then select `Log`:
 
-image::demo-airflow-scheduled-job/airflow_8.png[]
+image::demos/airflow-scheduled-job/airflow_8.png[]
 
 This will navigate to the worker where this job was run (with multiple workers the jobs will be queued and distributed
 to the next free worker) and display the log. In this case the output is a simple printout of the timestamp:
 
-image::demo-airflow-scheduled-job/airflow_9.png[]
+image::demos/airflow-scheduled-job/airflow_9.png[]
 
 To look at the actual DAG code click on `Code`. Here we can see the crontab information used to schedule the job as well
 the `bash` command that provides the output:
 
-image::demo-airflow-scheduled-job/airflow_10.png[]
+image::demos/airflow-scheduled-job/airflow_10.png[]
 
 === `sparkapp_dag` DAG
 
@@ -116,23 +116,23 @@ Go back to DAG overview screen. The `sparkapp_dag` job has a scheduled entry of 
 https://airflow.apache.org/docs/apache-airflow/stable/dag-run.html?highlight=backfill#backfill[backfill]. The DAG can
 always be triggered manually again via REST or from within the Webserver UI.
 
-image::demo-airflow-scheduled-job/airflow_11.png[]
+image::demos/airflow-scheduled-job/airflow_11.png[]
 
 By navigating to the graphical overview of the job we can see that DAG has two steps, one to start the job - which runs
 asynchronously - and another to poll the running job to report on its status.
 
-image::demo-airflow-scheduled-job/airflow_12.png[]
+image::demos/airflow-scheduled-job/airflow_12.png[]
 
 The logs for the first task - `spark-pi-submit` - indicate that it has been started, at which point the task exits
 without any further information:
 
-image::demo-airflow-scheduled-job/airflow_13.png[]
+image::demos/airflow-scheduled-job/airflow_13.png[]
 
 The second task - `spark-pi-monitor` - polls this job and waits for a final result (in this case: `Success`). In this
 case, the actual result of the job (a value of `pi`) is logged by Spark in its driver pod, but more sophisticated jobs
 would persist this in a sink (e.g. a Kafka topic or HBase row) or use the result to trigger subsequent actions.
 
-image::demo-airflow-scheduled-job/airflow_14.png[]
+image::demos/airflow-scheduled-job/airflow_14.png[]
 
 == Summary
 
