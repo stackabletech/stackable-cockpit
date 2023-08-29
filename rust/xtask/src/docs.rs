@@ -14,6 +14,7 @@ const COMMANDS: &[&str] = &[
     "stack",
     "cache",
     "demo",
+    ".",
 ];
 
 static CODE_LISTING_PATTERN: Lazy<Regex> = Lazy::new(|| {
@@ -35,16 +36,19 @@ pub fn generate() -> Result<(), GenDocsError> {
     let mut cli = Cli::command();
 
     for command_page_name in COMMANDS {
-        let usage_text = match cli.find_subcommand_mut(command_page_name) {
-            Some(cmd) => cmd.render_long_help(),
-            None => {
-                return Err(NoSuchSubcommandSnafu {
-                    name: command_page_name.to_string(),
+        let usage_text = if command_page_name == &"." {
+            cli.render_long_help().to_string()
+        } else {
+            match cli.find_subcommand_mut(command_page_name) {
+                Some(cmd) => cmd.render_long_help().to_string(),
+                None => {
+                    return Err(NoSuchSubcommandSnafu {
+                        name: command_page_name.to_string(),
+                    }
+                    .build())
                 }
-                .build())
             }
-        }
-        .to_string();
+        };
 
         // Needed to remove trailing whitespaces in empty lines
         let usage_text: Vec<_> = usage_text.lines().map(|l| l.trim_end()).collect();
@@ -55,7 +59,14 @@ pub fn generate() -> Result<(), GenDocsError> {
             .and_then(Path::parent)
             .unwrap()
             .join(DOCS_BASE_PATH)
-            .join(format!("{command_page_name}.adoc"));
+            .join(format!(
+                "{}.adoc",
+                if command_page_name == &"." {
+                    "index"
+                } else {
+                    command_page_name
+                }
+            ));
 
         let mut doc_page = fs::read_to_string(&page_path).context(IoSnafu)?;
 
