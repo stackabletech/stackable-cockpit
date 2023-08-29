@@ -29,7 +29,7 @@ This demo will
 
 You can see the deployed products as well as their relationship in the following diagram:
 
-image::spark-k8s-anomaly-detection-taxi-data/overview.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/overview.png[]
 
 [#system-requirements]
 == System Requirements
@@ -88,11 +88,11 @@ ready yet a warning might be shown.
 The S3 provided by MinIO is used as persistent storage to store all the data used. Open the `minio-trino` endpoint
 `console-http` retrieved by `stackablectl services list` in your browser (http://172.18.0.3:31452 in this case).
 
-image::spark-k8s-anomaly-detection-taxi-data/minio_0.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/minio_0.png[]
 
 Log in with the username `admin` and password `adminadmin`.
 
-image::spark-k8s-anomaly-detection-taxi-data/minio_2.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/minio_2.png[]
 
 Here you can see the two buckets the S3 is split into:
 
@@ -105,7 +105,7 @@ Here you can see the two buckets the S3 is split into:
 
 Click on the blue button `Browse` on the bucket `demo`.
 
-image::spark-k8s-anomaly-detection-taxi-data/minio_3.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/minio_3.png[]
 
 You can see a folder (called prefixes in S3) containing a dataset of similarly-structured data files. The data is
 partitioned by month and contains several hundred MBs of data. This may not seem particularly large for a data-set, but
@@ -114,7 +114,7 @@ data is subject to multiple external factors, many of which are unknown and fluc
 
 The second bucket `prediction` contains the output from the model scoring process:
 
-image::spark-k8s-anomaly-detection-taxi-data/minio_4.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/minio_4.png[]
 
 This is a much smaller file as it only contains scores for each aggregated time period.
 
@@ -139,13 +139,13 @@ kubectl port-forward spark-ad-driver 4040
 
 and then opening a browser tab to http://localhost:4040:
 
-image::spark-k8s-anomaly-detection-taxi-data/spark_job.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/spark_job.png[]
 
 == Dashboard
 
 The anomaly detection dashboard is pre-defined and accessible under `Dashboards` when you have logged in to Superset:
 
-image::spark-k8s-anomaly-detection-taxi-data/superset_anomaly_scores.png[]
+image::demos/spark-k8s-anomaly-detection-taxi-data/superset_anomaly_scores.png[]
 
 Have can we interpret the results? This is where the fun begins (!) as the model does not yield data that can be used
 directly for a root cause analysis. An isolation forest is a type of random forest that measures how many branches are
