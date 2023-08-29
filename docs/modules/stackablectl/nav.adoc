@@ -1,6 +1,5 @@
 * Stackablectl
-** Commands
-*** xref:stackablectl:commands/index.adoc[stackablectl]
+** xref:stackablectl:commands/index.adoc[Commands]
 *** xref:stackablectl:commands/cache.adoc[cache]
 *** xref:stackablectl:commands/completions.adoc[completions]
 *** xref:stackablectl:commands/demo.adoc[demo]
@@ -8,5 +7,5 @@
 *** xref:stackablectl:commands/release.adoc[release]
 *** xref:stackablectl:commands/stack.adoc[stack]
 *** xref:stackablectl:commands/stacklets.adoc[stacklets]
-** Demos
+** xref:stackablectl:demos/index.adoc[Demos]
 include::partial$demos.adoc[]
