@@ -1,0 +1,109 @@
+= Quickstart
+
+== Goal
+
+In this Quickstart guide you will install a xref:commands/demo.adoc[], which is an end-to-end demonstration of the usage
+of the Stackable data platform.
+
+== Install stackablectl
+
+Please follow the xref:installation.adoc[Installation documentation] to install `stackablectl`.
+
+== Browse Available Demos
+
+Stackable provides a set of ready-to-use demos. As of writing (2022/08/15) only two demos are available, but further
+demos will be added in the future. They will automatically show up, as `stackablectl` fetches the available list of
+demos via the internet. To list the available demos run the following command:
+
+[source,console]
+----
+$ stackablectl demo list
+┌────┬───────────────────────┬─────────┬─────────────────────────────────────────────────────────┐
+│ #  ┆ NAME                  ┆ STACK   ┆ DESCRIPTION                                             │
+╞════╪═══════════════════════╪═════════╪═════════════════════════════════════════════════════════╡
+│ 1  ┆ airflow-scheduled-job ┆ airflow ┆ Activate a simple Airflow DAG to run continuously at a  │
+│    ┆                       ┆         ┆ set interval                                            │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 2  ┆ ...                   ┆ ...     ┆ ...                                                     │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 11 ┆ local-demo-test-env   ┆ test    ┆ Test demo. Provided with the STACKABLE_DEMO_FILES env   │
+│    ┆                       ┆         ┆ var in the .env file                                    │
+└────┴───────────────────────┴─────────┴─────────────────────────────────────────────────────────┘
+----
+
+[NOTE]
+====
+When you are on a Windows system you have to replace the `stackablectl` command with `stackablectl.exe`, e.g.
+`stackablectl.exe demo list`. This applies to all commands below.
+====
+
+For this guide we will use the xref:demos/trino-taxi-data.adoc[] demo. The installation of other available demos should
+work the same way. You simply need to use the name of the chosen demo instead of `trino-taxi-data` in the following
+commands.
+
+== Install Demo
+
+The installation depends on wether you already have an Kubernetes available to run the Stackable data platform on.
+
+=== Using Existing Kubernetes Cluster
+
+If you want to access a Kubernetes cluster, make sure your https://kubernetes.io/docs/tasks/tools/#kubectl[`kubectl`]
+Kubernetes client is configured to interact with the Kubernetes cluster. After that run the following command.
+
+[source,console]
+----
+$ stackablectl demo install trino-taxi-data
+The release commons-operator was successfully installed.
+The release hive-operator was successfully installed.
+The release opa-operator was successfully installed.
+The release secret-operator was successfully installed.
+The release superset-operator was successfully installed.
+The release trino-operator was successfully installed.
+Installed demo trino-taxi-data
+
+Use "stackablectl operator installed" to display the installed operators
+Use "stackablectl stacklet list" to display the installed stacklets
+----
+
+=== Using Local Kind Cluster
+
+If you don't have a Kubernetes cluster available, `stackablectl` can spin up a https://kind.sigs.k8s.io/[kind] Kubernetes cluster for you.
+Make sure you have `kind` installed and run the following command:
+
+[source,console]
+----
+$ stackablectl demo install trino-taxi-data -c kind
+Creating cluster "stackable-data-platform" ...
+ ✓ Ensuring node image (kindest/node:v1.26.3) 🖼
+ ✓ Preparing nodes 📦 📦
+ ✓ Writing configuration 📜
+ ✓ Starting control-plane 🕹️
+ ✓ Installing CNI 🔌
+ ✓ Installing StorageClass 💾
+ ✓ Joining worker nodes 🚜
+Set kubectl context to "kind-stackable-data-platform"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-stackable-data-platform
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+The release commons-operator was successfully installed.
+The release hive-operator was successfully installed.
+The release opa-operator was successfully installed.
+The release secret-operator was successfully installed.
+The release superset-operator was successfully installed.
+The release trino-operator was successfully installed.
+Installed demo trino-taxi-data
+
+Use "stackablectl operator installed" to display the installed operators
+Use "stackablectl stacklet list" to display the installed stacklets
+----
+
+The demos create Kubernetes jobs, that will populate test data and talk to the installed products to process the data.
+Until the products are ready, it is completely normal that the pods of these jobs will fail with an error. They will get
+retried with an exponentially growing backoff time. After the products are ready they should turn green and everything
+should settle down.
+
+== Proceed with the Demo
+
+Please read the documentation on the demo xref:demos/trino-taxi-data.adoc[] on how to proceed with the demo.
