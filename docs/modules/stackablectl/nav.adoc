@@ -9,3 +9,8 @@
 *** xref:stackablectl:commands/stacklets.adoc[stacklets]
 ** xref:stackablectl:demos/index.adoc[Demos]
 include::partial$demos.adoc[]
+** xref:customization/index.adoc[]
+*** xref:customization/add-demo.adoc[]
+*** xref:customization/add-stack.adoc[]
+*** xref:customization/add-release.adoc[]
+// *** xref:customization/working-with-feature-branches.adoc[]
