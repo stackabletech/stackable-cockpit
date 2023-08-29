@@ -1,4 +1,4 @@
-* Stackablectl
+* xref:stackablectl:index.adoc[Stackablectl]
 ** xref:stackablectl:commands/index.adoc[Commands]
 *** xref:stackablectl:commands/cache.adoc[cache]
 *** xref:stackablectl:commands/completions.adoc[completions]
