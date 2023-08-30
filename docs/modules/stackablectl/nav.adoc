@@ -1,4 +1,6 @@
 * xref:stackablectl:index.adoc[Stackablectl]
+** xref:stackableclt:installation.adoc[Installation]
+** xref:stackableclt:quickstart.adoc[Quickstart]
 ** xref:stackablectl:commands/index.adoc[Commands]
 *** xref:stackablectl:commands/cache.adoc[cache]
 *** xref:stackablectl:commands/completions.adoc[completions]
