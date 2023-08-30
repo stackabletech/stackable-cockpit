@@ -3,20 +3,20 @@
 This demo will
 
 * Install the required Stackable operators
-* Spin up the follow data products
-** *Postgresql*: An open-source database used for Airflow cluster- and job-metadata.
+* Spin up the following data products
+** *Postgresql*: An open-source database used for Airflow cluster and job metadata.
 ** *Redis*: An in-memory data structure store used for queuing Airflow jobs
 ** *Airflow*: An open-source workflow management platform for data engineering pipelines.
 * Mount two Airflow jobs (referred to as Directed Acyclic Graphs, or DAGs) for the cluster to use
 * Enable and schedule the jobs
 * Verify the job status with the Airflow Webserver UI
 
-You can see the deployed products as well as their relationship in the following diagram:
+You can see the deployed products and their relationship in the following diagram:
 
 image::demos/airflow-scheduled-job/overview.png[]
 
 [#system-requirements]
-== System requirements
+== System Requirements
 
 To run this demo, your system needs at least:
 
@@ -27,8 +27,8 @@ To run this demo, your system needs at least:
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo].
-To put it simply you just have to run `stackablectl demo install airflow-scheduled-job`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install airflow-scheduled-job`.
 
 == List deployed Stackable services
 
@@ -46,9 +46,9 @@ $ stackablectl stacklets list
 
 [NOTE]
 ====
-When a product instance has not finished starting yet, the service will have no endpoint. Starting all the product
-instances might take a considerable amount of time depending on your internet connectivity. In case the product is not
-ready yet a warning might be shown.
+When a product instance has not finished starting yet, the service will have no endpoint. Depending on your internet
+connectivity, creating all the product instances might take considerable time. A warning might be shown if the product
+is not ready yet.
 ====
 
 == Airflow Webserver UI
@@ -58,19 +58,19 @@ in your browser (`http://172.18.0.2:31979` in this case).
 
 image::demos/airflow-scheduled-job/airflow_1.png[]
 
-Log in with the username `admin` and password `adminadmin`. The overview screen shows the DAGs that have been mounted
-during the demo set-up (`date_demo`).
+Log in with the username `admin` and password `adminadmin`. The overview screen shows the DAGs mounted during the demo
+setup (`date_demo`).
 
 image::demos/airflow-scheduled-job/airflow_2.png[]
 
 There are two things to notice here. Both DAGs have been enabled, as shown by the slider to the left of the DAG name
-(DAGs are initially all `paused` and can be activated either manually in the UI or via a REST call, as done in the setup
-for this demo):
+(DAGs are all `paused` initially and can be activated manually in the UI or via a REST call, as done in the setup for
+this demo):
 
 image::demos/airflow-scheduled-job/airflow_3.png[]
 
-Secondly, the `date_demo` job has been busy, with several runs already logged! The `sparkapp_dag` has only been run
-once. This is because they have been defined with different schedules.
+Secondly, the `date_demo` job has been busy, with several runs already logged. The `sparkapp_dag` has only been run
+once because they have been defined with different schedules.
 
 image::demos/airflow-scheduled-job/airflow_4.png[]
 
@@ -79,14 +79,13 @@ Clicking on the number under `Runs` will display the individual job runs:
 image::demos/airflow-scheduled-job/airflow_5.png[]
 
 The `demo_date` job is running every minute. With Airflow, DAGs can be started manually or scheduled to run when certain
-conditions are fulfilled: in this case the DAG has been set up to run using a cron table, which is part of the DAG
+conditions are fulfilled- In this case, the DAG has been set up to run using a cron table, which is part of the DAG
 definition.
 
 === `demo_date` DAG
 
-Let's drill down a bit deeper into this DAG. Click on one of the individual job runs shown in the previous step to
-display the job details. The DAG is displayed in the form of a graph (this job is so simple that it only has one step,
-called `run_every_minute`).
+Let's drill down a bit deeper into this DAG. Click on one of the job runs shown in the previous step to display the
+details. The DAG is displayed as a graph (this job is so simple that it only has one step, called `run_every_minute`).
 
 image::demos/airflow-scheduled-job/airflow_6.png[]
 
