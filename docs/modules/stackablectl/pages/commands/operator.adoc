@@ -3,10 +3,10 @@
 The `stackable operator` command allows to list, install and uninstall Stackable operators. Operators manage the
 individual data products of the Stackable Data Platform.
 
-This command manages individual operators. It is mainly intended for people already having experience or working on the
-Stackable Data Platform. If you just want an easy way to get started or don't know which products and/or which version
-to install it is recommended to use the xref:commands/release.adoc[`stackablectl release`] command. This command will
-install a bundle of operators from an official Stackable release.
+This command manages individual operators. It is intended for people with experience working on the Stackable Data
+Platform. If you want an easy way to get started or don't know which products and versions to install, using the
+xref:commands/release.adoc[`stackablectl release`] command is recommended. This command will install a bundle of
+operators from an official Stackable release.
 
 == General Usage
 
@@ -99,7 +99,7 @@ Helm repository options:
 
 == Listing Available Operators
 
-To list the operators that are part of the Stackable Data Platform as well as their stable versions run the following
+To list the operators that are part of the Stackable Data Platform and their stable versions, run the following
 command:
 
 [source,console]
@@ -116,8 +116,8 @@ $ stackablectl operator list
 └────┴───────────┴────────────────────────────────────────────────────────────────────────────────────────┘
 ----
 
-This command only includes the stable versions of every operator for clarity. If you're interested in a special version
-of an operator you can use the `describe` command to get more details for a specific operator as follows:
+This command only includes the stable versions of every operator for clarity. If you're interested in a particular
+version of an operator, you can use the `describe` command to get more details for a specific operator as follows:
 
 [source,console]
 ----
@@ -132,7 +132,7 @@ $ stackablectl operator describe airflow
 == Installing Operators
 
 If you want to access a Kubernetes cluster, make sure your https://kubernetes.io/docs/tasks/tools/#kubectl[`kubectl`]
-Kubernetes client is configured to interact with the Kubernetes cluster. After that run the following command, which
+Kubernetes client is configured to interact with the Kubernetes cluster. After that, run the following command, which
 will install the operators in their latest nightly version - built from the main branch of the operators.
 
 [source,console]
@@ -147,13 +147,13 @@ Installed 3 operators
 
 If you don't have a Kubernetes cluster available, `stackablectl` can spin up a https://kind.sigs.k8s.io/[kind] or
 https://minikube.sigs.k8s.io/docs/[minikube] Kubernetes cluster for you. Based on the type of local cluster you want to
-use, make sure you have either `kind` or `minikube` installed on your system. See
+use, ensure you have either `kind` or `minikube` installed on your system. See
 xref:commands/demo.adoc#_using_a_local_kubernetes_cluster[here] for more information.
 
-With this command we installed the operator for Apache Airflow as well as two operators needed internally by the
-Stackable Data Platform (commons and secret). As we didn't specify a specific version to install, the operators were
-installed in the latest nightly version - built from the main branch of the operators. If you want to install a specific
-version, you can add the version to each operator to install as follows:
+With this command, we installed the operator for Apache Airflow and two operators needed internally by the Stackable
+Data Platform (commons and secret). As we didn't specify a specific version to install, the operators were installed in
+the latest nightly version - built from the main branch of the operators. If you want to install a specific version, you
+can add the version to each operator to install as follows:
 
 [source,console]
 ----
@@ -165,9 +165,9 @@ Installed secret=23.7 operator
 Installed 3 operators
 ----
 
-As you can see, the three operators where installed in the requested version.
+As you can see, the three operators were installed in the requested version.
 
-Remember: If you want to install a recommended and tested set of operator versions, have a look at the
+Remember: If you want to install a recommended and tested set of operator versions, look at the
 xref:commands/release.adoc[`stackablectl release`] command.
 
 == Listing Installed Operators
@@ -190,7 +190,7 @@ $ stackablectl operator installed
 
 == Uninstalling Operators
 
-To uninstall the operators again you can use the `stackablectl operator uninstall` command:
+You can use the `stackablectl operator uninstall` command to uninstall the operators again.
 
 [source,console]
 ----
