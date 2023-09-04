@@ -18,19 +18,19 @@ Data Platform (SDP) Kubernetes cluster. {jupyterlab}[JupyterLab] is deployed usi
 {jupyterhub-k8s}[pyspark-notebook stack] provided by the Jupyter community. The SDP makes this integration easy by
 publishing a discovery `ConfigMap` for the HDFS cluster. This `ConfigMap` is then mounted in all `Pods` running
 {pyspark}[PySpark] notebooks so that these have access to HDFS data. For this demo, the HDFS cluster is provisioned with
-a small sample of the {nyc-taxi}[NYC taxi trip dataset] which is analyzed with a notebook that is provisioned
-automatically in the JupyterLab interface .
+a small sample of the {nyc-taxi}[NYC taxi trip dataset], which is analyzed with a notebook that is provisioned
+automatically in the JupyterLab interface.
 
 == Aim / Context
 
 This demo does not use the Stackable spark-k8s-operator but rather delegates the creation of executor pods to
 JupyterHub. The intention is to demonstrate how to interact with SDP components when designing and testing Spark jobs:
-the resulting script and Spark job definition can then be transferred for use with a Stackable `SparkApplication`
-resource. When logging in to JupyterHub (described below), a pod will be created with the username as a suffix e.g.
-`jupyter-admin`. This runs a container that hosts a Jupyter notebook with Spark, Java and Python pre-installed. When the
-user creates a `SparkSession`, temporary spark executors are created that are persisted until the notebook kernel is shut
-down or re-started. The notebook can thus be used as a sandbox for writing, testing and benchmarking Spark jobs before
-they are moved into production.
+the resulting script and Spark job definition can then be transferred with a Stackable `SparkApplication` resource. When
+logging in to JupyterHub (described below), a pod will be created with the username as a suffix, e.g. `jupyter-admin`.
+Doing so runs a container hosting a Jupyter Notebook with pre-installed Spark, Java and Python.  When the user creates a
+`SparkSession`, temporary spark executors are constructed that are persisted until the notebook kernel is shut down or
+restarted. The notebook can thus be used as a sandbox for writing, testing and benchmarking Spark jobs before they are
+moved into production.
 
 == Overview
 
@@ -46,7 +46,7 @@ This demo will:
 * Perform some predictions and visualize anomalies
 
 [#system-requirements]
-== System requirements
+== System Requirements
 
 To run this demo, your system needs at least:
 
@@ -57,21 +57,14 @@ To run this demo, your system needs at least:
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. To put it simply you
-just have to run `stackablectl demo install jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data`.
 
-[NOTE]
-====
-Some container images used by this demo are quite large and some steps may take several minutes to complete. If you
-install this demo locally, on a developer laptop for example, this can lead to timeouts during the installation. If this
-happens, it's safe to rerun the `stackablectl` command from above.
-
-For more details on how to install Stackable demos see the xref:commands/demo.adoc#_install_demo[documentation].
-====
+include::partial$instance-hint.adoc[]
 
 == HDFS
 
-The Stackable Operator for Apache HDFS will spin up a HDFS cluster in order to store the taxi dataset in
+The Stackable Operator for Apache HDFS will spin up an HDFS cluster to store the taxi dataset in
 {parquet}[Apache Parquet] format. This dataset will be read and processed via PySpark.
 
 Before trying out the notebook example in Jupyter, check if the taxi data was loaded to HDFS successfully:
@@ -150,29 +143,28 @@ You should arrive at your workspace:
 
 image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_workspace.png[]
 
-Now you can click on the `notebooks` folder on the left and open the contained file and run it. Click on the double
-arrow to execute the Python scripts. You can inspect the `hdfs` folder as well where the `core-site.xml` and
-`hdfs-site.xml` from the discovery `ConfigMap` of the HDFS cluster are located.
+Now you can click on the `notebooks` folder on the left, open and run the contained file. Click on the double arrow to
+execute the Python scripts. You can also inspect the `hdfs` folder where the `core-site.xml` and `hdfs-site.xml` from
+the discovery `ConfigMap` of the HDFS cluster are located.
 
 image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_run_notebook.png[]
-
 
 [NOTE]
 ====
 The image defined for the spark job must contain all dependencies needed for that job to run. For pyspark jobs, this
-will mean that python libraries either need to be baked into the image itself (this demo contains a Dockerfile that was
-used to generate a image containing scikit-learn, pandas and their dependencies), or {spark-pkg}[packaged some other way].
+will mean that Python libraries either need to be baked into the image (this demo contains a Dockerfile that was used to
+generate an image containing scikit-learn, pandas and their dependencies) or {spark-pkg}[packaged in some other way].
 ====
 
-== Model details
+== Model Details
 
 The job uses an implementation of the Isolation Forest {forest-algo}[algorithm] provided by the scikit-learn
-{scikit-lib}[library]: the model is trained and then invoked by a user-defined function (see
-{forest-article}[this article] for how to call the sklearn library with a pyspark UDF), all of which is run using the
-Spark executors spun up in the current `SparkSession`. This type of model attempts to isolate each data point by
-continually partitioning the data. Data closely packed together will require more partitions to separate data points,
-whereas any outliers will require less: the number of required partitions for a particular data point is thus inversely
-proportional to the anomaly "score".
+{scikit-lib}[library]: the model is trained and then invoked by a user-defined function (see {forest-article}[this
+article] for how to call the sklearn library with a pyspark UDF), all of which is run using the Spark executors spun up
+in the current SparkSession. This type of model attempts to isolate each data point by continually partitioning the
+data. Data closely packed together will require more partitions to separate data points. In contrast, any outliers will
+require less: the number of partitions needed for a particular data point is thus inversely proportional to the anomaly
+"score".
 
 == Visualization
 
@@ -180,17 +172,17 @@ The notebook shows how to plot the outliers against a particular metric (e.g. "n
 
 image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_graph.png[]
 
-However, this is mainly for convenience - the anomaly score is derived from the *_entire_* feature space i.e. it takes
-all dimensions (or features/columns) into account when scoring data. This means that not only are the results difficult
-to visualize (how can multidimensional data be represented in only 3-D dimensional space?), but that a root cause
-analysis has to be a separate process. It would be tempting to look at just one metric and assume causal affects, but
-the model "sees" all features as a set of numerical values and derives patterns accordingly.
+However, this is mainly for convenience - the anomaly score is derived from the *_entire_* feature space, i.e., it
+considers all dimensions (or features/columns) when scoring data, meaning that not only are the results challenging to
+visualize (how can multidimensional data be represented in only 3-D dimensional space?), but that a root cause analysis
+has to be a separate process. It would be tempting to look at just one metric and assume causal effects, but the model
+"sees" all features as a set of numerical values and derives patterns accordingly.
 
-We can tackle the first of these issues by collapsing - or projecting - our data down into a manageable number of
-dimensions that can be plotted: once the script has finished successfully, plots should be displayed on the bottom that
-show the same data in 2D and 3D representation. The 3D plot should look like this:
+We can tackle the first of these issues by collapsing - or projecting - our data into a manageable number of dimensions
+that can be plotted. Once the script has finished successfully, plots should be displayed on the bottom that show the
+same data in 2D and 3D representation. The 3D plot should look like this:
 
 image::demos/jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data/jupyter_hub_3d_isolation_forest.png[]
 
-It is clear that the model has detected outliers even though that would not have been immediately apparent from the
-time-series representation alone.
+The model has detected outliers even though that would not have been immediately apparent from the time-series
+representation alone.
