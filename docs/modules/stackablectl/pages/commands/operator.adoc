@@ -1,7 +1,7 @@
 = stackablectl operator
 
-The `stackable operator` command allows to list, install and uninstall Stackable operators. Operators manage the
-individual data products of the Stackable Data Platform.
+The `stackable operator` command allows the listing, installation and removal of Stackable operators. Operators manage
+the individual data products of the Stackable Data Platform.
 
 This command manages individual operators. It is intended for people with experience working on the Stackable Data
 Platform. If you want an easy way to get started or don't know which products and versions to install, using the
