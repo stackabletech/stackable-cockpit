@@ -69,8 +69,8 @@ In addition to these nodes the operators will request multiple persistent volume
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. To put it simply you
-just have to run `stackablectl demo install data-lakehouse-iceberg-trino-spark`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install data-lakehouse-iceberg-trino-spark`.
 
 == Apache Iceberg
 
@@ -104,7 +104,7 @@ this is only supported in Spark. Trino is https://github.com/trinodb/trino/issue
 If you want to read more about the motivation and the working principles of Iceberg, please have a read on their
 https://iceberg.apache.org[website] or https://github.com/apache/iceberg/[GitHub repository].
 
-== List Deployed Stacklets
+== Listing Deployed Stacklets
 
 To list the installed installed Stackable services run the following command:
 
@@ -139,12 +139,7 @@ $ stackablectl stacklets list
                                      console-http        http://217.160.222.211:31429   Admin user: admin, password: adminadmin
 ----
 
-[NOTE]
-====
-When a product instance has not finished starting yet, the service will have no endpoint. Depending on your internet
-connectivity, creating all the product instances might take considerable time. A warning might be shown if the product
-is not ready yet.
-====
+include::partial$instance-hint.adoc[]
 
 == MinIO
 
@@ -236,7 +231,7 @@ xref:demos/nifi-kafka-druid-water-level-data.adoc#_nifi[nifi-kafka-druid-water-l
 https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html[Spark Structured Streaming] is used to
 stream data from Kafka into the lakehouse.
 
-=== Access Web Interface
+=== Accessing the Web Interface
 
 To have access to the Spark web interface you need to run the following command to forward port 4040 to your local
 machine.
@@ -468,7 +463,7 @@ Some tables will also be sorted during rewrite, please have a look at the
 
 Trino is used to enable SQL access to the data.
 
-=== Viewing the Web Interface
+=== Accessing the Web Interface
 
 Open up the the Trino endpoint `coordinator-https` from your `stackablectl stacklets list` command output
 (https://212.227.224.138:30876 in this case).

@@ -1,0 +1,6 @@
+[NOTE]
+====
+When a product instance has not finished starting yet, the service will have no endpoint. Depending on your internet
+connectivity, creating all the product instances might take considerable time. A warning might be shown if the product
+is not ready yet.
+====
