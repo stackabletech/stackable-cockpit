@@ -5,17 +5,17 @@
 This demo will
 
 * Install the required Stackable operators.
-* Spin up the follow data products:
+* Spin up the following data products:
 ** *Apache ZooKeeper*: A centralized service for maintaining configuration information, naming, providing distributed
    synchronization, and providing group services. This demo makes its log data observable in OpenSearch Dashboards.
 ** *Vector*: A tool for building observability pipelines. This demo uses Vector as a log agent to gather and transform
    the logs and as an aggregator to forward the collected logs to OpenSearch.
-** *OpenSearch*: A data store and search engine. This demo uses it to store and index the log data.
+** *OpenSearch*: A data store and search engine. This demo uses it to store and index the of the log data.
 ** *OpenSearch Dashboards*: A visualization and user interface. This demo uses it to make the log data easily accessible
    to the user.
 * Create a view in OpenSearch Dashboards for convenient browsing the log data.
 
-You can see the deployed products as well as their relationship in the following diagram:
+You can see the deployed products and their relationship in the following diagram:
 
 image::demos/logging/overview.png[]
 
@@ -23,14 +23,13 @@ image::demos/logging/overview.png[]
 
 === MacOS and Windows
 
-If you are running on Mac or Windows and use Docker to run Kubernetes then set the RAM to at least 4 GB in
-_Preferences_ > _Resources_.
+If you use MacOS or Windows and use Docker to run Kubernetes, set the RAM to at least 4 GB in _Preferences > Resources_.
 
 === Linux
 
 OpenSearch uses a mmapfs directory by default to store its indices. The default operating system limits on mmap counts
-is likely to be too low - usually 65530, which may result in out of memory exceptions. So the Linux setting
-`vm.max_map_count` on the host machine where kind is running, must be set to at least 262144.
+are likely too low - usually 65530, which may result in out-of-memory exceptions. So, the Linux setting
+`vm.max_map_count` on the host machine where "kind" is running must be set to at least 262144.
 
 To check the current value, run this command:
 
@@ -56,7 +55,7 @@ vm.max_map_count=262144
 Then run `sudo sysctl --load` to reload.
 
 [#system-requirements]
-== System requirements
+== System Requirements
 
 To run this demo, your system needs at least:
 
@@ -67,8 +66,8 @@ To run this demo, your system needs at least:
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. To put it simply you
-just have to run `stackablectl demo install logging`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install logging`.
 
 == List Deployed Stacklets
 
@@ -88,18 +87,13 @@ $ stackablectl stacklets list
 └───────────────────────┴───────────────────────┴───────────┴──────────────────────────────┘
 ----
 
-[NOTE]
-====
-When a product instance has not finished starting yet, the service will have no endpoint. Starting all the product
-instances might take a considerable amount of time depending on your internet connectivity. In case the product is not
-ready yet, a warning might be shown.
-====
+include::partial$instance-hint.adoc[]
 
 == Inspect the Log Data
 
 You can have a look at the log data within the OpenSearch Dashboards web interface by running
-`stackablectl stacklets list` and opening the URL shown in the info column of the `opensearch-dashboards` entry. In this
-case it is http://172.18.0.5:31319/app/discover?security_tenant=global#/view/logs.
+`stackablectl stacklets list` and opening the URL in the opensearch-dashboard entry's info column. In this case, it is
+http://172.18.0.5:31319/app/discover?security_tenant=global#/view/logs.
 
 image::demos/logging/login.png[]
 
