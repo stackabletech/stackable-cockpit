@@ -1,12 +1,14 @@
 = data-lakehouse-iceberg-trino-spark
 
+:demo-code: https://github.com/stackabletech/stackablectl/blob/main/demos/data-lakehouse-iceberg-trino-spark/create-spark-ingestion-job.yaml
+
 [IMPORTANT]
 ====
-This demo shows a data workload with real world data volumes and uses significant amount of resources to ensure
-acceptable response times. It will most likely not run on your workstation.
+This demo shows a data workload with real-world data volumes and uses significant resources to ensure acceptable
+response times. It will likely not run on your workstation.
 
 There is also the smaller xref:demos/trino-iceberg.adoc[] demo focusing on the abilities a lakehouse using Apache
-Iceberg offers. The `trino-iceberg` demo has no streaming data part and can be executed on a local workstation.
+Iceberg offers. The `trino-iceberg` demo has no streaming data and can be executed on a local workstation.
 ====
 
 [CAUTION]
@@ -17,37 +19,37 @@ FQDN service names (including the namespace), so that the used TLS certificates 
 
 This demo will
 
-* Install the required Stackable operators
-* Spin up the following data products
+* Install the required Stackable operators.
+* Spin up the following data products:
 ** *Trino*: A fast distributed SQL query engine for big data analytics that helps you explore your data universe. This
-   demo uses it to enable SQL access to the data
+   demo uses it to enable SQL access to the data.
 ** *Apache Spark*: A multi-language engine for executing data engineering, data science, and machine learning. This demo
-   uses it to stream data from Kafka into the lakehouse
-** *MinIO*: A S3 compatible object store. This demo uses it as persistent storage to store all the data used
+   uses it to stream data from Kafka into the lakehouse.
+** *MinIO*: S3 compatible object store. This demo uses it as persistent storage to store all the data used
 ** *Apache Kafka*: A distributed event streaming platform for high-performance data pipelines, streaming analytics and
-   data integration. This demos uses it as an event streaming platform to stream the data in near real-time
-** *Apache NiFi*: An easy-to-use, powerful system to process and distribute data. This demos uses it to fetch multiple
-   online real-time data sources and ingest it into Kafka
+   data integration. This demo uses it as an event streaming platform to stream the data in near real-time.
+** *Apache NiFi*: An easy-to-use, robust system to process and distribute data. This demo uses it to fetch multiple
+   online real-time data sources and ingest it into Kafka.
 ** *Apache Hive metastore*: A service that stores metadata related to Apache Hive and other services. This demo uses it
-   as metadata storage for Trino and Spark
-** *Open policy agent* (OPA): An open source, general-purpose policy engine that unifies policy enforcement across the
-   stack. This demo uses it as the authorizer for Trino, which decides which user is able to query which data.
+   as metadata storage for Trino and Spark.
+** *Open policy agent* (OPA): An open-source, general-purpose policy engine unifying policy enforcement across the
+   stack. This demo uses it as the authorizer for Trino, which decides which user can query which data.
 ** *Apache Superset*: A modern data exploration and visualization platform. This demo utilizes Superset to retrieve data
-   from Trino via SQL queries and build dashboards on top of that data
-* Copy multiple data sources in CSV and Parquet format into the S3 staging area
-* Let Trino copy the data from staging area into the lakehouse area. During the copy transformations such as validating,
-  casting, parsing timestamps and enriching the data by joining lookup-tables are done
-* Simultaneously start a NiFi workflow, which fetches datasets in real-time via the internet and ingests the data as
-  JSON records into Kafka
-* Spark structured streaming job is started, which streams the data out of Kafka into the lakehouse
-* Create Superset dashboards for visualization of the different datasets
+   from Trino via SQL queries and build dashboards on top of that data.
+* Copy multiple data sources in CSV and Parquet format into the S3 staging area.
+* Let Trino copy the data from the staging area into the lakehouse area. During the copy, transformations such as
+  validating, casting, parsing timestamps and enriching the data by joining lookup tables are done.
+* Simultaneously, start a NiFi workflow, which fetches datasets in real-time via the internet and ingests the data as
+  JSON records into Kafka.
+* Spark structured streaming job is started, which streams the data out of Kafka into the lakehouse.
+* Create Superset dashboards for visualization of the different datasets.
 
-You can see the deployed products as well as their relationship in the following diagram:
+You can see the deployed products and their relationship in the following diagram:
 
 image::demos/data-lakehouse-iceberg-trino-spark/overview.png[]
 
 [#system-requirements]
-== System requirements
+== System Requirements
 
 The demo was developed and tested on a kubernetes cluster with 10 nodes (4 cores (8 threads), 20GB RAM and 30GB HDD).
 Instance types that loosely correspond to this on the Hyperscalers are:
@@ -71,33 +73,32 @@ As Apache Iceberg states on their https://iceberg.apache.org/docs/latest/[websit
 > Apache Iceberg is an open table format for huge analytic datasets. Iceberg adds tables to compute engines including
 Spark, Trino, PrestoDB, Flink, Hive and Impala using a high-performance table format that works just like a SQL table.
 
-This demos uses Iceberg as it plays along nicely with object storage as well as having a Trino and Spark integration.
-In also provides the following benefits among other things over simply putting
-https://parquet.apache.org/[Apache Parquet] files in S3 using the
-https://trino.io/docs/current/connector/hive.html[Hive connector]:
+This demo uses Iceberg, which plays nicely with object storage and has integrations for Trino and Spark. It also
+provides the following benefits among other things, instead of putting https://parquet.apache.org/[Apache Parquet] files
+directly into S3 using the https://trino.io/docs/current/connector/hive.html[Hive connector]:
 
-* *Standardized specification how to store tables:* Using this standardized specification multiple tools such as Trino,
-  Spark and Flink and read and write Iceberg tables.
+* *Standardized table storage:* Using this standardized specification, multiple tools such as Trino, Spark and Flink can
+  read and write Iceberg tables.
 * *Versioned tables with snapshots, time travel and rollback mechanisms*
-* *Row level updates and deletes:* Deletes will be written as separate files for best performance and will be compacted
-  with the mechanism described below.
-* *Built in compaction:* It is recommended to run some table maintenance functions such as compacting smaller files
-  (including delete files) into larger files for best query performance. Iceberg offers out-of-the-box tools for this.
-* *Hidden partitioning:* Image you have a table `sales (day varchar, ts timestamp)` partitioned by `day`. Lot's of times
-  users would run a statement such as `select count(\*) where ts > now() - interval 1 day` resulting in a full table
+* *Row level updates and deletes:* Deletes will be written as separate files for best performance and compacted with the
+  below-mentioned mechanism.
+* *Built-in compaction:* Running table maintenance functions such as compacting smaller files (including deleted files)
+  into larger files for best query performance is recommended. Iceberg offers out-of-the-box tools for this.
+* *Hidden partitioning:* Image you have a table `sales (day varchar, ts timestamp)` partitioned by `day`. Lots of times,
+  users would run a statement such as `select count(\*) where ts > now() - interval 1 day`, resulting in a full table
   scan as the partition column `day` was not filtered in the query. Iceberg resolves this problem by using hidden
-  partitions. In Iceberg your table would look like `sales (ts timestamp) with (partitioning = ARRAY['day(ts)'])`. The
+  partitions. In Iceberg, your table would look like `sales (ts timestamp) with (partitioning = ARRAY['day(ts)'])`. The
   column `day` is not needed anymore, and the query `select count(\*) where ts > now() - interval 1 day` would use
-  partition pruning as expected to only read one the partitions from today and yesterday.
+  partition pruning as expected to read only one the partitions from today and yesterday.
 * *Branching and tagging:* Iceberg enables git-like semantics on your lakehouse. You can create tags pointing to a
-specific snapshot of your data as well as branches. For details please read on
-https://www.dremio.com/blog/exploring-branch-tags-in-apache-iceberg-using-spark/[this awesome blog post]. Currently this
-is only supported in Spark, Trino is https://github.com/trinodb/trino/issues/12844[working on support].
+specific snapshot of your data and branches. For details, please read
+https://www.dremio.com/blog/exploring-branch-tags-in-apache-iceberg-using-spark/[this excellent blog post]. Currently,
+this is only supported in Spark. Trino is https://github.com/trinodb/trino/issues/12844[working on support].
 
-If you want to read more on the motivation and the working principles on Iceberg, please have a read on their
+If you want to read more about the motivation and the working principles of Iceberg, please have a read on their
 https://iceberg.apache.org[website] or https://github.com/apache/iceberg/[GitHub repository].
 
-== List deployed Stackable services
+== List Deployed Stacklets
 
 To list the installed installed Stackable services run the following command:
 
@@ -134,17 +135,18 @@ $ stackablectl stacklets list
 
 [NOTE]
 ====
-When a product instance has not finished starting yet, the service will have no endpoint. Starting all the product
-instances might take a considerable amount of time depending on your internet connectivity. In case the product is not
-ready yet a warning might be shown.
+When a product instance has not finished starting yet, the service will have no endpoint. Depending on your internet
+connectivity, creating all the product instances might take considerable time. A warning might be shown if the product
+is not ready yet.
 ====
 
 == MinIO
 
-=== List buckets
+=== Listing Buckets
 
 The S3 provided by MinIO is used as persistent storage to store all the data used. Open the `minio` endpoint
-`console-http` retrieved by `stackablectl stacklets list` in your browser (http://217.160.222.211:31429 in this case).
+`console-http` retrieved by the `stackablectl stacklets list` command in your browser (http://217.160.222.211:31429 in
+this case).
 
 image::demos/data-lakehouse-iceberg-trino-spark/minio_1.png[]
 
@@ -152,49 +154,54 @@ Log in with the username `admin` and password `adminadmin`.
 
 image::demos/data-lakehouse-iceberg-trino-spark/minio_2.png[]
 
-Here you can see the two buckets contained in the S3:
+Here, you can see the two buckets contained in the S3:
 
 . `staging`: The demo loads static datasets into this area. It is stored in different formats, such as CSV and Parquet.
   It does contain actual data tables as well as lookup tables.
-. `lakehouse`: This bucket is where the cleaned and/or aggregated data resides. The data is stored in the
+. `lakehouse`: This bucket is where the cleaned and aggregated data resides. The data is stored in the
   https://iceberg.apache.org/[Apache Iceberg] table format.
 
-=== Inspect lakehouse
+=== Inspecting Lakehouse
 
 Click on the blue button `Browse` on the bucket `lakehouse`.
 
 image::demos/data-lakehouse-iceberg-trino-spark/minio_3.png[]
 
-You can see multiple folders (called prefixes in S3) - each containing a different dataset. Click on the folders
-`house-sales` afterwards the folder starting with `house-sales-*` afterwards 'data'.
+Multiple folders (called prefixes in S3), each containing a different dataset, are displayed. First, select the folder
+`house-sales`, then the folder starting with `house-sales-*`, and lastly, the folder named `data`.
 
 image::demos/data-lakehouse-iceberg-trino-spark/minio_4.png[]
 
-As you can see the table `house-sales` is partitioned by day. Go ahead and click on any folder.
+As you can see, the table `house-sales` is partitioned by day. Go ahead and click on any folder.
 
 image::demos/data-lakehouse-iceberg-trino-spark/minio_5.png[]
 
-You can see that Trino has placed a single file here containing all the house sales of that particular year.
+You can see that Trino has placed a single file into the selected folder containing all the house sales of that
+particular year.
 
 == NiFi
 
-NiFi is used to fetch multiple datasources from the internet and ingest it into Kafka near-realtime. Some data sources
-are statically downloaded (e.g. as CSV) and others are dynamically fetched via APIs such as REST APIs. This includes the
-following data sources:
+NiFi is used to fetch multiple data sources from the internet and ingest it into Kafka near-realtime. Some of these
+sources are statically downloaded (e.g. as CSV), and others are fetched dynamically via APIs endpoints, including:
 
 * https://www.pegelonline.wsv.de/webservice/guideRestapi[Water level measurements in Germany] (real-time)
 * https://mobidata-bw.de/dataset/bikesh[Shared bikes in Germany] (real-time)
-* https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads[House sales in UK] (static)
+* https://www.gov.uk/government/statistical-data-sets/price-paid-data-downloads[House sales in the UK] (static)
 * https://www.usgs.gov/programs/earthquake-hazards/earthquakes[Registered earthquakes worldwide] (static)
 * https://mobidata-bw.de/dataset/e-ladesaulen[E-charging stations in Germany] (static)
 * https://www1.nyc.gov/site/tlc/about/tlc-trip-record-data.page[NewYork taxi data] (static)
 
-=== View ingestion jobs
+=== View Ingestion Jobs
 
-You can have a look at the ingestion job running in NiFi by opening the given `nifi` endpoint `https` from your
-`stackablectl stacklets list` command output (https://217.160.120.117:31499 in this case). If you get a warning
-regarding the self-signed certificate generated by the xref:secret-operator::index.adoc[Secret Operator] (e.g.
-`Warning: Potential Security Risk Ahead`), you have to tell your browser to trust the website and continue.
+You can have a look at the ingestion job running in NiFi by opening the NiFi endpoint `https` from your
+`stackablectl stacklets list` command output (https://217.160.120.117:31499 in this case).
+
+[NOTE]
+====
+Suppose you get a warning regarding the self-signed certificate generated by the
+xref:secret-operator::index.adoc[Secret Operator] (e.g. Warning: Potential Security Risk Ahead). In that case, you must
+tell your browser to trust the website and continue.
+====
 
 image::demos/data-lakehouse-iceberg-trino-spark/nifi_1.png[]
 
@@ -205,17 +212,17 @@ image::demos/data-lakehouse-iceberg-trino-spark/nifi_2.png[]
 As you can see, the NiFi workflow consists of lots of components. You can zoom in by using your mouse and mouse wheel.
 On the left side are two strands, that
 
-. Fetch the list of known water-level stations and ingest them into Kafka
-. Continuously run a loop fetching the measurements of the last 30 for every measuring station and ingesting the
-  measurements into Kafka
+. Fetch the list of known water-level stations and ingest them into Kafka.
+. Continuously run a loop fetching the measurements of the last 30 for every measuring station and ingesting them into
+  Kafka.
 
-On the right side are three strands, that
+On the right side are three strands that
 
-. Fetch the current shared bike stations information
-. Fetch the current shared bike stations status
+. Fetch the current shared bike station information
+. Fetch the current shared bike station status
 . Fetch the current shared bike bike status
 
-For details on the NiFi workflow ingesting water-level data please read on the
+For details on the NiFi workflow ingesting water-level data, please read the
 xref:demos/nifi-kafka-druid-water-level-data.adoc#_nifi[nifi-kafka-druid-water-level-data documentation on NiFi].
 
 == Spark
@@ -223,9 +230,9 @@ xref:demos/nifi-kafka-druid-water-level-data.adoc#_nifi[nifi-kafka-druid-water-l
 https://spark.apache.org/docs/latest/structured-streaming-programming-guide.html[Spark Structured Streaming] is used to
 stream data from Kafka into the lakehouse.
 
-=== Access webinterface
+=== Access Web Interface
 
-To have access to the Spark WebUI you need to run the following command to port-forward the Port 4040 to your local
+To have access to the Spark web interface you need to run the following command to forward port 4040 to your local
 machine.
 
 [source,console]
@@ -233,30 +240,29 @@ machine.
 kubectl port-forward $(kubectl get pod -o name | grep 'spark-ingest-into-lakehouse-.*-driver') 4040
 ----
 
-Afterwards you can reach the web interface on http://localhost:4040.
+Afterwards you can access the web interface on http://localhost:4040.
 
 image::demos/data-lakehouse-iceberg-trino-spark/spark_1.png[]
 
-=== List running streaming jobs
+=== Listing Running Streaming Jobs
 
-On the UI the last jobs are shown. Each running Structured Streaming job creates lots of Spark jobs internally. Click on
-the tab `Structured Streaming` to see the running streaming jobs.
+The UI displays the last job runs. Each running Structured Streaming job creates lots of Spark jobs internally. Click on
+the `Structured Streaming` tab to see the running streaming jobs.
 
 image::demos/data-lakehouse-iceberg-trino-spark/spark_2.png[]
 
 Five streaming jobs are currently running. You can also click on a streaming job to get more details. For the job
-`ingest smart_city shared_bikes_station_status` click on the `Run ID` highlighted in blue to open them up.
+`ingest smart_city shared_bikes_station_status` click, on the `Run ID` highlighted in blue to open them up.
 
 image::demos/data-lakehouse-iceberg-trino-spark/spark_3.png[]
 
-=== How the streaming jobs work
+=== How the Streaming Jobs Work
 
-All the running streaming jobs have been started by the demo, to see the actual code submitted to Spark have a look in
-the https://github.com/stackabletech/stackablectl/blob/main/demos/data-lakehouse-iceberg-trino-spark/create-spark-ingestion-job.yaml[demos code].
-This document will explain one specific ingestion job - `ingest water_level measurements`.
+The demo has started all the running streaming jobs. Look at the {demo-code}[demo code] to see the actual code
+submitted to Spark. This document will explain one specific ingestion job - `ingest water_level measurements`.
 
-The streaming job is written in Python using `pyspark`. First off the schema used to parse the JSON coming from Kafka is
-defined. Nested structures or arrays are supported as well. This differs from job to job.
+The streaming job is written in Python using `pyspark`. First off, the schema used to parse the JSON coming from Kafka
+is defined. Nested structures or arrays are supported as well. The schema differs from job to job.
 
 [source,python]
 ----
@@ -267,16 +273,16 @@ schema = StructType([ \
 ])
 ----
 
-Afterwards, a streaming read from Kafka is started. It reads from our Kafka at the address `kafka:9092`and the topic
-called `water_levels_measurements`. When starting up the job will ready all the already existing messages in Kafka (read
-from `earliest`) and will process `50000000` records as a maximum in a single batch. As the Kafka has a retention set
-up, Kafka records might alter out if the topic, before Spark has read the records. This can be the case when the Spark
-application was shut down or crashed for too long. In that case of this demo the streaming job should not error out. For
-a production job `failOnDataLoss` should be set to `true`, so that missing data does not get unnoticed - and Kafka
-offsets need to be adjusted manually as well as maybe some post-loading of data.
+Afterwards, a streaming read from Kafka is started. It reads from our Kafka at `kafka:9090` with the topic
+`water_levels_measurements`. When starting up, the job will ready all the existing messages in Kafka (read from
+earliest) and will process 50000000 records as a maximum in a single batch. As Kafka has retention set up, Kafka records
+might alter out of the topic before Spark has read the records, which can be the case when the Spark application wasn't
+running or crashed for too long. In the case of this demo, the streaming job should not error out. For a production job,
+`failOnDataLoss` should be set to `true` so that missing data does not go unnoticed - and Kafka offsets need to be
+adjusted manually, as well as some post-loading of data.
 
-Note: All of the following Python snippets belong to a single Python statement but are spilled into separate blocks for
-better explanation purposes.
+*Note:* The following Python snippets belong to a single Python statement but are split into separate blocks for better
+explanation.
 
 [source,python]
 ----
