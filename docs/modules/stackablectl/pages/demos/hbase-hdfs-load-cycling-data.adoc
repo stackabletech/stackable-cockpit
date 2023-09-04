@@ -8,24 +8,23 @@
 
 This demo will
 
-* Install the required Stackable operators
-* Spin up the follow data products
-** *Hbase*: A open source distributed scalable, big data store. This demos uses it to store the
-   {kaggle}[cyclistic dataset] and enable access to it
-** *HDFS*: A distributed file system used to intermediately store the dataset before importing it into Hbase
-* Use {distcp}[distcp] to copy a {kaggle}[cyclistic dataset] from an S3 bucket into HDFS
-* Create HFiles, which is a File format for hbase consisting of sorted key/value pairs. Both keys and values are byte
-  arrays
+* Install the required Stackable operators.
+* Spin up the following data products:
+** *Hbase:* An open source distributed, scalable, big data store. This demo uses it to store the
+   {kaggle}[cyclist dataset] and enable access.
+** *HDFS:* A distributed file system used to intermediately store the dataset before importing it into Hbase
+* Use {distcp}[distcp] to copy a {kaggle}[cyclist dataset] from an S3 bucket into HDFS.
+* Create HFiles, a File format for hbase consisting of sorted key/value pairs. Both keys and values are byte arrays.
 * Load Hfiles into an existing table via the `Importtsv` utility, which will load data in `TSV` or `CSV` format into
-  HBase
-* Query data via hbase shell, which is an interactive shell to execute commands on the created table
+  HBase.
+* Query data via the `hbase` shell, which is an interactive shell to execute commands on the created table
 
-You can see the deployed products as well as their relationship in the following diagram:
+You can see the deployed products and their relationship in the following diagram:
 
 image::demos/hbase-hdfs-load-cycling-data/overview.png[]
 
 [#system-requirements]
-== System requirements
+== System Requirements
 
 To run this demo, your system needs at least:
 
@@ -36,10 +35,10 @@ To run this demo, your system needs at least:
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. To put it simply you
-just have to run `stackablectl demo install hbase-hdfs-load-cycling-data`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install hbase-hdfs-load-cycling-data`.
 
-== List deployed Stackable services
+== Listing Deployed Stacklets
 
 To list the installed Stackable services run the following command: `stackablectl stacklets list`
 
@@ -74,13 +73,12 @@ PRODUCT    NAME       NAMESPACE  ENDPOINTS                                      
 
 include::partial$instance-hint.adoc[]
 
-== The first Job
+== Adding the First Job
 
-{distcp}[DistCp] (distributed copy) is a tool used for large
-inter/intra-cluster copying. It uses MapReduce to effect its distribution, error handling, recovery, and reporting. It
-expands a list of files and directories into input to map tasks, each of which will copy a partition of the files
-specified in the source list. Therefore, the first Job uses DistCp to copy data from a S3 bucket into HDFS. Below you'll
-see parts from the logs.
+{distcp}[DistCp] (distributed copy) is used for large inter/intra-cluster copying. It uses MapReduce to effect its
+distribution, error handling, recovery, and reporting. It expands a list of files and directories into input to map
+tasks, each of which will copy a partition of the files specified in the source list. Therefore, the first Job uses
+DistCp to copy data from a S3 bucket into HDFS. Below, you'll see parts from the logs.
 
 [source]
 ----
@@ -97,22 +95,22 @@ Copying s3a://public-backup-nyc-tlc/cycling-tripdata/demo-cycling-tripdata.csv.g
 [LocalJobRunner Map Task Executor #0] mapred.LocalJobRunner (LocalJobRunner.java:statusUpdate(634)) - 100.0% Copying s3a://public-backup-nyc-tlc/cycling-tripdata/demo-cycling-tripdata.csv.gz to hdfs://hdfs/data/raw/demo-cycling-tripdata.csv.gz
 ----
 
-== The second Job
+== Adding the Second Job
 
 The second Job consists of 2 steps.
 
 First, we use `org.apache.hadoop.hbase.mapreduce.ImportTsv` (see {importtsv}[ImportTsv Docs]) to create a table and
-Hfiles. Hfile is an Hbase dedicated file format which is performance optimized for hbase. It stores meta information
-about the data and thus increases the performance of hbase. When connecting to the hbase master and opening a
-`bin/hbase shell` and executing `list`, you will see the created table. However, it'll contain 0 rows at this point.
-You can connect to the shell via:
+Hfiles. Hfile is an Hbase dedicated file format which is performance optimized for hbase. It stores meta-information
+about the data and thus increases the performance of hbase. When connecting to the hbase master, opening a hbase shell
+and executing `list`, you will see the created table. However, it'll contain 0 rows at this point. You can connect to
+the shell via:
 
 [source]
 ----
 kubectl exec -it hbase-master-default-0 -- bin/hbase shell
 ----
 
-If you use k9s you can go into the `hbase-master-default-0` and execute `bin/hbase shell list`.
+If you use k9s, you can drill into the `hbase-master-default-0` pod and execute `bin/hbase shell list`.
 
 [source]
 ----
@@ -120,9 +118,9 @@ TABLE
 cycling-tripdata
 ----
 
-Secondly, we'll use `org.apache.hadoop.hbase.tool.LoadIncrementalHFiles` (see {bulkload}[see bulk load docs]) to import
-the Hfiles into the table and ingest rows. You can now use the `bin/hbase shell` again and execute
-`count 'cycling-tripdata'` and see below for a partial result.
+Secondly, we'll use `org.apache.hadoop.hbase.tool.LoadIncrementalHFiles` (see {bulkload}[bulk load docs]) to import
+the Hfiles into the table and ingest rows. You can now use the hbase shell again and execute `count 'cycling-tripdata'`.
+Ssee below for a partial result:
 
 [source]
 ----
@@ -138,10 +136,10 @@ Took 13.4666 seconds
 => 84777
 ----
 
-== The table
+== Inspecting the Table
 
-You can now use the table and the data. You are able to use all available hbase shell commands. Below, you'll see the
-table description.
+You can now use the table and the data. You can use all available hbase shell commands. Below, you'll see the table
+description.
 
 [source,console]
 ----
@@ -163,22 +161,18 @@ COLUMN FAMILIES DESCRIPTION
 {NAME => 'started_at', BLOOMFILTER => 'ROW', IN_MEMORY => 'false', VERSIONS => '1', KEEP_DELETED_CELLS => 'FALSE', DATA_BLOCK_ENCODING => 'NONE', COMPRESSION => 'NONE', TTL => 'FOREVER', MIN_VERSIONS => '0', BLOCKCACHE => 'true', BLOCKSIZE => '65536', REPLICATION_SCOPE => '0'}
 ----
 
-== The Hbase UI
+== Accessing the Hbase Web Interface
 
-The Hbase web UI will give you information on status and metrics of your Hbase cluster. If the UI is not available
+The Hbase web UI will give you information on the status and metrics of your Hbase cluster. If the UI is unavailable
 please do a port-forward `kubectl port-forward hbase-master-default-0 16010`. See below for the start page.
 
 image::demos/hbase-hdfs-load-cycling-data/hbase-ui-start-page.png[]
 
-From the start page you can check more details. For example details on the created table.
+From the start page you can check more details, for example a list of created tables.
 
 image::demos/hbase-hdfs-load-cycling-data/hbase-table-ui.png[]
 
-== The HDFS UI
-[NOTE]
-====
-The hdfs services will be available with the next release 22-11 via `stackablectl stacklets list`.
-====
+== Accessing the HDFS Web Interface
 
 You can also see HDFS details via a UI. Below you will see the overview of your HDFS cluster
 
