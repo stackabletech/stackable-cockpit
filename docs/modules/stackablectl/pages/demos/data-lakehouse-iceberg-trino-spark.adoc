@@ -401,8 +401,8 @@ complex calculations, e.g. incrementing a counter. For details, have a look at t
 
 === Delete Mechanism
 
-The `MERGE INTO` statement can be used to de-duplicate data and update existing lakehouse table rows. For details have a
-look at the {iceberg-merge-docs}[Iceberg MERGE INTO documentation].
+The `MERGE INTO` statement can de-duplicate data and update existing lakehouse table rows. For details have a look at
+the {iceberg-merge-docs}[Iceberg MERGE INTO documentation].
 
 === Table Maintenance
 
@@ -481,9 +481,8 @@ image::demos/data-lakehouse-iceberg-trino-spark/trino_2.png[]
 
 === Connect to Trino
 
-// TODO Switch to stable version when available (e.g. with 23.4)
-Please have a look at the xref:nightly@home:trino:usage_guide/connect_to_trino.adoc[trino-operator documentation on how to connect to Trino].
-This demo recommends to use DBeaver, as Trino consists of many schemas and tables you can explore.
+Please have a look at the xref:home:trino:usage_guide/connect_to_trino.adoc[trino-operator documentation on how to
+connect to Trino]. This demo recommends to use DBeaver, as Trino consists of many schemas and tables you can explore.
 
 image::demos/data-lakehouse-iceberg-trino-spark/dbeaver_1.png[]
 
@@ -499,7 +498,7 @@ Here you can see all the available Trino catalogs.
 
 == Superset
 
-Superset provides the ability to execute SQL queries and build dashboards. Open the `superset` endpoint
+Superset provides the ability to execute SQL queries and build dashboards. Open the Superset endpoint
 `external-superset` in your browser (http://212.227.233.47:32393 in this case).
 
 image::demos/data-lakehouse-iceberg-trino-spark/superset_1.png[]
@@ -510,13 +509,13 @@ image::demos/data-lakehouse-iceberg-trino-spark/superset_2.png[]
 
 === Viewing the Dashboard
 
-The demo has created dashboards to visualize the different data sources. To the dashboards click on the tab `Dashboards`
-at the top.
+The demo has created dashboards to visualize the different data sources. Select the `Dashboards` tab at the top to view
+these dashboards.
 
 image::demos/data-lakehouse-iceberg-trino-spark/superset_3.png[]
 
-Click on the dashboard called `House sales`.
-It might take some time until the dashboards renders all the included charts.
+Click on the dashboard called `House sales`. It might take some time until the dashboards renders all the included
+charts.
 
 image::demos/data-lakehouse-iceberg-trino-spark/superset_4.png[]
 
@@ -532,20 +531,21 @@ There are multiple other dashboards you can explore on you own.
 
 === Viewing Charts
 
-The dashboards consists of multiple charts. To list the charts click on the tab `Charts` at the top.
+The dashboards consist of multiple charts. To list the charts, select the `Charts` tab at the top.
 
 === Executing Arbitrary SQL Statements
 
-Within Superset you can not only create dashboards but also run arbitrary SQL statements. On the top click on the tab
-`SQL Lab` -> `SQL Editor`.
+Within Superset, you can create dashboards and run arbitrary SQL statements. On the top click on the tab `SQL Lab` ->
+`SQL Editor`.
 
 image::demos/data-lakehouse-iceberg-trino-spark/superset_7.png[]
 
-On the left select the database `Trino lakehouse`, the schema `house_sales` and set `See table schema` to `house_sales`.
+On the left, select the database `Trino lakehouse`, the schema `house_sales`, and set `See table schema` to
+`house_sales`.
 
 image::demos/data-lakehouse-iceberg-trino-spark/superset_8.png[]
 
-On the right textbox enter the desired SQL statement. If you do not want to make one up, you can use the following:
+In the right textbox, you can enter the desired SQL statement. If you want to avoid making one up, use the following:
 
 [source,sql]
 ----
