@@ -648,6 +648,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '-c[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
 '--color[Controls if the output will use color. This only applies to the output type '\''plain'\'']' \
+'--show-credentials[Display credentials for various endpoints. This requires permissions to read Kubernetes secrets. These credentials provide access to deployed stacklets and thus should be handled with care]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \

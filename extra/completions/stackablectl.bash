@@ -3096,7 +3096,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklets__list)
-            opts="-c -o -n -l -d -s -r -h -V --color --output --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-c -o -n -l -d -s -r -h -V --color --show-credentials --output --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

@@ -35,7 +35,13 @@ pub struct StackletListArgs {
     #[arg(short = 'c', long = "color")]
     use_color: bool,
 
-    #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
+    /// Display credentials for various endpoints. This requires permissions to
+    /// read Kubernetes secrets. These credentials provide access to deployed
+    /// stacklets and thus should be handled with care.
+    #[arg(long)]
+    show_credentials: bool,
+
+    #[arg(short, long = "output", value_enum, default_value_t)]
     output_type: OutputType,
 
     #[command(flatten)]
@@ -65,6 +71,10 @@ impl StackletsArgs {
 #[instrument]
 async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, StackletsCmdError> {
     info!("Listing installed stacklets");
+
+    if args.show_credentials {
+        todo!()
+    }
 
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
