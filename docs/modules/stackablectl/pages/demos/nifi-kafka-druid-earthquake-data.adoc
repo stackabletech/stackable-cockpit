@@ -94,11 +94,11 @@ are structured in dedicated queues called topics. The test data will be put into
 are produced (put in) by the test data generator and consumed (read) by Druid afterwards in the same order they were
 created.
 
-As Kafka has no web interface, you must use a Kafka client like https://github.com/edenhill/kcat[kafkacat]. Kafka uses
-mutual TLS, so clients wanting to connect to Kafka must present a valid TLS certificate. The easiest way to obtain this
-is to shell into the `kafka-broker-default-0` Pod, as we will do in the following section for demonstration purposes.
-For a production setup, you should spin up a dedicated Pod provisioned with a certificate acting as a Kafka client
-instead of shell-ing into the Kafka Pod.
+As Kafka has no web interface, you must use a Kafka client like h{kcat}[kafkacat]. Kafka uses mutual TLS, so clients
+wanting to connect to Kafka must present a valid TLS certificate. The easiest way to obtain this is to shell into the
+`kafka-broker-default-0` Pod, as we will do in the following section for demonstration purposes. For a production setup,
+you should spin up a dedicated Pod provisioned with a certificate acting as a Kafka client instead of shell-ing into the
+Kafka Pod.
 
 === Listing Available Topics
 
