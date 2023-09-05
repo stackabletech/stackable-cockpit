@@ -5,20 +5,20 @@
 
 [NOTE]
 ====
-This is a condensed form of the xref:demos/data-lakehouse-iceberg-trino-spark.adoc[] demo focusing on using the
-lakehouse to store and modify data. It focuses on the Trino and Iceberg integration and should run on you local
-workstation. If you are interested in a more complex lakehouse setup, please have a look at the
+This demo is a condensed form of the xref:demos/data-lakehouse-iceberg-trino-spark.adoc[] demo focusing on using the
+lakehouse to store and modify data. It focuses on the Trino and Iceberg integration and should run on your local
+workstation. If you want a more complex lakehouse setup, please look at the
 xref:demos/data-lakehouse-iceberg-trino-spark.adoc[] demo.
 ====
 
 This demo will
 
-* Install the required Stackable operators
-* Spin up the following data products
+* Install the required Stackable operators.
+* Spin up the following data products:
 ** *Trino*: A fast distributed SQL query engine for big data analytics that helps you explore your data universe. This
-   demo uses it to enable SQL access to the data
+   demo uses it to enable SQL access to the data.
 * Create multiple data lakehouse tables using Apache Iceberg and data from the https://www.tpc.org/tpch/[TPC-H dataset].
-* Run some queries to show the benefits of Iceberg
+* Run some queries to show the benefits of Iceberg.
 
 [#system-requirements]
 == System Requirements
@@ -32,51 +32,43 @@ To run this demo, your system needs at least:
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. To put it simply you
-just have to run `stackablectl demo install trino-iceberg`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install trino-iceberg`.
 
 == List Deployed Stacklets
 
 To list the installed installed Stackable services run the following command:
 
-// TODO(Techassi): Update console output
-
 [source,console]
 ----
 $ stackablectl stacklets list
-┌─────────┬──────────────┬───────────┬──────────────────────────────────────────────┬─────────────────────────────────────────┐
-│ Product ┆ Name         ┆ Namespace ┆ Endpoints                                    ┆ Extra infos                             │
-╞═════════╪══════════════╪═══════════╪══════════════════════════════════════════════╪═════════════════════════════════════════╡
-│ hive    ┆ hive-iceberg ┆ default   ┆ hive                172.18.0.4:30637         ┆                                         │
-│         ┆              ┆           ┆ metrics             172.18.0.4:30176         ┆                                         │
-├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ opa     ┆ opa          ┆ default   ┆ http                http://172.18.0.2:32470  ┆                                         │
-├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ trino   ┆ trino        ┆ default   ┆ coordinator-metrics 172.18.0.2:32402         ┆                                         │
-│         ┆              ┆           ┆ coordinator-https   https://172.18.0.2:31605 ┆                                         │
-├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ minio   ┆ minio        ┆ default   ┆ http                http://172.18.0.2:30357  ┆ Third party service                     │
-│         ┆              ┆           ┆ console-http        http://172.18.0.2:30310  ┆ Admin user: admin, password: adminadmin │
-└─────────┴──────────────┴───────────┴──────────────────────────────────────────────┴─────────────────────────────────────────┘
+┌─────────┬──────────────┬───────────┬──────────────────────────────────────────────┐
+│ Product ┆ Name         ┆ Namespace ┆ Endpoints                                    │
+╞═════════╪══════════════╪═══════════╪══════════════════════════════════════════════╡
+│ hive    ┆ hive-iceberg ┆ default   ┆ hive                172.18.0.4:30637         │
+│         ┆              ┆           ┆ metrics             172.18.0.4:30176         │
+├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ opa     ┆ opa          ┆ default   ┆ http                http://172.18.0.2:32470  │
+├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ trino   ┆ trino        ┆ default   ┆ coordinator-metrics 172.18.0.2:32402         │
+│         ┆              ┆           ┆ coordinator-https   https://172.18.0.2:31605 │
+├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ minio   ┆ minio        ┆ default   ┆ http                http://172.18.0.2:30357  │
+│         ┆              ┆           ┆ console-http        http://172.18.0.2:30310  │
+└─────────┴──────────────┴───────────┴──────────────────────────────────────────────┘
 ----
 
-[NOTE]
-====
-When a product instance has not finished starting yet, the service will have no endpoint. Starting all the product
-instances might take a considerable amount of time depending on your internet connectivity. In case the product is not
-ready yet a warning might be shown.
-====
-
+include::partial$instance-hint.adoc[]
 
 == MinIO
 
-You can view the available buckets as well as objects (think of files) as described in
-xref:demos/data-lakehouse-iceberg-trino-spark.adoc#_minio[the data-lakehouse-iceberg-trino-spark demo].
+You can view the available buckets and objects (think of files) described in the
+xref:demos/data-lakehouse-iceberg-trino-spark.adoc#_minio[data-lakehouse-iceberg-trino-spark] demo.
 
 == Connect to Trino
 
-Have a look at xref:demos/data-lakehouse-iceberg-trino-spark.adoc#_connect_with_dbeaver[documentation on how to connect with DBeaver].
-As a alternative you can use https://trino.io/download.html[trino-cli] by running:
+Have a look at the xref:demos/data-lakehouse-iceberg-trino-spark.adoc#_connect_with_dbeaver[documentation] on how to
+connect with DBeaver. As an alternative, you can use https://trino.io/download.html[trino-cli] by running:
 
 [source,bash]
 ----
@@ -84,21 +76,21 @@ java -jar ~/Downloads/trino-cli-396-executable.jar --user admin --insecure --pas
 ----
 
 Make sure to replace the server endpoint with the endpoint listed in the `stackablectl stacklets list` output. When
-prompted enter the password `adminadmin`.
+prompted, enter the password `adminadmin`.
 
 == Create Testdata
 
 === Create Schema
 
-First of you need to create a schema in the lakehouse to store the testdata
+First, you must create a schema in the lakehouse to store the test data:
 
 [source,sql]
 ----
 CREATE SCHEMA lakehouse.tpch WITH (location = 's3a://lakehouse/tpch');
 ----
 
-Afterwards you can set the context to the freshly created schema, so that you don't need to write out every table as
-`lakehouse.tpch.<table-name>` but instead can use `<table-name> directly`.
+Afterwards, you can set the context to the freshly created schema so that you don't need to write out every table as
+`lakehouse.tpch.<table-name>` but instead can use `<table-name>` directly.
 
 [source,sql]
 ----
@@ -107,9 +99,9 @@ use lakehouse.tpch;
 
 === Create Tables
 
-In order to have some testdata to work with you can use the https://www.tpc.org/tpch/[TPC-H dataset]. Trino offers a
-special https://trino.io/docs/current/connector/tpch.html[TPCH connector] which generates the testdata deterministically
-on the fly.
+You can use the https://www.tpc.org/tpch/[TPC-H dataset] to have some test data to work with. Trino offers a special
+https://trino.io/docs/current/connector/tpch.html[TPCH connector] that generates the test data deterministically on the
+fly.
 
 You can list the tables that are part of the dataset using:
 
@@ -135,8 +127,8 @@ factor of 5 (hence the `sf5` in the above query). If you have a sufficiently lar
 re-run the statements below with a different scale factor. This demo has been tested up to a scale factor of 10000, but
 you can choose any scale in between or even more if desired.
 
-If you have decided on your scale factor run the queries below to create tables in the lakehouse and propagate them with
-testdata. Depending on the scale factor this can take a considerable amount of time (the queries are ordered by size
+If you have decided on your scale factor, run the queries below to create tables in the lakehouse and propagate them
+with test data. Depending on the scale factor, this can take considerable time (the queries are ordered by size
 ascending). The progress of the query can be tracked in the web interface.
 
 [source,sql]
@@ -169,7 +161,7 @@ drop table if exists customers_to_prioritize;
 ----
 ====
 
-Afterwards your database overview in DBeaver should look like the following (you might need to refresh the contents
+Afterwards, your database overview in DBeaver should look like the following (you might need to refresh the contents
 with `F5`).
 
 image::demos/trino-iceberg/dbeaver_1.png[]
