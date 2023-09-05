@@ -2,15 +2,13 @@
 
 == Motivation
 
-If your company or clients have multiple similar setups or reference architectures, it could make sense to make them
-easily available to all employees or clients. In the custom defined stack all product versions are pinned as well, so
-you can easily spin up a stack containing the exact same versions as your production setup. You can use your defined
-stack to give it to colleagues or potential customers to show the overall architecture of the Data Platform you're
-going to build.
+If your company or clients have multiple similar setups or reference architectures, making them readily available to all
+employees or clients could make sense. All product versions are pinned in the custom-defined stack, so you can easily
+spin up a stack containing the identical versions as your production setup. You can use your defined stack to give it to
+colleagues or potential customers to show the overall architecture of the Data Platform you will build.
 
-Please keep in mind that a stack requires a release to run on. In the most cases the stackable provided release should
-work absolutely fine, but you can also have a look at the chapter xref:customization/add_release.adoc[] on how to create
-your own release.
+Please keep in mind that a stack requires a release to run on. In most cases, the stackable provided release should work
+fine, but you can also look at the chapter xref:customization/add-release.adoc[] on creating your release.
 
 == 1. Create a stacks.yaml
 
@@ -49,22 +47,22 @@ stacks:
 
 == 2. Using the Custom `stacks.yaml` File
 
-After creating the `mycorp-stacks.yaml` file it can be added to the available stacks in `stackablectl` via the CLI
-argument `--stack-file mycorp-stacks.yaml`.
+After creating the `mycorp-stacks.yaml` file, it can be added to the available stacks in `stackablectl` via the CLI
+argument `--stack-file mycorp-demos.yaml`.
 
-The argument to `--stack-file` can be either a path to a file on the local filesystem or an URL. By using an URL the
-stacks file can be put into a central Git repository and referenced by all teams or clients. Multiple `--stack-file`
-flags can be specified to include multiple stacks files.
+The argument to `--stack-file` can be a path to a file on the local filesystem or a URL. For example, the demo file can
+be put into a central Git repository and referenced by all teams or clients. Multiple "`--stack-file` flags can be
+specified to include multiple stack files.
 
-Additionally, the custom file can be provided using environment variable. The variable can be defined by using `export`
-in the shell or a `.env` file.
+Additionally, the custom file can be provided using an environment variable. The variable can be defined by `export` in
+the shell or a `.env` file.
 
 [source,ini]
 ----
 STACKABLECTL_STACK_FILES=stacks1.yml,stacks2.yml
 ----
 
-Every additional stack will be added to the already existing stacks in `stackablectl`, so all the available stacks files
+Every additional stack will be added to the already existing stacks in `stackablectl`, so all the available stack files
 will be merged.
 
 == Working with feature branches
