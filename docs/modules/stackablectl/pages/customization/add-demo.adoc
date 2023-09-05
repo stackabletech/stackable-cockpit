@@ -2,19 +2,18 @@
 
 == Motivation
 
-When you have developed a new data pipeline or data product you often want to show it in action to other colleagues or
-potential clients. To easily achieve this you can create your own demo, so that it can easily be reproduced and/or
-shared with other people.
+When you have developed a new data pipeline or product, you often want to show it to other colleagues or potential
+clients. You can create a custom demo to achieve this - enabling easy reproduction and sharing with others.
 
-Please keep in mind that a demo requires a stack to run on. Have a look at the chapter
-xref:customization/add-stack.adoc[] on how to create your own stack.
+Please remember that a demo requires a stack to run on. Look at the chapter xref:customization/add-stack.adoc[] on
+creating your stack.
 
 == 1. Create a demos.yaml
 
-For a custom demo you need to create a `mycorp-demos.yaml` containing demos according to the format defined by
+For a custom demo, you must create a `mycorp-demos.yaml` containing demos according to the format defined by
 https://github.com/stackabletech/stackablectl/blob/main/demos/demos-v1.yaml[the Stackable provided demos].
 
-As of writing a `demos.yaml` file could look as follows:
+As of writing, a `demos.yaml` file could look as follows:
 
 [source,yaml]
 ----
@@ -36,22 +35,22 @@ demos:
 
 == 2. Using the Custom `demos.yaml` File
 
-After creating the `mycorp-demos.yaml` file it can be added to the available demos in `stackablectl` via the CLI
+After creating the `mycorp-demos.yaml` file, it can be added to the available demos in `stackablectl` via the CLI
 argument `--demo-file mycorp-demos.yaml`.
 
-The argument to `--demo-file` can be either a path to a file on the local filesystem or an URL. By using an URL the
-demos file can be put into a central Git repository and referenced by all teams or clients. Multiple `--demo-file` flags
-can be specified to include multiple demos files.
+The argument to `--demo-file` can be a path to a file on the local filesystem or a URL. For example, the demo file can
+be put into a central Git repository and referenced by all teams or clients. Multiple "`--demo-file` flags can be
+specified to include multiple demo files.
 
-Additionally, the custom file can be provided using environment variable. The variable can be defined by using `export`
-in the shell or a `.env` file.
+Additionally, the custom file can be provided using an environment variable. The variable can be defined by `export` in
+the shell or a `.env` file.
 
 [source,ini]
 ----
 STACKABLECTL_DEMO_FILES=demos1.yml,demos2.yml
 ----
 
-Every additional demo will be added to the already existing demos in `stackablectl`, so all the available demos files
+Every additional demo will be added to the already existing demos in `stackablectl`, so all the available demo files
 will be merged.
 
 == Working with Feature Branches
