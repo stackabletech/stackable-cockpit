@@ -170,7 +170,7 @@ image::demos/trino-iceberg/dbeaver_1.png[]
 
 === Basic Table Information
 
-To create a view giving some basic information about the tables please execute the statement below:
+To create a view containing some basic information about the tables, please execute the statement below:
 
 .Statement to create table_information view
 [%collapsible]
@@ -246,7 +246,7 @@ select * from table_information order by records desc;
 
 === Query the Data
 
-You can now use normal SQL to analyze the data. The relation of the tables to each other is explained in the
+You can now use standard SQL to analyze the data. The relation of the tables to each other is explained in the
 {tcph-spec}[TPC-H specification] and looks as follows:
 
 image::demos/trino-iceberg/tpch_schema.png[]
@@ -279,26 +279,27 @@ order by returnflag, linestatus;
 (4 rows)
 ----
 
-It is inspired by the first query `Q1` of the {tcph-spec}[TPC-H benchmark]. The only difference is that the
+The query is inspired by the first query `Q1` of the {tcph-spec}[TPC-H benchmark]. The only difference is that the
 `where shipdate <= date '1998-12-01' - interval '[DELTA]' day` clause was omitted to produce a full-table scan.
 
 === Row Level Deletes
 
-So far the tables have been written once and only been read afterwards. Trino - in combination with Iceberg - can not
-only read data but also can do row-level deletes (deleting single rows out of a table). They achieve this by writing
-so-called "delete files", which mark rows for deletion.
+So far, the tables have been written once and have only been read afterwards. Trino - combined with Iceberg - can read
+data and do row-level deletes (deleting single rows out of a table). They achieve this by writing so-called "delete
+files", which mark rows for deletion.
 
-First of imagine a situation where some customers want all of their data to be deleted. You track all of the deletion
-requests in a dedicated table and have a nightly job that deletes all the data you have about the user. Let's create a
-table `customers_to_delete` containing a random sample of 1% of our user-base. If you run with a larger scale factor you
-can leave the command unchanged.
+First, imagine a situation where some customers want all their data deleted. You track all the deletion requests in a
+dedicated table and have a nightly job that deletes all your data about the user. Let's create a table
+`customers_to_delete` containing a random sample of 1% of our user base. You can leave the command unchanged if you run
+with a larger scale factor.
 
 [source,sql]
 ----
 create table customers_to_delete as select custkey from customer tablesample bernoulli (1);
 ----
 
-If you want to add new users to delete you can of course also insert new users to delete with the following query:
+If you want to add new users to be scheduled for deletion, you can insert new users into the `customers_to_delete` table
+using the following query:
 
 .Statement to add new users to customers_to_delete
 [%collapsible]
@@ -309,8 +310,8 @@ insert into customers_to_delete select custkey from customer tablesample bernoul
 ----
 ====
 
-Next step is the actual deletion process. It starts with the `lineitem` table and deletes all items that are part of a
-orders from the customers to delete:
+The next step is the actual deletion process. It starts with the `lineitem` table and deletes all items in the
+customer's orders:
 
 [source,sql]
 ----
@@ -343,10 +344,10 @@ select count(*) from orders where custkey in (select custkey from customers_to_d
 
 === Row Level Updates
 
-Iceberg does not only offer row level deletes but also updates. Imagine a customer relocating that wants to update his
-address information. He has the customer key `112501` and his name is `Customer#000112501`.
+Iceberg does not only offer row-level deletes but also updates. For example, a customer relocation requires an address
+change. The customer is identified by its key `112501` and name `Customer#000112501`.
 
-First of let's see his current status:
+First, let's see its current status:
 
 [source,sql]
 ----
@@ -357,25 +358,25 @@ select * from customer where custkey = 112501;
   112501 | Customer#000112501 | DWA,dNub2S5a0 |         3 | 13-503-907-7391 | 2490.91 | AUTOMOBILE | onic dependencies. slyly regular waters was among the final packages. asymptotes nod fluffily blithely un
 ----
 
-Now let's update the address
+Now let's update the address:
 
 [source,sql]
 ----
 update customer set address='Karlsruhe' where custkey=112501;
 ----
 
-Afterwards the records should look the same as before, with the difference that `address` is set to `Karlsruhe`.
+Afterwards, the records should look the same as before, with the difference that the `address` is set to `Karlsruhe`.
 
 === MERGE INTO Statement
 
 Trino also offers a https://trino.io/docs/current/sql/merge.html[MERGE INTO] statement, which gives you great
 flexibility.
 
-To show the usage, we want to pick some customers and give them VIP status. We do this by giving all of their orders
-maximum priority. We could easily do this with an `UPDATE`` statement, but here we want to add some additional
-requirements and use the `MERGE INTO` statement. So we have the requirement to track the previous priority.
+We want to pick some customers and give them VIP status to show their usage. We do this by giving all of their orders
+maximum priority. We could easily do this with an `UPDATE` statement, but here, we want to add some additional
+requirements and use the `MERGE INTO` statement. So, we need to track the previous priority.
 
-Inspect `orders` table first:
+Let's inspect the `orders` table first:
 
 [source,sql]
 ----
@@ -401,7 +402,7 @@ Now add a column `orderpriority_prev` that tracks the priority of the order befo
 alter table orders add column orderpriority_prev varchar;
 ----
 
-Now a sample record has the new column `orderpriority_prev` set to `NULL`.
+Each record now has a new column called `orderpriority_prev` with a default value of `NULL`.
 
 [source,sql]
 ----
@@ -434,7 +435,7 @@ select orderpriority, count(*) from orders where custkey in (select custkey from
 (5 rows)
 ----
 
-The next step is the most interesting, the order priorities will be changed and the previous priority will be saved.
+The next step is the most interesting; the order priorities will be changed, and the previous priority will be saved.
 
 [source,sql]
 ----
@@ -445,7 +446,7 @@ when matched
   then update set orderpriority_prev = orderpriority, orderpriority = '1-URGENT';
 ----
 
-All the orders should have top priority now:
+All the orders should now have top priority:
 
 [source,sql]
 ----
@@ -475,23 +476,23 @@ select orderpriority_prev, count(*) from orders where custkey in (select custkey
 
 == Scaling up to larger Amount of Data
 
-So far we have executed all the queries against a dataset created from TPC-H with a scale factor of 5. The demo is able
-to handle much larger data volumes.
+So far, we have executed all the queries against a dataset created from TPC-H with a scale factor of 5. The demo can
+handle much larger data volumes.
 
-This section describes how to scale up your environment to be able to drop and re-create the tables with a larger scale
-factor. After creating the tables you should be able to execute the above queries again without changing anything.
+This section describes how to scale up your environment to drop and re-create the tables with a more significant scale
+factor. After creating the tables, you should be able to execute the above queries again without changing anything.
 
 [NOTE]
 ====
-It is important that your Kubernetes cluster is large enough to handle the scale up. If you are running e.g. on your
-local machine and try to spin up 8 Trino workers with 16GB RAM each chances are pretty high that Pods will be stuck in
-`Pending` as the resources needs can't be fulfilled.
+Your Kubernetes cluster must be large enough to handle the scale-up. If you are running, e.g. on your local machine and
+try to spin up 8 Trino workers with 16GB RAM each, chances are high that Pods will be stuck in `Pending` as the
+resources required can't be fulfilled.
 ====
 
 === Scale S3
 
-If you have access to a managed S3, e.g. from a Cloud provider where you have a good network interconnection to, that
-should be the preferred option.
+That should be the preferred option if you can access a managed S3, for example, from a Cloud provider with an excellent
+network interconnection.
 
 You can change the endpoint of the S3 by running `kubectl edit s3connection minio -o yaml` and `kubectl edit secret
 minio-s3-credentials`. Please note that the credentials need to be base64 encoded.
@@ -538,8 +539,8 @@ stringData:
 ----
 ====
 
-If you don't have access to a managed S3 or don't want to use it you can also scale up the MinIO cluster. You can see
-the available replicas using
+If you don't have access to a managed S3 or don't want to use it, you can also scale up the MinIO cluster. You can see
+the available replicas using the following command:
 
 [source,console]
 ----
@@ -550,7 +551,8 @@ minio   2/2     4m16s
 ----
 
 You can edit the MinIO cluster using `kubectl edit statefulsets.apps minio`.
-Especially out of interest are the following options:
+Especially interesting are the following options:
+
 [source,yaml]
 ----
 apiVersion: apps/v1
@@ -569,7 +571,7 @@ spec:
             memory: 4Gi # RAM available
 ----
 
-E.g. set `spec.replicas` to `5` and save the changes. You can re-run `kubectl get statefulsets.apps minio` to see the
+For example, set `spec.replicas` to `5` and save the changes. You can re-run `kubectl get statefulsets.apps minio` to see the
 effect.
 
 === Scale Trino
@@ -606,4 +608,4 @@ spec:
         replicas: 8
 ----
 
-Afterwards save your changes.
+Afterwards, save your changes.
