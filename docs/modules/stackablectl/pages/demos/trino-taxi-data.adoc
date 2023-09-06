@@ -10,22 +10,22 @@
 
 This demo will
 
-* Install the required Stackable operators
-* Spin up the follow data products
+* Install the required Stackable operators.
+* Spin up the following data products:
 ** *Superset*: A modern data exploration and visualization platform. This demo utilizes Superset to retrieve data from
-   Trino via SQL queries and build dashboards on top of that data
+   Trino via SQL queries and build dashboards on top of that data.
 ** *Trino*: A fast distributed SQL query engine for big data analytics that helps you explore your data universe. This
-   demo uses it to enable SQL access to the data
+   demo uses it to enable SQL access to the data.
 ** *MinIO*: A S3 compatible object store. This demo uses it as persistent storage to store all the data used
 ** *Hive metastore*: A service that stores metadata related to Apache Hive and other services. This demo uses it as
-   metadata storage for Trino
-** *Open policy agent* (OPA): An open source, general-purpose policy engine that unifies policy enforcement across the
-   stack. This demo uses it as the authorizer for Trino, which decides which user is able to query which data.
-* Load testdata into S3. It contains 2.5 years of {nyc-taxi}[New York City taxi trips]
-* Make data accessible via SQL in Trino
-* Create Superset dashboards for visualization of the data
+   metadata storage for Trino.
+** *Open policy agent* (OPA): An open-source, general-purpose policy engine unifying policy enforcement across the
+   stack. This demo uses it as the authorizer for Trino, which decides which user can query which data.
+* Load test data into S3. It contains 2.5 years of {nyc-taxi}[New York City taxi trips].
+* Make data accessible via SQL in Trino.
+* Create Superset dashboards for visualization of the data.
 
-You can see the deployed products as well as their relationship in the following diagram:
+You can see the deployed products and their relationship in the following diagram:
 
 image::demos/trino-taxi-data/overview.png[]
 
@@ -41,46 +41,40 @@ To run this demo, your system needs at least:
 [#installation]
 == Installation
 
-Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. To put it simply you
-just have to run `stackablectl demo install trino-taxi-data`.
+Please follow the xref:commands/demo.adoc#_install_demo[documentation on how to install a demo]. You can install it by
+running `stackablectl demo install trino-taxi-data`.
 
 == List Deployed Stacklets
 
-To list the installed Stackable services run the following command:
+To list the installed Stackable services, run the following command:
 
 [source,console]
 ----
 $ stackablectl stacklets list
- PRODUCT   NAME         NAMESPACE  ENDPOINTS                                     EXTRA INFOS
-
- hive      hive         default    hive                172.18.0.5:30298
-                                   metrics             172.18.0.5:31633
-
- opa       opa          default    http                http://172.18.0.5:30316
-
- superset  superset     default    external-superset   http://172.18.0.4:32295   Admin user: admin, password: adminadmin
-
- trino     trino        default    coordinator-http    http://172.18.0.3:30167
-                                   coordinator-metrics 172.18.0.3:31818
-                                   coordinator-https   https://172.18.0.3:30141
-
- minio     minio-trino  default    http                http://172.18.0.3:31062   Third party service
-                                   console-http        http://172.18.0.3:30503   Admin user: admin, password: adminadmin
+┌─────────┬──────────────┬───────────┬──────────────────────────────────────────────┐
+│ PRODUCT ┆ NAME         ┆ NAMESPACE ┆ ENDPOINTS                                    │
+╞═════════╪══════════════╪═══════════╪══════════════════════════════════════════════╡
+│ hive    ┆ hive-iceberg ┆ default   ┆ hive                172.18.0.4:30637         │
+│         ┆              ┆           ┆ metrics             172.18.0.4:30176         │
+├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ opa     ┆ opa          ┆ default   ┆ http                http://172.18.0.2:32470  │
+├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ trino   ┆ trino        ┆ default   ┆ coordinator-metrics 172.18.0.2:32402         │
+│         ┆              ┆           ┆ coordinator-https   https://172.18.0.2:31605 │
+├╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ minio   ┆ minio        ┆ default   ┆ http                http://172.18.0.2:30357  │
+│         ┆              ┆           ┆ console-http        http://172.18.0.2:30310  │
+└─────────┴──────────────┴───────────┴──────────────────────────────────────────────┘
 ----
 
-[NOTE]
-====
-When a product instance has not finished starting yet, the service will have no endpoint. Starting all the product
-instances might take an considerable amount of time depending on your internet connectivity. In case the product is not
-ready yet a warning might be shown.
-====
+include::partial$instance-hint.adoc[]
 
 == Inspect Data in S3
 
-The S3 provided by MinIO is used as a persistent storage to store all the data used. You can have a look at the testdata
-within the MinIO web interface by opening the given `minio` endpoint `console-http` from your
-`stackablectl stacklets list` command output. You have to use the endpoint from your command output, in this case it is
-http://172.18.0.3:30503. Open it with your favorite browser.
+The S3 provided by MinIO is used as a persistent storage to store all the data used. You can look at the test data
+within the MinIO web interface by opening the endpoint `console-http` from your `stackablectl stacklets list` command
+output. You have to use the endpoint from your command output. In this case, it is http://172.18.0.3:30503. Open it with
+your favourite browser.
 
 image::demos/trino-taxi-data/minio_1.png[]
 
@@ -92,16 +86,16 @@ Click on the blue button `Browse` on the bucket `demo` and open the folders `ny-
 
 image::demos/trino-taxi-data/minio_3.png[]
 
-As you can see the demo uploaded 1GB of parquet files, one file per month. The data contain taxi rides in New York City.
-You can see the file size (and therefore the number of rides) decrease drastically because of the Covid-19 pandemic
-starting from `2020-03`. {parquet}[Parquet] is an open source, column-oriented data file format designed for efficient
-data storage and retrieval.
+The demo uploaded 1GB of parquet files, one file per month. The data contains taxi rides in New York City. The file size
+(and therefore the number of rides) decreased drastically because of the COVID-19 pandemic starting from `2020-03`.
+{parquet}[Parquet] is an open-source, column-oriented data file format for efficient storage and retrieval.
 
 == Use Trino Web Interface
 
-Trino offers SQL access to the data within S3. Open the `trino` endpoint `coordinator-https` in your browser
-(`https://172.18.0.3:30141` in this case). If you get a warning regarding the self signed certificate (e.g.
-`Warning: Potential Security Risk Ahead`) you have to tell your browser to trust the website and continue.
+Trino offers SQL access to the data within S3. Open the endpoint `coordinator-https` in your browser
+(`https://172.18.0.3:30141` in this case). If you get a warning regarding the self-signed certificate (e.g.
+`Warning: Potential Security Risk Ahead`), you must tell your browser to trust the website and continue.
+
 
 image::demos/trino-taxi-data/trino_1.png[]
 
@@ -109,11 +103,11 @@ Log in with the username `admin` and password `adminadmin`.
 
 image::demos/trino-taxi-data/trino_2.png[]
 
-When you start executing SQL queries you will see the queries getting processed here.
+When you start executing SQL queries, you will see the queries getting processed here.
 
 == Use Superset Web Interface
 
-Superset gives the ability to execute SQL queries and build dashboards. Open the `superset` endpoint `external-superset`
+Superset gives the ability to execute SQL queries and build dashboards. Open the endpoint `external-superset`
 in your browser (`http://172.18.0.4:32295` in this case).
 
 image::demos/trino-taxi-data/superset_1.png[]
@@ -124,28 +118,28 @@ image::demos/trino-taxi-data/superset_2.png[]
 
 === View the Dashboard
 
-On the top click on the tab `Dashboards`.
+On the top, click on the `Dashboards` tab.
 
 image::demos/trino-taxi-data/superset_3.png[]
 
-Click on the dashboard called `Taxi data`. It might take some time until the dashboards renders all the included charts.
+Click on the dashboard called `Taxi data`. It might take some time until the dashboards render all included charts.
 
 image::demos/trino-taxi-data/superset_4.png[]
 
-You can clearly see the impact of Covid-19 on the taxi business.
+You can clearly see the impact of COVID-19 on the taxi business.
 
 === Execute Arbitrary SQL Statements
 
-Within Superset you can not only create dashboards but also run arbitrary SQL statements. On the top click on the tab
-`SQL Lab` -> `SQL Editor`.
+Within Superset, you can create dashboards and run arbitrary SQL statements. On the top, click on the tab `SQL Lab` ->
+`SQL Editor`.
 
 image::demos/trino-taxi-data/superset_5.png[]
 
-On the left select the database `Trino`, the schema `demo` and set `See table schema` to `ny_taxi_data`.
+On the left, select the database `Trino`, the schema `demo` and set `See table schema` to `ny_taxi_data`.
 
 image::demos/trino-taxi-data/superset_6.png[]
 
-On the right textbox enter the desired SQL statement. If you do not want to make on up you can use the following:
+In the right textbox, enter the desired SQL statement. If you do not want to make on up, you can use the following:
 
 [source,sql]
 ----
