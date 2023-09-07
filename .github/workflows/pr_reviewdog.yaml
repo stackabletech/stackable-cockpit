@@ -1,5 +1,6 @@
 ---
-name: reviewdog
+name: Pull Request Reviewdog
+
 on: pull_request
 
 permissions:
@@ -40,15 +41,6 @@ jobs:
       - uses: reviewdog/action-flake8@b6435e67f0cfda225b9e0c9283cfb7ea7c551bdb # tag=v3.6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-
-  # Hadolint is failing to run.. issues when there are no dockerfiles?
-  # hadolint:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-  #     - uses: reviewdog/action-hadolint@141ffd8d2f0b75e6fc7c87341331985448b62aa4 # v1.34.1
-  #       with:
-  #         github_token: ${{ secrets.GITHUB_TOKEN }}
 
   markdownlint:
     runs-on: ubuntu-latest

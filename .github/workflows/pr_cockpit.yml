@@ -1,10 +1,17 @@
----
-name: Stackablectl Release Pipeline
+name: Pull Request Cockpit
 
 on:
-  push:
-    tags:
-      - "stackablectl-[0-9]+.[0-9]+.[0-9]+**"
+  pull_request:
+    paths:
+      - ".github/workflows/pr_cockpit.yml"
+      - "rust/stackable-cockpitd"
+      - "rust/stackable-cockpit"
+      - "docs/modules/cockpit"
+      - "docs/modules/ROOT"
+      - "Cargo.lock"
+      - "deploy"
+      - "docker"
+      - "go.sum"
 
 env:
   RUST_VERSION: 1.70.0
@@ -16,22 +23,19 @@ env:
   RUST_LOG: "info"
 
 jobs:
-  release:
-    name: Release for ${{ matrix.target }}
+  build:
+    name: Build stackable-cockpitd for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-20.04 # We don't use ubuntu-latest because we want to build against an old glibc version. (18.04 has glibc 2.27, 20.04 has glibc 2.31, 22.04 has glibc 2.35)
-            file-suffix: ""
+            os: ubuntu-latest
           - target: x86_64-apple-darwin
             os: macos-latest
-            file-suffix: ""
           - target: aarch64-apple-darwin
             os: macos-latest
-            file-suffix: ""
     steps:
       - name: Checkout
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -41,12 +45,9 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
           targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+        with:
+          key: build-stackable-cockpit-${{ matrix.target }}
       - name: Build for non-Windows
         if: matrix.os != 'windows-latest'
-        run: cargo build --target ${{ matrix.target }} --release -p stackablectl
-      - name: Rename binary file
-        run: mv target/${{ matrix.target }}/release/stackablectl${{ matrix.file-suffix }} stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
-      - name: Upload Release binaries
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
-        with:
-          files: stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
+        run: cargo build --target ${{ matrix.target }} -p stackable-cockpitd --all-features
