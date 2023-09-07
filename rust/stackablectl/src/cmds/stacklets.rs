@@ -103,6 +103,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                     "NAMESPACE",
                     "ENDPOINTS",
                     "CONDITIONS",
+                    "CREDENTIALS",
                 ])
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(UTF8_FULL);
@@ -136,6 +137,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                     stacklet.namespace.unwrap_or_default(),
                     endpoints,
                     summary,
+                    stacklet.credentials.map_or("".into(), |c| c.to_string()),
                 ]);
 
                 if let Some(err) = render_errors(errors) {
@@ -143,7 +145,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 }
             }
 
-            // Only output the error table if there are errors to report.
+            // Only output the error list if there are errors to report.
             Ok(format!(
                 "{table}{errors}",
                 errors = if !error_list.is_empty() {

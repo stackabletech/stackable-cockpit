@@ -1,10 +1,9 @@
 use kube::{api::ListParams, ResourceExt};
-use snafu::ResultExt;
 
 use crate::{
     platform::{
         service::get_service_endpoint_urls,
-        stacklet::{KubeSnafu, Stacklet, StackletError},
+        stacklet::{Stacklet, StackletError},
     },
     utils::k8s::{KubeClient, ListParamsExt, ProductLabel},
 };
@@ -16,10 +15,7 @@ pub(super) async fn list(
     let mut stacklets = Vec::new();
 
     let params = ListParams::from_product("opensearch-dashboards", None, ProductLabel::Name);
-    let services = kube_client
-        .list_services(namespace, &params)
-        .await
-        .context(KubeSnafu)?;
+    let services = kube_client.list_services(namespace, &params).await?;
 
     for service in services {
         let service_name = service.name_any();
@@ -35,6 +31,7 @@ pub(super) async fn list(
             namespace: service.namespace(),
             product: "opensearch-dashboards".to_string(),
             name: service_name,
+            credentials: None,
             endpoints,
         });
     }

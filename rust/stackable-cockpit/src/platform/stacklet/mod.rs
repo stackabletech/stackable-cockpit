@@ -10,12 +10,17 @@ use utoipa::ToSchema;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    platform::service::{get_service_endpoints, ServiceError},
+    platform::{
+        credentials::{get_credentials, Credentials},
+        service::{get_service_endpoints, ServiceError},
+    },
     utils::{
         k8s::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
         string::Casing,
     },
 };
+
+use super::credentials::CredentialsError;
 
 mod grafana;
 mod minio;
@@ -41,11 +46,14 @@ pub struct Stacklet {
 
     /// Multiple cluster conditions.
     pub conditions: Vec<DisplayCondition>,
+
+    /// Optional credentials consisting of username and password.
+    pub credentials: Option<Credentials>,
 }
 
 #[derive(Debug, Snafu)]
 pub enum StackletError {
-    #[snafu(display("kubernetes error"))]
+    #[snafu(display("kubernetes error"), context(false))]
     KubeError { source: KubeClientError },
 
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
@@ -63,7 +71,7 @@ pub enum StackletError {
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
 pub async fn list(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
-    let kube_client = KubeClient::new().await.context(KubeSnafu)?;
+    let kube_client = KubeClient::new().await?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
     stacklets.extend(grafana::list(&kube_client, namespace).await?);
@@ -82,11 +90,7 @@ async fn list_stackable_stacklets(
     let mut stacklets = Vec::new();
 
     for (product_name, product_gvk) in product_list {
-        let objects = match kube_client
-            .list_objects(&product_gvk, namespace)
-            .await
-            .context(KubeSnafu)?
-        {
+        let objects = match kube_client.list_objects(&product_gvk, namespace).await? {
             Some(obj) => obj,
             None => {
                 warn!(
@@ -112,15 +116,25 @@ async fn list_stackable_stacklets(
                 None => continue,
             };
 
-            let endpoints = get_service_endpoints(product_name, &object_name, &object_namespace)
-                .await
-                .context(ServiceSnafu)?;
+            let endpoints =
+                get_service_endpoints(kube_client, product_name, &object_name, &object_namespace)
+                    .await
+                    .context(ServiceSnafu)?;
+
+            let credentials = match get_credentials(kube_client, product_name, &object).await {
+                Ok(credentials) => credentials,
+                Err(err) => match err {
+                    CredentialsError::KubeError { source } => return Err(source.into()),
+                    CredentialsError::NoSecret => None,
+                },
+            };
 
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),
                 product: product_name.to_string(),
                 conditions: conditions.plain(),
                 name: object_name,
+                credentials,
                 endpoints,
             });
         }

@@ -129,6 +129,7 @@ export interface components {
     Stacklet: {
       /** @description Multiple cluster conditions. */
       conditions: components["schemas"]["DisplayCondition"][];
+      credentials?: components["schemas"]["Credentials"] | null;
       /**
        * @description Endpoint addresses the product is reachable at.
        * The key is the service name (e.g. `web-ui`), the value is the URL.

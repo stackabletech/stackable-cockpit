@@ -13,9 +13,9 @@ use kube::{
 use serde::Deserialize;
 use snafu::{ResultExt, Snafu};
 
-use crate::{
-    constants::REDACTED_PASSWORD,
-    platform::cluster::{ClusterError, ClusterInfo},
+use crate::platform::{
+    cluster::{ClusterError, ClusterInfo},
+    credentials::Credentials,
 };
 
 #[cfg(doc)]
@@ -38,9 +38,6 @@ pub enum KubeClientError {
     #[snafu(display("failed to deploy manifest because GVK {gvk:?} cannot be resolved"))]
     DiscoveryError { gvk: GroupVersionKind },
 
-    #[snafu(display("invalid secret data (empty)"))]
-    InvalidSecretData,
-
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvertError { source: FromUtf8Error },
 
@@ -49,6 +46,15 @@ pub enum KubeClientError {
 
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterError { source: ClusterError },
+
+    #[snafu(display("invalid secret data (empty)"))]
+    InvalidSecretData,
+
+    #[snafu(display("no username key in credentials secret"))]
+    NoUsernameKey,
+
+    #[snafu(display("no password key in credentials secret"))]
+    NoPasswordKey,
 }
 
 pub struct KubeClient {
@@ -168,31 +174,28 @@ impl KubeClient {
         secret_name: &str,
         secret_namespace: &str,
         username_key: &str,
-        password_key: Option<&str>,
-    ) -> Result<Option<(String, String)>> {
+        password_key: &str,
+    ) -> Result<Credentials> {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
         let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
-        let secret_data = secret.data.ok_or(InvalidSecretDataSnafu {}.build())?;
+        let secret_data = secret.data.ok_or(InvalidSecretDataSnafu.build())?;
 
         let username = match secret_data.get(username_key) {
             Some(username) => {
                 String::from_utf8(username.0.clone()).context(ByteStringConvertSnafu)?
             }
-            None => return Ok(None),
+            None => return Err(NoUsernameKeySnafu.build()),
         };
 
-        let password = match password_key {
-            Some(key) => match secret_data.get(key) {
-                Some(password) => {
-                    String::from_utf8(password.0.clone()).context(ByteStringConvertSnafu)?
-                }
-                None => return Ok(None),
-            },
-            None => REDACTED_PASSWORD.to_string(),
+        let password = match secret_data.get(password_key) {
+            Some(password) => {
+                String::from_utf8(password.0.clone()).context(ByteStringConvertSnafu)?
+            }
+            None => return Err(NoPasswordKeySnafu.build()),
         };
 
-        Ok(Some((username, password)))
+        Ok(Credentials { username, password })
     }
 
     /// Lists [`Deployment`]s by matching labels. The services can be matched

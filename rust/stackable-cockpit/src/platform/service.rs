@@ -40,12 +40,11 @@ pub enum ServiceError {
 }
 
 pub async fn get_service_endpoints(
+    kube_client: &KubeClient,
     product_name: &str,
     object_name: &str,
     object_namespace: &str,
 ) -> Result<IndexMap<String, String>, ServiceError> {
-    let kube_client = KubeClient::new().await.context(KubeClientSnafu)?;
-
     let service_list_params =
         ListParams::from_product(product_name, Some(object_name), ProductLabel::Name);
 
@@ -57,7 +56,7 @@ pub async fn get_service_endpoints(
     let mut endpoints = IndexMap::new();
 
     for service in services {
-        match get_service_endpoint_urls(&kube_client, &service, object_name).await {
+        match get_service_endpoint_urls(kube_client, &service, object_name).await {
             Ok(urls) => endpoints.extend(urls),
             Err(err) => warn!(
                 "Failed to get endpoint_urls of service {service_name}: {err}",
