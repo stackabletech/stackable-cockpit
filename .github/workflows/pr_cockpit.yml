@@ -49,6 +49,11 @@ jobs:
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: build-stackable-cockpit-${{ matrix.target }}
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          node-version: 18
+          cache: yarn
+      - run: yarn install --frozen-lockfile
       - name: Build for non-Windows
         if: matrix.os != 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackable-cockpitd --all-features
