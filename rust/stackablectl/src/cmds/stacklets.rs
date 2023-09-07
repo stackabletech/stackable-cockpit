@@ -72,10 +72,6 @@ impl StackletsArgs {
 async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, StackletsCmdError> {
     info!("Listing installed stacklets");
 
-    if args.show_credentials {
-        todo!()
-    }
-
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
@@ -137,7 +133,13 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                     stacklet.namespace.unwrap_or_default(),
                     endpoints,
                     summary,
-                    stacklet.credentials.map_or("".into(), |c| c.to_string()),
+                    stacklet.credentials.map_or("".into(), |c| {
+                        if args.show_credentials {
+                            c.to_string()
+                        } else {
+                            "".into()
+                        }
+                    }),
                 ]);
 
                 if let Some(err) = render_errors(errors) {
