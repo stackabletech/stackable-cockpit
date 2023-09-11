@@ -3,4 +3,5 @@ name: management
 title: SDP Management
 version: "nightly"
 nav:
+  - modules/cockpit/nav.adoc
   - modules/stackablectl/nav.adoc
