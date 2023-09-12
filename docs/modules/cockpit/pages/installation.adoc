@@ -11,7 +11,8 @@ You will need:
 * Helm
 * htpasswd (from Apache HTTPD)
 
-Resource sizing depends on cluster type(s), usage and scope, but as a starting point we recommend a minimum of the following resources for this service:
+Resource sizing depends on cluster type(s), usage and scope, but as a starting point we recommend a minimum of the
+following resources for this service:
 
 * 0.2 cores (e.g. i5 or similar)
 * 256MB RAM

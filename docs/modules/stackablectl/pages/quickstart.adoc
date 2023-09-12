@@ -60,8 +60,8 @@ Use "stackablectl stacklet list" to display the installed stacklets
 
 === Using Local Kind Cluster
 
-If you don't have a Kubernetes cluster available, `stackablectl` can spin up a https://kind.sigs.k8s.io/[kind] Kubernetes cluster for you.
-Make sure you have `kind` installed and run the following command:
+If you don't have a Kubernetes cluster available, `stackablectl` can spin up a https://kind.sigs.k8s.io/[kind]
+Kubernetes cluster for you. Make sure you have `kind` installed and run the following command:
 
 [source,console]
 ----
