@@ -1,4 +1,4 @@
-* xref:index.adoc[Stackablectl]
+* xref:index.adoc[stackablectl]
 ** xref:installation.adoc[Installation]
 ** xref:quickstart.adoc[Quickstart]
 ** xref:commands/index.adoc[Commands]
