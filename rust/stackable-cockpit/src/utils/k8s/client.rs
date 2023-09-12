@@ -11,11 +11,14 @@ use kube::{
     Api, Client, Discovery, ResourceExt,
 };
 use serde::Deserialize;
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 
-use crate::platform::{
-    cluster::{ClusterError, ClusterInfo},
-    credentials::Credentials,
+use crate::{
+    platform::{
+        cluster::{ClusterError, ClusterInfo},
+        credentials::Credentials,
+    },
+    utils::k8s::ByteStringExt,
 };
 
 #[cfg(doc)]
@@ -179,21 +182,19 @@ impl KubeClient {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
         let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
-        let secret_data = secret.data.ok_or(InvalidSecretDataSnafu.build())?;
+        let secret_data = secret.data.context(InvalidSecretDataSnafu)?;
 
-        let username = match secret_data.get(username_key) {
-            Some(username) => {
-                String::from_utf8(username.0.clone()).context(ByteStringConvertSnafu)?
-            }
-            None => return Err(NoUsernameKeySnafu.build()),
-        };
+        let username = secret_data
+            .get(username_key)
+            .context(NoUsernameKeySnafu)?
+            .try_to_string()
+            .context(ByteStringConvertSnafu)?;
 
-        let password = match secret_data.get(password_key) {
-            Some(password) => {
-                String::from_utf8(password.0.clone()).context(ByteStringConvertSnafu)?
-            }
-            None => return Err(NoPasswordKeySnafu.build()),
-        };
+        let password = secret_data
+            .get(password_key)
+            .context(NoPasswordKeySnafu)?
+            .try_to_string()
+            .context(ByteStringConvertSnafu)?;
 
         Ok(Credentials { username, password })
     }

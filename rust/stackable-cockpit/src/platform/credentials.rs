@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use kube::{core::DynamicObject, ResourceExt};
 use serde::Serialize;
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 
 use crate::utils::k8s::{KubeClient, KubeClientError};
 
@@ -36,7 +36,7 @@ impl Display for Credentials {
 pub async fn get_credentials(
     kube_client: &KubeClient,
     product_name: &str,
-    product_crd: &DynamicObject,
+    stacklet: &DynamicObject,
 ) -> Result<Option<Credentials>> {
     // FIXME (Techassi): This should be discoverable, instead of hard-coding
     // supported products. Additionally, all the username and password keys
@@ -52,31 +52,35 @@ pub async fn get_credentials(
 
     let credentials = match product_name {
         "airflow" | "superset" => {
-            match product_crd.data["spec"]["clusterConfig"]["credentialsSecret"].as_str() {
-                Some(secret_name) => kube_client
-                    .get_credentials_from_secret(
-                        secret_name,
-                        &product_crd.namespace().unwrap(),
-                        "adminUser.username",
-                        "adminUser.password",
-                    )
-                    .await
-                    .context(KubeSnafu)?,
-                None => return Err(NoSecretSnafu.build()),
-            }
-        }
-        "nifi" => match product_crd.data["spec"]["clusterConfig"]["credentialsSecret"].as_str() {
-            Some(secret_name) => kube_client
+            let secret_name = stacklet.data["spec"]["clusterConfig"]["credentialsSecret"]
+                .as_str()
+                .context(NoSecretSnafu)?;
+
+            kube_client
                 .get_credentials_from_secret(
                     secret_name,
-                    &product_crd.namespace().unwrap(),
+                    &stacklet.namespace().unwrap(),
+                    "adminUser.username",
+                    "adminUser.password",
+                )
+                .await
+                .context(KubeSnafu)?
+        }
+        "nifi" => {
+            let secret_name = stacklet.data["spec"]["clusterConfig"]["credentialsSecret"]
+                .as_str()
+                .context(NoSecretSnafu)?;
+
+            kube_client
+                .get_credentials_from_secret(
+                    secret_name,
+                    &stacklet.namespace().unwrap(),
                     "username",
                     "password",
                 )
                 .await
-                .context(KubeSnafu)?,
-            None => return Err(NoSecretSnafu.build()),
-        },
+                .context(KubeSnafu)?
+        }
         _ => return Ok(None),
     };
 
