@@ -122,4 +122,4 @@ mv stackablectl.bash /etc/bash_completion.d/
 '''
 
 You can generate the completions on your own by using the `stackablectl completions` command. See
-xref:command/completions.adoc[here] for more information.
+xref:commands/completions.adoc[here] for more information.
