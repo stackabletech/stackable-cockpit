@@ -275,17 +275,19 @@ async fn install_cmd(
         .clone()
         .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
 
-    namespace::create_if_needed(operator_namespace.clone())
-        .await
-        .context(NamespaceSnafu {
-            namespace: operator_namespace.clone(),
-        })?;
-
     let product_namespace = args
         .namespaces
         .product_namespace
         .clone()
         .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+
+    if !args.skip_release {
+        namespace::create_if_needed(operator_namespace.clone())
+            .await
+            .context(NamespaceSnafu {
+                namespace: operator_namespace.clone(),
+            })?;
+    }
 
     namespace::create_if_needed(product_namespace.clone())
         .await
