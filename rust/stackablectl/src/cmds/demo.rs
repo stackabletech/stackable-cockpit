@@ -111,7 +111,7 @@ to specify operator versions."
 pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
-pub enum DemoCmdError {
+pub enum CmdError {
     #[snafu(display("unable to format yaml output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
@@ -148,7 +148,7 @@ pub enum DemoCmdError {
 
 impl DemoArgs {
     #[instrument]
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, DemoCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
 
         let transfer_client = FileTransferClient::new_with(cache);
@@ -173,7 +173,7 @@ impl DemoArgs {
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument]
-async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmdError> {
+async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, CmdError> {
     info!("Listing demos");
 
     match args.output_type {
@@ -204,10 +204,10 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, DemoCmd
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 #[instrument]
-async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, DemoCmdError> {
+async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, CmdError> {
     info!("Describing demo {}", args.demo_name);
 
-    let demo = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
+    let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
 
@@ -242,10 +242,10 @@ async fn install_cmd(
     common_args: &Cli,
     list: DemoList,
     transfer_client: &FileTransferClient,
-) -> Result<String, DemoCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
 
-    let demo_spec = list.get(&args.demo_name).ok_or(DemoCmdError::NoSuchDemo {
+    let demo_spec = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
 

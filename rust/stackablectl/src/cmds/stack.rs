@@ -103,7 +103,7 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackCmdError {
+pub enum CmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
@@ -133,7 +133,7 @@ pub enum StackCmdError {
 }
 
 impl StackArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, StackCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
         let transfer_client = FileTransferClient::new_with(cache);
@@ -154,7 +154,7 @@ impl StackArgs {
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, StackCmdError> {
+fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -183,7 +183,7 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 }
 
 #[instrument]
-fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, StackCmdError> {
+fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
     match stack_list.get(&args.stack_name) {
@@ -231,7 +231,7 @@ async fn install_cmd(
     common_args: &Cli,
     stack_list: StackList,
     transfer_client: &FileTransferClient,
-) -> Result<String, StackCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
     let files = common_args
