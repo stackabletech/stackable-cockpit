@@ -9,7 +9,10 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::ListError,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
+    platform::{
+        namespace::{self, NamespaceError},
+        release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
+    },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
@@ -117,6 +120,12 @@ pub enum CmdError {
 
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
+
+    #[snafu(display("failed to create namespace '{namespace}'"))]
+    NamespaceError {
+        source: NamespaceError,
+        namespace: String,
+    },
 }
 
 impl ReleaseArgs {
@@ -232,14 +241,21 @@ async fn install_cmd(
 ) -> Result<String, CmdError> {
     info!("Installing release");
 
-    // Install local cluster if needed
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
-
     match release_list.get(&args.release) {
         Some(release) => {
+            // Install local cluster if needed
+            args.local_cluster
+                .install_if_needed(None)
+                .await
+                .context(CommonClusterArgsSnafu)?;
+
+            // Create operator namespace if needed
+            namespace::create_if_needed(args.operator_namespace.clone())
+                .await
+                .context(NamespaceSnafu {
+                    namespace: args.operator_namespace.clone(),
+                })?;
+
             release
                 .install(
                     &args.included_products,
@@ -248,7 +264,7 @@ async fn install_cmd(
                 )
                 .context(ReleaseInstallSnafu)?;
 
-            Ok("Installed release".into())
+            Ok(format!("Installed release {}", args.release))
         }
         None => Ok("No such release".into()),
     }
@@ -266,7 +282,7 @@ async fn uninstall_cmd(
                 .uninstall(&args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
-            Ok("Installed release".into())
+            Ok(format!("Uninstalled release {}", args.release))
         }
         None => Ok("No such release".into()),
     }

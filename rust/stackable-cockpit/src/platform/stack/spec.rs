@@ -159,14 +159,8 @@ impl StackSpecV2 {
         release_list: ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
-        skip_release_install: bool,
     ) -> Result<(), StackError> {
-        info!("Installing release for stack");
-
-        if skip_release_install {
-            info!("Skipping release installation during stack installation process");
-            return Ok(());
-        }
+        info!("Trying to install release {}", self.release);
 
         // Get the release by name
         let release = release_list
