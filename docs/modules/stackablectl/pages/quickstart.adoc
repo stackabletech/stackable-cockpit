@@ -31,7 +31,7 @@ When you are on a Windows system you have to replace the `stackablectl` command 
 `stackablectl.exe demo list`. This applies to all commands below.
 ====
 
-For this guide, we will use the xref:demos/trino-taxi-data.adoc[] demo. The installation of other available demos should
+For this guide, we will use the xref:demos:trino-taxi-data.adoc[] demo. The installation of other available demos should
 work the same way. You need to use the name of the chosen demo instead of `trino-taxi-data` in the following commands.
 
 == Install Demo
@@ -99,4 +99,4 @@ down.
 
 == Proceed with the Demo
 
-Please read the documentation on the demo xref:demos/trino-taxi-data.adoc[] on how to proceed with the demo.
+Please read the documentation on the demo xref:demos:trino-taxi-data.adoc[] on how to proceed with the demo.
