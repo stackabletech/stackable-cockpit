@@ -93,7 +93,7 @@ pub struct ReleaseUninstallArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum ReleaseCmdError {
+pub enum CmdError {
     #[snafu(display("unable to format yaml output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
@@ -120,7 +120,7 @@ pub enum ReleaseCmdError {
 }
 
 impl ReleaseArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, ReleaseCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle release args");
 
         let transfer_client = FileTransferClient::new_with(cache);
@@ -147,10 +147,7 @@ impl ReleaseArgs {
 }
 
 #[instrument]
-async fn list_cmd(
-    args: &ReleaseListArgs,
-    release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+async fn list_cmd(args: &ReleaseListArgs, release_list: ReleaseList) -> Result<String, CmdError> {
     info!("Listing releases");
 
     match args.output_type {
@@ -186,7 +183,7 @@ async fn list_cmd(
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+) -> Result<String, CmdError> {
     info!("Describing release");
 
     let release = release_list.get(&args.release);
@@ -232,7 +229,7 @@ async fn install_cmd(
     args: &ReleaseInstallArgs,
     common_args: &Cli,
     release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing release");
 
     // Install local cluster if needed
@@ -260,7 +257,7 @@ async fn install_cmd(
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing release");
 
     match release_list.get(&args.release) {
