@@ -23,13 +23,13 @@ pub enum CompletionCommands {
 }
 
 #[derive(Debug, Snafu)]
-pub enum CompletionsCmdError {
+pub enum CmdError {
     #[snafu(display("string error: {source}"))]
     StringError { source: std::string::FromUtf8Error },
 }
 
 impl CompletionsArgs {
-    pub fn run(&self) -> Result<String, CompletionsCmdError> {
+    pub fn run(&self) -> Result<String, CmdError> {
         match &self.subcommand {
             CompletionCommands::Bash => generate_completions(Shell::Bash),
             CompletionCommands::Fish => generate_completions(Shell::Fish),
@@ -38,7 +38,7 @@ impl CompletionsArgs {
     }
 }
 
-fn generate_completions(shell: Shell) -> Result<String, CompletionsCmdError> {
+fn generate_completions(shell: Shell) -> Result<String, CmdError> {
     let mut cmd = Cli::command();
     let mut buf = Vec::new();
 

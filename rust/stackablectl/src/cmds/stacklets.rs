@@ -49,7 +49,7 @@ pub struct StackletListArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackletsCmdError {
+pub enum CmdError {
     #[snafu(display("service list error"))]
     StackletListError { source: StackletError },
 
@@ -61,7 +61,7 @@ pub enum StackletsCmdError {
 }
 
 impl StackletsArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, StackletsCmdError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, CmdError> {
         match &self.subcommand {
             StackletCommands::List(args) => list_cmd(args, common_args).await,
         }
@@ -69,7 +69,7 @@ impl StackletsArgs {
 }
 
 #[instrument]
-async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, StackletsCmdError> {
+async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
 
     // If the user wants to list stacklets from all namespaces, we use `None`.

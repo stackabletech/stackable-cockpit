@@ -9,7 +9,10 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::ListError,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
+    platform::{
+        namespace::{self, NamespaceError},
+        release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
+    },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
@@ -93,7 +96,7 @@ pub struct ReleaseUninstallArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum ReleaseCmdError {
+pub enum CmdError {
     #[snafu(display("unable to format yaml output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
@@ -117,10 +120,16 @@ pub enum ReleaseCmdError {
 
     #[snafu(display("transfer error"))]
     TransferError { source: FileTransferError },
+
+    #[snafu(display("failed to create namespace '{namespace}'"))]
+    NamespaceError {
+        source: NamespaceError,
+        namespace: String,
+    },
 }
 
 impl ReleaseArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, ReleaseCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle release args");
 
         let transfer_client = FileTransferClient::new_with(cache);
@@ -147,10 +156,7 @@ impl ReleaseArgs {
 }
 
 #[instrument]
-async fn list_cmd(
-    args: &ReleaseListArgs,
-    release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+async fn list_cmd(args: &ReleaseListArgs, release_list: ReleaseList) -> Result<String, CmdError> {
     info!("Listing releases");
 
     match args.output_type {
@@ -186,7 +192,7 @@ async fn list_cmd(
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+) -> Result<String, CmdError> {
     info!("Describing release");
 
     let release = release_list.get(&args.release);
@@ -232,17 +238,24 @@ async fn install_cmd(
     args: &ReleaseInstallArgs,
     common_args: &Cli,
     release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing release");
-
-    // Install local cluster if needed
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
 
     match release_list.get(&args.release) {
         Some(release) => {
+            // Install local cluster if needed
+            args.local_cluster
+                .install_if_needed(None)
+                .await
+                .context(CommonClusterArgsSnafu)?;
+
+            // Create operator namespace if needed
+            namespace::create_if_needed(args.operator_namespace.clone())
+                .await
+                .context(NamespaceSnafu {
+                    namespace: args.operator_namespace.clone(),
+                })?;
+
             release
                 .install(
                     &args.included_products,
@@ -251,7 +264,7 @@ async fn install_cmd(
                 )
                 .context(ReleaseInstallSnafu)?;
 
-            Ok("Installed release".into())
+            Ok(format!("Installed release {}", args.release))
         }
         None => Ok("No such release".into()),
     }
@@ -260,7 +273,7 @@ async fn install_cmd(
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     release_list: ReleaseList,
-) -> Result<String, ReleaseCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing release");
 
     match release_list.get(&args.release) {
@@ -269,7 +282,7 @@ async fn uninstall_cmd(
                 .uninstall(&args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
-            Ok("Installed release".into())
+            Ok(format!("Uninstalled release {}", args.release))
         }
         None => Ok("No such release".into()),
     }

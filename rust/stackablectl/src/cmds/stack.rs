@@ -103,7 +103,7 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackCmdError {
+pub enum CmdError {
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
 
@@ -133,7 +133,7 @@ pub enum StackCmdError {
 }
 
 impl StackArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, StackCmdError> {
+    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
         let transfer_client = FileTransferClient::new_with(cache);
@@ -154,7 +154,7 @@ impl StackArgs {
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, StackCmdError> {
+fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -183,7 +183,7 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, Stack
 }
 
 #[instrument]
-fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, StackCmdError> {
+fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
     match stack_list.get(&args.stack_name) {
@@ -231,7 +231,7 @@ async fn install_cmd(
     common_args: &Cli,
     stack_list: StackList,
     transfer_client: &FileTransferClient,
-) -> Result<String, StackCmdError> {
+) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
     let files = common_args
@@ -242,11 +242,11 @@ async fn install_cmd(
         .await
         .context(ListSnafu)?;
 
-    // Install local cluster if needed
-    args.local_cluster
-        .install_if_needed(None)
-        .await
-        .context(CommonClusterArgsSnafu)?;
+    let product_namespace = args
+        .namespaces
+        .product_namespace
+        .clone()
+        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
 
     let operator_namespace = args
         .namespaces
@@ -254,42 +254,42 @@ async fn install_cmd(
         .clone()
         .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
 
-    namespace::create_if_needed(operator_namespace.clone())
-        .await
-        .context(NamespaceSnafu {
-            namespace: operator_namespace.clone(),
-        })?;
-
-    let product_namespace = args
-        .namespaces
-        .product_namespace
-        .clone()
-        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
-
-    namespace::create_if_needed(product_namespace.clone())
-        .await
-        .context(NamespaceSnafu {
-            namespace: product_namespace.clone(),
-        })?;
-
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
+            // Install local cluster if needed
+            args.local_cluster
+                .install_if_needed(None)
+                .await
+                .context(CommonClusterArgsSnafu)?;
+
             // Check perquisites
             stack_spec
                 .check_prerequisites(&product_namespace)
                 .await
                 .context(StackSnafu)?;
 
-            // Install release
-            stack_spec
-                .install_release(
-                    release_list,
-                    &operator_namespace,
-                    &product_namespace,
-                    args.skip_release,
-                )
+            // Install release if not opted out
+            if !args.skip_release {
+                namespace::create_if_needed(operator_namespace.clone())
+                    .await
+                    .context(NamespaceSnafu {
+                        namespace: operator_namespace.clone(),
+                    })?;
+
+                stack_spec
+                    .install_release(release_list, &operator_namespace, &product_namespace)
+                    .await
+                    .context(StackSnafu)?;
+            } else {
+                info!("Skipping release installation during stack installation process");
+            }
+
+            // Create product namespace if needed
+            namespace::create_if_needed(product_namespace.clone())
                 .await
-                .context(StackSnafu)?;
+                .context(NamespaceSnafu {
+                    namespace: product_namespace.clone(),
+                })?;
 
             // Install stack
             stack_spec

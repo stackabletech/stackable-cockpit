@@ -136,16 +136,13 @@ impl DemoSpecV2 {
             .context(StackSnafu)?;
         self.check_prerequisites(product_namespace).await?;
 
-        // Install release
-        stack_spec
-            .install_release(
-                release_list,
-                operator_namespace,
-                product_namespace,
-                skip_release,
-            )
-            .await
-            .context(StackSnafu)?;
+        // Install release if not opted out
+        if !skip_release {
+            stack_spec
+                .install_release(release_list, operator_namespace, product_namespace)
+                .await
+                .context(StackSnafu)?;
+        }
 
         // Install stack
         stack_spec

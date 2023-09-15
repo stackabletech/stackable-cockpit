@@ -33,7 +33,7 @@ pub struct CacheCleanArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum CacheCmdError {
+pub enum CmdError {
     #[snafu(display("cache settings error"))]
     CacheSettingsError { source: CacheSettingsError },
 
@@ -42,7 +42,7 @@ pub enum CacheCmdError {
 }
 
 impl CacheArgs {
-    pub async fn run(&self, cache: Cache) -> Result<String, CacheCmdError> {
+    pub async fn run(&self, cache: Cache) -> Result<String, CmdError> {
         match &self.subcommand {
             CacheCommands::List => list_cmd(cache).await,
             CacheCommands::Clean(args) => clean_cmd(args, cache).await,
@@ -51,7 +51,7 @@ impl CacheArgs {
 }
 
 #[instrument(skip_all)]
-async fn list_cmd(cache: Cache) -> Result<String, CacheCmdError> {
+async fn list_cmd(cache: Cache) -> Result<String, CmdError> {
     info!("Listing cached files");
 
     let files = cache.list().await.context(CacheSnafu)?;
@@ -81,7 +81,7 @@ async fn list_cmd(cache: Cache) -> Result<String, CacheCmdError> {
 }
 
 #[instrument(skip_all)]
-async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CacheCmdError> {
+async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CmdError> {
     info!("Cleaning cached files");
 
     let delete_filter = if args.only_remove_old_files {
