@@ -17,7 +17,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
-    cmds::{cache, completions, demo, operator, release, stack, stacklets},
+    cmds::{cache, completions, demo, operator, release, stack, stacklet},
     constants::{
         ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
@@ -37,7 +37,7 @@ pub enum Error {
     Stack { source: stack::CmdError },
 
     #[snafu(display("stacklets command error"))]
-    Stacklets { source: stacklets::CmdError },
+    Stacklet { source: stacklet::CmdError },
 
     #[snafu(display("demo command error"))]
     Demo { source: demo::CmdError },
@@ -186,7 +186,7 @@ impl Cli {
             Commands::Operator(args) => args.run(self).await.context(OperatorSnafu),
             Commands::Release(args) => args.run(self, cache).await.context(ReleaseSnafu),
             Commands::Stack(args) => args.run(self, cache).await.context(StackSnafu),
-            Commands::Stacklets(args) => args.run(self).await.context(StackletsSnafu),
+            Commands::Stacklet(args) => args.run(self).await.context(StackletSnafu),
             Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
             Commands::Completions(args) => args.run().context(CompletionsSnafu),
             Commands::Cache(args) => args.run(cache).await.context(CacheSnafu),
@@ -210,7 +210,7 @@ pub enum Commands {
 
     /// Interact with deployed stacklets, which are bundles of resources and
     /// containers required to run the product.
-    #[command(aliases(["stacklet", "stl", "sl"]))]
+    #[command(aliases(["stl", "sl"]))]
     #[command(
         long_about = "Interact with deployed stacklets, which are bundles of resources and containers
 required to run the product.
@@ -219,7 +219,7 @@ Each stacklet consists of init containers, app containers, sidecar containers
 and additional Kubernetes resources like StatefulSets, ConfigMaps, Services and
 CRDs."
     )]
-    Stacklets(stacklets::StackletsArgs),
+    Stacklet(stacklet::StackletArgs),
 
     /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
     Demo(demo::DemoArgs),

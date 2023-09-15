@@ -28,7 +28,6 @@ pub(super) async fn list(
             namespace: service.namespace(),
             product: "grafana".to_string(),
             name: service_name,
-            credentials: None,
             endpoints,
         })
     }

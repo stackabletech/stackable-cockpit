@@ -18,7 +18,7 @@ Commands:
   operator     Interact with single operator instead of the full platform
   release      Interact with all operators of the platform which are released together
   stack        Interact with stacks, which are ready-to-use product combinations
-  stacklets    Interact with deployed stacklets, which are bundles of resources and containers required to run the product
+  stacklet     Interact with deployed stacklets, which are bundles of resources and containers required to run the product
   demo         Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
   completions  Generate shell completions for this tool
   cache        Interact with locally cached files

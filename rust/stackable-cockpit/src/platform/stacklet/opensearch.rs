@@ -31,7 +31,6 @@ pub(super) async fn list(
             namespace: service.namespace(),
             product: "opensearch-dashboards".to_string(),
             name: service_name,
-            credentials: None,
             endpoints,
         });
     }

@@ -29,7 +29,6 @@ pub(super) async fn list(
             namespace: service.namespace(),
             conditions: Vec::new(),
             name: service.name_any(),
-            credentials: None,
             endpoints,
         })
     }

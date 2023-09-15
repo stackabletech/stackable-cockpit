@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     constants::PRODUCT_NAMES,
     platform::{
-        credentials::{get_credentials, Credentials},
+        credentials::{get_credentials, Credentials, CredentialsError},
         service::{get_service_endpoints, ServiceError},
     },
     utils::{
@@ -19,8 +19,6 @@ use crate::{
         string::Casing,
     },
 };
-
-use super::credentials::CredentialsError;
 
 mod grafana;
 mod minio;
@@ -46,9 +44,6 @@ pub struct Stacklet {
 
     /// Multiple cluster conditions.
     pub conditions: Vec<DisplayCondition>,
-
-    /// Optional credentials consisting of username and password.
-    pub credentials: Option<Credentials>,
 }
 
 #[derive(Debug, Snafu)]
@@ -70,7 +65,7 @@ pub enum StackletError {
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
+pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
     let kube_client = KubeClient::new().await?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
@@ -80,6 +75,38 @@ pub async fn list(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletErro
     stacklets.extend(prometheus::list(&kube_client, namespace).await?);
 
     Ok(stacklets)
+}
+
+pub async fn get_credentials_for_product(
+    object_name: &str,
+    product_name: &str,
+    namespace: Option<&str>,
+) -> Result<Option<Credentials>, StackletError> {
+    let kube_client = KubeClient::new().await?;
+
+    let product_gvk = gvk_from_product_name(product_name);
+    let object = match kube_client
+        .get_object(object_name, &product_gvk, namespace)
+        .await?
+    {
+        Some(obj) => obj,
+        None => {
+            warn!(
+                "Failed to retrieve credentials because the gvk {product_gvk:?} cannot be resolved"
+            );
+            return Ok(None);
+        }
+    };
+
+    let credentials = match get_credentials(&kube_client, product_name, &object).await {
+        Ok(credentials) => credentials,
+        Err(err) => match err {
+            CredentialsError::KubeError { source } => return Err(source.into()),
+            CredentialsError::NoSecret => None,
+        },
+    };
+
+    Ok(credentials)
 }
 
 async fn list_stackable_stacklets(
@@ -94,7 +121,7 @@ async fn list_stackable_stacklets(
             Some(obj) => obj,
             None => {
                 warn!(
-                    "Failed to list services because the gvk {product_gvk:?} can not be resolved"
+                    "Failed to list stacklets because the gvk {product_gvk:?} cannot be resolved"
                 );
                 continue;
             }
@@ -121,20 +148,11 @@ async fn list_stackable_stacklets(
                     .await
                     .context(ServiceSnafu)?;
 
-            let credentials = match get_credentials(kube_client, product_name, &object).await {
-                Ok(credentials) => credentials,
-                Err(err) => match err {
-                    CredentialsError::KubeError { source } => return Err(source.into()),
-                    CredentialsError::NoSecret => None,
-                },
-            };
-
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),
                 product: product_name.to_string(),
                 conditions: conditions.plain(),
                 name: object_name,
-                credentials,
                 endpoints,
             });
         }
@@ -160,15 +178,16 @@ fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, G
             continue;
         }
 
-        map.insert(
-            *product_name,
-            GroupVersionKind {
-                group: format!("{product_name}.stackable.tech"),
-                version: "v1alpha1".into(),
-                kind: format!("{}Cluster", product_name.capitalize()),
-            },
-        );
+        map.insert(*product_name, gvk_from_product_name(product_name));
     }
 
     map
+}
+
+fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
+    GroupVersionKind {
+        group: format!("{product_name}.stackable.tech"),
+        version: "v1alpha1".into(),
+        kind: format!("{}Cluster", product_name.capitalize()),
+    }
 }

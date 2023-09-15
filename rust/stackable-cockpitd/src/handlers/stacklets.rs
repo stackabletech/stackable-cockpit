@@ -13,5 +13,5 @@ pub fn router() -> Router {
     (status = 200, body = Vec<Stacklet>),
 ))]
 pub async fn get_stacklets() -> Json<Vec<Stacklet>> {
-    Json(platform::stacklet::list(None).await.unwrap())
+    Json(platform::stacklet::list_stacklets(None).await.unwrap())
 }
