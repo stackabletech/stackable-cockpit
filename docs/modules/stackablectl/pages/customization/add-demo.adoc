@@ -52,7 +52,3 @@ STACKABLECTL_DEMO_FILES=demos1.yml,demos2.yml
 
 Every additional demo will be added to the already existing demos in `stackablectl`, so all the available demo files
 will be merged.
-
-== Working with Feature Branches
-
-See xref:customization/working_with_feature_branches.adoc[]

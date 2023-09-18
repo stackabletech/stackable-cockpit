@@ -64,7 +64,3 @@ STACKABLECTL_STACK_FILES=stacks1.yml,stacks2.yml
 
 Every additional stack will be added to the already existing stacks in `stackablectl`, so all the available stack files
 will be merged.
-
-== Working with feature branches
-
-See xref:customization/working_with_feature_branches.adoc[]
