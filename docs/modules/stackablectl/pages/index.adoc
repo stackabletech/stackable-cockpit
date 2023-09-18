@@ -50,7 +50,4 @@ Demos are installed with the xref:commands/demo.adoc[`demo`] command. A demo nee
 depends on a stack, which gets automatically installed when a demo is installed. The stack, in turn, will install the
 needed Stackable release.
 
-You can browse the available demos on the xref:demos/index.adoc[demo] page. We currently offer the following list of
-demos:
-
-include::partial$demos.adoc[]
+You can browse the available demos on the xref:demos::index.adoc[demo] page.
