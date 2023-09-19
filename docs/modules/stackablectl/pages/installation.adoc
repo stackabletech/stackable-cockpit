@@ -105,8 +105,7 @@ Download the completions file and place it in any of the supported location list
 
 [source,console]
 ----
-wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
-mv _stackablectl /usr/local/share/zsh/site-functions/
+wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
 ----
 
 === Bash
