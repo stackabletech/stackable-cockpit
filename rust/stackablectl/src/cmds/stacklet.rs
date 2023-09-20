@@ -36,11 +36,9 @@ pub enum StackletCommands {
 
 #[derive(Debug, Args)]
 pub struct StackletCredentialsArgs {
+    namespace: String,
     product_name: String,
     stacklet_name: String,
-
-    #[command(flatten)]
-    namespaces: CommonNamespaceArgs,
 }
 
 #[derive(Debug, Args)]
@@ -177,13 +175,9 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
 
-    match get_credentials_for_product(
-        &args.stacklet_name,
-        &args.product_name,
-        args.namespaces.product_namespace.as_deref(),
-    )
-    .await
-    .context(StackletCredentialsSnafu)?
+    match get_credentials_for_product(&args.namespace, &args.stacklet_name, &args.product_name)
+        .await
+        .context(StackletCredentialsSnafu)?
     {
         Some(credentials) => {
             let mut table = Table::new();
