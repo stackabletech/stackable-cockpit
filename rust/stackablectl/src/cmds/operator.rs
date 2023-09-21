@@ -122,7 +122,7 @@ pub struct OperatorInstalledArgs {
 }
 
 #[derive(Debug, Snafu)]
-pub enum OperatorCmdError {
+pub enum CmdError {
     #[snafu(display("invalid repo name"))]
     InvalidRepoNameError { source: InvalidRepoNameError },
 
@@ -158,7 +158,7 @@ pub enum OperatorCmdError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, OperatorCmdError> {
+    pub async fn run(&self, common_args: &Cli) -> Result<String, CmdError> {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args, common_args).await,
             OperatorCommands::Describe(args) => describe_cmd(args).await,
@@ -170,7 +170,7 @@ impl OperatorArgs {
 }
 
 #[instrument]
-async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, OperatorCmdError> {
+async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
 
     // Build map which maps Helm repo name to Helm repo URL
@@ -213,7 +213,7 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
 }
 
 #[instrument]
-async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmdError> {
+async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, CmdError> {
     debug!("Describing operator {}", args.operator_name);
 
     // Build map which maps Helm repo name to Helm repo URL
@@ -257,10 +257,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, OperatorCmd
 }
 
 #[instrument]
-async fn install_cmd(
-    args: &OperatorInstallArgs,
-    common_args: &Cli,
-) -> Result<String, OperatorCmdError> {
+async fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
 
     println!(
@@ -288,7 +285,7 @@ async fn install_cmd(
         match operator.install(&args.operator_namespace) {
             Ok(_) => println!("Installed {} operator", operator),
             Err(err) => {
-                return Err(OperatorCmdError::HelmError { source: err });
+                return Err(CmdError::HelmError { source: err });
             }
         };
     }
@@ -305,10 +302,7 @@ async fn install_cmd(
 }
 
 #[instrument]
-fn uninstall_cmd(
-    args: &OperatorUninstallArgs,
-    common_args: &Cli,
-) -> Result<String, OperatorCmdError> {
+fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
 
     for operator in &args.operators {
@@ -329,10 +323,7 @@ fn uninstall_cmd(
 }
 
 #[instrument]
-fn installed_cmd(
-    args: &OperatorInstalledArgs,
-    common_args: &Cli,
-) -> Result<String, OperatorCmdError> {
+fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<String, CmdError> {
     debug!("Listing installed operators");
 
     type ReleaseList = IndexMap<String, HelmRelease>;
@@ -386,7 +377,7 @@ fn installed_cmd(
 
 /// Builds a map which maps Helm repo name to Helm repo URL.
 #[instrument]
-async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, OperatorCmdError> {
+async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, CmdError> {
     debug!("Building Helm index file list");
 
     let mut helm_index_files = HashMap::new();
@@ -415,7 +406,7 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
 #[instrument]
 fn build_versions_list(
     helm_index_files: &HashMap<&str, HelmRepo>,
-) -> Result<IndexMap<String, OperatorVersionList>, OperatorCmdError> {
+) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
     debug!("Building versions list");
 
     let mut versions_list = IndexMap::new();
@@ -438,7 +429,7 @@ fn build_versions_list(
 fn build_versions_list_for_operator<T>(
     operator_name: T,
     helm_index_files: &HashMap<&str, HelmRepo>,
-) -> Result<OperatorVersionList, OperatorCmdError>
+) -> Result<OperatorVersionList, CmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
 {
@@ -463,7 +454,7 @@ where
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
     helm_repo: &HelmRepo,
-) -> Result<Vec<String>, OperatorCmdError>
+) -> Result<Vec<String>, CmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
 {
