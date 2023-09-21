@@ -1,4 +1,5 @@
 = Add a Stack
+:page-aliases: stackablectl::customization/add_stack.adoc
 
 == Motivation
 

@@ -1,5 +1,5 @@
 = stackablectl release
-
+:page-aliases: stackablectl::commands/release.adoc
 
 A release is a bundle of operators of a specific stable version. The stable versions of the operators are tested and
 proven to work hand in hand. If you want to install a single individual operator, look at the

@@ -1,4 +1,5 @@
 = Installation
+:page-aliases: stackablectl::installation.adoc
 
 :latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-1.0.0-rc1
 :fish-comp-loations: https://fishshell.com/docs/current/completions.html#where-to-put-completions

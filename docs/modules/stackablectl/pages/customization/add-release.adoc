@@ -1,4 +1,5 @@
 = Add a Release
+:page-aliases: stackablectl::customization/add_release.adoc
 
 == Motivation
 

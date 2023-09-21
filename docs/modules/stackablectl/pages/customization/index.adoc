@@ -1,4 +1,5 @@
 = Customization
+:page-aliases: stackablectl::customization/index.adoc
 
 If you're working for a large company, chances are that there are multiple teams using the Stackable Data Platform.
 A single team can also operate multiple Stackable Data Platforms. `stackablectl` is build in a way customers or
