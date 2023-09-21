@@ -1,0 +1,4 @@
+= Management Tools for the Stackable Data Platform
+
+* xref:cockpit:index.adoc[]
+* xref:stackablectl:index.adoc[]

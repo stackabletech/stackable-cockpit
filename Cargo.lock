@@ -3606,6 +3606,8 @@ dependencies = [
  "clap",
  "clap_complete",
  "clap_mangen",
+ "once_cell",
+ "regex",
  "serde_json",
  "snafu",
  "stackable-cockpitd",
