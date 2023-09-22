@@ -282,10 +282,8 @@ async fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<St
         })?;
 
     for operator in &args.operators {
-        println!("Installing {} operator", operator.name);
-
         match operator.install(&args.operator_namespace) {
-            Ok(_) => println!("Installed {} operator", operator.name),
+            Ok(_) => println!("Installed {} operator", operator),
             Err(err) => {
                 return Err(CmdError::HelmError { source: err });
             }

@@ -180,7 +180,7 @@ impl Display for HelmUninstallReleaseStatus {
             HelmUninstallReleaseStatus::Uninstalled(release_name) => {
                 write!(
                     f,
-                    "The releas {} was successfully uninstalled.",
+                    "The release {} was successfully uninstalled.",
                     release_name
                 )
             }

@@ -3,7 +3,7 @@ use kube::{core::GroupVersionKind, ResourceExt};
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
-use tracing::warn;
+use tracing::info;
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -91,7 +91,7 @@ pub async fn get_credentials_for_product(
     {
         Some(obj) => obj,
         None => {
-            warn!(
+            info!(
                 "Failed to retrieve credentials because the gvk {product_gvk:?} cannot be resolved"
             );
             return Ok(None);
@@ -120,8 +120,8 @@ async fn list_stackable_stacklets(
         let objects = match kube_client.list_objects(&product_gvk, namespace).await? {
             Some(obj) => obj,
             None => {
-                warn!(
-                    "Failed to list stacklets because the gvk {product_gvk:?} cannot be resolved"
+                info!(
+                    "Failed to list services because the gvk {product_gvk:?} can not be resolved"
                 );
                 continue;
             }

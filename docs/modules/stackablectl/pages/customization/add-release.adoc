@@ -1,0 +1,63 @@
+= Add a Release
+:page-aliases: stackablectl::customization/add_release.adoc
+
+== Motivation
+
+If advanced users of the Stackable Platform want to define their internal release within their company, they can easily
+add their release, which has the following benefits:
+
+* Identical operator versions across the whole company produce more uniform environments, making debugging and helping
+  other teams easier.
+* Suppose the company is only interested in a subset of the available operators. In that case, you can only add your
+  relevant operators to your release and install some other operators.
+
+== 1. Create a releases.yaml
+
+For a custom release you must create a `mycorp-releases.yaml` containing releases according to the format defined by
+https://github.com/stackabletech/release/blob/main/releases.yaml[the Stackable provided releases]. You can pick any
+number of operators in arbitrary versions.
+
+As of writing, a `releases.yaml` file could look as follows:
+
+[source,yaml]
+----
+releases:
+  mycorp-release1:
+    releaseDate: 2022-11-10
+    description: Internal release of the SDP
+    products:
+      commons:
+        operatorVersion: 0.4.0
+      hive:
+        operatorVersion: 0.8.0
+      opa:
+        operatorVersion: 0.11.0
+      secret:
+        operatorVersion: 0.6.0
+      spark-k8s:
+        operatorVersion: 0.6.0
+      superset:
+        operatorVersion: 0.7.0
+      trino:
+        operatorVersion: 0.8.0
+----
+
+== 2. Using the Custom `releases.yaml` File
+
+After creating the `mycorp-releases.yaml` file, it can be added to the available releases in `stackablectl` via the CLI
+argument `--release-file mycorp-demos.yaml`.
+
+The argument to `--release-file` can be a path to a file on the local filesystem or a URL. For example, the release file
+can be put into a central Git repository and referenced by all teams or clients. Multiple "`--release-file` flags can be
+specified to include multiple release files.
+
+Additionally, the custom file can be provided using an environment variable. The variable can be defined by `export` in
+the shell or a `.env` file.
+
+[source,ini]
+----
+STACKABLECTL_RELEASE_FILES=releases1.yml,releases2.yml
+----
+
+Every additional release will be added to the already existing releases in `stackablectl`, so all the available release
+files will be merged.
