@@ -624,6 +624,8 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (credentials)
 _arguments "${_arguments_options[@]}" \
+'--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -641,9 +643,8 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':namespace:' \
-':product_name:' \
-':stacklet_name:' \
+':product_name -- The name of the product, for example '\''superset'\'':' \
+'::stacklet_name -- The name of the stacklet, for example '\''superset'\''. Doesn'\''t need to be passed if the product and stacklet name are the same:' \
 && ret=0
 ;;
 (list)

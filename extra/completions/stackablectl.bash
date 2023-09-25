@@ -3077,12 +3077,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet__credentials)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <NAMESPACE> <PRODUCT_NAME> <STACKLET_NAME>"
+            opts="-l -d -s -r -h -V --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <PRODUCT_NAME> [STACKLET_NAME]"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --product-namespace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --product-ns)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0

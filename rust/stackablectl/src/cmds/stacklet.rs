@@ -8,6 +8,7 @@ use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use stackable_cockpit::{
+    constants::DEFAULT_PRODUCT_NAMESPACE,
     platform::stacklet::{get_credentials_for_product, list_stacklets, StackletError},
     utils::k8s::DisplayCondition,
 };
@@ -27,6 +28,7 @@ pub struct StackletArgs {
 #[derive(Debug, Subcommand)]
 pub enum StackletCommands {
     /// Display credentials for a stacklet
+    #[command(aliases(["creds", "cr"]))]
     Credentials(StackletCredentialsArgs),
 
     /// List deployed stacklets
@@ -36,9 +38,22 @@ pub enum StackletCommands {
 
 #[derive(Debug, Args)]
 pub struct StackletCredentialsArgs {
-    namespace: String,
+    /// The name of the product, for example 'superset'.
     product_name: String,
-    stacklet_name: String,
+
+    /// The name of the stacklet, for example 'superset'. Doesn't need to be passed if
+    /// the product and stacklet name are the same.
+    stacklet_name: Option<String>,
+
+    /// Namespace in the cluster used to deploy the products.
+    #[arg(
+        long,
+        global = true,
+        default_value = DEFAULT_PRODUCT_NAMESPACE,
+        visible_aliases(["product-ns"]),
+        long_help = "Namespace in the cluster used to deploy the products. Use this to select
+a different namespace for credential lookup.")]
+    pub product_namespace: String,
 }
 
 #[derive(Debug, Args)]
@@ -175,7 +190,12 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
 
-    match get_credentials_for_product(&args.namespace, &args.stacklet_name, &args.product_name)
+    let stacklet_name = args
+        .stacklet_name
+        .clone()
+        .unwrap_or(args.product_name.clone());
+
+    match get_credentials_for_product(&args.product_namespace, &stacklet_name, &args.product_name)
         .await
         .context(StackletCredentialsSnafu)?
     {
@@ -188,7 +208,12 @@ async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdEr
                 .add_row(vec!["USERNAME", &credentials.username])
                 .add_row(vec!["PASSWORD", &credentials.password]);
 
-            Ok(table.to_string())
+            let output = format!(
+                "Credentials for {} ({}) in namespace '{}':",
+                args.product_name, stacklet_name, args.product_namespace
+            );
+
+            Ok(format!("{}\n\n{}", output, table))
         }
         None => Ok("No credentials".into()),
     }
