@@ -78,15 +78,15 @@ pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, St
 }
 
 pub async fn get_credentials_for_product(
+    namespace: &str,
     object_name: &str,
     product_name: &str,
-    namespace: Option<&str>,
 ) -> Result<Option<Credentials>, StackletError> {
     let kube_client = KubeClient::new().await?;
 
     let product_gvk = gvk_from_product_name(product_name);
-    let object = match kube_client
-        .get_object(object_name, &product_gvk, namespace)
+    let product_cluster = match kube_client
+        .get_namespaced_object(namespace, object_name, &product_gvk)
         .await?
     {
         Some(obj) => obj,
@@ -98,7 +98,7 @@ pub async fn get_credentials_for_product(
         }
     };
 
-    let credentials = match get_credentials(&kube_client, product_name, &object).await {
+    let credentials = match get_credentials(&kube_client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
         Err(err) => match err {
             CredentialsError::KubeError { source } => return Err(source.into()),
@@ -184,6 +184,7 @@ fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, G
     map
 }
 
+// FIXME: Support SparkApplication
 fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
     GroupVersionKind {
         group: format!("{product_name}.stackable.tech"),

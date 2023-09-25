@@ -624,11 +624,6 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (credentials)
 _arguments "${_arguments_options[@]}" \
-'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -646,6 +641,7 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
+':namespace:' \
 ':product_name:' \
 ':stacklet_name:' \
 && ret=0

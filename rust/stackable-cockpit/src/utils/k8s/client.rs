@@ -150,11 +150,11 @@ impl KubeClient {
         Ok(Some(objects))
     }
 
-    pub async fn get_object(
+    pub async fn get_namespaced_object(
         &self,
+        namespace: &str,
         object_name: &str,
         gvk: &GroupVersionKind,
-        namespace: Option<&str>,
     ) -> Result<Option<DynamicObject>, KubeClientError> {
         let object_api_resource = match self.discovery.resolve_gvk(gvk) {
             Some((object_api_resource, _)) => object_api_resource,
@@ -163,15 +163,8 @@ impl KubeClient {
             }
         };
 
-        let object_api: Api<DynamicObject> = match namespace {
-            Some(namespace) => {
-                Api::namespaced_with(self.client.clone(), namespace, &object_api_resource)
-            }
-            None => Api::all_with(self.client.clone(), &object_api_resource),
-        };
-
-        let object = object_api.get(object_name).await.context(KubeSnafu)?;
-        Ok(Some(object))
+        let api = Api::namespaced_with(self.client.clone(), namespace, &object_api_resource);
+        Ok(Some(api.get(object_name).await.context(KubeSnafu)?))
     }
 
     /// Lists [`Service`]s by matching labels. The services can be matched by
