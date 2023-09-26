@@ -1,11 +1,15 @@
 use clap::{Args, Subcommand};
-use comfy_table::{presets::UTF8_FULL, ContentArrangement, Table};
+use comfy_table::{
+    presets::{NOTHING, UTF8_FULL},
+    ContentArrangement, Table,
+};
 use nu_ansi_term::Color::{Green, Red};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use stackable_cockpit::{
-    platform::stacklet::{list, StackletError},
+    constants::DEFAULT_PRODUCT_NAMESPACE,
+    platform::stacklet::{get_credentials_for_product, list_stacklets, StackletError},
     utils::k8s::DisplayCondition,
 };
 
@@ -15,17 +19,43 @@ use crate::{
     utils::use_colored_output,
 };
 
+const CREDENTIALS_HINT: &str = "Use \"stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>\" to display credentials for deployed stacklets.";
+
 #[derive(Debug, Args)]
-pub struct StackletsArgs {
+pub struct StackletArgs {
     #[command(subcommand)]
     subcommand: StackletCommands,
 }
 
 #[derive(Debug, Subcommand)]
 pub enum StackletCommands {
-    /// List deployed services
+    /// Display credentials for a stacklet
+    #[command(aliases(["creds", "cr"]))]
+    Credentials(StackletCredentialsArgs),
+
+    /// List deployed stacklets
     #[command(alias("ls"))]
     List(StackletListArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct StackletCredentialsArgs {
+    /// The name of the product, for example 'superset'.
+    product_name: String,
+
+    /// The name of the stacklet, for example 'superset'.
+    stacklet_name: String,
+
+    /// Namespace in the cluster used to deploy the products.
+    #[arg(
+        long,
+        short = 'n',
+        global = true,
+        default_value = DEFAULT_PRODUCT_NAMESPACE,
+        visible_aliases(["product-ns"]),
+        long_help = "Namespace in the cluster used to deploy the products. Use this to select
+a different namespace for credential lookup.")]
+    pub product_namespace: String,
 }
 
 #[derive(Debug, Args)]
@@ -35,7 +65,7 @@ pub struct StackletListArgs {
     #[arg(short = 'c', long = "color")]
     use_color: bool,
 
-    #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
+    #[arg(short, long = "output", value_enum, default_value_t)]
     output_type: OutputType,
 
     #[command(flatten)]
@@ -44,8 +74,11 @@ pub struct StackletListArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("service list error"))]
+    #[snafu(display("failed to list stacklets"))]
     StackletListError { source: StackletError },
+
+    #[snafu(display("failed to retrieve credentials for stacklet"))]
+    StackletCredentialsError { source: StackletError },
 
     #[snafu(display("unable to format yaml output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
@@ -54,10 +87,11 @@ pub enum CmdError {
     JsonOutputFormatError { source: serde_json::Error },
 }
 
-impl StackletsArgs {
+impl StackletArgs {
     pub async fn run(&self, common_args: &Cli) -> Result<String, CmdError> {
         match &self.subcommand {
             StackletCommands::List(args) => list_cmd(args, common_args).await,
+            StackletCommands::Credentials(args) => credentials_cmd(args).await,
         }
     }
 }
@@ -69,7 +103,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
-    let stacklets = list(args.namespaces.product_namespace.as_deref())
+    let stacklets = list_stacklets(args.namespaces.product_namespace.as_deref())
         .await
         .context(StackletListSnafu)?;
 
@@ -133,9 +167,9 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 }
             }
 
-            // Only output the error table if there are errors to report.
+            // Only output the error list if there are errors to report.
             Ok(format!(
-                "{table}{errors}",
+                "{table}{errors}\n\n{CREDENTIALS_HINT}",
                 errors = if !error_list.is_empty() {
                     format!("\n\n{}", error_list.join("\n"))
                 } else {
@@ -145,6 +179,38 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         }
         OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),
+    }
+}
+
+#[instrument]
+async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
+    info!("Displaying stacklet credentials");
+
+    match get_credentials_for_product(
+        &args.product_namespace,
+        &args.stacklet_name,
+        &args.product_name,
+    )
+    .await
+    .context(StackletCredentialsSnafu)?
+    {
+        Some(credentials) => {
+            let mut table = Table::new();
+
+            table
+                .set_content_arrangement(ContentArrangement::Dynamic)
+                .load_preset(NOTHING)
+                .add_row(vec!["USERNAME", &credentials.username])
+                .add_row(vec!["PASSWORD", &credentials.password]);
+
+            let output = format!(
+                "Credentials for {} ({}) in namespace '{}':",
+                args.product_name, args.stacklet_name, args.product_namespace
+            );
+
+            Ok(format!("{}\n\n{}", output, table))
+        }
+        None => Ok("No credentials".into()),
     }
 }
 

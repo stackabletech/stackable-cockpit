@@ -593,7 +593,7 @@ esac
     ;;
 esac
 ;;
-(stacklets)
+(stacklet)
 _arguments "${_arguments_options[@]}" \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
@@ -612,17 +612,43 @@ _arguments "${_arguments_options[@]}" \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-":: :_stackablectl__stacklets_commands" \
-"*::: :->stacklets" \
+":: :_stackablectl__stacklet_commands" \
+"*::: :->stacklet" \
 && ret=0
 
     case $state in
-    (stacklets)
+    (stacklet)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:stackablectl-stacklets-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:stackablectl-stacklet-command-$line[1]:"
         case $line[1] in
-            (list)
+            (credentials)
+_arguments "${_arguments_options[@]}" \
+'-n+[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'--product-ns=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':product_name -- The name of the product, for example '\''superset'\'':' \
+':stacklet_name -- The name of the stacklet, for example '\''superset'\'':' \
+&& ret=0
+;;
+(list)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
 json\:"Print output formatted as JSON"
@@ -658,7 +684,7 @@ yaml\:"Print output formatted as YAML"))' \
 ;;
 (help)
 _arguments "${_arguments_options[@]}" \
-":: :_stackablectl__stacklets__help_commands" \
+":: :_stackablectl__stacklet__help_commands" \
 "*::: :->help" \
 && ret=0
 
@@ -666,9 +692,13 @@ _arguments "${_arguments_options[@]}" \
     (help)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:stackablectl-stacklets-help-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:stackablectl-stacklet-help-command-$line[1]:"
         case $line[1] in
-            (list)
+            (credentials)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1182,19 +1212,23 @@ _arguments "${_arguments_options[@]}" \
     ;;
 esac
 ;;
-(stacklets)
+(stacklet)
 _arguments "${_arguments_options[@]}" \
-":: :_stackablectl__help__stacklets_commands" \
-"*::: :->stacklets" \
+":: :_stackablectl__help__stacklet_commands" \
+"*::: :->stacklet" \
 && ret=0
 
     case $state in
-    (stacklets)
+    (stacklet)
         words=($line[1] "${words[@]}")
         (( CURRENT += 1 ))
-        curcontext="${curcontext%:*:*}:stackablectl-help-stacklets-command-$line[1]:"
+        curcontext="${curcontext%:*:*}:stackablectl-help-stacklet-command-$line[1]:"
         case $line[1] in
-            (list)
+            (credentials)
+_arguments "${_arguments_options[@]}" \
+&& ret=0
+;;
+(list)
 _arguments "${_arguments_options[@]}" \
 && ret=0
 ;;
@@ -1301,7 +1335,7 @@ _stackablectl_commands() {
 'operator:Interact with single operator instead of the full platform' \
 'release:Interact with all operators of the platform which are released together' \
 'stack:Interact with stacks, which are ready-to-use product combinations' \
-'stacklets:Interact with deployed stacklets, which are bundles of resources and containers required to run the product' \
+'stacklet:Interact with deployed stacklets, which are bundles of resources and containers required to run the product' \
 'demo:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
 'completions:Generate shell completions for this tool' \
 'cache:Interact with locally cached files' \
@@ -1374,6 +1408,21 @@ _stackablectl__help__completions_commands() {
 'zsh:Generate shell completions for ZSH' \
     )
     _describe -t commands 'stackablectl help completions commands' commands "$@"
+}
+(( $+functions[_stackablectl__help__stacklet__credentials_commands] )) ||
+_stackablectl__help__stacklet__credentials_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl help stacklet credentials commands' commands "$@"
+}
+(( $+functions[_stackablectl__stacklet__credentials_commands] )) ||
+_stackablectl__stacklet__credentials_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl stacklet credentials commands' commands "$@"
+}
+(( $+functions[_stackablectl__stacklet__help__credentials_commands] )) ||
+_stackablectl__stacklet__help__credentials_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl stacklet help credentials commands' commands "$@"
 }
 (( $+functions[_stackablectl__demo_commands] )) ||
 _stackablectl__demo_commands() {
@@ -1519,7 +1568,7 @@ _stackablectl__help_commands() {
 'operator:Interact with single operator instead of the full platform' \
 'release:Interact with all operators of the platform which are released together' \
 'stack:Interact with stacks, which are ready-to-use product combinations' \
-'stacklets:Interact with deployed stacklets, which are bundles of resources and containers required to run the product' \
+'stacklet:Interact with deployed stacklets, which are bundles of resources and containers required to run the product' \
 'demo:Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform' \
 'completions:Generate shell completions for this tool' \
 'cache:Interact with locally cached files' \
@@ -1580,18 +1629,19 @@ _stackablectl__stack__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl stack help help commands' commands "$@"
 }
-(( $+functions[_stackablectl__stacklets__help_commands] )) ||
-_stackablectl__stacklets__help_commands() {
+(( $+functions[_stackablectl__stacklet__help_commands] )) ||
+_stackablectl__stacklet__help_commands() {
     local commands; commands=(
-'list:List deployed services' \
+'credentials:Display credentials for a stacklet' \
+'list:List deployed stacklets' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
-    _describe -t commands 'stackablectl stacklets help commands' commands "$@"
+    _describe -t commands 'stackablectl stacklet help commands' commands "$@"
 }
-(( $+functions[_stackablectl__stacklets__help__help_commands] )) ||
-_stackablectl__stacklets__help__help_commands() {
+(( $+functions[_stackablectl__stacklet__help__help_commands] )) ||
+_stackablectl__stacklet__help__help_commands() {
     local commands; commands=()
-    _describe -t commands 'stackablectl stacklets help help commands' commands "$@"
+    _describe -t commands 'stackablectl stacklet help help commands' commands "$@"
 }
 (( $+functions[_stackablectl__demo__help__install_commands] )) ||
 _stackablectl__demo__help__install_commands() {
@@ -1713,10 +1763,10 @@ _stackablectl__help__stack__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl help stack list commands' commands "$@"
 }
-(( $+functions[_stackablectl__help__stacklets__list_commands] )) ||
-_stackablectl__help__stacklets__list_commands() {
+(( $+functions[_stackablectl__help__stacklet__list_commands] )) ||
+_stackablectl__help__stacklet__list_commands() {
     local commands; commands=()
-    _describe -t commands 'stackablectl help stacklets list commands' commands "$@"
+    _describe -t commands 'stackablectl help stacklet list commands' commands "$@"
 }
 (( $+functions[_stackablectl__operator__help__list_commands] )) ||
 _stackablectl__operator__help__list_commands() {
@@ -1748,15 +1798,15 @@ _stackablectl__stack__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl stack list commands' commands "$@"
 }
-(( $+functions[_stackablectl__stacklets__help__list_commands] )) ||
-_stackablectl__stacklets__help__list_commands() {
+(( $+functions[_stackablectl__stacklet__help__list_commands] )) ||
+_stackablectl__stacklet__help__list_commands() {
     local commands; commands=()
-    _describe -t commands 'stackablectl stacklets help list commands' commands "$@"
+    _describe -t commands 'stackablectl stacklet help list commands' commands "$@"
 }
-(( $+functions[_stackablectl__stacklets__list_commands] )) ||
-_stackablectl__stacklets__list_commands() {
+(( $+functions[_stackablectl__stacklet__list_commands] )) ||
+_stackablectl__stacklet__list_commands() {
     local commands; commands=()
-    _describe -t commands 'stackablectl stacklets list commands' commands "$@"
+    _describe -t commands 'stackablectl stacklet list commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__operator_commands] )) ||
 _stackablectl__help__operator_commands() {
@@ -1821,20 +1871,22 @@ _stackablectl__stack_commands() {
     )
     _describe -t commands 'stackablectl stack commands' commands "$@"
 }
-(( $+functions[_stackablectl__help__stacklets_commands] )) ||
-_stackablectl__help__stacklets_commands() {
+(( $+functions[_stackablectl__help__stacklet_commands] )) ||
+_stackablectl__help__stacklet_commands() {
     local commands; commands=(
-'list:List deployed services' \
+'credentials:Display credentials for a stacklet' \
+'list:List deployed stacklets' \
     )
-    _describe -t commands 'stackablectl help stacklets commands' commands "$@"
+    _describe -t commands 'stackablectl help stacklet commands' commands "$@"
 }
-(( $+functions[_stackablectl__stacklets_commands] )) ||
-_stackablectl__stacklets_commands() {
+(( $+functions[_stackablectl__stacklet_commands] )) ||
+_stackablectl__stacklet_commands() {
     local commands; commands=(
-'list:List deployed services' \
+'credentials:Display credentials for a stacklet' \
+'list:List deployed stacklets' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
-    _describe -t commands 'stackablectl stacklets commands' commands "$@"
+    _describe -t commands 'stackablectl stacklet commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__operator__uninstall_commands] )) ||
 _stackablectl__help__operator__uninstall_commands() {
