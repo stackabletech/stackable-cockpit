@@ -65,12 +65,6 @@ pub struct StackletListArgs {
     #[arg(short = 'c', long = "color")]
     use_color: bool,
 
-    /// Display credentials for various endpoints. This requires permissions to
-    /// read Kubernetes secrets. These credentials provide access to deployed
-    /// stacklets and thus should be handled with care.
-    #[arg(long)]
-    show_credentials: bool,
-
     #[arg(short, long = "output", value_enum, default_value_t)]
     output_type: OutputType,
 
