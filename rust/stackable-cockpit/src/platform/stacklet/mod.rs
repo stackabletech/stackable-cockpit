@@ -100,10 +100,8 @@ pub async fn get_credentials_for_product(
 
     let credentials = match get_credentials(&kube_client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
-        Err(err) => match err {
-            CredentialsError::KubeError { source } => return Err(source.into()),
-            CredentialsError::NoSecret => None,
-        },
+        Err(CredentialsError::NoSecret) => None,
+        Err(CredentialsError::KubeError { source }) => return Err(source.into()),
     };
 
     Ok(credentials)
