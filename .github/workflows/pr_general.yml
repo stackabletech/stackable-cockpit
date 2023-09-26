@@ -54,7 +54,7 @@ jobs:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
         with:
           submodules: recursive
-      - uses: EmbarkStudios/cargo-deny-action@8a8607bd8e2b3a514d5a40174cc7c55b229d9ba7 # v1.4.0
+      - uses: EmbarkStudios/cargo-deny-action@a50c7d5f86370e02fae8472c398f15a36e517bb8 # v1.5.4
         with:
           command: check ${{ matrix.checks }}
 
@@ -93,11 +93,12 @@ jobs:
       - name: Run clippy action to produce annotations
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: actions-rs/clippy-check@b5b5f21f4797c02da247df37026fcd0a5024aa4d # renovate: tag=v1.0.7
+        uses: giraffate/clippy-action@871cc4173f2594435c7ea6b0bce499cf6c2164a1
         if: env.GITHUB_TOKEN != null
         with:
-          args: --all-targets -- -D warnings
-          token: ${{ secrets.GITHUB_TOKEN }}
+          clippy_flags: --all-targets -- -D warnings
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          reporter: "github-pr-check"
       - name: Run clippy manually without annotations
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
