@@ -624,6 +624,7 @@ _arguments "${_arguments_options[@]}" \
         case $line[1] in
             (credentials)
 _arguments "${_arguments_options[@]}" \
+'-n+[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
 '--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
 '--product-ns=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -644,7 +645,7 @@ _arguments "${_arguments_options[@]}" \
 '-V[Print version]' \
 '--version[Print version]' \
 ':product_name -- The name of the product, for example '\''superset'\'':' \
-'::stacklet_name -- The name of the stacklet, for example '\''superset'\''. Doesn'\''t need to be passed if the product and stacklet name are the same:' \
+':stacklet_name -- The name of the stacklet, for example '\''superset'\'':' \
 && ret=0
 ;;
 (list)

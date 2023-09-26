@@ -19,6 +19,8 @@ use crate::{
     utils::use_colored_output,
 };
 
+const CREDENTIALS_HINT: &str = "Use \"stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>\" to display credentials for deployed stacklets.";
+
 #[derive(Debug, Args)]
 pub struct StackletArgs {
     #[command(subcommand)]
@@ -41,13 +43,13 @@ pub struct StackletCredentialsArgs {
     /// The name of the product, for example 'superset'.
     product_name: String,
 
-    /// The name of the stacklet, for example 'superset'. Doesn't need to be passed if
-    /// the product and stacklet name are the same.
-    stacklet_name: Option<String>,
+    /// The name of the stacklet, for example 'superset'.
+    stacklet_name: String,
 
     /// Namespace in the cluster used to deploy the products.
     #[arg(
         long,
+        short = 'n',
         global = true,
         default_value = DEFAULT_PRODUCT_NAMESPACE,
         visible_aliases(["product-ns"]),
@@ -173,7 +175,7 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 
             // Only output the error list if there are errors to report.
             Ok(format!(
-                "{table}{errors}",
+                "{table}{errors}\n\n{CREDENTIALS_HINT}",
                 errors = if !error_list.is_empty() {
                     format!("\n\n{}", error_list.join("\n"))
                 } else {
@@ -190,14 +192,13 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
 
-    let stacklet_name = args
-        .stacklet_name
-        .clone()
-        .unwrap_or(args.product_name.clone());
-
-    match get_credentials_for_product(&args.product_namespace, &stacklet_name, &args.product_name)
-        .await
-        .context(StackletCredentialsSnafu)?
+    match get_credentials_for_product(
+        &args.product_namespace,
+        &args.stacklet_name,
+        &args.product_name,
+    )
+    .await
+    .context(StackletCredentialsSnafu)?
     {
         Some(credentials) => {
             let mut table = Table::new();
@@ -210,7 +211,7 @@ async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdEr
 
             let output = format!(
                 "Credentials for {} ({}) in namespace '{}':",
-                args.product_name, stacklet_name, args.product_namespace
+                args.product_name, args.stacklet_name, args.product_namespace
             );
 
             Ok(format!("{}\n\n{}", output, table))
