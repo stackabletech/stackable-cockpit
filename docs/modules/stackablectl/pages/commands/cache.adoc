@@ -92,7 +92,7 @@ Helm repository options:
           [default: https://repo.stackable.tech/repository/helm-dev/]
 ----
 
-=== Listing Cached Files
+== Listing Cached Files
 
 To list currently cached files, use `stackablectl cache list`:
 
@@ -110,7 +110,7 @@ $ stackablectl cache list
 └────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴────────────────┘
 ----
 
-=== Cleaning Cached Files
+== Cleaning Cached Files
 
 To clean currently cached files, use `stackablectl cache clean`. This will remove **all** cached files, regardless if
 the files are expired. To only delete outdated files, add the `--outdated` flag.
