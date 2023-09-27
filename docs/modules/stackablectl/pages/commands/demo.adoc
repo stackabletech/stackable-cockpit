@@ -162,7 +162,7 @@ everything should settle down.
 
 === Listing Deployed Stacklets
 
-After installing your demo you can use the xref:commands/stacklets.adoc[`stackablectl stacklets`] command to list the
+After installing your demo you can use the xref:commands/stacklet.adoc[`stackablectl stacklets`] command to list the
 installed stacklets as follows:
 
 [source,console]
