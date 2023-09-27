@@ -52,3 +52,8 @@ $ stackablectl stacklet list
 
 Use "stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>" to display credentials for deployed stacklets.
 ----
+
+More information about the conditions displayed in the last column can be found in
+xref:home:contributor:adr/ADR027-status.adoc[ADR 27: Resource Status]. An empty conditions column indicates that the
+displayed stacklet is not part of the SDP and most likely an external product. Such products don't contain the required
+status field. See the xref:home:demos:index.adoc[demo page] for more information on supported products.
