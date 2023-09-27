@@ -8,7 +8,7 @@ use stackablectl::cli::Cli;
 
 const COMMANDS: &[&str] = &[
     "completions",
-    "stacklets",
+    "stacklet",
     "operator",
     "release",
     "stack",
