@@ -1,10 +1,9 @@
 use kube::{api::ListParams, ResourceExt};
-use snafu::ResultExt;
 
 use crate::{
     platform::{
         service::get_service_endpoint_urls,
-        stacklet::{KubeSnafu, Stacklet, StackletError},
+        stacklet::{Stacklet, StackletError},
     },
     utils::k8s::KubeClient,
 };
@@ -17,10 +16,7 @@ pub(super) async fn list(
 
     // The helm-chart uses `app` instead of `app.kubernetes.io/app`, so we can't use `ListParams::from_product` here
     let params = ListParams::default().labels("app=minio,app.kubernetes.io/managed-by=Helm");
-    let services = kube_client
-        .list_services(namespace, &params)
-        .await
-        .context(KubeSnafu)?;
+    let services = kube_client.list_services(namespace, &params).await?;
     let console_services = services
         .iter()
         .filter(|s| s.name_unchecked().ends_with("-console"));

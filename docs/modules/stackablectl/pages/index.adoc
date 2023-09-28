@@ -1,0 +1,54 @@
+= stackablectl
+:page-aliases: stackablectl::index.adoc
+
+The `stackablectl` command line tool interacts with the Stackable data platform. It can install individual
+operators as well as platform releases. It also ships with a set of pre-built xref:commands/demo.adoc[`demos`] that
+utilize different data products of the Platform, e.g. an end-to-end data pipeline.
+
+The installation of `stackablectl` is described in xref:installation.adoc[installation guide]. To get started, please
+follow the xref:quickstart.adoc[quickstart guide].
+
+In general, use `stackablectl --help` to find out more about how to use the tool or specific options. Every subcommand
+supports the help flag. For example, `stackablectl release install --help` will show the usage test for installing a
+release. You can also use an abbreviation instead of typing out the complete commands. E.g. `stackablectl operator list`
+can also be written as `stackablectl op ls`
+
+A Kubernetes cluster is required to use the Stackable Data Platform, as all products and operators run on Kubernetes. If
+you don't have a Kubernetes cluster, `stackablectl` can spin up a https://kind.sigs.k8s.io/[kind] Kubernetes Cluster for
+you.
+
+The deployed services are separated into three different layers, as illustrated below:
+
+image::layers.png[Layers of the deployed services]
+
+== Operators
+
+This layer consists of Stackable operators managing the individual data products. They can be installed one by one with
+the xref:commands/operator.adoc[`operator`] command or from a release with the xref:commands/release.adoc[`release`]
+command, which is recommended. A release is a well-playing bundle of operators that Stackable has extensively tested.
+
+== Stacks
+
+A stack is a collection of ready-to-use Stackable data products and required third-party services like Postgresql or
+MinIO.
+
+Stacks are installed with the xref:commands/stack.adoc[`stack`] command. A stack needs a release (of Stackable
+operators) to run on. That's why a stack depends on a release, which gets automatically installed when a stack is
+installed.
+
+== Demos
+
+A demo is an end-to-end demonstration of the usage of the Stackable data platform. It contains:
+
+. Installing a Stackable release
+. Spinning up a stack
+. Performing the actual demo
+.. Prepare some test data
+.. Process test data
+.. Visualize results (optional)
+
+Demos are installed with the xref:commands/demo.adoc[`demo`] command. A demo needs a stack to run on. That's why a demo
+depends on a stack, which gets automatically installed when a demo is installed. The stack, in turn, will install the
+needed Stackable release.
+
+You can browse the available demos on the xref:home:demos:index.adoc[demo] page.

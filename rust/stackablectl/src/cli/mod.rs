@@ -2,7 +2,7 @@ use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
-use snafu::Snafu;
+use snafu::{ResultExt, Snafu};
 use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
@@ -17,16 +17,40 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
-    cmds::{
-        cache::CacheArgs, completions::CompletionsArgs, demo::DemoArgs, operator::OperatorArgs,
-        release::ReleaseArgs, stack::StackArgs, stacklets::StackletsArgs,
-    },
+    cmds::{cache, completions, demo, operator, release, stack, stacklet},
     constants::{
         ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
         USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
 };
+
+#[derive(Debug, Snafu)]
+pub enum Error {
+    #[snafu(display("operator command error"))]
+    Operator { source: operator::CmdError },
+
+    #[snafu(display("release command error"))]
+    Release { source: release::CmdError },
+
+    #[snafu(display("stack command error"))]
+    Stack { source: stack::CmdError },
+
+    #[snafu(display("stacklets command error"))]
+    Stacklet { source: stacklet::CmdError },
+
+    #[snafu(display("demo command error"))]
+    Demo { source: demo::CmdError },
+
+    #[snafu(display("completions command error"))]
+    Completions { source: completions::CmdError },
+
+    #[snafu(display("cache command error"))]
+    Cache { source: cache::CmdError },
+
+    #[snafu(display("helm error"))]
+    Helm { source: HelmError },
+}
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, propagate_version = true)]
@@ -135,25 +159,58 @@ impl Cli {
             Ok(CacheSettings::disk(project_dir.cache_dir()))
         }
     }
+
+    #[instrument]
+    pub async fn run(&self) -> Result<String, Error> {
+        // FIXME (Techassi): There might be a better way to handle this with
+        // the match later in this function.
+
+        // Add Helm repos only when required
+        match &self.subcommand {
+            Commands::Completions(_) => (),
+            Commands::Cache(_) => (),
+            _ => self.add_helm_repos().context(HelmSnafu)?,
+        }
+
+        let cache = self
+            .cache_settings()
+            .unwrap()
+            .try_into_cache()
+            .await
+            .unwrap();
+
+        // TODO (Techassi): Do we still want to auto purge when running cache commands?
+        cache.auto_purge().await.unwrap();
+
+        match &self.subcommand {
+            Commands::Operator(args) => args.run(self).await.context(OperatorSnafu),
+            Commands::Release(args) => args.run(self, cache).await.context(ReleaseSnafu),
+            Commands::Stack(args) => args.run(self, cache).await.context(StackSnafu),
+            Commands::Stacklet(args) => args.run(self).await.context(StackletSnafu),
+            Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
+            Commands::Completions(args) => args.run().context(CompletionsSnafu),
+            Commands::Cache(args) => args.run(cache).await.context(CacheSnafu),
+        }
+    }
 }
 
 #[derive(Debug, Subcommand)]
 pub enum Commands {
     /// Interact with single operator instead of the full platform
     #[command(alias("op"))]
-    Operator(OperatorArgs),
+    Operator(operator::OperatorArgs),
 
     /// Interact with all operators of the platform which are released together
     #[command(alias("re"))]
-    Release(ReleaseArgs),
+    Release(release::ReleaseArgs),
 
     /// Interact with stacks, which are ready-to-use product combinations
     #[command(alias("st"))]
-    Stack(StackArgs),
+    Stack(stack::StackArgs),
 
     /// Interact with deployed stacklets, which are bundles of resources and
     /// containers required to run the product.
-    #[command(aliases(["stacklet", "stl", "sl"]))]
+    #[command(aliases(["stl", "sl"]))]
     #[command(
         long_about = "Interact with deployed stacklets, which are bundles of resources and containers
 required to run the product.
@@ -162,17 +219,17 @@ Each stacklet consists of init containers, app containers, sidecar containers
 and additional Kubernetes resources like StatefulSets, ConfigMaps, Services and
 CRDs."
     )]
-    Stacklets(StackletsArgs),
+    Stacklet(stacklet::StackletArgs),
 
     /// Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
-    Demo(DemoArgs),
+    Demo(demo::DemoArgs),
 
     /// Generate shell completions for this tool
     #[command(alias("comp"))]
-    Completions(CompletionsArgs),
+    Completions(completions::CompletionsArgs),
 
     /// Interact with locally cached files
-    Cache(CacheArgs),
+    Cache(cache::CacheArgs),
 }
 
 #[derive(Clone, Debug, Default, ValueEnum)]

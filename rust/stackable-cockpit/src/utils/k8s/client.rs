@@ -11,11 +11,14 @@ use kube::{
     Api, Client, Discovery, ResourceExt,
 };
 use serde::Deserialize;
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 
 use crate::{
-    constants::REDACTED_PASSWORD,
-    platform::cluster::{ClusterError, ClusterInfo},
+    platform::{
+        cluster::{ClusterError, ClusterInfo},
+        credentials::Credentials,
+    },
+    utils::k8s::ByteStringExt,
 };
 
 #[cfg(doc)]
@@ -38,9 +41,6 @@ pub enum KubeClientError {
     #[snafu(display("failed to deploy manifest because GVK {gvk:?} cannot be resolved"))]
     DiscoveryError { gvk: GroupVersionKind },
 
-    #[snafu(display("invalid secret data (empty)"))]
-    InvalidSecretData,
-
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvertError { source: FromUtf8Error },
 
@@ -49,6 +49,15 @@ pub enum KubeClientError {
 
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterError { source: ClusterError },
+
+    #[snafu(display("invalid secret data (empty)"))]
+    InvalidSecretData,
+
+    #[snafu(display("no username key in credentials secret"))]
+    NoUsernameKey,
+
+    #[snafu(display("no password key in credentials secret"))]
+    NoPasswordKey,
 }
 
 pub struct KubeClient {
@@ -141,6 +150,23 @@ impl KubeClient {
         Ok(Some(objects))
     }
 
+    pub async fn get_namespaced_object(
+        &self,
+        namespace: &str,
+        object_name: &str,
+        gvk: &GroupVersionKind,
+    ) -> Result<Option<DynamicObject>, KubeClientError> {
+        let object_api_resource = match self.discovery.resolve_gvk(gvk) {
+            Some((object_api_resource, _)) => object_api_resource,
+            None => {
+                return Ok(None);
+            }
+        };
+
+        let api = Api::namespaced_with(self.client.clone(), namespace, &object_api_resource);
+        Ok(Some(api.get(object_name).await.context(KubeSnafu)?))
+    }
+
     /// Lists [`Service`]s by matching labels. The services can be matched by
     /// the product labels. [`ListParamsExt`] provides a utility function to
     /// create [`ListParams`] based on a product name and optional instance
@@ -168,31 +194,26 @@ impl KubeClient {
         secret_name: &str,
         secret_namespace: &str,
         username_key: &str,
-        password_key: Option<&str>,
-    ) -> Result<Option<(String, String)>> {
+        password_key: &str,
+    ) -> Result<Credentials> {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
         let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
-        let secret_data = secret.data.ok_or(InvalidSecretDataSnafu {}.build())?;
+        let secret_data = secret.data.context(InvalidSecretDataSnafu)?;
 
-        let username = match secret_data.get(username_key) {
-            Some(username) => {
-                String::from_utf8(username.0.clone()).context(ByteStringConvertSnafu)?
-            }
-            None => return Ok(None),
-        };
+        let username = secret_data
+            .get(username_key)
+            .context(NoUsernameKeySnafu)?
+            .try_to_string()
+            .context(ByteStringConvertSnafu)?;
 
-        let password = match password_key {
-            Some(key) => match secret_data.get(key) {
-                Some(password) => {
-                    String::from_utf8(password.0.clone()).context(ByteStringConvertSnafu)?
-                }
-                None => return Ok(None),
-            },
-            None => REDACTED_PASSWORD.to_string(),
-        };
+        let password = secret_data
+            .get(password_key)
+            .context(NoPasswordKeySnafu)?
+            .try_to_string()
+            .context(ByteStringConvertSnafu)?;
 
-        Ok(Some((username, password)))
+        Ok(Credentials { username, password })
     }
 
     /// Lists [`Deployment`]s by matching labels. The services can be matched
