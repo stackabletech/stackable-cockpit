@@ -1,7 +1,7 @@
 ---
 name: Pull Request Reviewdog
 
-on: pull_request
+on: workflow_call
 
 permissions:
   contents: read
