@@ -116,4 +116,4 @@ jobs:
         run: make -e publish
       - id: printtag
         name: Output Image Name and Tag
-        run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> $GITHUB_OUTPUT
+        run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> "$GITHUB_OUTPUT"
