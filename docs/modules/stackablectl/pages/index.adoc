@@ -5,8 +5,8 @@ The `stackablectl` command line tool interacts with the Stackable data platform.
 operators as well as platform releases. It also ships with a set of pre-built xref:commands/demo.adoc[`demos`] that
 utilize different data products of the Platform, e.g. an end-to-end data pipeline.
 
-The installation of `stackablectl` is described in xref:installation.adoc[installation guide]. To get started, please
-follow the xref:quickstart.adoc[quickstart guide].
+The installation of `stackablectl` is described in the xref:installation.adoc[installation guide]. To get started,
+please follow the xref:quickstart.adoc[quickstart guide].
 
 In general, use `stackablectl --help` to find out more about how to use the tool or specific options. Every subcommand
 supports the help flag. For example, `stackablectl release install --help` will show the usage test for installing a

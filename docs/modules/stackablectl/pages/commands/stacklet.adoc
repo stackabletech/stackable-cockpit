@@ -29,6 +29,7 @@ Options:
           Print help (see a summary with '-h')
 ----
 
+[#iist-stacklets]
 == Listing Deployed Stacklets
 
 [source,console]
