@@ -2,17 +2,9 @@
 name: Pull Request Cockpit
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/pr_cockpit.yml"
-      - "rust/stackable-cockpitd"
-      - "rust/stackable-cockpit"
-      - "docs/modules/cockpit"
-      - "docs/modules/ROOT"
-      - "Cargo.lock"
-      - "deploy"
-      - "docker"
-      - "go.sum"
+  workflow_run:
+    workflows: [Pull Request General]
+    types: [completed]
 
 env:
   RUST_VERSION: 1.70.0
@@ -22,38 +14,106 @@ env:
   RUSTFLAGS: "-D warnings"
   RUSTDOCFLAGS: "-D warnings"
   RUST_LOG: "info"
+  DEV_REPO_HELM_URL: https://repo.stackable.tech/repository/helm-dev
 
 jobs:
-  build:
-    name: Build stackable-cockpitd for ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: aarch64-apple-darwin
-            os: macos-latest
+  check-files:
+    name: Check for Changed Files
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      any_changed: ${{ steps.changes.outputs.any_changed }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      # This workflow is triggered when the 'Pull Request General' is completed.
+      # This ensures that basic checks succeeded, indepent of the files changed.
+      # To only run heavy and long-running jobs when required, we check if any
+      # of the below listed files changes. Sadly, this requires an action, because
+      # the 'workflow_run' trigger doesn't support the 'paths' field like the
+      # 'pull:request' trigger does.
+      - id: changes
+        uses: tj-actions/changed-files@v39
+        with:
+          fail_on_initial_diff_error: true
+          files: |
+            .github/workflows/pr_cockpit.yml
+            rust/stackable-cockpitd
+            rust/stackable-cockpit
+            docs/modules/cockpit
+            docs/modules/ROOT
+            Cargo.lock
+            deploy
+            docker
+            go.sum
+
+  check-charts:
+    name: Helm Chart Check
+    runs-on: ubuntu-latest
+    # This job needs the above check-files job. It then additionally checks, if
+    # there are any changes in the specified set of files. It will otherwise
+    # not run. The 'publish' job will also not run, as it needs this job.
+    needs:
+      - check-files
+    if: needs.check-files.outputs.any_changed == 'true'
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
+      - name: Setup Helm
+        uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
+        with:
+          version: v3.6.2
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
-          targets: ${{ matrix.target }}
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
-          key: build-stackable-cockpit-${{ matrix.target }}
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+          key: pr-stackable-cockpit-chart
+      - name: Regenerate Charts
+        run: make regenerate-charts
+      - name: Checking that Helm Charts are up-to-date
+        run: git diff --exit-code
+      - name: Helm Charts not up-to-date
+        if: ${{ failure() }}
+        uses: actions/github-script@d556feaca394842dc55e4734bf3bb9f685482fa0 # v6
         with:
-          node-version: 18
-          cache: yarn
-      - run: yarn install --frozen-lockfile
-      - name: Build for non-Windows
-        if: matrix.os != 'windows-latest'
-        run: cargo build --target ${{ matrix.target }} -p stackable-cockpitd --all-features
+          script: |
+            core.setFailed('Committed Helm charts were not up to date, please regenerate and re-commit!')
+
+  publish:
+    name: Publish Docker Image
+    runs-on: ubuntu-latest
+    env:
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+    outputs:
+      IMAGE_TAG: ${{ steps.printtag.outputs.IMAGE_TAG }}
+    needs:
+      - check-charts
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          submodules: recursive
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+      - name: Setup Rust Cache
+        uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+        with:
+          key: pr-stackable-cockpit-chart
+      - name: Update Version
+        run: |
+          cargo install cargo-edit --version 0.11.11
+          cargo set-version --offline --workspace 0.0.0-pr${{ github.event.workflow_run.pull_requests.number }}
+
+      # Recreate charts and publish charts and docker image. The "-e" is needed as we want to override the
+      # default value in the makefile if called from this action, but not otherwise (i.e. when called locally).
+      # This is needed for the HELM_REPO variable.
+      - name: Publish Docker Image and Helm Chart
+        run: make -e publish
+      - id: printtag
+        name: Output Image Name and Tag
+        run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> $GITHUB_OUTPUT

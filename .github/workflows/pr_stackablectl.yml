@@ -2,16 +2,9 @@
 name: Pull Request Stackablectl
 
 on:
-  pull_request:
-    paths:
-      - ".github/workflows/pr_stackablectl"
-      - "docs/modules/stackablectl"
-      - "rust/stackable-cockpit"
-      - "rust/stackablectl"
-      - "rust/helm-sys"
-      - "Cargo.lock"
-      - "go.sum"
-      - "extra"
+  workflow_run:
+    workflows: [Pull Request General]
+    types: [completed]
 
 env:
   RUST_VERSION: 1.70.0
@@ -23,9 +16,38 @@ env:
   RUST_LOG: "info"
 
 jobs:
+  check-files:
+    name: Check for Changed Files
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    outputs:
+      any_changed: ${{ steps.changes.outputs.any_changed }}
+    steps:
+      # This workflow is triggered when the 'Pull Request General' is completed.
+      # This ensures that basic checks succeeded, indepent of the files changed.
+      # To only run heavy and long-running jobs when required, we check if any
+      # of the below listed files changes. Sadly, this requires an action, because
+      # the 'workflow_run' trigger doesn't support the 'paths' field like the
+      # 'pull:request' trigger does.
+      - id: changes
+        uses: tj-actions/changed-files@v39
+        with:
+          fail_on_initial_diff_error: true
+          files: |
+            .github/workflows/pr_stackablectl
+            docs/modules/stackablectl
+            rust/stackable-cockpit
+            rust/stackablectl
+            rust/helm-sys
+            Cargo.lock
+            go.sum
+            extra
   build:
     name: Build stackablectl for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    needs:
+      - check-files
+    if: needs.check-files.outputs.any_changed == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +60,7 @@ jobs:
             os: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
       - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
