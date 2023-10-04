@@ -34,6 +34,7 @@ pub enum GenDocsError {
 
 pub fn generate() -> Result<(), GenDocsError> {
     let mut cli = Cli::command();
+    cli.build();
 
     let mut renderer = tera::Tera::default();
     renderer
