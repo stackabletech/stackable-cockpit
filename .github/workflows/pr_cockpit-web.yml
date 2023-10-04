@@ -3,6 +3,7 @@ name: web
 on:
   pull_request:
     paths:
+      - ".github/workflows/pr_cockpit-web.yml"
       - "package.json"
       - "yarn.lock"
       - "web"
