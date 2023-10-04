@@ -37,16 +37,20 @@ jobs:
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
+
       - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
           targets: ${{ matrix.target }}
-      - name: Build for non-Windows
+
+      - name: Build Binary
         if: matrix.os != 'windows-latest'
-        run: cargo build --target ${{ matrix.target }} --release -p stackablectl
-      - name: Rename binary file
+        run: cargo build --target ${{ matrix.target }} --release --package stackablectl
+
+      - name: Rename Binary
         run: mv target/${{ matrix.target }}/release/stackablectl${{ matrix.file-suffix }} stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
-      - name: Upload Release binaries
+
+      - name: Upload Release Binary
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           files: stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}

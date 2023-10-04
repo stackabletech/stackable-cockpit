@@ -44,22 +44,28 @@ jobs:
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
+
       - name: Setup Helm
         uses: azure/setup-helm@5119fcb9089d432beecbf79bb2c7915207344b78 # v3.5
         with:
           version: v3.6.2
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
+
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: pr-stackable-cockpit-chart
+
       - name: Regenerate Charts
         run: make regenerate-charts
+
       - name: Checking that Helm Charts are up-to-date
         run: git diff --exit-code
+
       - name: Helm Charts not up-to-date
         if: ${{ failure() }}
         uses: actions/github-script@d556feaca394842dc55e4734bf3bb9f685482fa0 # v6
@@ -81,14 +87,17 @@ jobs:
         uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
+
       - name: Setup Rust Cache
         uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: pr-stackable-cockpit-chart
+
       - name: Update Version
         run: |
           cargo install cargo-edit --version 0.11.11
