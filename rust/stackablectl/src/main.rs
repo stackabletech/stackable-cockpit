@@ -42,6 +42,6 @@ async fn main() -> Result<(), Error> {
     }
 
     let output = app.run().await?;
-    println!("{output}");
+    print!("{output}");
     Ok(())
 }
