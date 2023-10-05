@@ -84,6 +84,7 @@ access it from anywhere if you like:
 cp target/release/stackablectl /usr/local/bin
 ----
 
+[#shell-comps]
 == Shell Completions
 
 We provide completions for `stackablectl` for major shells out there. Currently, ZSH, Fish and Bash are supported. The
