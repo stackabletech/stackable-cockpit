@@ -148,32 +148,30 @@ pub enum CmdError {
 
 impl DemoArgs {
     #[instrument]
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
 
         let transfer_client = FileTransferClient::new_with(cache);
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
+        let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
 
         let list = DemoList::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
         match &self.subcommand {
-            DemoCommands::List(args) => list_cmd(args, list).await,
+            DemoCommands::List(args) => list_cmd(args, cli, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
-            DemoCommands::Install(args) => {
-                install_cmd(args, common_args, list, &transfer_client).await
-            }
+            DemoCommands::Install(args) => install_cmd(args, cli, list, &transfer_client).await,
         }
     }
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument]
-async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, CmdError> {
+async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: DemoList) -> Result<String, CmdError> {
     info!("Listing demos");
 
     match args.output_type {
@@ -195,7 +193,20 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, CmdErro
                 table.add_row(row);
             }
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl demo describe [OPTIONS] <DEMO>",
+                    "display further information for the specified demo",
+                )
+                .add_command_hint(
+                    "stackablectl demo install [OPTIONS] <DEMO>",
+                    "install a demo",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),

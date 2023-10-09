@@ -23,6 +23,7 @@ use crate::{
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
         USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
+    output::Output,
 };
 
 #[derive(Debug, Snafu)]
@@ -189,8 +190,13 @@ impl Cli {
             Commands::Stacklet(args) => args.run(self).await.context(StackletSnafu),
             Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
             Commands::Completions(args) => args.run().context(CompletionsSnafu),
-            Commands::Cache(args) => args.run(cache).await.context(CacheSnafu),
+            Commands::Cache(args) => args.run(self, cache).await.context(CacheSnafu),
         }
+    }
+
+    // Output utility functions
+    pub fn output(&self) -> Output {
+        Output::new().unwrap()
     }
 }
 

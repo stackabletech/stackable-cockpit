@@ -158,19 +158,19 @@ pub enum CmdError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
         match &self.subcommand {
-            OperatorCommands::List(args) => list_cmd(args, common_args).await,
-            OperatorCommands::Describe(args) => describe_cmd(args).await,
-            OperatorCommands::Install(args) => install_cmd(args, common_args).await,
-            OperatorCommands::Uninstall(args) => uninstall_cmd(args, common_args),
-            OperatorCommands::Installed(args) => installed_cmd(args, common_args),
+            OperatorCommands::List(args) => list_cmd(args, cli).await,
+            OperatorCommands::Describe(args) => describe_cmd(args, cli).await,
+            OperatorCommands::Install(args) => install_cmd(args, cli).await,
+            OperatorCommands::Uninstall(args) => uninstall_cmd(args, cli),
+            OperatorCommands::Installed(args) => installed_cmd(args, cli),
         }
     }
 }
 
 #[instrument]
-async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, CmdError> {
+async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
 
     // Build map which maps Helm repo name to Helm repo URL
@@ -201,7 +201,20 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
                 ]);
             }
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl operator describe [OPTIONS] <OPERATOR>",
+                    "display further information for the specified operator",
+                )
+                .add_command_hint(
+                    "stackablectl operator install [OPTIONS] <OPERATORS>...",
+                    "install one or more operators",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => {
             Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
@@ -213,7 +226,7 @@ async fn list_cmd(args: &OperatorListArgs, common_args: &Cli) -> Result<String, 
 }
 
 #[instrument]
-async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, CmdError> {
+async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Describing operator {}", args.operator_name);
 
     // Build map which maps Helm repo name to Helm repo URL
@@ -240,7 +253,6 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, CmdError> {
             };
 
             let mut table = Table::new();
-
             table
                 .set_content_arrangement(ContentArrangement::Dynamic)
                 .load_preset(NOTHING)
@@ -249,7 +261,16 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, CmdError> {
                 .add_row(vec!["TEST VERSIONS", test_versions_string.as_str()])
                 .add_row(vec!["DEV VERSIONS", dev_versions_string.as_str()]);
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    format!("stackablectl operator install {}", args.operator_name),
+                    "install the operator",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
@@ -257,18 +278,8 @@ async fn describe_cmd(args: &OperatorDescribeArgs) -> Result<String, CmdError> {
 }
 
 #[instrument]
-async fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<String, CmdError> {
+async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
-
-    println!(
-        "Installing {} {}",
-        args.operators.len(),
-        if args.operators.len() == 1 {
-            "operator"
-        } else {
-            "operators"
-        }
-    );
 
     args.local_cluster
         .install_if_needed(None)
@@ -290,19 +301,28 @@ async fn install_cmd(args: &OperatorInstallArgs, common_args: &Cli) -> Result<St
         };
     }
 
-    Ok(format!(
-        "Installed {} {}",
-        args.operators.len(),
-        if args.operators.len() == 1 {
-            "operator"
-        } else {
-            "operators"
-        }
-    ))
+    let mut output = cli.output();
+
+    output
+        .add_command_hint(
+            "stackablectl operator installed [OPTIONS]",
+            "list installed operators",
+        )
+        .set_output(format!(
+            "Installed {} {}",
+            args.operators.len(),
+            if args.operators.len() == 1 {
+                "operator"
+            } else {
+                "operators"
+            }
+        ));
+
+    Ok(output.render())
 }
 
 #[instrument]
-fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<String, CmdError> {
+fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
 
     for operator in &args.operators {
@@ -311,19 +331,28 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, common_args: &Cli) -> Result<Stri
             .context(HelmSnafu)?;
     }
 
-    Ok(format!(
-        "Uninstalled {} {}",
-        args.operators.len(),
-        if args.operators.len() == 1 {
-            "operator"
-        } else {
-            "operators"
-        }
-    ))
+    let mut output = cli.output();
+
+    output
+        .add_command_hint(
+            "stackablectl operator installed [OPTIONS]",
+            "list remaining installed operators",
+        )
+        .set_output(format!(
+            "Uninstalled {} {}",
+            args.operators.len(),
+            if args.operators.len() == 1 {
+                "operator"
+            } else {
+                "operators"
+            }
+        ));
+
+    Ok(output.render())
 }
 
 #[instrument]
-fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<String, CmdError> {
+fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing installed operators");
 
     type ReleaseList = IndexMap<String, HelmRelease>;
@@ -368,7 +397,20 @@ fn installed_cmd(args: &OperatorInstalledArgs, common_args: &Cli) -> Result<Stri
                 ]);
             }
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl operator install [OPTIONS] <OPERATORS>...",
+                    "install one or more additional operators",
+                )
+                .add_command_hint(
+                    "stackablectl operator uninstall [OPTIONS] <OPERATORS>...",
+                    "uninstall one or more operators",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
         OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),

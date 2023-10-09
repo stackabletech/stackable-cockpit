@@ -6,7 +6,7 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
 use tracing::{info, instrument};
 
-use crate::cli::CacheSettingsError;
+use crate::cli::{CacheSettingsError, Cli};
 
 #[derive(Debug, Args)]
 pub struct CacheArgs {
@@ -42,16 +42,16 @@ pub enum CmdError {
 }
 
 impl CacheArgs {
-    pub async fn run(&self, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         match &self.subcommand {
-            CacheCommands::List => list_cmd(cache).await,
+            CacheCommands::List => list_cmd(cache, cli).await,
             CacheCommands::Clean(args) => clean_cmd(args, cache).await,
         }
     }
 }
 
 #[instrument(skip_all)]
-async fn list_cmd(cache: Cache) -> Result<String, CmdError> {
+async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing cached files");
 
     let files = cache.list().await.context(CacheSnafu)?;
@@ -77,7 +77,12 @@ async fn list_cmd(cache: Cache) -> Result<String, CmdError> {
         table.add_row(vec![file_path, format!("{modified} seconds ago")]);
     }
 
-    Ok(table.to_string())
+    let mut output = cli.output();
+    output
+        .add_command_hint("stackablectl cache clean", "to clean all cached files")
+        .set_output(table.to_string());
+
+    Ok(output.render())
 }
 
 #[instrument(skip_all)]
