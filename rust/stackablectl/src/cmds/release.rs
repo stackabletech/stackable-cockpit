@@ -129,14 +129,12 @@ pub enum CmdError {
 }
 
 impl ReleaseArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle release args");
 
         let transfer_client = FileTransferClient::new_with(cache);
 
-        let files = common_args
-            .get_release_files()
-            .context(PathOrUrlParseSnafu)?;
+        let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
         let release_list = ReleaseList::build(&files, &transfer_client)
             .await
@@ -147,16 +145,20 @@ impl ReleaseArgs {
         }
 
         match &self.subcommand {
-            ReleaseCommands::List(args) => list_cmd(args, release_list).await,
-            ReleaseCommands::Describe(args) => describe_cmd(args, release_list).await,
-            ReleaseCommands::Install(args) => install_cmd(args, common_args, release_list).await,
-            ReleaseCommands::Uninstall(args) => uninstall_cmd(args, release_list).await,
+            ReleaseCommands::List(args) => list_cmd(args, cli, release_list).await,
+            ReleaseCommands::Describe(args) => describe_cmd(args, cli, release_list).await,
+            ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
+            ReleaseCommands::Uninstall(args) => uninstall_cmd(args, cli, release_list).await,
         }
     }
 }
 
 #[instrument]
-async fn list_cmd(args: &ReleaseListArgs, release_list: ReleaseList) -> Result<String, CmdError> {
+async fn list_cmd(
+    args: &ReleaseListArgs,
+    cli: &Cli,
+    release_list: ReleaseList,
+) -> Result<String, CmdError> {
     info!("Listing releases");
 
     match args.output_type {
@@ -181,7 +183,20 @@ async fn list_cmd(args: &ReleaseListArgs, release_list: ReleaseList) -> Result<S
                 ]);
             }
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl release describe [OPTIONS] <RELEASE>",
+                    "display further information for the specified release",
+                )
+                .add_command_hint(
+                    "stackablectl release install [OPTIONS] <RELEASE>",
+                    "install a release",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => serde_json::to_string(&release_list).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlOutputFormatSnafu),
@@ -191,6 +206,7 @@ async fn list_cmd(args: &ReleaseListArgs, release_list: ReleaseList) -> Result<S
 #[instrument]
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
+    cli: &Cli,
     release_list: ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Describing release");
@@ -224,7 +240,16 @@ async fn describe_cmd(
                         product_table.to_string().as_str(),
                     ]);
 
-                Ok(table.to_string())
+                let mut output = cli.output();
+
+                output
+                    .add_command_hint(
+                        format!("stackablectl release install {}", args.release),
+                        "install the demo",
+                    )
+                    .set_output(table.to_string());
+
+                Ok(output.render())
             }
             OutputType::Json => serde_json::to_string(&release).context(JsonOutputFormatSnafu),
             OutputType::Yaml => serde_yaml::to_string(&release).context(YamlOutputFormatSnafu),
@@ -236,7 +261,7 @@ async fn describe_cmd(
 #[instrument]
 async fn install_cmd(
     args: &ReleaseInstallArgs,
-    common_args: &Cli,
+    cli: &Cli,
     release_list: ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Installing release");
@@ -264,7 +289,16 @@ async fn install_cmd(
                 )
                 .context(ReleaseInstallSnafu)?;
 
-            Ok(format!("Installed release {}", args.release))
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl operator installed",
+                    "list installed operators",
+                )
+                .set_output(format!("Installed release '{}'", args.release));
+
+            Ok(output.render())
         }
         None => Ok("No such release".into()),
     }
@@ -272,6 +306,7 @@ async fn install_cmd(
 
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
+    cli: &Cli,
     release_list: ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Installing release");
@@ -282,7 +317,13 @@ async fn uninstall_cmd(
                 .uninstall(&args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
-            Ok(format!("Uninstalled release {}", args.release))
+            let mut output = cli.output();
+
+            output
+                .add_command_hint("stackablectl release list", "list available releases")
+                .set_output(format!("Uninstalled release '{}'", args.release));
+
+            Ok(output.render())
         }
         None => Ok("No such release".into()),
     }

@@ -163,7 +163,7 @@ impl DemoArgs {
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, cli, list).await,
-            DemoCommands::Describe(args) => describe_cmd(args, list).await,
+            DemoCommands::Describe(args) => describe_cmd(args, cli, list).await,
             DemoCommands::Install(args) => install_cmd(args, cli, list, &transfer_client).await,
         }
     }
@@ -215,7 +215,11 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: DemoList) -> Result<Stri
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 #[instrument]
-async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, CmdError> {
+async fn describe_cmd(
+    args: &DemoDescribeArgs,
+    cli: &Cli,
+    list: DemoList,
+) -> Result<String, CmdError> {
     info!("Describing demo {}", args.demo_name);
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
@@ -239,7 +243,16 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
             // TODO (Techassi): Add parameter output
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    format!("stackablectl demo install {}", args.demo_name),
+                    "install the demo",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
@@ -250,7 +263,7 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 #[instrument(skip(list))]
 async fn install_cmd(
     args: &DemoInstallArgs,
-    common_args: &Cli,
+    cli: &Cli,
     list: DemoList,
     transfer_client: &FileTransferClient,
 ) -> Result<String, CmdError> {
@@ -261,14 +274,12 @@ async fn install_cmd(
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
+    let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
     let stack_list = StackList::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu)?;
+    let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
     let release_list = ReleaseList::build(&files, transfer_client)
         .await
@@ -320,16 +331,19 @@ async fn install_cmd(
         .await
         .context(DemoSnafu)?;
 
-    let output = format!(
-        "Installed demo {}\n\n\
-        Use \"stackablectl operator installed{}\" to display the installed operators\n\
-        Use \"stackablectl stacklet list{}\" to display the installed stacklets",
-        args.demo_name,
+    let mut output = cli.output();
+
+    let operator_cmd = format!(
+        "stackablectl operator installed{}",
         if args.namespaces.operator_namespace.is_some() {
             format!(" --operator-namespace {}", operator_namespace)
         } else {
             "".into()
-        },
+        }
+    );
+
+    let stacklet_cmd = format!(
+        "stackablectl stacklet list{}",
         if args.namespaces.product_namespace.is_some() {
             format!(" --product-namespace {}", product_namespace)
         } else {
@@ -337,5 +351,10 @@ async fn install_cmd(
         }
     );
 
-    Ok(output)
+    output
+        .add_command_hint(operator_cmd, "display the installed operators")
+        .add_command_hint(stacklet_cmd, "display the installed stacklets")
+        .set_output(format!("Installed demo '{}'", args.demo_name));
+
+    Ok(output.render())
 }
