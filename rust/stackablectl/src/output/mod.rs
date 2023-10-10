@@ -68,11 +68,8 @@ impl Output {
 
         renderer
             .add_raw_templates(vec![
-                (
-                    "result_success",
-                    include_str!("templates/result_success.tpl"),
-                ),
-                ("result_empty", include_str!("templates/result_empty.tpl")),
+                ("result", include_str!("templates/result.tpl")),
+                ("error", include_str!("templates/error.tpl")),
             ])
             .context(CreationSnafu)?;
 

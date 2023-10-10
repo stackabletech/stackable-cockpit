@@ -20,13 +20,13 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("io error"))]
+    #[snafu(display("filesystem io error"))]
     CacheIoError { source: io::Error },
 
     #[snafu(display("system time error"))]
     SystemTimeError { source: SystemTimeError },
 
-    #[snafu(display("failed to parse string as integer"))]
+    #[snafu(display("failed to parse last auto-purge timestamp from file"))]
     ParseIntError { source: ParseIntError },
 
     #[snafu(display("tried to write file with disabled cache"))]

@@ -6,7 +6,7 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
 use tracing::{info, instrument};
 
-use crate::cli::{CacheSettingsError, Cli};
+use crate::cli::Cli;
 
 #[derive(Debug, Args)]
 pub struct CacheArgs {
@@ -34,10 +34,7 @@ pub struct CacheCleanArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("cache settings error"))]
-    CacheSettingsError { source: CacheSettingsError },
-
-    #[snafu(display("cache error"))]
+    #[snafu(display("failed to read from cache"))]
     CacheError { source: cache::Error },
 }
 
