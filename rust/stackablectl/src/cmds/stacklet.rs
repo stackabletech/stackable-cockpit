@@ -19,8 +19,6 @@ use crate::{
     utils::use_colored_output,
 };
 
-const CREDENTIALS_HINT: &str = "Use \"stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>\" to display credentials for deployed stacklets.";
-
 #[derive(Debug, Args)]
 pub struct StackletArgs {
     #[command(subcommand)]
@@ -88,16 +86,16 @@ pub enum CmdError {
 }
 
 impl StackletArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
         match &self.subcommand {
-            StackletCommands::List(args) => list_cmd(args, common_args).await,
+            StackletCommands::List(args) => list_cmd(args, cli).await,
             StackletCommands::Credentials(args) => credentials_cmd(args).await,
         }
     }
 }
 
 #[instrument]
-async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, CmdError> {
+async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
 
     // If the user wants to list stacklets from all namespaces, we use `None`.
@@ -167,15 +165,23 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 }
             }
 
-            // Only output the error list if there are errors to report.
-            Ok(format!(
-                "{table}{errors}\n\n{CREDENTIALS_HINT}",
-                errors = if !error_list.is_empty() {
-                    format!("\n\n{}", error_list.join("\n"))
-                } else {
-                    "".into()
-                }
-            ))
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>",
+                    "display credentials for deployed stacklets",
+                )
+                .set_output(format!(
+                    "{table}{errors}",
+                    errors = if !error_list.is_empty() {
+                        format!("\n\n{}", error_list.join("\n"))
+                    } else {
+                        "".into()
+                    }
+                ));
+
+            Ok(output.render())
         }
         OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),

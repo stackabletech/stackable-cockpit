@@ -250,6 +250,7 @@ async fn describe_cmd(
                     format!("stackablectl demo install {}", args.demo_name),
                     "install the demo",
                 )
+                .add_command_hint("stackablectl demo list", "list all available demos")
                 .set_output(table.to_string());
 
             Ok(output.render())

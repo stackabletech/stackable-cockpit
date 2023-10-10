@@ -133,28 +133,28 @@ pub enum CmdError {
 }
 
 impl StackArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
         let transfer_client = FileTransferClient::new_with(cache);
-        let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
+        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
 
         let stack_list = StackList::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
         match &self.subcommand {
-            StackCommands::List(args) => list_cmd(args, stack_list),
-            StackCommands::Describe(args) => describe_cmd(args, stack_list),
+            StackCommands::List(args) => list_cmd(args, cli, stack_list),
+            StackCommands::Describe(args) => describe_cmd(args, cli, stack_list),
             StackCommands::Install(args) => {
-                install_cmd(args, common_args, stack_list, &transfer_client).await
+                install_cmd(args, cli, stack_list, &transfer_client).await
             }
         }
     }
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdError> {
+fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: StackList) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -175,7 +175,20 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdEr
                 ]);
             }
 
-            Ok(table.to_string())
+            let mut output = cli.output();
+
+            output
+                .add_command_hint(
+                    "stackablectl stack describe [OPTIONS] <STACK>",
+                    "display further information for the specified stack",
+                )
+                .add_command_hint(
+                    "stackablectl stack install [OPTIONS] <STACK>...",
+                    "install a stack",
+                )
+                .set_output(table.to_string());
+
+            Ok(output.render())
         }
         OutputType::Json => serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {}),
         OutputType::Yaml => serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {}),
@@ -183,7 +196,11 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdEr
 }
 
 #[instrument]
-fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, CmdError> {
+fn describe_cmd(
+    args: &StackDescribeArgs,
+    cli: &Cli,
+    stack_list: StackList,
+) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
     match stack_list.get(&args.stack_name) {
@@ -216,7 +233,17 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
                     .add_row(vec!["LABELS", stack.labels.join(", ").as_str()])
                     .add_row(vec!["PARAMETERS", parameter_table.to_string().as_str()]);
 
-                Ok(table.to_string())
+                let mut output = cli.output();
+
+                output
+                    .add_command_hint(
+                        format!("stackablectl stack install {}", args.stack_name),
+                        "install the stack",
+                    )
+                    .add_command_hint("stackablectl stack list", "list all available stacks")
+                    .set_output(table.to_string());
+
+                Ok(output.render())
             }
             OutputType::Json => serde_json::to_string(&stack).context(JsonOutputFormatSnafu {}),
             OutputType::Yaml => serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {}),
@@ -225,18 +252,16 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
     }
 }
 
-#[instrument(skip(common_args, stack_list, transfer_client))]
+#[instrument(skip(cli, stack_list, transfer_client))]
 async fn install_cmd(
     args: &StackInstallArgs,
-    common_args: &Cli,
+    cli: &Cli,
     stack_list: StackList,
     transfer_client: &FileTransferClient,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu)?;
+    let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
     let release_list = ReleaseList::build(&files, transfer_client)
         .await
@@ -301,16 +326,19 @@ async fn install_cmd(
                 .await
                 .context(StackSnafu)?;
 
-            let output = format!(
-                "Installed stack {}\n\n\
-            Use \"stackablectl operator installed{}\" to display the installed operators\n\
-            Use \"stackablectl stacklet list{}\" to display the installed stacklets",
-                args.stack_name,
+            let mut output = cli.output();
+
+            let operator_cmd = format!(
+                "stackablectl operator installed{}",
                 if args.namespaces.operator_namespace.is_some() {
                     format!(" --operator-namespace {}", operator_namespace)
                 } else {
                     "".into()
-                },
+                }
+            );
+
+            let stacklet_cmd = format!(
+                "stackablectl stacklet list{}",
                 if args.namespaces.product_namespace.is_some() {
                     format!(" --product-namespace {}", product_namespace)
                 } else {
@@ -318,7 +346,12 @@ async fn install_cmd(
                 }
             );
 
-            Ok(output)
+            output
+                .add_command_hint(operator_cmd, "display the installed operators")
+                .add_command_hint(stacklet_cmd, "display the installed stacklets")
+                .set_output(format!("Installed stack '{}'", args.stack_name));
+
+            Ok(output.render())
         }
         None => Ok("No such stack".into()),
     }

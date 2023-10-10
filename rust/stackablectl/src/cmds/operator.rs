@@ -268,6 +268,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
                     format!("stackablectl operator install {}", args.operator_name),
                     "install the operator",
                 )
+                .add_command_hint("stackablectl operator list", "list all available operators")
                 .set_output(table.to_string());
 
             Ok(output.render())
