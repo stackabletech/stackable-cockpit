@@ -71,3 +71,9 @@ repos:
         entry: cargo xtask gen-ctl-readme
         stages: [commit, merge-commit, manual]
         pass_filenames: false
+      - id: gen-docs
+        name: gen-docs
+        language: system
+        entry: cargo xtask gen-docs
+        stages: [commit, merge-commit, manual]
+        pass_filenames: false

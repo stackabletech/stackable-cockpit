@@ -3612,6 +3612,7 @@ dependencies = [
  "snafu",
  "stackable-cockpitd",
  "stackablectl",
+ "tera",
 ]
 
 [[package]]

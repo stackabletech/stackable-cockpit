@@ -8,7 +8,7 @@
 *** xref:commands/operator.adoc[operator]
 *** xref:commands/release.adoc[release]
 *** xref:commands/stack.adoc[stack]
-*** xref:commands/stacklets.adoc[stacklets]
+*** xref:commands/stacklet.adoc[stacklets]
 ** xref:customization/index.adoc[]
 *** xref:customization/add-demo.adoc[]
 *** xref:customization/add-stack.adoc[]
