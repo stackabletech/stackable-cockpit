@@ -23,7 +23,7 @@ use crate::{
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
         USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
-    output::Output,
+    output::{Output, ResultContext},
 };
 
 #[derive(Debug, Snafu)]
@@ -59,6 +59,10 @@ pub struct Cli {
     /// Log level this application uses
     #[arg(short, long, global = true)]
     pub log_level: Option<Level>,
+
+    /// Disable colored output.
+    #[arg(long, global = true)]
+    pub no_color: bool,
 
     /// Do not cache the remote (default) demo, stack and release files
     #[arg(
@@ -195,8 +199,9 @@ impl Cli {
     }
 
     // Output utility functions
-    pub fn output(&self) -> Output {
-        Output::new().unwrap()
+    pub fn result(&self) -> Output<ResultContext> {
+        // TODO (Techassi): Remove unwrap
+        Output::result(ResultContext::default(), self.no_color).unwrap()
     }
 }
 

@@ -201,20 +201,21 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
                 ]);
             }
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl operator describe [OPTIONS] <OPERATOR>",
                     "display further information for the specified operator",
                 )
-                .add_command_hint(
+                .with_command_hint(
                     "stackablectl operator install [OPTIONS] <OPERATORS>...",
                     "install one or more operators",
                 )
-                .set_output(table.to_string());
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => {
             Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
@@ -261,17 +262,18 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
                 .add_row(vec!["TEST VERSIONS", test_versions_string.as_str()])
                 .add_row(vec!["DEV VERSIONS", dev_versions_string.as_str()]);
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     format!("stackablectl operator install {}", args.operator_name),
                     "install the operator",
                 )
-                .add_command_hint("stackablectl operator list", "list all available operators")
-                .set_output(table.to_string());
+                .with_command_hint("stackablectl operator list", "list all available operators")
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
@@ -302,14 +304,14 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
         };
     }
 
-    let mut output = cli.output();
+    let mut result = cli.result();
 
-    output
-        .add_command_hint(
+    result
+        .with_command_hint(
             "stackablectl operator installed [OPTIONS]",
             "list installed operators",
         )
-        .set_output(format!(
+        .with_output(format!(
             "Installed {} {}",
             args.operators.len(),
             if args.operators.len() == 1 {
@@ -319,7 +321,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             }
         ));
 
-    Ok(output.render())
+    // TODO (Techassi): Remove unwrap
+    Ok(result.render().unwrap())
 }
 
 #[instrument]
@@ -332,14 +335,14 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
             .context(HelmSnafu)?;
     }
 
-    let mut output = cli.output();
+    let mut result = cli.result();
 
-    output
-        .add_command_hint(
+    result
+        .with_command_hint(
             "stackablectl operator installed [OPTIONS]",
             "list remaining installed operators",
         )
-        .set_output(format!(
+        .with_output(format!(
             "Uninstalled {} {}",
             args.operators.len(),
             if args.operators.len() == 1 {
@@ -349,7 +352,8 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
             }
         ));
 
-    Ok(output.render())
+    // TODO (Techassi): Remove unwrap
+    Ok(result.render().unwrap())
 }
 
 #[instrument]
@@ -398,20 +402,21 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
                 ]);
             }
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl operator install [OPTIONS] <OPERATORS>...",
                     "install one or more additional operators",
                 )
-                .add_command_hint(
+                .with_command_hint(
                     "stackablectl operator uninstall [OPTIONS] <OPERATORS>...",
                     "uninstall one or more operators",
                 )
-                .set_output(table.to_string());
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
         OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),

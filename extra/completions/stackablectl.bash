@@ -307,7 +307,7 @@ _stackablectl() {
 
     case "${cmd}" in
         stackablectl)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack stacklet demo completions cache help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack stacklet demo completions cache help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -365,7 +365,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list clean help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list clean help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -423,7 +423,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__clean)
-            opts="-l -d -s -r -h -V --outdated --old --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --outdated --old --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -537,7 +537,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__list)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -595,7 +595,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version bash fish zsh help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version bash fish zsh help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -653,7 +653,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__bash)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -711,7 +711,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__fish)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -839,7 +839,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__zsh)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -897,7 +897,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -955,7 +955,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1091,7 +1091,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1197,7 +1197,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1697,7 +1697,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install uninstall installed help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install uninstall installed help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1755,7 +1755,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATOR>"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATOR>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1919,7 +1919,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__install)
-            opts="-c -l -d -s -r -h -V --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
+            opts="-c -l -d -s -r -h -V --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2005,7 +2005,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__installed)
-            opts="-o -l -d -s -r -h -V --output --operator-ns --operator-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --operator-ns --operator-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2079,7 +2079,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2145,7 +2145,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__uninstall)
-            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
+            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2211,7 +2211,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install uninstall help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install uninstall help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2269,7 +2269,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2419,7 +2419,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__install)
-            opts="-i -e -c -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-i -e -c -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2521,7 +2521,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2587,7 +2587,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__uninstall)
-            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2653,7 +2653,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2711,7 +2711,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2847,7 +2847,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2953,7 +2953,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3019,7 +3019,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version credentials list help"
+            opts="-l -d -s -r -h -V --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version credentials list help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3077,7 +3077,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet__credentials)
-            opts="-n -l -d -s -r -h -V --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <PRODUCT_NAME> <STACKLET_NAME>"
+            opts="-n -l -d -s -r -h -V --product-ns --product-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <PRODUCT_NAME> <STACKLET_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3203,7 +3203,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet__list)
-            opts="-c -o -n -l -d -s -r -h -V --color --output --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -n -l -d -s -r -h -V --output --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-color --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

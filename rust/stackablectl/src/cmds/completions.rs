@@ -24,7 +24,7 @@ pub enum CompletionCommands {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("string error: {source}"))]
+    #[snafu(display("failed to convert completion outout into string: {source}"))]
     StringError { source: std::string::FromUtf8Error },
 }
 

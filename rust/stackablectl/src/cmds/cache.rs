@@ -74,12 +74,13 @@ async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
         table.add_row(vec![file_path, format!("{modified} seconds ago")]);
     }
 
-    let mut output = cli.output();
-    output
-        .add_command_hint("stackablectl cache clean", "to clean all cached files")
-        .set_output(table.to_string());
+    let mut result = cli.result();
 
-    Ok(output.render())
+    result
+        .with_command_hint("stackablectl cache clean", "to clean all cached files")
+        .with_output(table.to_string());
+
+    Ok(result.render().unwrap())
 }
 
 #[instrument(skip_all)]

@@ -58,11 +58,6 @@ a different namespace for credential lookup.")]
 
 #[derive(Debug, Args)]
 pub struct StackletListArgs {
-    /// Controls if the output will use color. This only applies to the output
-    /// type 'plain'.
-    #[arg(short = 'c', long = "color")]
-    use_color: bool,
-
     #[arg(short, long = "output", value_enum, default_value_t)]
     output_type: OutputType,
 
@@ -113,7 +108,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
         OutputType::Plain => {
             // Determine if colored output will be enabled based on the provided
             // flag and the terminal support.
-            let use_color = use_colored_output(args.use_color);
+            let use_color = use_colored_output(!cli.no_color);
 
             // The main table displays all installed (and discovered) stacklets
             // and their condition.
@@ -165,14 +160,14 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                 }
             }
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>",
                     "display credentials for deployed stacklets",
                 )
-                .set_output(format!(
+                .with_output(format!(
                     "{table}{errors}",
                     errors = if !error_list.is_empty() {
                         format!("\n\n{}", error_list.join("\n"))
@@ -181,7 +176,8 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                     }
                 ));
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),

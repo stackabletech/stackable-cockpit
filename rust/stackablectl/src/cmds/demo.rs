@@ -193,20 +193,21 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: DemoList) -> Result<Stri
                 table.add_row(row);
             }
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl demo describe [OPTIONS] <DEMO>",
                     "display further information for the specified demo",
                 )
-                .add_command_hint(
+                .with_command_hint(
                     "stackablectl demo install [OPTIONS] <DEMO>",
                     "install a demo",
                 )
-                .set_output(table.to_string());
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),
@@ -243,17 +244,18 @@ async fn describe_cmd(
 
             // TODO (Techassi): Add parameter output
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     format!("stackablectl demo install {}", args.demo_name),
                     "install the demo",
                 )
-                .add_command_hint("stackablectl demo list", "list all available demos")
-                .set_output(table.to_string());
+                .with_command_hint("stackablectl demo list", "list all available demos")
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
@@ -332,7 +334,7 @@ async fn install_cmd(
         .await
         .context(DemoSnafu)?;
 
-    let mut output = cli.output();
+    let mut result = cli.result();
 
     let operator_cmd = format!(
         "stackablectl operator installed{}",
@@ -352,10 +354,11 @@ async fn install_cmd(
         }
     );
 
-    output
-        .add_command_hint(operator_cmd, "display the installed operators")
-        .add_command_hint(stacklet_cmd, "display the installed stacklets")
-        .set_output(format!("Installed demo '{}'", args.demo_name));
+    result
+        .with_command_hint(operator_cmd, "display the installed operators")
+        .with_command_hint(stacklet_cmd, "display the installed stacklets")
+        .with_output(format!("Installed demo '{}'", args.demo_name));
 
-    Ok(output.render())
+    // TODO (Techassi): Remove unwrap
+    Ok(result.render().unwrap())
 }

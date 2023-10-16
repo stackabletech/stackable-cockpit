@@ -175,20 +175,21 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: StackList) -> Result<St
                 ]);
             }
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl stack describe [OPTIONS] <STACK>",
                     "display further information for the specified stack",
                 )
-                .add_command_hint(
+                .with_command_hint(
                     "stackablectl stack install [OPTIONS] <STACK>...",
                     "install a stack",
                 )
-                .set_output(table.to_string());
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {}),
         OutputType::Yaml => serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {}),
@@ -233,17 +234,18 @@ fn describe_cmd(
                     .add_row(vec!["LABELS", stack.labels.join(", ").as_str()])
                     .add_row(vec!["PARAMETERS", parameter_table.to_string().as_str()]);
 
-                let mut output = cli.output();
+                let mut result = cli.result();
 
-                output
-                    .add_command_hint(
+                result
+                    .with_command_hint(
                         format!("stackablectl stack install {}", args.stack_name),
                         "install the stack",
                     )
-                    .add_command_hint("stackablectl stack list", "list all available stacks")
-                    .set_output(table.to_string());
+                    .with_command_hint("stackablectl stack list", "list all available stacks")
+                    .with_output(table.to_string());
 
-                Ok(output.render())
+                // TODO (Techassi): Remove unwrap
+                Ok(result.render().unwrap())
             }
             OutputType::Json => serde_json::to_string(&stack).context(JsonOutputFormatSnafu {}),
             OutputType::Yaml => serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {}),
@@ -326,7 +328,7 @@ async fn install_cmd(
                 .await
                 .context(StackSnafu)?;
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
             let operator_cmd = format!(
                 "stackablectl operator installed{}",
@@ -346,12 +348,13 @@ async fn install_cmd(
                 }
             );
 
-            output
-                .add_command_hint(operator_cmd, "display the installed operators")
-                .add_command_hint(stacklet_cmd, "display the installed stacklets")
-                .set_output(format!("Installed stack '{}'", args.stack_name));
+            result
+                .with_command_hint(operator_cmd, "display the installed operators")
+                .with_command_hint(stacklet_cmd, "display the installed stacklets")
+                .with_output(format!("Installed stack '{}'", args.stack_name));
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         None => Ok("No such stack".into()),
     }

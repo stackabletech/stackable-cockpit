@@ -183,20 +183,21 @@ async fn list_cmd(
                 ]);
             }
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl release describe [OPTIONS] <RELEASE>",
                     "display further information for the specified release",
                 )
-                .add_command_hint(
+                .with_command_hint(
                     "stackablectl release install [OPTIONS] <RELEASE>",
                     "install a release",
                 )
-                .set_output(table.to_string());
+                .with_output(table.to_string());
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         OutputType::Json => serde_json::to_string(&release_list).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlOutputFormatSnafu),
@@ -240,17 +241,18 @@ async fn describe_cmd(
                         product_table.to_string().as_str(),
                     ]);
 
-                let mut output = cli.output();
+                let mut result = cli.result();
 
-                output
-                    .add_command_hint(
+                result
+                    .with_command_hint(
                         format!("stackablectl release install {}", args.release),
                         "install the demo",
                     )
-                    .add_command_hint("stackablectl release list", "list all available releases")
-                    .set_output(table.to_string());
+                    .with_command_hint("stackablectl release list", "list all available releases")
+                    .with_output(table.to_string());
 
-                Ok(output.render())
+                // TODO (Techassi): Remove unwrap
+                Ok(result.render().unwrap())
             }
             OutputType::Json => serde_json::to_string(&release).context(JsonOutputFormatSnafu),
             OutputType::Yaml => serde_yaml::to_string(&release).context(YamlOutputFormatSnafu),
@@ -290,16 +292,17 @@ async fn install_cmd(
                 )
                 .context(ReleaseInstallSnafu)?;
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint(
+            result
+                .with_command_hint(
                     "stackablectl operator installed",
                     "list installed operators",
                 )
-                .set_output(format!("Installed release '{}'", args.release));
+                .with_output(format!("Installed release '{}'", args.release));
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         None => Ok("No such release".into()),
     }
@@ -318,13 +321,14 @@ async fn uninstall_cmd(
                 .uninstall(&args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
-            let mut output = cli.output();
+            let mut result = cli.result();
 
-            output
-                .add_command_hint("stackablectl release list", "list available releases")
-                .set_output(format!("Uninstalled release '{}'", args.release));
+            result
+                .with_command_hint("stackablectl release list", "list available releases")
+                .with_output(format!("Uninstalled release '{}'", args.release));
 
-            Ok(output.render())
+            // TODO (Techassi): Remove unwrap
+            Ok(result.render().unwrap())
         }
         None => Ok("No such release".into()),
     }
