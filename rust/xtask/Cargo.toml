@@ -14,3 +14,4 @@ serde_json.workspace = true
 snafu.workspace = true
 stackable-cockpitd = { path = "../stackable-cockpitd" }
 stackablectl = { path = "../stackablectl" }
+tera.workspace = true

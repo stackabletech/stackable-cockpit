@@ -1,0 +1,67 @@
+---
+name: Pull Request Stackablectl
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/pr_stackablectl"
+      - "docs/modules/stackablectl"
+      - "rust/stackable-cockpit"
+      - "rust/stackablectl"
+      - "rust/helm-sys"
+      - "Cargo.lock"
+      - "go.sum"
+      - "extra"
+
+env:
+  RUST_VERSION: 1.70.0
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+  RUSTFLAGS: "-D warnings"
+  RUSTDOCFLAGS: "-D warnings"
+  RUST_LOG: "info"
+
+jobs:
+  general-checks:
+    name: General Pull Request Checks
+    uses: ./.github/workflows/pr_general.yml
+
+  reviewdog-checks:
+    name: Reviewdog Pull Request Checks
+    uses: ./.github/workflows/pr_reviewdog.yml
+
+  build:
+    name: Build stackablectl for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    needs:
+      - general-checks
+      - reviewdog-checks
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+          - target: aarch64-apple-darwin
+            os: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        with:
+          submodules: recursive
+
+      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+        with:
+          key: build-stackablectl-${{ matrix.target }}
+
+      - name: Build for non-Windows
+        if: matrix.os != 'windows-latest'
+        run: cargo build --target ${{ matrix.target }} -p stackablectl

@@ -1,6 +1,10 @@
 = Stackable Cockpit
 
-This is a visual dashboard to monitor and control Stackable Data Platform clusters.
+IMPORTANT: The Stackable Cockpit is currently an early preview, and is not yet a fully supported component of the
+Stackable Data Platform.
 
-IMPORTANT: The Stackable Cockpit is currently an early preview, and is not yet a
-      fully supported component of the Stackable Data Platform.
+The `Cockpit` application is a browser-based management tool which interacts with the Stackable data platform. Currently
+it can display deployed stacklets and their status. The display can be compared with the
+xref:management:stackablectl:commands/stacklet.adoc#list-stacklets[`stackablectl stacklet list`] command output.
+
+The installation is described in the xref:installation.adoc[installation guide].

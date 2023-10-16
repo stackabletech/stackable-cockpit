@@ -1,0 +1,39 @@
+= stackablectl stacklets
+:page-aliases: stackablectl::commands/services.adoc
+
+The `stacklet` command allows you to interact with deployed stacklets, which are bundles of resources and containers
+required to run the product.
+
+== General Usage
+
+include::management:stackablectl:partial$commands/stacklet.adoc[]
+
+[#iist-stacklets]
+== Listing Deployed Stacklets
+
+[source,console]
+----
+$ stackablectl stacklet list
+
+┌──────────┬───────────────┬───────────┬──────────────────────────────────────────────┬─────────────────────────────────┐
+│ PRODUCT  ┆ NAME          ┆ NAMESPACE ┆ ENDPOINTS                                    ┆ CONDITIONS                      │
+╞══════════╪═══════════════╪═══════════╪══════════════════════════════════════════════╪═════════════════════════════════╡
+│ hive     ┆ hive          ┆ default   ┆                                              ┆ Available, Reconciling, Running │
+├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ opa      ┆ opa           ┆ default   ┆                                              ┆ Available, Reconciling, Running │
+├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ superset ┆ superset      ┆ default   ┆ external-superset   http://172.18.0.3:31974  ┆ Available, Reconciling, Running │
+├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ trino    ┆ trino         ┆ default   ┆ coordinator-metrics 172.18.0.3:30788         ┆ Available, Reconciling, Running │
+│          ┆               ┆           ┆ coordinator-https   https://172.18.0.3:31010 ┆                                 │
+├╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ minio    ┆ minio-console ┆ default   ┆ http                http://172.18.0.3:32650  ┆                                 │
+└──────────┴───────────────┴───────────┴──────────────────────────────────────────────┴─────────────────────────────────┘
+
+Use "stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>" to display credentials for deployed stacklets.
+----
+
+More information about the conditions displayed in the last column can be found in
+xref:home:contributor:adr/ADR027-status.adoc[ADR 27: Resource Status]. An empty conditions column indicates that the
+displayed stacklet is not part of the SDP and most likely an external product. Such products don't contain the required
+status field. See the xref:home:demos:index.adoc[demo page] for more information on supported products.
