@@ -99,7 +99,21 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
         .context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
-        return Ok("No stacklets".into());
+        let mut result = cli.result();
+
+        result
+            .with_command_hint(
+                "stackablectl stack install <STACK_NAME>",
+                "install a complete stack",
+            )
+            .with_command_hint(
+                "stackablectl demo install <DEMO_NAME>",
+                "install an end-to-end demo",
+            )
+            .with_output("No stacklets found");
+
+        // TODO (Techassi): Remove unwrap
+        return Ok(result.render().unwrap());
     }
 
     match args.output_type {

@@ -57,9 +57,9 @@ where
             "{}",
             color_print::cformat!("An unrecoverable error occured: <s><r>{}</></>\n\n", self)
         )?;
-        write!(
+        writeln!(
             report,
-            "Caused by these errors (recent errors listed first):\n"
+            "Caused by these errors (recent errors listed first):"
         )?;
 
         let mut error: &dyn std::error::Error = &self;
