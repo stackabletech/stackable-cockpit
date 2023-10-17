@@ -14,7 +14,7 @@ on:
       - "extra"
 
 env:
-  RUST_VERSION: 1.70.0
+  RUST_VERSION: 1.73.0
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
