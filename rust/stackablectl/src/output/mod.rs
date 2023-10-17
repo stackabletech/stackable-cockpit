@@ -59,10 +59,11 @@ where
         )?;
         write!(
             report,
-            "Caused by these errors (recent errors listed first):\n\n"
+            "Caused by these errors (recent errors listed first):\n"
         )?;
 
         let mut error: &dyn std::error::Error = &self;
+        let mut index = 1;
 
         while let Some(source) = error.source() {
             let source_string = source.to_string();
@@ -73,8 +74,14 @@ where
                 &source_string
             };
 
-            writeln!(report, " - {}", cleaned)?;
-            error = source
+            writeln!(
+                report,
+                "{}",
+                color_print::cformat!(" {}: <r>{}</>", index, cleaned)
+            )?;
+
+            error = source;
+            index += 1;
         }
 
         Ok(report)
