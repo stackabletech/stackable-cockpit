@@ -14,12 +14,12 @@ stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
 
 clap_complete.workspace = true
 clap.workspace = true
+color-print.workspace = true
 comfy-table.workspace = true
 directories.workspace = true
 dotenvy.workspace = true
 indexmap.workspace = true
 lazy_static.workspace = true
-nu-ansi-term.workspace = true
 rand.workspace = true
 reqwest.workspace = true
 semver.workspace = true

@@ -310,6 +310,8 @@ async fn write_cache_auto_purge_file(path: &Path) -> Result<()> {
 
 fn is_protected_file(filename: OsString) -> bool {
     // Non-UTF-8 filenames can't possibly be on the protected list
-    let Some(filename) = filename.to_str() else { return false; };
+    let Some(filename) = filename.to_str() else {
+        return false;
+    };
     CACHE_PROTECTED_FILES.contains(&filename)
 }

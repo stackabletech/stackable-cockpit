@@ -3,7 +3,6 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
 };
-use nu_ansi_term::Color::{Green, Red};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
@@ -16,7 +15,6 @@ use stackable_cockpit::{
 use crate::{
     args::CommonNamespaceArgs,
     cli::{Cli, OutputType},
-    utils::use_colored_output,
 };
 
 #[derive(Debug, Args)]
@@ -106,10 +104,6 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 
     match args.output_type {
         OutputType::Plain => {
-            // Determine if colored output will be enabled based on the provided
-            // flag and the terminal support.
-            let use_color = use_colored_output(!cli.no_color);
-
             // The main table displays all installed (and discovered) stacklets
             // and their condition.
             let mut table = Table::new();
@@ -136,7 +130,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 
             for stacklet in stacklets {
                 let ConditionOutput { summary, errors } =
-                    render_conditions(stacklet.conditions, &mut error_index, use_color);
+                    render_conditions(stacklet.conditions, &mut error_index);
 
                 let endpoints = stacklet
                     .endpoints
@@ -228,22 +222,14 @@ pub struct ConditionOutput {
 fn render_conditions(
     product_conditions: Vec<DisplayCondition>,
     error_index: &mut usize,
-    use_color: bool,
 ) -> ConditionOutput {
     let mut conditions = Vec::new();
     let mut errors = Vec::new();
 
     for cond in product_conditions {
-        conditions.push(color_condition(
-            &cond.condition,
-            cond.is_good,
-            *error_index,
-            use_color,
-        ));
+        conditions.push(color_condition(&cond.condition, cond.is_good, *error_index));
 
-        if let Some(error) =
-            render_condition_error(cond.message, cond.is_good, *error_index, use_color)
-        {
+        if let Some(error) = render_condition_error(cond.message, cond.is_good, *error_index) {
             errors.push(error);
             *error_index += 1;
         };
@@ -261,16 +247,10 @@ fn render_condition_error(
     message: Option<String>,
     is_good: Option<bool>,
     error_index: usize,
-    use_color: bool,
 ) -> Option<String> {
     if !is_good.unwrap_or(true) {
         let message = message.unwrap_or("-".into());
-        let mut error = format!("[{error_index}]: {message}");
-
-        if use_color {
-            error = Red.paint(error).to_string()
-        }
-
+        let error = color_print::cformat!("<r>[{}]: {}</>", error_index, message);
         return Some(error);
     }
 
@@ -279,19 +259,16 @@ fn render_condition_error(
 
 /// Colors a single condition (green or red) and additionally adds an error
 /// index to the output.
-fn color_condition(
-    condition: &str,
-    is_good: Option<bool>,
-    error_index: usize,
-    use_color: bool,
-) -> String {
-    match (is_good, use_color) {
-        (Some(true), true) => Green.paint(condition).to_string(),
-        (Some(false), true) => Red
-            .paint(format!("{condition}: See [{error_index}]"))
-            .to_string(),
-        (Some(false), false) => format!("{condition}: See [{error_index}]"),
-        _ => condition.to_owned(),
+fn color_condition(condition: &str, is_good: Option<bool>, error_index: usize) -> String {
+    match is_good {
+        Some(is_good) => {
+            if is_good {
+                color_print::cformat!("<g>{}</>", condition)
+            } else {
+                color_print::cformat!("<r>{}: See [{}]</>", condition, error_index)
+            }
+        }
+        None => condition.to_owned(),
     }
 }
 

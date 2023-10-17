@@ -60,10 +60,6 @@ pub struct Cli {
     #[arg(short, long, global = true)]
     pub log_level: Option<Level>,
 
-    /// Disable colored output.
-    #[arg(long, global = true)]
-    pub no_color: bool,
-
     /// Do not cache the remote (default) demo, stack and release files
     #[arg(
         long,
@@ -201,7 +197,7 @@ impl Cli {
     // Output utility functions
     pub fn result(&self) -> Output<ResultContext> {
         // TODO (Techassi): Remove unwrap
-        Output::result(ResultContext::default(), self.no_color).unwrap()
+        Output::new(ResultContext::default(), false).unwrap()
     }
 }
 

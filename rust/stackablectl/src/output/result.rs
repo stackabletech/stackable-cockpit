@@ -1,7 +1,6 @@
-use nu_ansi_term::Color::Green;
 use stackable_cockpit::constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE};
 
-use crate::output::ContextExt;
+use crate::output::{ContextExt, OutputKind};
 
 #[derive(Debug, Default)]
 pub struct ResultContext {
@@ -13,6 +12,7 @@ pub struct ResultContext {
     pub pre_hints: Vec<String>,
 
     pub output: String,
+    pub no_color: bool,
 }
 
 impl ContextExt for ResultContext {
@@ -33,6 +33,14 @@ impl ContextExt for ResultContext {
 
         ctx
     }
+
+    fn output_kind(&self) -> OutputKind {
+        OutputKind::Result
+    }
+
+    fn set_no_color(&mut self, no_color: bool) {
+        self.no_color = no_color
+    }
 }
 
 impl ResultContext {
@@ -46,9 +54,19 @@ impl ResultContext {
         command: impl Into<String>,
         description: impl Into<String>,
     ) -> &mut Self {
-        self.command_hints.push(format!(
-            "Use {} to {}.",
-            Green.bold().paint(format!("\"{}\"", command.into())),
+        // let hint = if self.no_color {
+        //     format!("Use \"{}\" to {}.", command.into(), description.into())
+        // } else {
+        //     color_print::cformat!(
+        //         "Use <s><g>\"{}\"</> to {}.",
+        //         command.into(),
+        //         description.into()
+        //     )
+        // };
+
+        self.command_hints.push(color_print::cformat!(
+            "Use <s><g>\"{}\"</></> to {}.",
+            command.into(),
             description.into()
         ));
         self

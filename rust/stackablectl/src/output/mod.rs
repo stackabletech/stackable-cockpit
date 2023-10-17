@@ -23,13 +23,15 @@ pub enum Error {
 }
 
 #[derive(Debug)]
-pub enum OutputKind<C> {
-    Result(C),
-    Error(C),
+pub enum OutputKind {
+    Result,
+    Error,
 }
 
 pub trait ContextExt {
+    fn set_no_color(&mut self, no_color: bool);
     fn into_context(self) -> tera::Context;
+    fn output_kind(&self) -> OutputKind;
 }
 
 #[derive(Debug)]
@@ -37,32 +39,20 @@ pub struct Output<C>
 where
     C: ContextExt,
 {
-    kind: OutputKind<C>,
-    no_color: bool,
     renderer: Tera,
+    context: C,
 }
 
 impl<C> Output<C>
 where
     C: ContextExt,
 {
-    pub fn new(kind: OutputKind<C>, no_color: bool) -> Result<Self> {
+    pub fn new(mut context: C, no_color: bool) -> Result<Self> {
         let renderer = Self::create_renderer()?;
         let no_color = use_colored_output(!no_color);
+        context.set_no_color(no_color);
 
-        Ok(Self {
-            no_color,
-            renderer,
-            kind,
-        })
-    }
-
-    pub fn result(context: C, no_color: bool) -> Result<Self> {
-        Self::new(OutputKind::Result(context), no_color)
-    }
-
-    pub fn error(context: C, no_color: bool) -> Result<Self> {
-        Self::new(OutputKind::Error(context), no_color)
+        Ok(Self { renderer, context })
     }
 
     fn create_renderer() -> Result<Tera> {
@@ -79,14 +69,14 @@ where
     }
 
     pub fn render(self) -> Result<String> {
-        match self.kind {
-            OutputKind::Result(ctx) => self
+        match self.context.output_kind() {
+            OutputKind::Result => self
                 .renderer
-                .render("result", &ctx.into_context())
+                .render("result", &self.context.into_context())
                 .context(RenderSnafu),
-            OutputKind::Error(ctx) => self
+            OutputKind::Error => self
                 .renderer
-                .render("error", &ctx.into_context())
+                .render("error", &self.context.into_context())
                 .context(RenderSnafu),
         }
     }
@@ -99,10 +89,7 @@ where
     type Target = C;
 
     fn deref(&self) -> &Self::Target {
-        match &self.kind {
-            OutputKind::Result(c) => c,
-            OutputKind::Error(c) => c,
-        }
+        &self.context
     }
 }
 
@@ -111,9 +98,6 @@ where
     C: ContextExt,
 {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        match &mut self.kind {
-            OutputKind::Result(c) => c,
-            OutputKind::Error(c) => c,
-        }
+        &mut self.context
     }
 }

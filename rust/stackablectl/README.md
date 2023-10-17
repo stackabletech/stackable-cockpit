@@ -28,9 +28,6 @@ Options:
   -l, --log-level <LOG_LEVEL>
           Log level this application uses
 
-      --no-color
-          Disable colored output
-
       --no-cache
           Do not cache the remote (default) demo, stack and release files
 

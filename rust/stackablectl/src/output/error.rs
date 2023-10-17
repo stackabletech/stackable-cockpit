@@ -1,6 +1,6 @@
 use stackable_cockpit::constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE};
 
-use crate::output::ContextExt;
+use crate::output::{ContextExt, OutputKind};
 
 #[derive(Debug, Default)]
 pub struct ErrorContext {
@@ -8,6 +8,7 @@ pub struct ErrorContext {
     pub pre_hints: Vec<String>,
 
     pub error_report: String,
+    pub no_color: bool,
 }
 
 impl ContextExt for ErrorContext {
@@ -23,5 +24,13 @@ impl ContextExt for ErrorContext {
         ctx.insert("error_report", &self.error_report);
 
         ctx
+    }
+
+    fn output_kind(&self) -> OutputKind {
+        OutputKind::Error
+    }
+
+    fn set_no_color(&mut self, no_color: bool) {
+        self.no_color = no_color
     }
 }
