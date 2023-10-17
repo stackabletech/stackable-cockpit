@@ -4,6 +4,7 @@ use std::{
 };
 
 use snafu::{ResultExt, Snafu};
+use spinoff::{spinners, Color, Spinner};
 use tera::Tera;
 
 mod error;
@@ -88,11 +89,11 @@ where
     }
 }
 
-#[derive(Debug)]
 pub struct Output<C>
 where
     C: ContextExt,
 {
+    progress: Option<Spinner>,
     renderer: Tera,
     context: C,
 }
@@ -106,20 +107,22 @@ where
         let no_color = use_colored_output(!no_color);
         context.set_no_color(no_color);
 
-        Ok(Self { renderer, context })
+        Ok(Self {
+            progress: None,
+            renderer,
+            context,
+        })
     }
 
-    fn create_renderer() -> Result<Tera> {
-        let mut renderer = Tera::default();
+    pub fn enable_progress(&mut self, initial_message: String) {
+        self.progress
+            .get_or_insert(Spinner::new(spinners::Dots, initial_message, Color::Green));
+    }
 
-        renderer
-            .add_raw_templates(vec![
-                ("result", include_str!("templates/result.tpl")),
-                ("error", include_str!("templates/error.tpl")),
-            ])
-            .context(CreationSnafu)?;
-
-        Ok(renderer)
+    pub fn set_progress_message(&mut self, message: String) {
+        if let Some(progress) = self.progress.as_mut() {
+            progress.update_text(message)
+        }
     }
 
     pub fn render(self) -> Result<String> {
@@ -133,6 +136,19 @@ where
                 .render("error", &self.context.into_context())
                 .context(RenderSnafu),
         }
+    }
+
+    fn create_renderer() -> Result<Tera> {
+        let mut renderer = Tera::default();
+
+        renderer
+            .add_raw_templates(vec![
+                ("result", include_str!("templates/result.tpl")),
+                ("error", include_str!("templates/error.tpl")),
+            ])
+            .context(CreationSnafu)?;
+
+        Ok(renderer)
     }
 }
 
