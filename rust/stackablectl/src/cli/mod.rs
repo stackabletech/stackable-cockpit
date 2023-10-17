@@ -23,21 +23,21 @@ use crate::{
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
         USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
-    output::{Output, ResultContext},
+    output::{ErrorContext, Output, ResultContext},
 };
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("operator command error"))]
+    #[snafu(display("failed to execute operator (sub)command"))]
     Operator { source: operator::CmdError },
 
-    #[snafu(display("release command error"))]
+    #[snafu(display("failed to execute release (sub)command"))]
     Release { source: release::CmdError },
 
-    #[snafu(display("stack command error"))]
+    #[snafu(display("failed to execute stack (sub)command"))]
     Stack { source: stack::CmdError },
 
-    #[snafu(display("stacklets command error"))]
+    #[snafu(display("failed to execute stacklet (sub)command"))]
     Stacklet { source: stacklet::CmdError },
 
     #[snafu(display("demo command error"))]
@@ -198,6 +198,11 @@ impl Cli {
     pub fn result(&self) -> Output<ResultContext> {
         // TODO (Techassi): Remove unwrap
         Output::new(ResultContext::default(), false).unwrap()
+    }
+
+    pub fn error(&self) -> Output<ErrorContext> {
+        // TODO (Techassi): Remove unwrap
+        Output::new(ErrorContext::default(), false).unwrap()
     }
 }
 

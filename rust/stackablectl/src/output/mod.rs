@@ -1,4 +1,7 @@
-use std::ops::{Deref, DerefMut};
+use std::{
+    fmt::Write,
+    ops::{Deref, DerefMut},
+};
 
 use snafu::{ResultExt, Snafu};
 use tera::Tera;
@@ -32,6 +35,50 @@ pub trait ContextExt {
     fn set_no_color(&mut self, no_color: bool);
     fn into_context(self) -> tera::Context;
     fn output_kind(&self) -> OutputKind;
+}
+
+pub trait ErrorReport
+where
+    Self: std::error::Error,
+{
+    fn into_error_report(self) -> std::result::Result<String, std::fmt::Error>;
+}
+
+impl<T> ErrorReport for T
+where
+    T: std::error::Error,
+{
+    fn into_error_report(self) -> std::result::Result<String, std::fmt::Error> {
+        let mut report = String::new();
+
+        // Print top most error
+        write!(
+            report,
+            "{}",
+            color_print::cformat!("An unrecoverable error occured: <s><r>{}</></>\n\n", self)
+        )?;
+        write!(
+            report,
+            "Caused by these errors (recent errors listed first):\n\n"
+        )?;
+
+        let mut error: &dyn std::error::Error = &self;
+
+        while let Some(source) = error.source() {
+            let source_string = source.to_string();
+
+            let cleaned = if let Some((cleaned, _)) = source_string.split_once(':') {
+                cleaned
+            } else {
+                &source_string
+            };
+
+            writeln!(report, " - {}", cleaned)?;
+            error = source
+        }
+
+        Ok(report)
+    }
 }
 
 #[derive(Debug)]

@@ -1,14 +1,14 @@
 use stackable_cockpit::constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE};
 
-use crate::output::{ContextExt, OutputKind};
+use crate::output::{ContextExt, ErrorReport, OutputKind};
 
 #[derive(Debug, Default)]
 pub struct ErrorContext {
-    pub post_hints: Vec<String>,
-    pub pre_hints: Vec<String>,
+    post_hints: Vec<String>,
+    pre_hints: Vec<String>,
 
-    pub error_report: String,
-    pub no_color: bool,
+    error_report: String,
+    no_color: bool,
 }
 
 impl ContextExt for ErrorContext {
@@ -32,5 +32,18 @@ impl ContextExt for ErrorContext {
 
     fn set_no_color(&mut self, no_color: bool) {
         self.no_color = no_color
+    }
+}
+
+impl ErrorContext {
+    pub fn with_error_report(&mut self, error: impl ErrorReport) -> &mut Self {
+        // TODO (Techassi): Remove unwrap
+        self.error_report = error.into_error_report().unwrap();
+        self
+    }
+
+    pub fn with_post_hint(&mut self, post_hint: impl Into<String>) -> &mut Self {
+        self.post_hints.push(post_hint.into());
+        self
     }
 }

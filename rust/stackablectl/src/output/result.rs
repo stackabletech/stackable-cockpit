@@ -4,15 +4,15 @@ use crate::output::{ContextExt, OutputKind};
 
 #[derive(Debug, Default)]
 pub struct ResultContext {
-    pub used_operator_namespace: String,
-    pub used_product_namespace: String,
+    used_operator_namespace: String,
+    used_product_namespace: String,
 
-    pub command_hints: Vec<String>,
-    pub post_hints: Vec<String>,
-    pub pre_hints: Vec<String>,
+    command_hints: Vec<String>,
+    post_hints: Vec<String>,
+    pre_hints: Vec<String>,
 
-    pub output: String,
-    pub no_color: bool,
+    output: String,
+    no_color: bool,
 }
 
 impl ContextExt for ResultContext {
