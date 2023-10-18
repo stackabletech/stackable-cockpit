@@ -8,3 +8,9 @@ it can display deployed stacklets and their status. The display can be compared 
 xref:management:stackablectl:commands/stacklet.adoc#list-stacklets[`stackablectl stacklet list`] command output.
 
 The installation is described in the xref:installation.adoc[installation guide].
+
+.Stackable Cockpit login page
+image::login-view.png[Image of the Stackable Cockpit login page]
+
+.Stackable Cockpit Stacklet list page
+image::stacklets-view.png[Image of the Stackable Cockpit Stacklet list page]
