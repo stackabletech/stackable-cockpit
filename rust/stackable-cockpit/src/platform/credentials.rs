@@ -10,8 +10,8 @@ pub type Result<T, E = CredentialsError> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum CredentialsError {
-    #[snafu(display("kubernetes error"))]
-    KubeError { source: KubeClientError },
+    #[snafu(display("failed to fetch data from kubernetes api"))]
+    KubeClientFetchError { source: KubeClientError },
 
     #[snafu(display("no credentials secret found"))]
     NoSecret,
@@ -64,7 +64,7 @@ pub async fn get_credentials(
                     "adminUser.password",
                 )
                 .await
-                .context(KubeSnafu)?
+                .context(KubeClientFetchSnafu)?
         }
         "nifi" => {
             let secret_name = stacklet.data["spec"]["clusterConfig"]["credentialsSecret"]
@@ -79,7 +79,7 @@ pub async fn get_credentials(
                     "password",
                 )
                 .await
-                .context(KubeSnafu)?
+                .context(KubeClientFetchSnafu)?
         }
         _ => return Ok(None),
     };

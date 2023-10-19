@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, instrument, warn};
 
 #[cfg(feature = "openapi")]
@@ -125,7 +125,7 @@ impl DemoSpecV2 {
         skip_release: bool,
     ) -> Result<(), DemoError> {
         // Get the stack spec based on the name defined in the demo spec
-        let stack_spec = stack_list.get(&self.stack).ok_or(DemoError::NoSuchStack {
+        let stack_spec = stack_list.get(&self.stack).context(NoSuchStackSnafu {
             name: self.stack.clone(),
         })?;
 

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, info, instrument, log::warn};
 
 #[cfg(feature = "openapi")]
@@ -32,44 +32,67 @@ pub type RawStackParameterParseError = RawParameterParseError;
 pub type RawStackParameter = RawParameter;
 pub type StackParameter = Parameter;
 
-/// This error indicates that the stack, the stack manifests or the demo
-/// manifests failed to install.
 #[derive(Debug, Snafu)]
 pub enum StackError {
     /// This error indicates that parsing a string into stack / demo parameters
     /// failed.
-    #[snafu(display("parameter parse error: {source}"))]
+    #[snafu(display("failed to parse demo / stack parameters"))]
     ParameterError { source: IntoParametersError },
 
-    /// This error indicates that the requested stack doesn't exist in the
-    /// loaded list of stacks.
-    #[snafu(display("no such stack"))]
-    NoSuchStack,
+    /// This error indicates that the requested release doesn't exist in the
+    /// loaded list of releases.
+    #[snafu(display("no release named {name}"))]
+    NoSuchRelease { name: String },
 
     /// This error indicates that the release failed to install.
-    #[snafu(display("release install error: {source}"))]
+    #[snafu(display("failed to install release"))]
     ReleaseInstallError { source: ReleaseInstallError },
 
-    /// This error indicates the Helm wrapper encountered an error.
-    #[snafu(display("Helm error: {source}"))]
-    HelmError { source: HelmError },
+    /// This error indicates that the Helm wrapper failed to add the Helm
+    /// repository.
+    #[snafu(display("failed to add Helm repository {repo_name}"))]
+    HelmAddRepositoryError {
+        source: HelmError,
+        repo_name: String,
+    },
 
-    #[snafu(display("kube error: {source}"))]
-    KubeError { source: KubeClientError },
+    /// This error indicates that the Hlm wrapper failed to install the Helm
+    /// release.
+    #[snafu(display("failed to install Helm release {release_name}"))]
+    HelmInstallReleaseError {
+        release_name: String,
+        source: HelmError,
+    },
 
-    /// This error indicates a YAML error occurred.
-    #[snafu(display("yaml error: {source}"))]
-    YamlError { source: serde_yaml::Error },
+    /// This error indicates that the creation of a kube client failed.
+    #[snafu(display("failed to create kubernetes client"))]
+    KubeClientCreateError { source: KubeClientError },
+
+    /// This error indicates that the kube client failed to deloy manifests.
+    #[snafu(display("failed to deploy manifests using the kube client"))]
+    ManifestDeployError { source: KubeClientError },
+
+    /// This error indicates that Helm chart options could not be serialized
+    /// into YAML.
+    #[snafu(display("failed to serialize Helm chart options"))]
+    SerializeOptionsError { source: serde_yaml::Error },
 
     #[snafu(display("stack resource requests error"), context(false))]
     StackResourceRequestsError { source: ResourceRequestsError },
 
-    #[snafu(display("path or url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    /// This error indicates that parsing a string into a path or URL failed.
+    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
+    PathOrUrlParseError {
+        source: PathOrUrlParseError,
+        path_or_url: String,
+    },
 
-    #[snafu(display("transfer error"))]
+    /// This error indicates that receiving remote content failed.
+    #[snafu(display("failed to receive remote content"))]
     TransferError { source: FileTransferError },
 
+    /// This error indicates that the stack doesn't support being installed in
+    /// the provided namespace.
     #[snafu(display("cannot install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
@@ -165,7 +188,9 @@ impl StackSpecV2 {
         // Get the release by name
         let release = release_list
             .get(&self.release)
-            .ok_or(StackError::NoSuchStack)?;
+            .context(NoSuchReleaseSnafu {
+                name: self.release.clone(),
+            })?;
 
         // Install the release
         release
@@ -235,7 +260,10 @@ impl StackSpecV2 {
                     debug!("Installing manifest from Helm chart {}", helm_file);
 
                     // Read Helm chart YAML and apply templating
-                    let helm_file = helm_file.into_path_or_url().context(PathOrUrlParseSnafu)?;
+                    let helm_file = helm_file.into_path_or_url().context(PathOrUrlParseSnafu {
+                        path_or_url: helm_file.clone(),
+                    })?;
+
                     let helm_chart: HelmChart = transfer_client
                         .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
                         .await
@@ -246,12 +274,15 @@ impl StackSpecV2 {
                         helm_chart.name, helm_chart.version
                     );
 
-                    helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url)
-                        .context(HelmSnafu)?;
+                    helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
+                        HelmAddRepositorySnafu {
+                            repo_name: helm_chart.repo.name.clone(),
+                        },
+                    )?;
 
                     // Serialize chart options to string
-                    let values_yaml =
-                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu)?;
+                    let values_yaml = serde_yaml::to_string(&helm_chart.options)
+                        .context(SerializeOptionsSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
@@ -266,26 +297,32 @@ impl StackSpecV2 {
                         product_namespace,
                         false,
                     )
-                    .context(HelmSnafu)?;
+                    .context(HelmInstallReleaseSnafu {
+                        release_name: helm_chart.release_name,
+                    })?;
                 }
-                ManifestSpec::PlainYaml(path_or_url) => {
-                    debug!("Installing YAML manifest from {}", path_or_url);
+                ManifestSpec::PlainYaml(manifest_file) => {
+                    debug!("Installing YAML manifest from {}", manifest_file);
 
                     // Read YAML manifest and apply templating
-                    let path_or_url = path_or_url
-                        .into_path_or_url()
-                        .context(PathOrUrlParseSnafu)?;
+                    let path_or_url =
+                        manifest_file
+                            .into_path_or_url()
+                            .context(PathOrUrlParseSnafu {
+                                path_or_url: manifest_file.clone(),
+                            })?;
 
                     let manifests = transfer_client
                         .get(&path_or_url, &Template::new(parameters))
                         .await
                         .context(TransferSnafu)?;
 
-                    let kube_client = KubeClient::new().await.context(KubeSnafu)?;
+                    let kube_client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
+
                     kube_client
                         .deploy_manifests(&manifests, product_namespace)
                         .await
-                        .context(KubeSnafu)?
+                        .context(ManifestDeploySnafu)?
                 }
             }
         }

@@ -48,14 +48,17 @@ pub struct Stacklet {
 
 #[derive(Debug, Snafu)]
 pub enum StackletError {
-    #[snafu(display("kubernetes error"), context(false))]
-    KubeError { source: KubeClientError },
+    #[snafu(display("failed to create kubernetes client"))]
+    KubeClientCreateError { source: KubeClientError },
+
+    #[snafu(display("failed to fetch data from the kubernetes api"))]
+    KubeClientFetchError { source: KubeClientError },
 
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
     CustomCrdNamespaceError { crd_name: String },
 
-    #[snafu(display("JSON error"))]
-    JsonError { source: serde_json::Error },
+    #[snafu(display("failed to deserialize cluster conditions from json"))]
+    DeserializeConditionsError { source: serde_json::Error },
 
     #[snafu(display("service error"))]
     ServiceError { source: ServiceError },
@@ -66,7 +69,7 @@ pub enum StackletError {
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
 pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
-    let kube_client = KubeClient::new().await?;
+    let kube_client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
     stacklets.extend(grafana::list(&kube_client, namespace).await?);
@@ -82,12 +85,13 @@ pub async fn get_credentials_for_product(
     object_name: &str,
     product_name: &str,
 ) -> Result<Option<Credentials>, StackletError> {
-    let kube_client = KubeClient::new().await?;
+    let kube_client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
 
     let product_gvk = gvk_from_product_name(product_name);
     let product_cluster = match kube_client
         .get_namespaced_object(namespace, object_name, &product_gvk)
-        .await?
+        .await
+        .context(KubeClientFetchSnafu)?
     {
         Some(obj) => obj,
         None => {
@@ -101,7 +105,9 @@ pub async fn get_credentials_for_product(
     let credentials = match get_credentials(&kube_client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
         Err(CredentialsError::NoSecret) => None,
-        Err(CredentialsError::KubeError { source }) => return Err(source.into()),
+        Err(CredentialsError::KubeClientFetchError { source }) => {
+            return Err(StackletError::KubeClientFetchError { source })
+        }
     };
 
     Ok(credentials)
@@ -115,7 +121,11 @@ async fn list_stackable_stacklets(
     let mut stacklets = Vec::new();
 
     for (product_name, product_gvk) in product_list {
-        let objects = match kube_client.list_objects(&product_gvk, namespace).await? {
+        let objects = match kube_client
+            .list_objects(&product_gvk, namespace)
+            .await
+            .context(KubeClientFetchSnafu)?
+        {
             Some(obj) => obj,
             None => {
                 info!(
@@ -128,9 +138,8 @@ async fn list_stackable_stacklets(
         for object in objects {
             let conditions: Vec<ClusterCondition> = match object.data.pointer("/status/conditions")
             {
-                Some(conditions) => {
-                    serde_json::from_value(conditions.clone()).context(JsonSnafu)?
-                }
+                Some(conditions) => serde_json::from_value(conditions.clone())
+                    .context(DeserializeConditionsSnafu)?,
                 None => vec![],
             };
 
