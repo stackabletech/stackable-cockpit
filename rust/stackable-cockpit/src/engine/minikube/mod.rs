@@ -5,22 +5,27 @@ use tracing::{debug, info, instrument};
 use crate::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     engine::{check_if_docker_is_running, DockerError},
-    utils::check::binaries_present,
+    utils::check::binaries_present_with_name,
 };
 
 #[derive(Debug, Snafu)]
 pub enum MinikubeClusterError {
-    #[snafu(display("missing dependencies"))]
-    MissingDepsError,
+    #[snafu(display(
+        "failed to determine if a minikube cluster named {cluster_name} already exists"
+    ))]
+    CheckClusterError {
+        source: std::io::Error,
+        cluster_name: String,
+    },
 
-    #[snafu(display("command error: {error}"))]
-    CmdError { error: String },
+    #[snafu(display("missing required binary: {binary}"))]
+    MissingBinaryError { binary: String },
 
-    #[snafu(display("Docker error"))]
+    #[snafu(display("failed to execute minikube command: {error}"))]
+    CommandError { error: String },
+
+    #[snafu(display("failed to determine if Docker is running"))]
     DockerError { source: DockerError },
-
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
 }
 
 #[derive(Debug)]
@@ -45,8 +50,8 @@ impl MinikubeCluster {
         info!("Creating local cluster using minikube");
 
         // Check if required binaries are present
-        if !binaries_present(&["docker", "minikube"]) {
-            return Err(MinikubeClusterError::MissingDepsError);
+        if let Some(binary) = binaries_present_with_name(&["docker", "minikube"]) {
+            return Err(MinikubeClusterError::MissingBinaryError { binary });
         }
 
         // Check if Docker is running
@@ -63,7 +68,7 @@ impl MinikubeCluster {
             .await;
 
         if let Err(err) = minikube_cmd {
-            return Err(MinikubeClusterError::CmdError {
+            return Err(MinikubeClusterError::CommandError {
                 error: err.to_string(),
             });
         }
@@ -104,7 +109,7 @@ impl MinikubeCluster {
             .args(["-o", "json"])
             .output()
             .await
-            .context(IoSnafu)?;
+            .context(CheckClusterSnafu { cluster_name })?;
 
         if !output.status.success() {
             return Ok(false);

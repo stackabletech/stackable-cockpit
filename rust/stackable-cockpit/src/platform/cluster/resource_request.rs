@@ -11,6 +11,8 @@ use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
 
 use crate::utils::k8s::{KubeClient, KubeClientError};
 
+const HELP_MESSAGE: &str = ". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution";
+
 /// Demos and stacks can define how much cluster resources they need to run
 /// via their definition. The struct [`ResourceRequests`] contains information
 /// how many CPU cores and how much memory and disk space are required to run
@@ -42,8 +44,11 @@ impl Display for ResourceRequests {
 /// can not be parsed or validation of those requests failed.
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsError {
-    #[snafu(display("kube error: {source}"), context(false))]
-    KubeError { source: KubeClientError },
+    #[snafu(display("failed to create kube client"))]
+    KubeClientError { source: KubeClientError },
+
+    #[snafu(display("failed to retrieve cluster info"))]
+    ClusterInfoError { source: KubeClientError },
 
     #[snafu(display("failed to parse cpu resource requirements"))]
     ParseCpuResourceRequirements {
@@ -64,13 +69,14 @@ pub enum ResourceRequestsError {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsValidationError {
     #[snafu(display(
-        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster{}", required.as_cpu_count(), available.as_cpu_count(), help_message.clone().unwrap_or_default()
+        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster{}",
+        required.as_cpu_count(), available.as_cpu_count(), help_message.clone().unwrap_or_default()
     ))]
     InsufficientCpu {
+        help_message: Option<String>,
         available: CpuQuantity,
         required: CpuQuantity,
         object_name: String,
-        help_message: Option<String>,
     },
 
     #[snafu(display(
@@ -91,8 +97,11 @@ impl ResourceRequests {
         &self,
         object_name: &str,
     ) -> Result<(), ResourceRequestsError> {
-        let kube_client = KubeClient::new().await?;
-        let cluster_info = kube_client.get_cluster_info().await?;
+        let kube_client = KubeClient::new().await.context(KubeClientSnafu)?;
+        let cluster_info = kube_client
+            .get_cluster_info()
+            .await
+            .context(ClusterInfoSnafu)?;
 
         let stack_cpu =
             CpuQuantity::try_from(&self.cpu).context(ParseCpuResourceRequirementsSnafu)?;
@@ -111,7 +120,7 @@ impl ResourceRequests {
                 available: cluster_info.untainted_allocatable_cpu,
                 object_name: object_name.to_string(),
                 required: stack_cpu,
-                help_message: (rng.gen::<f32>() < 0.005).then_some(". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution".to_string()),
+                help_message: (rng.gen::<f32>() < 0.005).then_some(HELP_MESSAGE.to_string()),
             });
         }
 
@@ -124,9 +133,9 @@ impl ResourceRequests {
         }
 
         if !errors.is_empty() {
-            Err(ResourceRequestsError::ValidationErrors { errors })
-        } else {
-            Ok(())
+            return Err(ResourceRequestsError::ValidationErrors { errors });
         }
+
+        Ok(())
     }
 }

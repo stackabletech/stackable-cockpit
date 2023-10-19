@@ -14,19 +14,19 @@ mod config;
 
 #[derive(Debug, Snafu)]
 pub enum KindClusterError {
-    #[snafu(display("io error"))]
+    #[snafu(display("failed to pipe kind config using stdin"))]
     IoError { source: std::io::Error },
 
-    #[snafu(display("no stdin error"))]
+    #[snafu(display("failed to obtain stdin handle"))]
     StdinError,
 
-    #[snafu(display("kind command error: {error}"))]
-    KindCommandError { error: String },
+    #[snafu(display("failed to execute kind command: {error}"))]
+    CommandError { error: String },
 
     #[snafu(display("missing required binary: {binary}"))]
     MissingBinaryError { binary: String },
 
-    #[snafu(display("docker error"))]
+    #[snafu(display("failed to determine if Docker is running"))]
     DockerError { source: DockerError },
 
     #[snafu(display("failed to covert kind config to yaml"))]
@@ -91,7 +91,7 @@ impl KindCluster {
         drop(stdin);
 
         if let Err(err) = kind_cmd.wait().await {
-            return Err(KindClusterError::KindCommandError {
+            return Err(KindClusterError::CommandError {
                 error: err.to_string(),
             });
         }
@@ -134,7 +134,7 @@ impl KindCluster {
 
         ensure!(
             output.status.success(),
-            KindCommandSnafu {
+            CommandSnafu {
                 error: String::from_utf8_lossy(&output.stderr)
             }
         );

@@ -15,19 +15,7 @@ pub trait SpecIter<S> {
 
 #[derive(Debug, Snafu)]
 pub enum ListError {
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
-
-    #[snafu(display("url parse error"))]
-    ParseUrlError { source: url::ParseError },
-
-    #[snafu(display("yaml error"))]
-    YamlError { source: serde_yaml::Error },
-
-    #[snafu(display("invalid file url"))]
-    InvalidFileUrl,
-
-    #[snafu(display("transfer error"))]
+    #[snafu(display("failed to transfer the list file"))]
     TransferError { source: FileTransferError },
 }
 

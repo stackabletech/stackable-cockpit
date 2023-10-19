@@ -225,7 +225,7 @@ async fn describe_cmd(
                     .set_header(vec!["PRODUCT", "OPERATOR VERSION"]);
 
                 for (product_name, product) in &release.products {
-                    product_table.add_row(vec![product_name, &product.version]);
+                    product_table.add_row(vec![product_name, &product.version.to_string()]);
                 }
 
                 let mut table = Table::new();

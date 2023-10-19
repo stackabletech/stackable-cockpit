@@ -16,16 +16,16 @@ use crate::{
 
 #[derive(Debug, Snafu)]
 pub enum ReleaseInstallError {
-    #[snafu(display("failed to parse operator spec: {source}"))]
+    #[snafu(display("failed to parse operator spec"))]
     OperatorSpecParseError { source: OperatorSpecParseError },
 
-    #[snafu(display("failed with Helm error: {source}"))]
-    HelmError { source: HelmError },
+    #[snafu(display("failed to install release using Helm"))]
+    HelmInstallError { source: HelmError },
 }
 
 #[derive(Debug, Snafu)]
 pub enum ReleaseUninstallError {
-    #[snafu(display("failed with Helm error"))]
+    #[snafu(display("failed to uninstall release using Helm"))]
     HelmUninstallError { source: HelmError },
 }
 
@@ -63,8 +63,9 @@ impl ReleaseSpec {
                 .context(OperatorSpecParseSnafu)?;
 
             // Install operator
-            operator.install(namespace).context(HelmSnafu)?
+            operator.install(namespace).context(HelmInstallSnafu)?
         }
+
         Ok(())
     }
 

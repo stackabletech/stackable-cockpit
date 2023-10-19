@@ -9,13 +9,13 @@ pub use resource_request::*;
 
 #[derive(Debug, Snafu)]
 pub enum ClusterError {
-    #[snafu(display("failed to parse node cpu"))]
-    ParseNodeCpu {
+    #[snafu(display("failed to parse node cpu quantity"))]
+    ParseCpuQuantityError {
         source: stackable_operator::error::Error,
     },
 
-    #[snafu(display("failed to parse node memory"))]
-    ParseNodeMemory {
+    #[snafu(display("failed to parse node memory quantity"))]
+    ParseMemoryQuantityError {
         source: stackable_operator::error::Error,
     },
 }
@@ -66,12 +66,12 @@ impl ClusterInfo {
 
         for mut node in untainted_allocatable {
             if let Some(q) = node.remove("cpu") {
-                let cpu = CpuQuantity::try_from(q).context(ParseNodeCpuSnafu)?;
+                let cpu = CpuQuantity::try_from(q).context(ParseCpuQuantitySnafu)?;
                 untainted_allocatable_cpu += cpu;
             }
 
             if let Some(q) = node.remove("memory") {
-                let memory = MemoryQuantity::try_from(q).context(ParseNodeMemorySnafu)?;
+                let memory = MemoryQuantity::try_from(q).context(ParseMemoryQuantitySnafu)?;
                 untainted_allocatable_memory += memory;
             }
         }

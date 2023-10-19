@@ -59,10 +59,10 @@ pub struct DemoSpecV2 {
 
 #[derive(Debug, Snafu)]
 pub enum DemoError {
-    #[snafu(display("no stack with name '{name}'"))]
+    #[snafu(display("no stack named {name}"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("stack error"))]
+    #[snafu(display("failed to install stack"))]
     StackError { source: StackError },
 
     #[snafu(display("demo resource requests error"), context(false))]

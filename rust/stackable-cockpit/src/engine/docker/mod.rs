@@ -6,7 +6,7 @@ use tracing::{debug, instrument};
 
 #[derive(Debug, Snafu)]
 pub enum DockerError {
-    #[snafu(display("io error: {source}"))]
+    #[snafu(display("failed to read stdout"))]
     IoError { source: std::io::Error },
 
     #[snafu(display("It seems like Docker is not running on this system"))]

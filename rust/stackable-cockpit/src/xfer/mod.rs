@@ -11,31 +11,31 @@ use crate::{
     utils::path::PathOrUrl,
     xfer::{
         cache::{Cache, CacheSettings, CacheStatus, Error},
-        processor::Processor,
+        processor::{Processor, ProcessorError},
     },
 };
 
-type Result<T> = core::result::Result<T, FileTransferError>;
+type Result<T, E = FileTransferError> = core::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum FileTransferError {
-    #[snafu(display("io error"))]
+    #[snafu(display("failed to read local file"))]
     IoError { source: std::io::Error },
 
     #[snafu(display("failed to extract file name from URL"))]
     FileNameError,
 
-    #[snafu(display("cache error"))]
+    #[snafu(display("failed to create cache from provided settings"))]
+    CacheSettingsError { source: Error },
+
+    #[snafu(display("failed to read/write cache from/to cache"))]
     CacheError { source: Error },
 
-    #[snafu(display("request error"))]
+    #[snafu(display("failed to retrieve remote file"))]
     RequestError { source: reqwest::Error },
 
-    #[snafu(display("failed to deserialize content into YAML"))]
-    YamlError { source: serde_yaml::Error },
-
-    #[snafu(display("templating error"))]
-    TemplatingError { source: tera::Error },
+    #[snafu(display("failed to process file contents"))]
+    ProcessingError { source: ProcessorError },
 }
 
 #[derive(Debug)]
@@ -47,7 +47,10 @@ pub struct FileTransferClient {
 impl FileTransferClient {
     /// Creates a new [`FileTransferClient`] with caching capabilities.
     pub async fn new(cache_settings: CacheSettings) -> Result<Self> {
-        let cache = cache_settings.try_into_cache().await.context(CacheSnafu)?;
+        let cache = cache_settings
+            .try_into_cache()
+            .await
+            .context(CacheSettingsSnafu)?;
         let client = reqwest::Client::new();
 
         Ok(Self { client, cache })
@@ -66,8 +69,12 @@ impl FileTransferClient {
         P: Processor<Input = String>,
     {
         match path_or_url {
-            PathOrUrl::Path(path) => processor.process(self.get_from_local_file(path).await?),
-            PathOrUrl::Url(url) => processor.process(self.get_from_cache_or_remote(url).await?),
+            PathOrUrl::Path(path) => processor
+                .process(self.get_from_local_file(path).await?)
+                .context(ProcessingSnafu),
+            PathOrUrl::Url(url) => processor
+                .process(self.get_from_cache_or_remote(url).await?)
+                .context(ProcessingSnafu),
         }
     }
 
