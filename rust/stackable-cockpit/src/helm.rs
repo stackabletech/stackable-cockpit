@@ -52,19 +52,19 @@ pub struct HelmRepoEntry {
 
 #[derive(Debug, Snafu)]
 pub enum HelmError {
-    #[snafu(display("str utf-8 error: {source}"))]
+    #[snafu(display("failed to convert raw C string pointer to UTF-8 string"))]
     StrUtf8Error { source: Utf8Error },
 
-    #[snafu(display("url parse error: {source}"))]
+    #[snafu(display("failed to parse URL"))]
     UrlParseError { source: url::ParseError },
 
-    #[snafu(display("json error: {source}"))]
-    JsonError { source: serde_json::Error },
+    #[snafu(display("failed to deserialize JSON data"))]
+    DeserializeJsonError { source: serde_json::Error },
 
-    #[snafu(display("yaml error: {source}"))]
-    YamlError { source: serde_yaml::Error },
+    #[snafu(display("failed to deserialize YAML data"))]
+    DeserializeYamlError { source: serde_yaml::Error },
 
-    #[snafu(display("request error: {source}"))]
+    #[snafu(display("failed to retrieve remote content"))]
     RequestError { source: reqwest::Error },
 
     #[snafu(display("failed to add Helm repo: {error}"))]
@@ -73,7 +73,7 @@ pub enum HelmError {
     #[snafu(display("failed to list Helm releases: {error}"))]
     ListReleasesError { error: String },
 
-    #[snafu(display("failed to install Helm release: {source}"))]
+    #[snafu(display("failed to install Helm release"))]
     InstallReleaseError { source: HelmInstallReleaseError },
 
     #[snafu(display("failed to uninstall Helm release: {error}"))]
@@ -375,7 +375,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
         return Err(HelmError::ListReleasesError { error: err });
     }
 
-    serde_json::from_str(result).context(JsonSnafu)
+    serde_json::from_str(result).context(DeserializeJsonSnafu)
 }
 
 /// Returns a single Helm release by `release_name`.
@@ -421,6 +421,7 @@ where
 
     debug!("Using {} to retrieve Helm index file", url);
 
+    // TODO (Techassi): Use the FileTransferClient for that
     let index_file_content = reqwest::get(url)
         .await
         .context(RequestSnafu)?
@@ -428,7 +429,7 @@ where
         .await
         .context(RequestSnafu)?;
 
-    serde_yaml::from_str(&index_file_content).context(YamlSnafu)
+    serde_yaml::from_str(&index_file_content).context(DeserializeYamlSnafu)
 }
 
 /// Helper function to convert raw C string pointers to &str.

@@ -57,7 +57,7 @@ pub enum StackletError {
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
     CustomCrdNamespaceError { crd_name: String },
 
-    #[snafu(display("failed to deserialize cluster conditions from json"))]
+    #[snafu(display("failed to deserialize cluster conditions from JSON"))]
     DeserializeConditionsError { source: serde_json::Error },
 
     #[snafu(display("service error"))]

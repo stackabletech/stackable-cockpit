@@ -29,7 +29,7 @@ pub enum KindClusterError {
     #[snafu(display("failed to determine if Docker is running"))]
     DockerError { source: DockerError },
 
-    #[snafu(display("failed to covert kind config to yaml"))]
+    #[snafu(display("failed to covert kind config to YAML"))]
     YamlError { source: serde_yaml::Error },
 }
 

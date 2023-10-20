@@ -32,7 +32,7 @@ pub enum KubeClientError {
     #[snafu(display("kubernetes error"))]
     KubeError { source: kube::error::Error },
 
-    #[snafu(display("failed to deserialize yaml data"))]
+    #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYamlError { source: serde_yaml::Error },
 
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]

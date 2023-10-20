@@ -138,10 +138,10 @@ pub enum CmdError {
     #[snafu(display("semver parse error"))]
     SemVerParseError { source: semver::Error },
 
-    #[snafu(display("unable to format yaml output"))]
+    #[snafu(display("unable to format YAML output"))]
     YamlOutputFormatError { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
+    #[snafu(display("unable to format JSON output"))]
     JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]

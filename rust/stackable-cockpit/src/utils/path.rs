@@ -11,7 +11,7 @@ pub enum PathOrUrl {
 
 #[derive(Debug, Snafu)]
 pub enum PathOrUrlParseError {
-    #[snafu(display("failed to parse url"))]
+    #[snafu(display("failed to parse URL"))]
     UrlParseError { source: ParseError },
 }
 
