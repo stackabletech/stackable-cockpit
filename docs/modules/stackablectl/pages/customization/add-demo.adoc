@@ -1,5 +1,5 @@
 = Add a Demo
-:page-aliases: stackablectl::customization/add_demo.adoc
+:page-aliases: stable@stackablectl::customization/add_demo.adoc
 
 == Motivation
 
