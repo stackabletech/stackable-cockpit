@@ -5,7 +5,7 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, ResultExt, Snafu};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -31,7 +31,7 @@ pub struct Parameter {
 
 #[derive(Debug, Snafu, PartialEq)]
 pub enum IntoParametersError {
-    #[snafu(display("raw parameter parse error"))]
+    #[snafu(display("failed to parse raw parameter"))]
     ParseError { source: RawParameterParseError },
 
     #[snafu(display("invalid parameter '{parameter}', expected one of {expected}"))]
@@ -56,15 +56,15 @@ pub trait IntoParameters: Sized + IntoRawParameters {
 
         for raw_paramater in raw_parameters {
             if !parameters.contains_key(&raw_paramater.name) {
-                return Err(IntoParametersError::InvalidParameter {
+                return InvalidParameterSnafu {
                     parameter: raw_paramater.name,
-                    expected: valid_parameters
-                        .as_ref()
-                        .iter()
-                        .map(|p| p.name.clone())
+                    expected: parameters
+                        .keys()
+                        .cloned()
                         .collect::<Vec<String>>()
                         .join(", "),
-                });
+                }
+                .fail();
             }
             parameters.insert(raw_paramater.name, raw_paramater.value);
         }
@@ -95,13 +95,13 @@ pub enum RawParameterParseError {
     InvalidEqualSignCount,
 
     #[snafu(display("invalid parameter value, cannot be empty"))]
-    InvalidParameterValue,
+    EmptyValue,
 
     #[snafu(display("invalid parameter name, cannot be empty"))]
-    InvalidParameterName,
+    EmptyName,
 
     #[snafu(display("invalid (empty) parameter input"))]
-    InvalidParameterInput,
+    EmptyInput,
 }
 
 impl Display for RawParameter {
@@ -117,33 +117,23 @@ impl FromStr for RawParameter {
         let input = s.trim();
 
         // Empty input is not allowed
-        if input.is_empty() {
-            return Err(RawParameterParseError::InvalidParameterInput);
-        }
+        ensure!(!input.is_empty(), EmptyInputSnafu);
 
         // Split at each equal sign
         let parts: Vec<&str> = input.split('=').collect();
         let len = parts.len();
 
-        // If there are more than 2 equal signs, return error
-        // because of invalid spec format
-        if len > 2 {
-            return Err(RawParameterParseError::InvalidEqualSignCount);
-        }
-
-        // Only specifying a key is not valid
-        if len == 1 {
-            return Err(RawParameterParseError::InvalidParameterValue);
-        }
+        // Input without any or more than one sign character is invalid
+        ensure!(len == 2, InvalidEqualSignCountSnafu);
 
         // If there is an equal sign, but no key before
         if parts[0].is_empty() {
-            return Err(RawParameterParseError::InvalidParameterName);
+            return Err(RawParameterParseError::EmptyName);
         }
 
         // If there is an equal sign, but no value after
         if parts[1].is_empty() {
-            return Err(RawParameterParseError::InvalidParameterValue);
+            return Err(RawParameterParseError::EmptyValue);
         }
 
         Ok(Self {
@@ -190,7 +180,7 @@ impl IntoRawParameters for &str {
         let input = self.trim();
 
         if input.is_empty() {
-            return Err(RawParameterParseError::InvalidParameterInput);
+            return Err(RawParameterParseError::EmptyInput);
         }
 
         let mut params = Vec::new();
@@ -218,10 +208,7 @@ impl IntoRawParameters for Vec<String> {
 
 #[cfg(test)]
 mod test {
-    use crate::utils::params::{
-        IntoParameters, IntoParametersError, IntoRawParameters, Parameter, RawParameter,
-        RawParameterParseError,
-    };
+    use super::*;
 
     #[test]
     fn single_parameter_str() {
@@ -246,10 +233,10 @@ mod test {
     }
 
     #[test]
-    fn single_parameter_no_value() {
+    fn single_parameter_no_equal_sign() {
         match RawParameter::try_from("param") {
             Ok(param) => panic!("SHOULD FAIL: {param}"),
-            Err(err) => assert_eq!(err, RawParameterParseError::InvalidParameterValue),
+            Err(err) => assert_eq!(err, RawParameterParseError::InvalidEqualSignCount),
         }
     }
 
@@ -257,7 +244,7 @@ mod test {
     fn single_parameter_equal_sign_no_value() {
         match RawParameter::try_from("param=") {
             Ok(param) => panic!("SHOULD FAIL: {param}"),
-            Err(err) => assert_eq!(err, RawParameterParseError::InvalidParameterValue),
+            Err(err) => assert_eq!(err, RawParameterParseError::EmptyValue),
         }
     }
 
@@ -265,7 +252,7 @@ mod test {
     fn single_parameter_only_equal_sign() {
         match RawParameter::try_from("=") {
             Ok(param) => panic!("SHOULD FAIL: {param}"),
-            Err(err) => assert_eq!(err, RawParameterParseError::InvalidParameterName),
+            Err(err) => assert_eq!(err, RawParameterParseError::EmptyName),
         }
     }
 

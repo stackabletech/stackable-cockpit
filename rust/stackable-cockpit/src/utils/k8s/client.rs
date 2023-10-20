@@ -29,11 +29,11 @@ pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum KubeClientError {
-    #[snafu(display("kube error: {source}"))]
+    #[snafu(display("kubernetes error"))]
     KubeError { source: kube::error::Error },
 
-    #[snafu(display("yaml error: {source}"))]
-    YamlError { source: serde_yaml::Error },
+    #[snafu(display("failed to deserialize yaml data"))]
+    DeserializeYamlError { source: serde_yaml::Error },
 
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
     ObjectTypeError { object: DynamicObject },
@@ -50,14 +50,14 @@ pub enum KubeClientError {
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterError { source: ClusterError },
 
-    #[snafu(display("invalid secret data (empty)"))]
-    InvalidSecretData,
+    #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
+    InvalidSecretData { secret_name: String },
 
-    #[snafu(display("no username key in credentials secret"))]
-    NoUsernameKey,
+    #[snafu(display("no username key in credentials secret '{secret_name}'"))]
+    NoUsernameKey { secret_name: String },
 
-    #[snafu(display("no password key in credentials secret"))]
-    NoPasswordKey,
+    #[snafu(display("no password key in credentials secret '{secret_name}'"))]
+    NoPasswordKey { secret_name: String },
 }
 
 pub struct KubeClient {
@@ -83,7 +83,8 @@ impl KubeClient {
     /// resolve GVKs or unable to patch the dynamic objects.
     pub async fn deploy_manifests(&self, manifests: &str, namespace: &str) -> Result<()> {
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
-            let mut object = DynamicObject::deserialize(manifest).context(YamlSnafu)?;
+            let mut object = DynamicObject::deserialize(manifest).context(DeserializeYamlSnafu)?;
+
             let object_type = object.types.as_ref().ok_or(
                 ObjectTypeSnafu {
                     object: object.clone(),
@@ -199,17 +200,23 @@ impl KubeClient {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
         let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
-        let secret_data = secret.data.context(InvalidSecretDataSnafu)?;
+        let secret_name = secret.name_any();
+
+        let secret_data = secret.data.context(InvalidSecretDataSnafu {
+            secret_name: secret_name.clone(),
+        })?;
 
         let username = secret_data
             .get(username_key)
-            .context(NoUsernameKeySnafu)?
+            .context(NoUsernameKeySnafu {
+                secret_name: secret_name.clone(),
+            })?
             .try_to_string()
             .context(ByteStringConvertSnafu)?;
 
         let password = secret_data
             .get(password_key)
-            .context(NoPasswordKeySnafu)?
+            .context(NoPasswordKeySnafu { secret_name })?
             .try_to_string()
             .context(ByteStringConvertSnafu)?;
 

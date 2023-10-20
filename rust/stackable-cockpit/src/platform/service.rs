@@ -17,8 +17,8 @@ use crate::utils::k8s::{KubeClient, KubeClientError, ListParamsExt, ProductLabel
 
 #[derive(Debug, Snafu)]
 pub enum ServiceError {
-    #[snafu(display("kube error: {source}"))]
-    KubeClientError { source: KubeClientError },
+    #[snafu(display("failed to fetch data from kubernetes api"))]
+    KubeClientFetchError { source: KubeClientError },
 
     #[snafu(display("missing namespace for service '{service}'"))]
     MissingServiceNamespace { service: String },
@@ -26,16 +26,16 @@ pub enum ServiceError {
     #[snafu(display("missing spec for service '{service}'"))]
     MissingServiceSpec { service: String },
 
-    #[snafu(display("failed to get status of node {node_name}"))]
+    #[snafu(display("failed to get status of node '{node_name}'"))]
     GetNodeStatus { node_name: String },
 
-    #[snafu(display("failed to get address of node {node_name}"))]
+    #[snafu(display("failed to get address of node '{node_name}'"))]
     GetNodeAddress { node_name: String },
 
-    #[snafu(display("Could not find an ExternalIP or InternalIP for node {node_name}"))]
+    #[snafu(display("failed to find an ExternalIP or InternalIP for node '{node_name}'"))]
     NoIpForNode { node_name: String },
 
-    #[snafu(display("failed to find node {node_name} in node_name_ip_mapping"))]
+    #[snafu(display("failed to find node '{node_name}' in node_name_ip_mapping"))]
     NodeMissingInIpMapping { node_name: String },
 }
 
@@ -51,7 +51,7 @@ pub async fn get_service_endpoints(
     let services = kube_client
         .list_services(Some(object_namespace), &service_list_params)
         .await
-        .context(KubeClientSnafu)?;
+        .context(KubeClientFetchSnafu)?;
 
     let mut endpoints = IndexMap::new();
 
@@ -74,9 +74,11 @@ pub async fn get_service_endpoint_urls(
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, ServiceError> {
     let service_name = service.name_unchecked();
+
     let service_namespace = service.namespace().context(MissingServiceNamespaceSnafu {
         service: service_name.clone(),
     })?;
+
     let service_spec = service.spec.as_ref().context(MissingServiceSpecSnafu {
         service: service_name.clone(),
     })?;
@@ -117,7 +119,7 @@ pub async fn get_service_endpoint_urls_for_nodeport(
     let endpoints = kube_client
         .get_endpoints(service_namespace, service_name)
         .await
-        .context(KubeClientSnafu)?;
+        .context(KubeClientFetchSnafu)?;
 
     let node_name = match &endpoints.subsets {
         Some(subsets) if subsets.len() == 1 => match &subsets[0].addresses {
@@ -235,7 +237,10 @@ async fn get_node_ip(kube_client: &KubeClient, node_name: &str) -> Result<String
 async fn get_node_name_ip_mapping(
     kube_client: &KubeClient,
 ) -> Result<HashMap<String, String>, ServiceError> {
-    let nodes = kube_client.list_nodes().await.context(KubeClientSnafu)?;
+    let nodes = kube_client
+        .list_nodes()
+        .await
+        .context(KubeClientFetchSnafu)?;
 
     let mut result = HashMap::new();
     for node in nodes {
