@@ -272,6 +272,10 @@ async fn install_cmd(
 ) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
 
+    // Init result output and progress output
+    let mut output = cli.result();
+    output.enable_progress(format!("Installing demo '{}'", args.demo_name));
+
     let demo_spec = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
@@ -289,6 +293,7 @@ async fn install_cmd(
         .context(ListSnafu)?;
 
     // Install local cluster if needed
+    output.set_progress_message("Creating local cluster");
     args.local_cluster
         .install_if_needed(None)
         .await
@@ -307,6 +312,7 @@ async fn install_cmd(
         .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
 
     if !args.skip_release {
+        output.set_progress_message("Creating operator namespace");
         namespace::create_if_needed(operator_namespace.clone())
             .await
             .context(NamespaceSnafu {
@@ -314,12 +320,14 @@ async fn install_cmd(
             })?;
     }
 
+    output.set_progress_message("Creating product namespace");
     namespace::create_if_needed(product_namespace.clone())
         .await
         .context(NamespaceSnafu {
             namespace: product_namespace.clone(),
         })?;
 
+    output.set_progress_message("Installing demo manifests");
     demo_spec
         .install(
             stack_list,
@@ -333,8 +341,6 @@ async fn install_cmd(
         )
         .await
         .context(DemoSnafu)?;
-
-    let mut result = cli.result();
 
     let operator_cmd = format!(
         "stackablectl operator installed{}",
@@ -354,11 +360,12 @@ async fn install_cmd(
         }
     );
 
-    result
+    output
         .with_command_hint(operator_cmd, "display the installed operators")
         .with_command_hint(stacklet_cmd, "display the installed stacklets")
         .with_output(format!("Installed demo '{}'", args.demo_name));
 
+    output.finish_progress("Done");
     // TODO (Techassi): Remove unwrap
-    Ok(result.render().unwrap())
+    Ok(output.render().unwrap())
 }

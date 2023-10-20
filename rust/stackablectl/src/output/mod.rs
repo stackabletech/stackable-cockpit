@@ -119,9 +119,15 @@ where
             .get_or_insert(Spinner::new(spinners::Dots, initial_message, Color::Green));
     }
 
-    pub fn set_progress_message(&mut self, message: String) {
+    pub fn set_progress_message(&mut self, message: impl Into<String>) {
         if let Some(progress) = self.progress.as_mut() {
-            progress.update_text(message)
+            progress.update_text(message.into())
+        }
+    }
+
+    pub fn finish_progress(&mut self, message: impl AsRef<str>) {
+        if let Some(progress) = self.progress.as_mut() {
+            progress.success(message.as_ref())
         }
     }
 

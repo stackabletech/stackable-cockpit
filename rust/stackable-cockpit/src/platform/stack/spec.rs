@@ -295,7 +295,7 @@ impl StackSpecV2 {
                         },
                         Some(&values_yaml),
                         product_namespace,
-                        false,
+                        true,
                     )
                     .context(HelmInstallReleaseSnafu {
                         release_name: helm_chart.release_name,

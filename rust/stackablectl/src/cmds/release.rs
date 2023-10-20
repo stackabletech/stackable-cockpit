@@ -271,19 +271,25 @@ async fn install_cmd(
 
     match release_list.get(&args.release) {
         Some(release) => {
+            let mut output = cli.result();
+            output.enable_progress(format!("Installing release '{}'", args.release));
+
             // Install local cluster if needed
+            output.set_progress_message("Installing local cluster");
             args.local_cluster
                 .install_if_needed(None)
                 .await
                 .context(CommonClusterArgsSnafu)?;
 
             // Create operator namespace if needed
+            output.set_progress_message("Creating operator namespace");
             namespace::create_if_needed(args.operator_namespace.clone())
                 .await
                 .context(NamespaceSnafu {
                     namespace: args.operator_namespace.clone(),
                 })?;
 
+            output.set_progress_message("Installing release manifests");
             release
                 .install(
                     &args.included_products,
@@ -292,17 +298,16 @@ async fn install_cmd(
                 )
                 .context(ReleaseInstallSnafu)?;
 
-            let mut result = cli.result();
-
-            result
+            output
                 .with_command_hint(
                     "stackablectl operator installed",
                     "list installed operators",
                 )
                 .with_output(format!("Installed release '{}'", args.release));
 
+            output.finish_progress("Done");
             // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(output.render().unwrap())
         }
         None => Ok("No such release".into()),
     }
