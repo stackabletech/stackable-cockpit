@@ -47,7 +47,7 @@ async fn main() -> Result<(), Error> {
             let mut output = app.error();
             output.with_error_report(err);
 
-            eprint!("{}", output.render().unwrap())
+            eprint!("{}", output.render())
         }
     }
 

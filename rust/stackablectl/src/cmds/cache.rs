@@ -80,7 +80,7 @@ async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
         .with_command_hint("stackablectl cache clean", "to clean all cached files")
         .with_output(table.to_string());
 
-    Ok(result.render().unwrap())
+    Ok(result.render())
 }
 
 #[instrument(skip_all)]

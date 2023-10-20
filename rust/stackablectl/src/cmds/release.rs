@@ -196,8 +196,7 @@ async fn list_cmd(
                 )
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => serde_json::to_string(&release_list).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlOutputFormatSnafu),
@@ -251,8 +250,7 @@ async fn describe_cmd(
                     .with_command_hint("stackablectl release list", "list all available releases")
                     .with_output(table.to_string());
 
-                // TODO (Techassi): Remove unwrap
-                Ok(result.render().unwrap())
+                Ok(result.render())
             }
             OutputType::Json => serde_json::to_string(&release).context(JsonOutputFormatSnafu),
             OutputType::Yaml => serde_yaml::to_string(&release).context(YamlOutputFormatSnafu),
@@ -306,8 +304,7 @@ async fn install_cmd(
                 .with_output(format!("Installed release '{}'", args.release));
 
             output.finish_progress("Done");
-            // TODO (Techassi): Remove unwrap
-            Ok(output.render().unwrap())
+            Ok(output.render())
         }
         None => Ok("No such release".into()),
     }
@@ -332,8 +329,7 @@ async fn uninstall_cmd(
                 .with_command_hint("stackablectl release list", "list available releases")
                 .with_output(format!("Uninstalled release '{}'", args.release));
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         None => Ok("No such release".into()),
     }

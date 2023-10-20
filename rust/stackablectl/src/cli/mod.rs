@@ -196,13 +196,11 @@ impl Cli {
 
     // Output utility functions
     pub fn result(&self) -> Output<ResultContext> {
-        // TODO (Techassi): Remove unwrap
-        Output::new(ResultContext::default(), false).unwrap()
+        Output::new(ResultContext::default(), false).expect("Failed to create output renderer")
     }
 
     pub fn error(&self) -> Output<ErrorContext> {
-        // TODO (Techassi): Remove unwrap
-        Output::new(ErrorContext::default(), false).unwrap()
+        Output::new(ErrorContext::default(), false).expect("Failed to create output renderer")
     }
 }
 

@@ -214,8 +214,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
                 )
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => {
             Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
@@ -272,8 +271,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
                 .with_command_hint("stackablectl operator list", "list all available operators")
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
@@ -321,8 +319,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             }
         ));
 
-    // TODO (Techassi): Remove unwrap
-    Ok(result.render().unwrap())
+    Ok(result.render())
 }
 
 #[instrument]
@@ -352,8 +349,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
             }
         ));
 
-    // TODO (Techassi): Remove unwrap
-    Ok(result.render().unwrap())
+    Ok(result.render())
 }
 
 #[instrument]
@@ -415,8 +411,7 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
                 )
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
         OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),

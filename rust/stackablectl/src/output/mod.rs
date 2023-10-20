@@ -131,16 +131,18 @@ where
         }
     }
 
-    pub fn render(self) -> Result<String> {
+    pub fn render(self) -> String {
+        // We ignore the error. If we cannot render the output, there is
+        // no point to explicitly handle the error.
         match self.context.output_kind() {
             OutputKind::Result => self
                 .renderer
                 .render("result", &self.context.into_context())
-                .context(RenderSnafu),
+                .expect("Failed to render result"),
             OutputKind::Error => self
                 .renderer
                 .render("error", &self.context.into_context())
-                .context(RenderSnafu),
+                .expect("Failed to render error"),
         }
     }
 

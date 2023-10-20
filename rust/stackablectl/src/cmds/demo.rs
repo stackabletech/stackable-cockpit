@@ -206,8 +206,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: DemoList) -> Result<Stri
                 )
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),
@@ -254,8 +253,7 @@ async fn describe_cmd(
                 .with_command_hint("stackablectl demo list", "list all available demos")
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
@@ -366,6 +364,5 @@ async fn install_cmd(
         .with_output(format!("Installed demo '{}'", args.demo_name));
 
     output.finish_progress("Done");
-    // TODO (Techassi): Remove unwrap
-    Ok(output.render().unwrap())
+    Ok(output.render())
 }

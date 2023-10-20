@@ -112,8 +112,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
             )
             .with_output("No stacklets found");
 
-        // TODO (Techassi): Remove unwrap
-        return Ok(result.render().unwrap());
+        return Ok(result.render());
     }
 
     match args.output_type {
@@ -184,8 +183,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                     }
                 ));
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
         OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),

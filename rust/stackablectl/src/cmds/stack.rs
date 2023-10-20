@@ -188,8 +188,7 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: StackList) -> Result<St
                 )
                 .with_output(table.to_string());
 
-            // TODO (Techassi): Remove unwrap
-            Ok(result.render().unwrap())
+            Ok(result.render())
         }
         OutputType::Json => serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {}),
         OutputType::Yaml => serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {}),
@@ -244,8 +243,7 @@ fn describe_cmd(
                     .with_command_hint("stackablectl stack list", "list all available stacks")
                     .with_output(table.to_string());
 
-                // TODO (Techassi): Remove unwrap
-                Ok(result.render().unwrap())
+                Ok(result.render())
             }
             OutputType::Json => serde_json::to_string(&stack).context(JsonOutputFormatSnafu {}),
             OutputType::Yaml => serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {}),
@@ -360,8 +358,7 @@ async fn install_cmd(
                 .with_output(format!("Installed stack '{}'", args.stack_name));
 
             output.finish_progress("Done");
-            // TODO (Techassi): Remove unwrap
-            Ok(output.render().unwrap())
+            Ok(output.render())
         }
         None => Ok("No such stack".into()),
     }
