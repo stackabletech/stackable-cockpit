@@ -1,5 +1,5 @@
 = stackablectl
-:page-aliases: stackablectl::index.adoc
+:page-aliases: stable@stackablectl::index.adoc
 
 The `stackablectl` command line tool interacts with the Stackable data platform. It can install individual
 operators as well as platform releases. It also ships with a set of pre-built xref:commands/demo.adoc[`demos`] that

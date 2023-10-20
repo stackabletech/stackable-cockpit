@@ -1,5 +1,5 @@
 = Quickstart
-:page-aliases: stackablectl::quickstart.adoc
+:page-aliases: stable@stackablectl::quickstart.adoc
 
 In this Quickstart guide, you will install a xref:commands/demo.adoc[demo], which is an end-to-end demonstration of the
 usage of the Stackable data platform. Please follow the xref:installation.adoc[Installation documentation] to install

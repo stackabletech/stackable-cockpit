@@ -1,5 +1,5 @@
 = stackablectl stacklets
-:page-aliases: stackablectl::commands/services.adoc
+:page-aliases: stable@stackablectl::commands/services.adoc
 
 The `stacklet` command allows you to interact with deployed stacklets, which are bundles of resources and containers
 required to run the product.
