@@ -3291,4 +3291,4 @@ _stackablectl() {
     esac
 }
 
-complete -F _stackablectl -o bashdefault -o default stackablectl
+complete -F _stackablectl -o nosort -o bashdefault -o default stackablectl
