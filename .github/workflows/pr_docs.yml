@@ -1,0 +1,17 @@
+---
+name: Pull Request Docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/pr_docs.yml"
+      - "docs"
+
+jobs:
+  general-checks:
+    name: General Pull Request Checks
+    uses: ./.github/workflows/pr_general.yml
+
+  reviewdog-checks:
+    name: Reviewdog Pull Request Checks
+    uses: ./.github/workflows/pr_reviewdog.yml
