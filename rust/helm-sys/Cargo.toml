@@ -11,4 +11,4 @@ publish = false
 links = "helm"
 
 [build-dependencies]
-gobuild.workspace = true
+bindgen.workspace = true

@@ -1,27 +1,32 @@
-use std::env;
-
-use gobuild::BuildMode;
-
-const ENV_GO_HELM_WRAPPER: &str = "GO_HELM_WRAPPER";
+use std::{env, path::PathBuf, process::Command};
 
 fn main() {
-    // cgo requires an explicit dependency on libresolv on some platforms (such as Red Hat Enterprise Linux 8 and derivatives)
-    println!("cargo:rustc-link-lib=resolv");
-    println!("cargo:rerun-if-env-changed={ENV_GO_HELM_WRAPPER}");
-    match env::var(ENV_GO_HELM_WRAPPER) {
-        Ok(go_helm_wrapper) => {
-            // Reuse pre-built helm wrapper if possible
-            eprintln!("Reusing pre-built go-helm-wrapper ({go_helm_wrapper:?})");
-            println!("cargo:rustc-link-lib=static:+verbatim={go_helm_wrapper}");
-        }
-        Err(env::VarError::NotPresent) => {
-            gobuild::Build::new()
-                .file("go-helm-wrapper/main.go")
-                .buildmode(BuildMode::CArchive)
-                .compile("go-helm-wrapper");
-        }
-        Err(err @ env::VarError::NotUnicode(..)) => {
-            panic!("{ENV_GO_HELM_WRAPPER} must be valid unicode: {err}");
-        }
-    }
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+
+    println!("cargo:rerun-if-changed=go-helm-wrapper/main.go");
+
+    let mut cmd = Command::new("go");
+    cmd.arg("build")
+        .args(["-buildmode", "c-archive"])
+        .arg("-o")
+        .arg(out_path.join("libgo-helm-wrapper.a"))
+        .arg("go-helm-wrapper/main.go")
+        .env("CGO_ENABLED", "1");
+    cmd.status().expect("Failed to build go-helm-wrapper");
+
+    let bindings = bindgen::builder()
+        .header(out_path.join("libgo-helm-wrapper.h").to_str().unwrap())
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .generate()
+        .expect("Failed to generate Rust bindings from Go header file");
+
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Failed to write bindings");
+
+    println!("cargo:rustc-link-lib=static=go-helm-wrapper");
+    println!(
+        "cargo:rustc-link-search=native={}",
+        out_path.to_str().unwrap()
+    );
 }
