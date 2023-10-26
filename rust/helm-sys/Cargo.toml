@@ -12,3 +12,4 @@ links = "helm"
 
 [build-dependencies]
 bindgen.workspace = true
+snafu.workspace = true
