@@ -1,5 +1,7 @@
 package main
 
+// #cgo linux LDFLAGS: -Wl,-unresolved-symbols=ignore-all
+// #cgo darwin LDFLAGS: -Wl,-undefined,dynamic_lookup
 /*
 #include <stdlib.h>
 */
