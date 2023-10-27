@@ -50,6 +50,7 @@ fn main() {
         .write_to_file(out_path.join("bindings.rs"))
         .expect("Failed to write bindings");
 
+    println!("cargo:rustc-link-lib=resolv");
     println!("cargo:rustc-link-lib=static=go-helm-wrapper");
     println!(
         "cargo:rustc-link-search=native={}",
