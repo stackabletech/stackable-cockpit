@@ -23,6 +23,7 @@ fn main() {
 
     println!("cargo:rerun-if-changed=go-helm-wrapper/main.go");
 
+    let cc = cc::Build::new().try_get_compiler().unwrap();
     let goarch = get_goarch().unwrap();
     let goos = get_goos().unwrap();
 
@@ -34,7 +35,8 @@ fn main() {
         .arg("go-helm-wrapper/main.go")
         .env("CGO_ENABLED", "1")
         .env("GOARCH", goarch)
-        .env("GOOS", goos);
+        .env("GOOS", goos)
+        .env("CC", format!("'{}'", cc.path().display()));
 
     cmd.status().expect("Failed to build go-helm-wrapper");
 

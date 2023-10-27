@@ -11,5 +11,6 @@ publish = false
 links = "helm"
 
 [build-dependencies]
+cc.workspace = true
 bindgen.workspace = true
 snafu.workspace = true
