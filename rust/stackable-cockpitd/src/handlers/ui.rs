@@ -1,7 +1,7 @@
 use axum::{
     extract::Path,
-    http::{header::CONTENT_TYPE, HeaderValue},
-    response::{AppendHeaders, Html, IntoResponse},
+    http::{header::CONTENT_TYPE, HeaderMap, HeaderValue},
+    response::{Html, IntoResponse},
     routing::get,
     Router,
 };
@@ -16,16 +16,20 @@ pub fn router() -> Router {
 async fn ui() -> Html<&'static str> {
     Html(stackable_cockpit_web::INDEX_HTML)
 }
-async fn asset(Path(name): Path<String>) -> impl IntoResponse {
-    (
-        AppendHeaders([(
-            CONTENT_TYPE,
-            match name.split_once('.') {
-                Some((_, "js")) => HeaderValue::from_static("text/javascript"),
-                Some((_, "css")) => HeaderValue::from_static("text/css"),
-                _ => HeaderValue::from_static("application/octet-stream"),
-            },
-        )]),
-        stackable_cockpit_web::ASSETS[&name],
-    )
+
+/// Adds (or replaces) the Content-Type header with the type of the served asset.
+/// So far only javascript and css are supported, for all the other types
+/// `application/octet-stream` will be used.
+async fn asset(mut headers: HeaderMap, Path(name): Path<String>) -> impl IntoResponse {
+    headers.insert(
+        CONTENT_TYPE,
+        if name.ends_with(".js") {
+            HeaderValue::from_static("text/javascript")
+        } else if name.ends_with(".css") {
+            HeaderValue::from_static("text/css")
+        } else {
+            HeaderValue::from_static("application/octet-stream")
+        },
+    );
+    (headers, stackable_cockpit_web::ASSETS[&name])
 }
