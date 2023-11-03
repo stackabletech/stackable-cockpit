@@ -100,7 +100,7 @@ pub fn to_helm_error(result: &str) -> Option<String> {
     None
 }
 
-/// Converts a raw C string pointer into an owned Rust [`String`]. This functions
+/// Converts a raw C string pointer into an owned Rust [`String`]. This function
 /// also makes sure, that the pointer (and underlying memory) of the Go string is
 /// freed. The pointer **cannot** be used afterwards.
 unsafe fn cstr_ptr_to_string(c: *mut c_char) -> String {
