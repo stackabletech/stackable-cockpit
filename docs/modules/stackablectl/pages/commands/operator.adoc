@@ -1,5 +1,5 @@
 = stackablectl operator
-:page-aliases: stackablectl::commands/operator.adoc
+:page-aliases: stable@stackablectl::commands/operator.adoc
 
 The `stackable operator` command allows the listing, installation and removal of Stackable operators. Operators manage
 the individual data products of the Stackable Data Platform.

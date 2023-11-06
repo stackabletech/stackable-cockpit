@@ -1,7 +1,7 @@
 use axum::{
     extract::Path,
     http::{header::CONTENT_TYPE, HeaderValue},
-    response::{AppendHeaders, Html, IntoResponse},
+    response::{Html, IntoResponse},
     routing::get,
     Router,
 };
@@ -18,14 +18,14 @@ async fn ui() -> Html<&'static str> {
 }
 async fn asset(Path(name): Path<String>) -> impl IntoResponse {
     (
-        AppendHeaders([(
+        [(
             CONTENT_TYPE,
-            match name.split_once('.') {
+            match name.rsplit_once('.') {
                 Some((_, "js")) => HeaderValue::from_static("text/javascript"),
                 Some((_, "css")) => HeaderValue::from_static("text/css"),
                 _ => HeaderValue::from_static("application/octet-stream"),
             },
-        )]),
+        )],
         stackable_cockpit_web::ASSETS[&name],
     )
 }

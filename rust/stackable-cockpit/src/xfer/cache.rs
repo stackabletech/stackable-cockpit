@@ -92,7 +92,7 @@ impl Cache {
                 let file_path = Self::file_path(base_path, file_url);
                 Self::write(file_path, file_content).await
             }
-            CacheBackend::Disabled => WriteDisabledSnafu {}.fail(),
+            CacheBackend::Disabled => Ok(()),
         }
     }
 

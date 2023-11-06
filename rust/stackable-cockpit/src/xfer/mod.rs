@@ -100,8 +100,8 @@ impl FileTransferClient {
             .get(url.clone())
             .build()
             .context(RequestSnafu {})?;
-        let result = self.client.execute(req).await.context(RequestSnafu {})?;
 
+        let result = self.client.execute(req).await.context(RequestSnafu {})?;
         result.text().await.context(RequestSnafu {})
     }
 }
