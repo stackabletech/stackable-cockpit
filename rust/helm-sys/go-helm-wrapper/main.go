@@ -1,11 +1,16 @@
 package main
 
+/*
+#include <stdlib.h>
+*/
+import "C"
+
 import (
-	"C"
 	"context"
 	"encoding/json"
 	"fmt"
 	"time"
+	"unsafe"
 
 	gohelm "github.com/mittwald/go-helm-client"
 	"helm.sh/helm/v3/pkg/action"
@@ -31,16 +36,16 @@ func main() {
 }
 
 //export go_install_helm_release
-func go_install_helm_release(releaseName string, chartName string, chartVersion string, valuesYaml string, namespace string, suppressOutput bool) *C.char {
+func go_install_helm_release(releaseName *C.char, chartName *C.char, chartVersion *C.char, valuesYaml *C.char, namespace *C.char, suppressOutput bool) *C.char {
 	helmClient := getHelmClient(namespace, suppressOutput)
 
 	timeout, _ := time.ParseDuration("10m")
 	chartSpec := gohelm.ChartSpec{
-		ReleaseName: releaseName,
-		ChartName:   chartName,
-		Version:     chartVersion,
-		ValuesYaml:  valuesYaml,
-		Namespace:   namespace,
+		ReleaseName: C.GoString(releaseName),
+		ChartName:   C.GoString(chartName),
+		Version:     C.GoString(chartVersion),
+		ValuesYaml:  C.GoString(valuesYaml),
+		Namespace:   C.GoString(namespace),
 		UpgradeCRDs: true,
 		Wait:        true,
 		Timeout:     timeout,
@@ -54,10 +59,10 @@ func go_install_helm_release(releaseName string, chartName string, chartVersion 
 }
 
 //export go_uninstall_helm_release
-func go_uninstall_helm_release(releaseName string, namespace string, suppressOutput bool) *C.char {
+func go_uninstall_helm_release(releaseName *C.char, namespace *C.char, suppressOutput bool) *C.char {
 	helmClient := getHelmClient(namespace, suppressOutput)
 
-	if err := helmClient.UninstallReleaseByName(releaseName); err != nil {
+	if err := helmClient.UninstallReleaseByName(C.GoString(releaseName)); err != nil {
 		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
 	}
 
@@ -65,10 +70,10 @@ func go_uninstall_helm_release(releaseName string, namespace string, suppressOut
 }
 
 //export go_helm_release_exists
-func go_helm_release_exists(releaseName string, namespace string) bool {
+func go_helm_release_exists(releaseName *C.char, namespace *C.char) bool {
 	helmClient := getHelmClient(namespace, true)
 
-	release, _ := helmClient.GetRelease(releaseName)
+	release, _ := helmClient.GetRelease(C.GoString(releaseName))
 	return release != nil
 }
 
@@ -78,7 +83,7 @@ func go_helm_release_exists(releaseName string, namespace string) bool {
 // by the Rust code and it will abort operations.
 //
 //export go_helm_list_releases
-func go_helm_list_releases(namespace string) *C.char {
+func go_helm_list_releases(namespace *C.char) *C.char {
 	helmClient := getHelmClient(namespace, true)
 
 	// List all releases, not only the deployed ones (e.g. include pending installations)
@@ -112,12 +117,12 @@ func go_helm_list_releases(namespace string) *C.char {
 // operations.
 //
 //export go_add_helm_repo
-func go_add_helm_repo(name string, url string) *C.char {
-	helmClient := getHelmClient("default", true) // Namespace doesn't matter
+func go_add_helm_repo(name *C.char, url *C.char) *C.char {
+	helmClient := getHelmClient(C.CString("default"), true) // Namespace doesn't matter
 
 	chartRepo := repo.Entry{
-		Name: name,
-		URL:  url,
+		Name: C.GoString(name),
+		URL:  C.GoString(url),
 	}
 
 	if err := helmClient.AddOrUpdateChartRepo(chartRepo); err != nil {
@@ -127,9 +132,14 @@ func go_add_helm_repo(name string, url string) *C.char {
 	return C.CString("")
 }
 
-func getHelmClient(namespace string, suppressOutput bool) gohelm.Client {
+//export free_go_string
+func free_go_string(ptr *C.char) {
+	C.free(unsafe.Pointer(ptr))
+}
+
+func getHelmClient(namespace *C.char, suppressOutput bool) gohelm.Client {
 	options := gohelm.Options{
-		Namespace: namespace,
+		Namespace: C.GoString(namespace),
 		Debug:     false,
 	}
 

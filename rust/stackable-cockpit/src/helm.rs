@@ -1,17 +1,13 @@
+use std::collections::HashMap;
 use std::fmt::Display;
 use std::str::{self, Utf8Error};
-use std::{collections::HashMap, ffi::CStr};
 
-use helm_sys::{
-    go_add_helm_repo, go_helm_list_releases, go_helm_release_exists, go_install_helm_release,
-    go_uninstall_helm_release,
-};
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tracing::{debug, error, info, instrument};
 use url::Url;
 
-use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_ERROR_PREFIX, HELM_REPO_INDEX_FILE};
+use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_REPO_INDEX_FILE};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -67,7 +63,7 @@ pub enum HelmError {
     #[snafu(display("request error: {source}"))]
     RequestError { source: reqwest::Error },
 
-    #[snafu(display("failed to add Helm repo: {error}"))]
+    #[snafu(display("failed to add Helm repo ({error})"))]
     AddRepoError { error: String },
 
     #[snafu(display("failed to list Helm releases: {error}"))]
@@ -281,19 +277,16 @@ fn install_release(
     namespace: &str,
     suppress_output: bool,
 ) -> Result<(), HelmError> {
-    let result = unsafe {
-        go_install_helm_release(
-            release_name.into(),
-            chart_name.into(),
-            chart_version.into(),
-            values_yaml.unwrap_or("").into(),
-            namespace.into(),
-            suppress_output,
-        )
-    };
+    let result = helm_sys::install_helm_release(
+        release_name,
+        chart_name,
+        chart_version,
+        values_yaml.unwrap_or(""),
+        namespace,
+        suppress_output,
+    );
 
-    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
-    if let Some(err) = to_helm_error(result) {
+    if let Some(err) = helm_sys::to_helm_error(&result) {
         error!(
             "Go wrapper function go_install_helm_release encountered an error: {}",
             err
@@ -317,13 +310,9 @@ pub fn uninstall_release(
     debug!("Uninstall Helm release");
 
     if check_release_exists(release_name, namespace)? {
-        let result = unsafe {
-            go_uninstall_helm_release(release_name.into(), namespace.into(), suppress_output)
-        };
+        let result = helm_sys::uninstall_helm_release(release_name, namespace, suppress_output);
 
-        let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
-
-        if let Some(err) = to_helm_error(result) {
+        if let Some(err) = helm_sys::to_helm_error(&result) {
             error!(
                 "Go wrapper function go_uninstall_helm_release encountered an error: {}",
                 err
@@ -353,9 +342,7 @@ pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool,
     debug!("Check if Helm release exists");
 
     // TODO (Techassi): Handle error
-    let result = unsafe { go_helm_release_exists(release_name.into(), namespace.into()) };
-
-    Ok(result)
+    Ok(helm_sys::check_helm_release_exists(release_name, namespace))
 }
 
 /// Returns a list of Helm releases
@@ -363,10 +350,9 @@ pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool,
 pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
     debug!("List Helm releases");
 
-    let result = unsafe { go_helm_list_releases(namespace.into()) };
-    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
+    let result = helm_sys::list_helm_releases(namespace);
 
-    if let Some(err) = to_helm_error(result) {
+    if let Some(err) = helm_sys::to_helm_error(&result) {
         error!(
             "Go wrapper function go_helm_list_releases encountered an error: {}",
             err
@@ -375,7 +361,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
         return Err(HelmError::ListReleasesError { error: err });
     }
 
-    serde_json::from_str(result).context(JsonSnafu)
+    serde_json::from_str(&result).context(JsonSnafu)
 }
 
 /// Returns a single Helm release by `release_name`.
@@ -390,13 +376,12 @@ pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<HelmRel
 
 /// Adds a Helm repo with `repo_name` and `repo_url`.
 #[instrument]
-pub fn add_repo(repo_name: &str, repo_url: &str) -> Result<(), HelmError> {
+pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), HelmError> {
     debug!("Add Helm repo");
 
-    let result = unsafe { go_add_helm_repo(repo_name.into(), repo_url.into()) };
-    let result = unsafe { ptr_to_str(result).context(StrUtf8Snafu)? };
+    let result = helm_sys::add_helm_repository(repository_name, repository_url);
 
-    if let Some(err) = to_helm_error(result) {
+    if let Some(err) = helm_sys::to_helm_error(&result) {
         error!(
             "Go wrapper function go_add_helm_repo encountered an error: {}",
             err
@@ -429,18 +414,4 @@ where
         .context(RequestSnafu)?;
 
     serde_yaml::from_str(&index_file_content).context(YamlSnafu)
-}
-
-/// Helper function to convert raw C string pointers to &str.
-unsafe fn ptr_to_str<'a>(ptr: *const i8) -> Result<&'a str, Utf8Error> {
-    CStr::from_ptr(ptr).to_str()
-}
-
-/// Checks if the result string is an error, and if so, returns the error message as a string.
-fn to_helm_error(result: &str) -> Option<String> {
-    if !result.is_empty() && result.starts_with(HELM_ERROR_PREFIX) {
-        return Some(result.replace(HELM_ERROR_PREFIX, ""));
-    }
-
-    None
 }
