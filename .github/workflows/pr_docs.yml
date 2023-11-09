@@ -5,7 +5,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/pr_docs.yml"
-      - "docs"
+      - "docs/**"
 
 jobs:
   general-checks:
