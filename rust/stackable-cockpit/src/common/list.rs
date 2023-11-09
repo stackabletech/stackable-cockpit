@@ -16,7 +16,7 @@ pub trait SpecIter<S> {
 #[derive(Debug, Snafu)]
 pub enum ListError {
     #[snafu(display("failed to transfer the list file"))]
-    TransferError { source: FileTransferError },
+    FileTransfer { source: FileTransferError },
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for
@@ -52,7 +52,7 @@ where
             let specs = transfer_client
                 .get(file, &Yaml::<L>::new())
                 .await
-                .context(TransferSnafu)?;
+                .context(FileTransferSnafu)?;
 
             for (spec_name, spec) in specs.inner() {
                 map.insert(spec_name.clone(), spec.clone());

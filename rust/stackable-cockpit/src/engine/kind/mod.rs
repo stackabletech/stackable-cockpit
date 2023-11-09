@@ -15,13 +15,16 @@ mod config;
 #[derive(Debug, Snafu)]
 pub enum KindClusterError {
     #[snafu(display("failed to pipe kind config using stdin"))]
-    IoError { source: std::io::Error },
+    PipeConfigStdin { source: std::io::Error },
 
     #[snafu(display("failed to obtain stdin handle"))]
-    StdinError,
+    ObtainStdinHandle,
 
-    #[snafu(display("failed to execute kind command: {error}"))]
-    CommandError { error: String },
+    #[snafu(display("failed to execute kind command"))]
+    CommandError { source: std::io::Error },
+
+    #[snafu(display("kind command executed, but returned error: {error}"))]
+    CommandErroredOut { error: String },
 
     #[snafu(display("missing required binary: {binary}"))]
     MissingBinaryError { binary: String },
@@ -79,25 +82,24 @@ impl KindCluster {
             .stderr(Stdio::null())
             .stdin(Stdio::piped())
             .spawn()
-            .context(IoSnafu)?;
+            .context(PipeConfigStdinSnafu)?;
 
         // Pipe in config
-        let mut stdin = kind_cmd.stdin.take().ok_or(KindClusterError::StdinError)?;
+        let mut stdin = kind_cmd
+            .stdin
+            .take()
+            .ok_or(KindClusterError::ObtainStdinHandle)?;
+
         stdin
             .write_all(config_string.as_bytes())
             .await
-            .context(IoSnafu)?;
+            .context(PipeConfigStdinSnafu)?;
 
         // Write the piped in data
-        stdin.flush().await.context(IoSnafu)?;
+        stdin.flush().await.context(PipeConfigStdinSnafu)?;
         drop(stdin);
 
-        if let Err(err) = kind_cmd.wait().await {
-            return Err(KindClusterError::CommandError {
-                error: err.to_string(),
-            });
-        }
-
+        kind_cmd.wait().await.context(CommandSnafu)?;
         Ok(())
     }
 
@@ -132,11 +134,11 @@ impl KindCluster {
             .args(["get", "clusters"])
             .output()
             .await
-            .context(IoSnafu)?;
+            .context(CommandSnafu)?;
 
         ensure!(
             output.status.success(),
-            CommandSnafu {
+            CommandErroredOutSnafu {
                 error: String::from_utf8_lossy(&output.stderr)
             }
         );

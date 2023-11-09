@@ -13,13 +13,13 @@ pub enum MinikubeClusterError {
     #[snafu(display(
         "failed to determine if a minikube cluster named {cluster_name} already exists"
     ))]
-    CheckClusterError {
+    CheckCluster {
         source: std::io::Error,
         cluster_name: String,
     },
 
     #[snafu(display("missing required binary: {binary}"))]
-    MissingBinaryError { binary: String },
+    MissingBinary { binary: String },
 
     #[snafu(display("failed to execute minikube command: {error}"))]
     CommandError { error: String },
@@ -51,7 +51,7 @@ impl MinikubeCluster {
 
         // Check if required binaries are present
         if let Some(binary) = binaries_present_with_name(&["docker", "minikube"]) {
-            return Err(MinikubeClusterError::MissingBinaryError { binary });
+            return Err(MinikubeClusterError::MissingBinary { binary });
         }
 
         // Check if Docker is running
