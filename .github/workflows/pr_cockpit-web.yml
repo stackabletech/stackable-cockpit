@@ -6,7 +6,7 @@ on:
       - ".github/workflows/pr_cockpit-web.yml"
       - "package.json"
       - "yarn.lock"
-      - "web"
+      - "web/**"
 
 jobs:
   build-web:

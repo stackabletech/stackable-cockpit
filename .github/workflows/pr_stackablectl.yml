@@ -4,14 +4,14 @@ name: Pull Request Stackablectl
 on:
   pull_request:
     paths:
-      - ".github/workflows/pr_stackablectl"
-      - "docs/modules/stackablectl"
-      - "rust/stackable-cockpit"
-      - "rust/stackablectl"
-      - "rust/helm-sys"
+      - ".github/workflows/pr_stackablectl.yml"
+      - "docs/modules/stackablectl/**"
+      - "rust/stackable-cockpit/**"
+      - "rust/stackablectl/**"
+      - "rust/helm-sys/**"
       - "Cargo.lock"
       - "go.sum"
-      - "extra"
+      - "extra/**"
 
 env:
   RUST_VERSION: 1.73.0
