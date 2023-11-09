@@ -5,13 +5,13 @@ on:
   pull_request:
     paths:
       - ".github/workflows/pr_cockpit.yml"
-      - "rust/stackable-cockpitd"
-      - "rust/stackable-cockpit"
-      - "docs/modules/cockpit"
-      - "docs/modules/ROOT"
+      - "rust/stackable-cockpitd/**"
+      - "rust/stackable-cockpit/**"
+      - "docs/modules/cockpit/**"
+      - "docs/modules/ROOT/**"
       - "Cargo.lock"
-      - "deploy"
-      - "docker"
+      - "deploy/**"
+      - "docker/**"
       - "go.sum"
 
 env:
