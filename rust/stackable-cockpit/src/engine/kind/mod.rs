@@ -20,8 +20,11 @@ pub enum KindClusterError {
     #[snafu(display("failed to obtain stdin handle"))]
     ObtainStdinHandle,
 
-    #[snafu(display("failed to execute kind command"))]
-    CommandError { source: std::io::Error },
+    #[snafu(display("failed to start kind command"))]
+    CommandFailedToStart { source: std::io::Error },
+
+    #[snafu(display("failed to run kind command"))]
+    CommandFailedToRun { source: std::io::Error },
 
     #[snafu(display("kind command executed, but returned error: {error}"))]
     CommandErroredOut { error: String },
@@ -82,14 +85,15 @@ impl KindCluster {
             .stderr(Stdio::null())
             .stdin(Stdio::piped())
             .spawn()
-            .context(PipeConfigStdinSnafu)?;
+            .context(CommandFailedToStartSnafu)?;
 
-        // Pipe in config
+        // Try to obtain stdin handle
         let mut stdin = kind_cmd
             .stdin
             .take()
             .ok_or(KindClusterError::ObtainStdinHandle)?;
 
+        // Pipe in config
         stdin
             .write_all(config_string.as_bytes())
             .await
@@ -99,7 +103,7 @@ impl KindCluster {
         stdin.flush().await.context(PipeConfigStdinSnafu)?;
         drop(stdin);
 
-        kind_cmd.wait().await.context(CommandSnafu)?;
+        kind_cmd.wait().await.context(CommandFailedToRunSnafu)?;
         Ok(())
     }
 
@@ -134,7 +138,7 @@ impl KindCluster {
             .args(["get", "clusters"])
             .output()
             .await
-            .context(CommandSnafu)?;
+            .context(CommandFailedToRunSnafu)?;
 
         ensure!(
             output.status.success(),

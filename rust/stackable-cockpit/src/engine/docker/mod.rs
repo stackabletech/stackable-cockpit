@@ -6,10 +6,13 @@ use tracing::{debug, instrument};
 
 #[derive(Debug, Snafu)]
 pub enum DockerError {
-    #[snafu(display("failed to read stdout"))]
-    StdoutRead { source: std::io::Error },
+    #[snafu(display("failed to start docker command"))]
+    CommandFailedToStart { source: std::io::Error },
 
-    #[snafu(display("It seems like Docker is not running on this system"))]
+    #[snafu(display("failed to run docker command"))]
+    CommandFailedToRun { source: std::io::Error },
+
+    #[snafu(display("it seems like Docker is not running on this system"))]
     NotRunning,
 }
 
@@ -22,10 +25,10 @@ pub async fn check_if_docker_is_running() -> Result<(), DockerError> {
         .arg("info")
         .stdout(Stdio::null())
         .spawn()
-        .context(StdoutReadSnafu)?
+        .context(CommandFailedToStartSnafu)?
         .wait()
         .await
-        .context(StdoutReadSnafu)?
+        .context(CommandFailedToRunSnafu)?
         .success()
     {
         return Ok(());
