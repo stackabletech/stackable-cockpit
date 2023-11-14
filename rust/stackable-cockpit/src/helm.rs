@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::str::{self, Utf8Error};
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
@@ -48,32 +47,29 @@ pub struct HelmRepoEntry {
 
 #[derive(Debug, Snafu)]
 pub enum HelmError {
-    #[snafu(display("failed to convert raw C string pointer to UTF-8 string"))]
-    StrUtf8Error { source: Utf8Error },
-
     #[snafu(display("failed to parse URL"))]
-    UrlParseError { source: url::ParseError },
+    UrlParse { source: url::ParseError },
 
     #[snafu(display("failed to deserialize JSON data"))]
-    DeserializeJsonError { source: serde_json::Error },
+    DeserializeJson { source: serde_json::Error },
 
     #[snafu(display("failed to deserialize YAML data"))]
-    DeserializeYamlError { source: serde_yaml::Error },
+    DeserializeYaml { source: serde_yaml::Error },
 
     #[snafu(display("failed to retrieve remote content"))]
-    RequestError { source: reqwest::Error },
+    FetchRemoteContent { source: reqwest::Error },
 
     #[snafu(display("failed to add Helm repo ({error})"))]
-    AddRepoError { error: String },
+    AddRepo { error: String },
 
     #[snafu(display("failed to list Helm releases: {error}"))]
-    ListReleasesError { error: String },
+    ListReleases { error: String },
 
     #[snafu(display("failed to install Helm release"))]
-    InstallReleaseError { source: HelmInstallReleaseError },
+    InstallRelease { source: HelmInstallReleaseError },
 
     #[snafu(display("failed to uninstall Helm release: {error}"))]
-    UninstallReleaseError { error: String },
+    UninstallRelease { error: String },
 }
 
 #[derive(Debug, Snafu)]
@@ -207,12 +203,11 @@ pub fn install_release_from_repo(
     debug!("Install Helm release from repo");
 
     if check_release_exists(release_name, namespace)? {
-        let release =
-            get_release(release_name, namespace)?.ok_or(HelmError::InstallReleaseError {
-                source: HelmInstallReleaseError::NoSuchRelease {
-                    name: release_name.to_owned(),
-                },
-            })?;
+        let release = get_release(release_name, namespace)?.ok_or(HelmError::InstallRelease {
+            source: HelmInstallReleaseError::NoSuchRelease {
+                name: release_name.to_owned(),
+            },
+        })?;
 
         let current_version = release.version;
 
@@ -227,7 +222,7 @@ pub fn install_release_from_repo(
                         },
                     );
                 } else {
-                    return Err(HelmError::InstallReleaseError {
+                    return Err(HelmError::InstallRelease {
                         source: HelmInstallReleaseError::ReleaseAlreadyInstalled {
                             requested_version: chart_version.into(),
                             name: release_name.into(),
@@ -286,14 +281,14 @@ fn install_release(
         suppress_output,
     );
 
-    if let Some(err) = helm_sys::to_helm_error(&result) {
+    if let Some(error) = helm_sys::to_helm_error(&result) {
         error!(
             "Go wrapper function go_install_helm_release encountered an error: {}",
-            err
+            error
         );
 
-        return Err(HelmError::InstallReleaseError {
-            source: HelmInstallReleaseError::HelmWrapperError { error: err },
+        return Err(HelmError::InstallRelease {
+            source: HelmInstallReleaseError::HelmWrapperError { error },
         });
     }
 
@@ -318,7 +313,7 @@ pub fn uninstall_release(
                 err
             );
 
-            return Err(HelmError::UninstallReleaseError { error: err });
+            return Err(HelmError::UninstallRelease { error: err });
         }
 
         return Ok(HelmUninstallReleaseStatus::Uninstalled(
@@ -358,7 +353,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
             err
         );
 
-        return Err(HelmError::ListReleasesError { error: err });
+        return Err(HelmError::ListReleases { error: err });
     }
 
     serde_json::from_str(&result).context(DeserializeJsonSnafu)
@@ -387,7 +382,7 @@ pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), HelmE
             err
         );
 
-        return Err(HelmError::AddRepoError { error: err });
+        return Err(HelmError::AddRepo { error: err });
     }
 
     Ok(())
@@ -409,10 +404,10 @@ where
     // TODO (Techassi): Use the FileTransferClient for that
     let index_file_content = reqwest::get(url)
         .await
-        .context(RequestSnafu)?
+        .context(FetchRemoteContentSnafu)?
         .text()
         .await
-        .context(RequestSnafu)?;
+        .context(FetchRemoteContentSnafu)?;
 
     serde_yaml::from_str(&index_file_content).context(DeserializeYamlSnafu)
 }

@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-use rand::Rng;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -11,7 +10,7 @@ use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
 
 use crate::utils::k8s::{KubeClient, KubeClientError};
 
-const HELP_MESSAGE: &str = ". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution";
+type Result<T, E = ResourceRequestsError> = std::result::Result<T, E>;
 
 /// Demos and stacks can define how much cluster resources they need to run
 /// via their definition. The struct [`ResourceRequests`] contains information
@@ -69,11 +68,10 @@ pub enum ResourceRequestsError {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsValidationError {
     #[snafu(display(
-        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster{}",
-        required.as_cpu_count(), available.as_cpu_count(), help_message.clone().unwrap_or_default()
+        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster",
+        required.as_cpu_count(), available.as_cpu_count()
     ))]
     InsufficientCpu {
-        help_message: Option<String>,
         available: CpuQuantity,
         required: CpuQuantity,
         object_name: String,
@@ -93,10 +91,7 @@ impl ResourceRequests {
     /// Validates the struct [`ResourceRequests`] by comparing the required
     /// resources to the available ones in the current cluster. `object_name`
     /// should be `stack` or `demo`.
-    pub async fn validate_cluster_size(
-        &self,
-        object_name: &str,
-    ) -> Result<(), ResourceRequestsError> {
+    pub async fn validate_cluster_size(&self, object_name: &str) -> Result<()> {
         let kube_client = KubeClient::new().await.context(KubeClientSnafu)?;
         let cluster_info = kube_client
             .get_cluster_info()
@@ -115,12 +110,10 @@ impl ResourceRequests {
         let mut errors = Vec::new();
 
         if stack_cpu > cluster_info.untainted_allocatable_cpu {
-            let mut rng = rand::thread_rng();
             errors.push(ResourceRequestsValidationError::InsufficientCpu {
                 available: cluster_info.untainted_allocatable_cpu,
                 object_name: object_name.to_string(),
                 required: stack_cpu,
-                help_message: (rng.gen::<f32>() < 0.005).then_some(HELP_MESSAGE.to_string()),
             });
         }
 

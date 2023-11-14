@@ -5,7 +5,7 @@ mod spec;
 
 pub use spec::*;
 
-use crate::common::{List, SpecIter};
+use crate::common::list::{List, SpecIter};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]

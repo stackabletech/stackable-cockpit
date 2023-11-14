@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     constants::PRODUCT_NAMES,
     platform::{
-        credentials::{get_credentials, Credentials, CredentialsError},
+        credentials::{get_credentials, Credentials, Error},
         service::{get_service_endpoints, ServiceError},
     },
     utils::{
@@ -104,8 +104,8 @@ pub async fn get_credentials_for_product(
 
     let credentials = match get_credentials(&kube_client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
-        Err(CredentialsError::NoSecret) => None,
-        Err(CredentialsError::KubeClientFetchError { source }) => {
+        Err(Error::NoSecret) => None,
+        Err(Error::KubeClientFetchError { source }) => {
             return Err(StackletError::KubeClientFetchError { source })
         }
     };

@@ -1,11 +1,13 @@
 use std::process::Stdio;
-use tokio::process::Command;
 
 use snafu::{ResultExt, Snafu};
+use tokio::process::Command;
 use tracing::{debug, instrument};
 
+type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Snafu)]
-pub enum DockerError {
+pub enum Error {
     #[snafu(display("failed to start docker command"))]
     CommandFailedToStart { source: std::io::Error },
 
@@ -18,7 +20,7 @@ pub enum DockerError {
 
 /// Checks if Docker is running on the system
 #[instrument]
-pub async fn check_if_docker_is_running() -> Result<(), DockerError> {
+pub async fn check_if_docker_is_running() -> Result<()> {
     debug!("Checking if Docker is running");
 
     if Command::new("docker")
@@ -34,5 +36,5 @@ pub async fn check_if_docker_is_running() -> Result<(), DockerError> {
         return Ok(());
     }
 
-    Err(DockerError::NotRunning)
+    Err(Error::NotRunning)
 }

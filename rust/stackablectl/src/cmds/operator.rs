@@ -17,7 +17,7 @@ use stackable_cockpit::{
     },
     helm::{self, HelmError, HelmRelease, HelmRepo},
     platform::{
-        namespace::{self, NamespaceError},
+        namespace::{self, Error},
         operator::{OperatorSpec, VALID_OPERATORS},
     },
     utils,
@@ -145,10 +145,7 @@ pub enum CmdError {
     JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
-        source: NamespaceError,
-        namespace: String,
-    },
+    NamespaceError { source: Error, namespace: String },
 }
 
 /// This list contains a list of operator version grouped by stable, test and

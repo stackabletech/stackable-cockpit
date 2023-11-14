@@ -6,7 +6,7 @@ use tracing::{debug, instrument, warn};
 use utoipa::ToSchema;
 
 use crate::{
-    common::ManifestSpec,
+    common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         release::ReleaseList,
@@ -19,6 +19,33 @@ use crate::{
 pub type RawDemoParameterParseError = RawParameterParseError;
 pub type RawDemoParameter = RawParameter;
 pub type DemoParameter = Parameter;
+
+#[derive(Debug, Snafu)]
+pub enum DemoError {
+    #[snafu(display("no stack named '{name}'"))]
+    NoSuchStack { name: String },
+
+    #[snafu(display("failed to install stack because some prerequisites failed"))]
+    StackPrerequisites { source: StackError },
+
+    #[snafu(display("failed to install release associated with stack"))]
+    StackInstallRelease { source: StackError },
+
+    #[snafu(display("failed to install stack manifests"))]
+    InstallStackManifests { source: StackError },
+
+    #[snafu(display("failed to install demo manifests"))]
+    InstallDemoManifests { source: StackError },
+
+    #[snafu(display("demo resource requests error"), context(false))]
+    DemoResourceRequestsError { source: ResourceRequestsError },
+
+    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    UnsupportedNamespace {
+        requested: String,
+        supported: Vec<String>,
+    },
+}
 
 /// This struct describes a demo with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -55,24 +82,6 @@ pub struct DemoSpecV2 {
     /// A variable number of supported parameters
     #[serde(default)]
     pub parameters: Vec<Parameter>,
-}
-
-#[derive(Debug, Snafu)]
-pub enum DemoError {
-    #[snafu(display("no stack named {name}"))]
-    NoSuchStack { name: String },
-
-    #[snafu(display("failed to install stack"))]
-    StackError { source: StackError },
-
-    #[snafu(display("demo resource requests error"), context(false))]
-    DemoResourceRequestsError { source: ResourceRequestsError },
-
-    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
-    UnsupportedNamespace {
-        requested: String,
-        supported: Vec<String>,
-    },
 }
 
 impl DemoSpecV2 {
@@ -129,11 +138,13 @@ impl DemoSpecV2 {
             name: self.stack.clone(),
         })?;
 
-        // Check prerequisites
+        // Check stack prerequisites
         stack_spec
             .check_prerequisites(product_namespace)
             .await
-            .context(StackSnafu)?;
+            .context(StackPrerequisitesSnafu)?;
+
+        // Check demo prerequisites
         self.check_prerequisites(product_namespace).await?;
 
         // Install release if not opted out
@@ -141,14 +152,14 @@ impl DemoSpecV2 {
             stack_spec
                 .install_release(release_list, operator_namespace, product_namespace)
                 .await
-                .context(StackSnafu)?;
+                .context(StackInstallReleaseSnafu)?;
         }
 
         // Install stack
         stack_spec
             .install_stack_manifests(stack_parameters, product_namespace, transfer_client)
             .await
-            .context(StackSnafu)?;
+            .context(InstallStackManifestsSnafu)?;
 
         // Install demo manifests
         stack_spec
@@ -160,7 +171,7 @@ impl DemoSpecV2 {
                 transfer_client,
             )
             .await
-            .context(StackSnafu)?;
+            .context(InstallDemoManifestsSnafu)?;
 
         Ok(())
     }

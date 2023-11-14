@@ -10,7 +10,7 @@ pub mod processor;
 use crate::{
     utils::path::PathOrUrl,
     xfer::{
-        cache::{Cache, CacheSettings, CacheStatus, Error},
+        cache::{Cache, CacheSettings, CacheStatus},
         processor::{Processor, ProcessorError},
     },
 };
@@ -20,22 +20,25 @@ type Result<T, E = FileTransferError> = core::result::Result<T, E>;
 #[derive(Debug, Snafu)]
 pub enum FileTransferError {
     #[snafu(display("failed to read local file"))]
-    IoError { source: std::io::Error },
-
-    #[snafu(display("failed to extract file name from URL"))]
-    FileNameError,
+    ReadLocalFile { source: std::io::Error },
 
     #[snafu(display("failed to create cache from provided settings"))]
-    CacheSettingsError { source: Error },
+    CacheSettings { source: cache::Error },
 
-    #[snafu(display("failed to read/write cache from/to cache"))]
-    CacheError { source: Error },
+    #[snafu(display("failed to store file in cache"))]
+    CacheStore { source: cache::Error },
 
-    #[snafu(display("failed to retrieve remote file"))]
-    RequestError { source: reqwest::Error },
+    #[snafu(display("failed to retrieve file from cache"))]
+    CacheRetrieve { source: cache::Error },
+
+    #[snafu(display("failed to build http request"))]
+    BuildRequest { source: reqwest::Error },
+
+    #[snafu(display("failed to retrieve remote file contents"))]
+    FetchRemoteContent { source: reqwest::Error },
 
     #[snafu(display("failed to process file contents"))]
-    ProcessingError { source: ProcessorError },
+    ProcessFileContent { source: ProcessorError },
 }
 
 #[derive(Debug)]
@@ -71,29 +74,29 @@ impl FileTransferClient {
         match path_or_url {
             PathOrUrl::Path(path) => processor
                 .process(self.get_from_local_file(path).await?)
-                .context(ProcessingSnafu),
+                .context(ProcessFileContentSnafu),
             PathOrUrl::Url(url) => processor
                 .process(self.get_from_cache_or_remote(url).await?)
-                .context(ProcessingSnafu),
+                .context(ProcessFileContentSnafu),
         }
     }
 
     async fn get_from_local_file(&self, path: &PathBuf) -> Result<String> {
-        fs::read_to_string(path).await.context(IoSnafu)
+        fs::read_to_string(path).await.context(ReadLocalFileSnafu)
     }
 
     /// Internal method which either looks up the requested file in the cache
     /// or retrieves it from the remote located at `url` when the cache missed
     /// or is expired.
     async fn get_from_cache_or_remote(&self, url: &Url) -> Result<String> {
-        match self.cache.retrieve(url).await.context(CacheSnafu {})? {
+        match self.cache.retrieve(url).await.context(CacheRetrieveSnafu)? {
             CacheStatus::Hit(content) => Ok(content),
             CacheStatus::Expired | CacheStatus::Miss => {
                 let content = self.get_from_remote(url).await?;
                 self.cache
                     .store(url, &content)
                     .await
-                    .context(CacheSnafu {})?;
+                    .context(CacheStoreSnafu)?;
 
                 Ok(content)
             }
@@ -106,9 +109,14 @@ impl FileTransferClient {
             .client
             .get(url.clone())
             .build()
-            .context(RequestSnafu {})?;
+            .context(BuildRequestSnafu)?;
 
-        let result = self.client.execute(req).await.context(RequestSnafu {})?;
-        result.text().await.context(RequestSnafu {})
+        let result = self
+            .client
+            .execute(req)
+            .await
+            .context(FetchRemoteContentSnafu)?;
+
+        result.text().await.context(FetchRemoteContentSnafu)
     }
 }

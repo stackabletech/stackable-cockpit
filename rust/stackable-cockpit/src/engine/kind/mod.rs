@@ -1,19 +1,24 @@
 use std::process::Stdio;
 
-use snafu::{ensure, ResultExt, Snafu};
+use snafu::{ensure, OptionExt, ResultExt, Snafu};
 use tokio::{io::AsyncWriteExt, process::Command};
 use tracing::{debug, info, instrument};
 
 use crate::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    engine::{check_if_docker_is_running, kind::config::KindClusterConfig, DockerError},
+    engine::{
+        docker::{self, check_if_docker_is_running},
+        kind::config::Config,
+    },
     utils::check::binaries_present_with_name,
 };
 
 mod config;
 
+type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Snafu)]
-pub enum KindClusterError {
+pub enum Error {
     #[snafu(display("failed to pipe kind config using stdin"))]
     PipeConfigStdin { source: std::io::Error },
 
@@ -33,10 +38,10 @@ pub enum KindClusterError {
     MissingBinaryError { binary: String },
 
     #[snafu(display("failed to determine if Docker is running"))]
-    DockerError { source: DockerError },
+    DockerError { source: docker::Error },
 
     #[snafu(display("failed to covert kind config to YAML"))]
-    YamlError { source: serde_yaml::Error },
+    ConfigSerialization { source: serde_yaml::Error },
 }
 
 #[derive(Debug)]
@@ -61,20 +66,20 @@ impl KindCluster {
 
     /// Create a new local cluster by calling the kind binary.
     #[instrument]
-    pub async fn create(&self) -> Result<(), KindClusterError> {
+    pub async fn create(&self) -> Result<()> {
         info!("Creating local cluster using kind");
 
         // Check if required binaries are present
         if let Some(binary) = binaries_present_with_name(&["docker", "kind"]) {
-            return Err(KindClusterError::MissingBinaryError { binary });
+            return Err(Error::MissingBinaryError { binary });
         }
 
         // Check if Docker is running
         check_if_docker_is_running().await.context(DockerSnafu)?;
 
         debug!("Creating kind cluster config");
-        let config = KindClusterConfig::new(self.node_count, self.cp_node_count);
-        let config_string = serde_yaml::to_string(&config).context(YamlSnafu)?;
+        let config = Config::new(self.node_count, self.cp_node_count);
+        let config_string = serde_yaml::to_string(&config).context(ConfigSerializationSnafu)?;
 
         debug!("Creating kind cluster");
         let mut kind_cmd = Command::new("kind")
@@ -88,10 +93,7 @@ impl KindCluster {
             .context(CommandFailedToStartSnafu)?;
 
         // Try to obtain stdin handle
-        let mut stdin = kind_cmd
-            .stdin
-            .take()
-            .ok_or(KindClusterError::ObtainStdinHandle)?;
+        let mut stdin = kind_cmd.stdin.take().context(ObtainStdinHandleSnafu)?;
 
         // Pipe in config
         stdin
@@ -109,7 +111,7 @@ impl KindCluster {
 
     /// Creates a kind cluster if it doesn't exist already.
     #[instrument]
-    pub async fn create_if_not_exists(&self) -> Result<(), KindClusterError> {
+    pub async fn create_if_not_exists(&self) -> Result<()> {
         info!("Creating cluster if it doesn't exist using kind");
 
         if Self::check_if_cluster_exists(&self.name).await? {
@@ -131,7 +133,7 @@ impl KindCluster {
 
     /// Check if a kind cluster with the provided name already exists.
     #[instrument]
-    async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool, KindClusterError> {
+    async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool> {
         debug!("Checking if kind cluster exists");
 
         let output = Command::new("kind")

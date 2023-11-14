@@ -3,16 +3,19 @@ use snafu::{ensure, ResultExt, Snafu};
 
 use stackable_cockpit::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    engine::{KindCluster, KindClusterError, MinikubeCluster, MinikubeClusterError},
+    engine::{
+        kind::{self, KindCluster},
+        minikube::{self, MinikubeCluster},
+    },
 };
 
 #[derive(Debug, Snafu)]
 pub enum CommonClusterArgsError {
     #[snafu(display("failed to create kind cluster"))]
-    KindClusterError { source: KindClusterError },
+    KindClusterError { source: kind::Error },
 
     #[snafu(display("minikube cluster error"))]
-    MinikubeClusterError { source: MinikubeClusterError },
+    MinikubeClusterError { source: minikube::Error },
 
     #[snafu(display(
         "invalid total node count - at least two nodes in total are needed to run a local cluster"

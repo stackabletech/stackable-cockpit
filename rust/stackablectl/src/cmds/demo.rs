@@ -7,11 +7,11 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
-    common::ListError,
+    common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
         demo::{DemoError, DemoList},
-        namespace::{self, NamespaceError},
+        namespace::{self},
         release::ReleaseList,
         stack::StackList,
     },
@@ -125,7 +125,7 @@ pub enum CmdError {
     NoSuchStack { name: String },
 
     #[snafu(display("list error"))]
-    ListError { source: ListError },
+    ListError { source: list::Error },
 
     #[snafu(display("demo error"))]
     DemoError { source: DemoError },
@@ -141,7 +141,7 @@ pub enum CmdError {
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceError {
-        source: NamespaceError,
+        source: namespace::Error,
         namespace: String,
     },
 }

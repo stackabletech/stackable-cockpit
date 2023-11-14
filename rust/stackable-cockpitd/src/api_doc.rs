@@ -1,5 +1,5 @@
 use stackable_cockpit::{
-    common::ManifestSpec,
+    common::manifest::ManifestSpec,
     platform::{
         cluster::ResourceRequests, demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet,
     },

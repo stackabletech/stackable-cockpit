@@ -7,10 +7,10 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
-    common::ListError,
+    common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
-        namespace::{self, NamespaceError},
+        namespace::{self, Error},
         release::ReleaseList,
         stack::{StackError, StackList},
     },
@@ -117,7 +117,7 @@ pub enum CmdError {
     StackError { source: StackError },
 
     #[snafu(display("list error"))]
-    ListError { source: ListError },
+    ListError { source: list::Error },
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
@@ -126,10 +126,7 @@ pub enum CmdError {
     TransferError { source: FileTransferError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
-        source: NamespaceError,
-        namespace: String,
-    },
+    NamespaceError { source: Error, namespace: String },
 }
 
 impl StackArgs {

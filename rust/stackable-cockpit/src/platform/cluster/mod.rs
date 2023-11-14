@@ -7,8 +7,10 @@ mod resource_request;
 
 pub use resource_request::*;
 
+type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Snafu)]
-pub enum ClusterError {
+pub enum Error {
     #[snafu(display("failed to parse node cpu quantity"))]
     ParseNodeCpuQuantity {
         source: stackable_operator::error::Error,
@@ -44,7 +46,7 @@ pub struct ClusterInfo {
 }
 
 impl ClusterInfo {
-    pub fn from_nodes(nodes: ObjectList<Node>) -> Result<Self, ClusterError> {
+    pub fn from_nodes(nodes: ObjectList<Node>) -> Result<Self> {
         // FIXME (Techassi): Also retrieve number of control plane nodes
         let node_count = nodes.items.len();
 

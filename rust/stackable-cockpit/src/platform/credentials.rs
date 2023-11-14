@@ -6,10 +6,10 @@ use snafu::{OptionExt, ResultExt, Snafu};
 
 use crate::utils::k8s::{KubeClient, KubeClientError};
 
-pub type Result<T, E = CredentialsError> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
-pub enum CredentialsError {
+pub enum Error {
     #[snafu(display("failed to fetch data from kubernetes api"))]
     KubeClientFetchError { source: KubeClientError },
 

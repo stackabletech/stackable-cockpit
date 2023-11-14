@@ -7,10 +7,10 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
-    common::ListError,
+    common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
     platform::{
-        namespace::{self, NamespaceError},
+        namespace::{self, Error},
         release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
     },
     utils::path::PathOrUrlParseError,
@@ -107,7 +107,7 @@ pub enum CmdError {
     PathOrUrlParseError { source: PathOrUrlParseError },
 
     #[snafu(display("list error"))]
-    ListError { source: ListError },
+    ListError { source: list::Error },
 
     #[snafu(display("release install error"))]
     ReleaseInstallError { source: ReleaseInstallError },
@@ -122,10 +122,7 @@ pub enum CmdError {
     TransferError { source: FileTransferError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
-        source: NamespaceError,
-        namespace: String,
-    },
+    NamespaceError { source: Error, namespace: String },
 }
 
 impl ReleaseArgs {

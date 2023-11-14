@@ -15,7 +15,7 @@ use snafu::{OptionExt, ResultExt, Snafu};
 
 use crate::{
     platform::{
-        cluster::{ClusterError, ClusterInfo},
+        cluster::{ClusterInfo, Error},
         credentials::Credentials,
     },
     utils::k8s::ByteStringExt,
@@ -48,7 +48,7 @@ pub enum KubeClientError {
     MissingServiceNamespace { service: String },
 
     #[snafu(display("failed to retrieve cluster information"))]
-    ClusterError { source: ClusterError },
+    ClusterError { source: Error },
 
     #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
     InvalidSecretData { secret_name: String },

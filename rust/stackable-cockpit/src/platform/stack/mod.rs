@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 mod spec;
 pub use spec::*;
 
-use crate::common::{List, SpecIter};
+use crate::common::list::{List, SpecIter};
 
 /// This struct describes a complete demos v2 file
 #[derive(Debug, Deserialize, Serialize)]

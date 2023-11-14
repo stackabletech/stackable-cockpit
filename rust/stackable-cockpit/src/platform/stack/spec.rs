@@ -8,7 +8,7 @@ use tracing::{debug, info, instrument, log::warn};
 use utoipa::ToSchema;
 
 use crate::{
-    common::ManifestSpec,
+    common::manifest::ManifestSpec,
     helm::{self, HelmChart, HelmError},
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},

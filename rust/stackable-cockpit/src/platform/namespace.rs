@@ -3,7 +3,7 @@ use snafu::{ResultExt, Snafu};
 use crate::utils::k8s::{KubeClient, KubeClientError};
 
 #[derive(Debug, Snafu)]
-pub enum NamespaceError {
+pub enum Error {
     #[snafu(display("failed to create kubernetes client"))]
     KubeClientCreateError { source: KubeClientError },
 
@@ -13,7 +13,7 @@ pub enum NamespaceError {
 
 /// Creates a namespace with `name` if needed (not already present in the
 /// cluster).
-pub async fn create_if_needed(name: String) -> Result<(), NamespaceError> {
+pub async fn create_if_needed(name: String) -> Result<(), Error> {
     let client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
 
     client
@@ -21,11 +21,11 @@ pub async fn create_if_needed(name: String) -> Result<(), NamespaceError> {
         .await
         .map_err(|err| match err {
             KubeClientError::KubeError { source } => match source {
-                kube::Error::Api(err) if err.code == 401 => NamespaceError::PermissionDenied,
-                _ => NamespaceError::KubeClientCreateError {
+                kube::Error::Api(err) if err.code == 401 => Error::PermissionDenied,
+                _ => Error::KubeClientCreateError {
                     source: KubeClientError::KubeError { source },
                 },
             },
-            _ => NamespaceError::KubeClientCreateError { source: err },
+            _ => Error::KubeClientCreateError { source: err },
         })
 }

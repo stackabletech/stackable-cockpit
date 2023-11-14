@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-use crate::common::{List, SpecIter};
+use crate::common::list::{List, SpecIter};
 
 mod spec;
 

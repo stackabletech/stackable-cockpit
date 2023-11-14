@@ -9,14 +9,16 @@ use crate::{
     xfer::{processor::Yaml, FileTransferClient, FileTransferError},
 };
 
-pub trait SpecIter<S> {
-    fn inner(&self) -> &IndexMap<String, S>;
-}
+type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
-pub enum ListError {
+pub enum Error {
     #[snafu(display("failed to transfer the list file"))]
     FileTransfer { source: FileTransferError },
+}
+
+pub trait SpecIter<S> {
+    fn inner(&self) -> &IndexMap<String, S>;
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for
@@ -42,10 +44,7 @@ where
     /// Builds a list of specs of type `S` based on a list of files. These files
     /// can be located locally (on disk) or remotely. Remote files will get
     /// downloaded.
-    pub async fn build(
-        files: &[PathOrUrl],
-        transfer_client: &FileTransferClient,
-    ) -> Result<Self, ListError> {
+    pub async fn build(files: &[PathOrUrl], transfer_client: &FileTransferClient) -> Result<Self> {
         let mut map = IndexMap::new();
 
         for file in files {
