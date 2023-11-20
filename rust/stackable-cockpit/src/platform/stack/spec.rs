@@ -9,11 +9,11 @@ use utoipa::ToSchema;
 
 use crate::{
     common::manifest::ManifestSpec,
-    helm::{self, HelmChart, HelmError},
+    helm,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoParameter,
-        release::{ReleaseInstallError, ReleaseList},
+        release::{InstallError, List},
     },
     utils::{
         k8s::{KubeClient, KubeClientError},
@@ -33,7 +33,7 @@ pub type RawStackParameter = RawParameter;
 pub type StackParameter = Parameter;
 
 #[derive(Debug, Snafu)]
-pub enum StackError {
+pub enum Error {
     /// This error indicates that parsing a string into stack / demo parameters
     /// failed.
     #[snafu(display("failed to parse demo / stack parameters"))]
@@ -46,13 +46,13 @@ pub enum StackError {
 
     /// This error indicates that the release failed to install.
     #[snafu(display("failed to install release"))]
-    ReleaseInstallError { source: ReleaseInstallError },
+    ReleaseInstallError { source: InstallError },
 
     /// This error indicates that the Helm wrapper failed to add the Helm
     /// repository.
     #[snafu(display("failed to add Helm repository {repo_name}"))]
     HelmAddRepositoryError {
-        source: HelmError,
+        source: helm::Error,
         repo_name: String,
     },
 
@@ -61,7 +61,7 @@ pub enum StackError {
     #[snafu(display("failed to install Helm release {release_name}"))]
     HelmInstallReleaseError {
         release_name: String,
-        source: HelmError,
+        source: helm::Error,
     },
 
     /// This error indicates that the creation of a kube client failed.
@@ -104,7 +104,7 @@ pub enum StackError {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
-pub struct StackSpecV2 {
+pub struct StackSpec {
     /// A short description of the demo
     pub description: String,
 
@@ -137,14 +137,14 @@ pub struct StackSpecV2 {
     pub parameters: Vec<StackParameter>,
 }
 
-impl StackSpecV2 {
+impl StackSpec {
     /// Checks if the prerequisites to run this stack are met. These checks
     /// include:
     ///
     /// - Does the stack support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this stack?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), StackError> {
+    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing stack");
 
         // Returns an error if the stack doesn't support to be installed in the
@@ -152,7 +152,7 @@ impl StackSpecV2 {
         // already done on the demo spec level, however we still need to check
         // here, as stacks can be installed on their own.
         if !self.supports_namespace(product_namespace) {
-            return Err(StackError::UnsupportedNamespace {
+            return Err(Error::UnsupportedNamespace {
                 supported: self.supported_namespaces.clone(),
                 requested: product_namespace.to_string(),
             });
@@ -179,10 +179,10 @@ impl StackSpecV2 {
     #[instrument(skip(self, release_list))]
     pub async fn install_release(
         &self,
-        release_list: ReleaseList,
+        release_list: List,
         operator_namespace: &str,
         product_namespace: &str,
-    ) -> Result<(), StackError> {
+    ) -> Result<(), Error> {
         info!("Trying to install release {}", self.release);
 
         // Get the release by name
@@ -206,7 +206,7 @@ impl StackSpecV2 {
         parameters: &[String],
         product_namespace: &str,
         transfer_client: &FileTransferClient,
-    ) -> Result<(), StackError> {
+    ) -> Result<(), Error> {
         info!("Installing stack manifests");
 
         let parameters = parameters
@@ -232,7 +232,7 @@ impl StackSpecV2 {
         demo_parameters: &[String],
         product_namespace: &str,
         transfer_client: &FileTransferClient,
-    ) -> Result<(), StackError> {
+    ) -> Result<(), Error> {
         info!("Installing demo manifests");
 
         let parameters = demo_parameters
@@ -251,7 +251,7 @@ impl StackSpecV2 {
         parameters: &HashMap<String, String>,
         product_namespace: &str,
         transfer_client: &FileTransferClient,
-    ) -> Result<(), StackError> {
+    ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
 
         for manifest in manifests {
@@ -264,7 +264,7 @@ impl StackSpecV2 {
                         path_or_url: helm_file.clone(),
                     })?;
 
-                    let helm_chart: HelmChart = transfer_client
+                    let helm_chart: helm::Chart = transfer_client
                         .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
                         .await
                         .context(TransferSnafu)?;

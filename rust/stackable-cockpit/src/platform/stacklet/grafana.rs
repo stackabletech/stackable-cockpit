@@ -4,7 +4,7 @@ use snafu::ResultExt;
 use crate::{
     platform::{
         service::get_service_endpoint_urls,
-        stacklet::{KubeClientFetchSnafu, ServiceSnafu, Stacklet, StackletError},
+        stacklet::{Error, KubeClientFetchSnafu, ServiceSnafu, Stacklet},
     },
     utils::k8s::{KubeClient, ListParamsExt, ProductLabel},
 };
@@ -12,7 +12,7 @@ use crate::{
 pub(super) async fn list(
     kube_client: &KubeClient,
     namespace: Option<&str>,
-) -> Result<Vec<Stacklet>, StackletError> {
+) -> Result<Vec<Stacklet>, Error> {
     let mut stacklets = Vec::new();
 
     let params = ListParams::from_product("grafana", None, ProductLabel::Name);

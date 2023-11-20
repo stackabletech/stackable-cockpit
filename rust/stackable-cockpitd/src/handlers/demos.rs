@@ -1,5 +1,5 @@
 use axum::{extract::Path, routing::get, Json, Router};
-use stackable_cockpit::platform::demo::DemoSpecV2;
+use stackable_cockpit::platform::demo::DemoSpec;
 
 /// Creates the demo sub-router.
 pub fn router() -> Router {
@@ -13,7 +13,7 @@ pub fn router() -> Router {
     (status = 200, description = "Retrieving a list of demos succeeded", body = [DemoSpecV2]),
     (status = 404, description = "Retrieving a list of demos failed")
 ))]
-pub async fn get_demos() -> Json<Vec<DemoSpecV2>> {
+pub async fn get_demos() -> Json<Vec<DemoSpec>> {
     todo!()
 }
 
@@ -22,6 +22,6 @@ pub async fn get_demos() -> Json<Vec<DemoSpecV2>> {
     (status = 200, description = "Retrieving the demo with 'name' succeeded", body = DemoSpecV2),
     (status = 404, description = "Retrieving the demo with 'name' failed")
 ))]
-pub async fn get_demo(Path(_name): Path<String>) -> Json<DemoSpecV2> {
+pub async fn get_demo(Path(_name): Path<String>) -> Json<DemoSpec> {
     todo!()
 }

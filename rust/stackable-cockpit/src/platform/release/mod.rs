@@ -5,7 +5,7 @@ mod spec;
 
 pub use spec::*;
 
-use crate::common::list::{List, SpecIter};
+use crate::common::list::SpecIter;
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -20,7 +20,7 @@ impl SpecIter<ReleaseSpec> for Releases {
     }
 }
 
-pub type ReleaseList = List<Releases, ReleaseSpec>;
+pub type List = crate::common::list::List<Releases, ReleaseSpec>;
 
 #[derive(Default)]
 pub struct Release {}

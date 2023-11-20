@@ -11,7 +11,7 @@ use stackable_cockpit::{
     constants::DEFAULT_OPERATOR_NAMESPACE,
     platform::{
         namespace::{self, Error},
-        release::{ReleaseInstallError, ReleaseList, ReleaseUninstallError},
+        release::{InstallError, List, UninstallError},
     },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, FileTransferClient, FileTransferError},
@@ -110,10 +110,10 @@ pub enum CmdError {
     ListError { source: list::Error },
 
     #[snafu(display("release install error"))]
-    ReleaseInstallError { source: ReleaseInstallError },
+    ReleaseInstallError { source: InstallError },
 
     #[snafu(display("release uninstall error"))]
-    ReleaseUninstallError { source: ReleaseUninstallError },
+    ReleaseUninstallError { source: UninstallError },
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
@@ -133,7 +133,7 @@ impl ReleaseArgs {
 
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
-        let release_list = ReleaseList::build(&files, &transfer_client)
+        let release_list = List::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
@@ -154,7 +154,7 @@ impl ReleaseArgs {
 async fn list_cmd(
     args: &ReleaseListArgs,
     cli: &Cli,
-    release_list: ReleaseList,
+    release_list: List,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
 
@@ -204,7 +204,7 @@ async fn list_cmd(
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     cli: &Cli,
-    release_list: ReleaseList,
+    release_list: List,
 ) -> Result<String, CmdError> {
     info!("Describing release");
 
@@ -260,7 +260,7 @@ async fn describe_cmd(
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
-    release_list: ReleaseList,
+    release_list: List,
 ) -> Result<String, CmdError> {
     info!("Installing release");
 
@@ -310,7 +310,7 @@ async fn install_cmd(
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     cli: &Cli,
-    release_list: ReleaseList,
+    release_list: List,
 ) -> Result<String, CmdError> {
     info!("Installing release");
 

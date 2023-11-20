@@ -15,11 +15,8 @@ use stackable_cockpit::{
     constants::{
         DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
-    helm::{self, HelmError, HelmRelease, HelmRepo},
-    platform::{
-        namespace::{self, Error},
-        operator::{OperatorSpec, VALID_OPERATORS},
-    },
+    helm::{self, HelmRelease, HelmRepo},
+    platform::{namespace, operator},
     utils,
 };
 
@@ -90,7 +87,7 @@ values are:
 
 Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
-    operators: Vec<OperatorSpec>,
+    operators: Vec<operator::OperatorSpec>,
 
     /// Namespace in the cluster used to deploy the operators
     #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
@@ -104,7 +101,7 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
 pub struct OperatorUninstallArgs {
     /// One or more operators to uninstall
     #[arg(required = true)]
-    operators: Vec<OperatorSpec>,
+    operators: Vec<operator::OperatorSpec>,
 
     /// Namespace in the cluster used to deploy the operators
     #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
@@ -130,7 +127,7 @@ pub enum CmdError {
     UnknownRepoNameError { name: String },
 
     #[snafu(display("Helm error"))]
-    HelmError { source: HelmError },
+    HelmError { source: helm::Error },
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
@@ -145,7 +142,10 @@ pub enum CmdError {
     JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError { source: Error, namespace: String },
+    NamespaceError {
+        source: namespace::Error,
+        namespace: String,
+    },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -359,7 +359,7 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
         .context(HelmSnafu)?
         .into_iter()
         .filter(|release| {
-            VALID_OPERATORS
+            operator::VALID_OPERATORS
                 .iter()
                 .any(|valid| release.name == utils::operator_chart_name(valid))
         })
@@ -451,7 +451,7 @@ fn build_versions_list(
 
     let mut versions_list = IndexMap::new();
 
-    for operator in VALID_OPERATORS {
+    for operator in operator::VALID_OPERATORS {
         for (helm_repo_name, helm_repo_index_file) in helm_index_files {
             let versions = list_operator_versions_from_repo(operator, helm_repo_index_file)?;
             let entry = versions_list.entry(operator.to_string());

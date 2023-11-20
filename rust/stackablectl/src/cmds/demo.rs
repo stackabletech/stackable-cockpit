@@ -9,12 +9,7 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{
-        demo::{DemoError, DemoList},
-        namespace::{self},
-        release::ReleaseList,
-        stack::StackList,
-    },
+    platform::{demo, namespace, release, stack},
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
@@ -128,7 +123,7 @@ pub enum CmdError {
     ListError { source: list::Error },
 
     #[snafu(display("demo error"))]
-    DemoError { source: DemoError },
+    DemoError { source: demo::Error },
 
     #[snafu(display("path/url parse error"))]
     PathOrUrlParseError { source: PathOrUrlParseError },
@@ -157,7 +152,7 @@ impl DemoArgs {
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
         let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
 
-        let list = DemoList::build(&files, &transfer_client)
+        let list = demo::List::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
@@ -171,7 +166,7 @@ impl DemoArgs {
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument]
-async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: DemoList) -> Result<String, CmdError> {
+async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
 
     match args.output_type {
@@ -218,7 +213,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: DemoList) -> Result<Stri
 async fn describe_cmd(
     args: &DemoDescribeArgs,
     cli: &Cli,
-    list: DemoList,
+    list: demo::List,
 ) -> Result<String, CmdError> {
     info!("Describing demo {}", args.demo_name);
 
@@ -265,7 +260,7 @@ async fn describe_cmd(
 async fn install_cmd(
     args: &DemoInstallArgs,
     cli: &Cli,
-    list: DemoList,
+    list: demo::List,
     transfer_client: &FileTransferClient,
 ) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
@@ -280,13 +275,13 @@ async fn install_cmd(
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
-    let stack_list = StackList::build(&files, transfer_client)
+    let stack_list = stack::List::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
-    let release_list = ReleaseList::build(&files, transfer_client)
+    let release_list = release::List::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 

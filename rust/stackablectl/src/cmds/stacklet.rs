@@ -8,7 +8,7 @@ use tracing::{info, instrument};
 
 use stackable_cockpit::{
     constants::DEFAULT_PRODUCT_NAMESPACE,
-    platform::stacklet::{get_credentials_for_product, list_stacklets, StackletError},
+    platform::stacklet::{get_credentials_for_product, list_stacklets, Error},
     utils::k8s::DisplayCondition,
 };
 
@@ -66,10 +66,10 @@ pub struct StackletListArgs {
 #[derive(Debug, Snafu)]
 pub enum CmdError {
     #[snafu(display("failed to list stacklets"))]
-    StackletListError { source: StackletError },
+    StackletListError { source: Error },
 
     #[snafu(display("failed to retrieve credentials for stacklet"))]
-    StackletCredentialsError { source: StackletError },
+    StackletCredentialsError { source: Error },
 
     #[snafu(display("unable to format YAML output"))]
     YamlOutputFormatError { source: serde_yaml::Error },

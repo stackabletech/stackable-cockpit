@@ -10,10 +10,11 @@ use snafu::{ensure, ResultExt, Snafu};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
-/// Parameter descibes a common parameter format. This format is used in demo and stack definitions
+/// Parameter descibes a common parameter format. This format is used in demo
+/// and stack definitions.
 #[derive(Clone, Debug, Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
+#[serde(rename_all = "camelCase")]
 pub struct Parameter {
     /// Parameter description
     pub description: String,

@@ -9,11 +9,7 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{
-        namespace::{self, Error},
-        release::ReleaseList,
-        stack::{StackError, StackList},
-    },
+    platform::{namespace, release, stack},
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, FileTransferClient, FileTransferError},
 };
@@ -114,7 +110,7 @@ pub enum CmdError {
     JsonOutputFormatError { source: serde_json::Error },
 
     #[snafu(display("stack error"))]
-    StackError { source: StackError },
+    StackError { source: stack::Error },
 
     #[snafu(display("list error"))]
     ListError { source: list::Error },
@@ -126,7 +122,10 @@ pub enum CmdError {
     TransferError { source: FileTransferError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError { source: Error, namespace: String },
+    NamespaceError {
+        source: namespace::Error,
+        namespace: String,
+    },
 }
 
 impl StackArgs {
@@ -136,7 +135,7 @@ impl StackArgs {
         let transfer_client = FileTransferClient::new_with(cache);
         let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
 
-        let stack_list = StackList::build(&files, &transfer_client)
+        let stack_list = stack::List::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
@@ -151,7 +150,7 @@ impl StackArgs {
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: StackList) -> Result<String, CmdError> {
+fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -196,7 +195,7 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: StackList) -> Result<St
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,
-    stack_list: StackList,
+    stack_list: stack::List,
 ) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
@@ -253,14 +252,14 @@ fn describe_cmd(
 async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
-    stack_list: StackList,
+    stack_list: stack::List,
     transfer_client: &FileTransferClient,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
-    let release_list = ReleaseList::build(&files, transfer_client)
+    let release_list = release::List::build(&files, transfer_client)
         .await
         .context(ListSnafu)?;
 

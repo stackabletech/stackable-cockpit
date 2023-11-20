@@ -7,8 +7,8 @@ use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
-    helm::{self, HelmError},
-    platform::demo::DemoList,
+    helm,
+    platform::demo::List,
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
@@ -50,7 +50,7 @@ pub enum Error {
     Cache { source: cache::CmdError },
 
     #[snafu(display("helm error"))]
-    Helm { source: HelmError },
+    Helm { source: helm::Error },
 }
 
 #[derive(Debug, Parser)]
@@ -98,9 +98,9 @@ impl Cli {
         Ok(files)
     }
 
-    pub async fn get_demo_list(&self, transfer_client: &FileTransferClient) -> DemoList {
+    pub async fn get_demo_list(&self, transfer_client: &FileTransferClient) -> List {
         let files = self.get_demo_files().unwrap();
-        DemoList::build(&files, transfer_client).await.unwrap()
+        List::build(&files, transfer_client).await.unwrap()
     }
 
     /// Returns a list of stack files, consisting of entries which are either a path or URL. The list of files combines
@@ -130,7 +130,7 @@ impl Cli {
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
     #[instrument]
-    pub fn add_helm_repos(&self) -> Result<(), HelmError> {
+    pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
         debug!("Add Helm repos");
 
         // Stable repository

@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     constants::PRODUCT_NAMES,
     platform::{
-        credentials::{get_credentials, Credentials, Error},
+        credentials,
         service::{get_service_endpoints, ServiceError},
     },
     utils::{
@@ -26,8 +26,8 @@ mod opensearch;
 mod prometheus;
 
 #[derive(Debug, Serialize)]
-#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct Stacklet {
     /// Name of the stacklet.
     pub name: String,
@@ -47,7 +47,7 @@ pub struct Stacklet {
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackletError {
+pub enum Error {
     #[snafu(display("failed to create kubernetes client"))]
     KubeClientCreateError { source: KubeClientError },
 
@@ -68,7 +68,7 @@ pub enum StackletError {
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
+pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, Error> {
     let kube_client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
@@ -84,7 +84,7 @@ pub async fn get_credentials_for_product(
     namespace: &str,
     object_name: &str,
     product_name: &str,
-) -> Result<Option<Credentials>, StackletError> {
+) -> Result<Option<credentials::Credentials>, Error> {
     let kube_client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
 
     let product_gvk = gvk_from_product_name(product_name);
@@ -102,13 +102,14 @@ pub async fn get_credentials_for_product(
         }
     };
 
-    let credentials = match get_credentials(&kube_client, product_name, &product_cluster).await {
-        Ok(credentials) => credentials,
-        Err(Error::NoSecret) => None,
-        Err(Error::KubeClientFetchError { source }) => {
-            return Err(StackletError::KubeClientFetchError { source })
-        }
-    };
+    let credentials =
+        match credentials::get_credentials(&kube_client, product_name, &product_cluster).await {
+            Ok(credentials) => credentials,
+            Err(credentials::Error::NoSecret) => None,
+            Err(credentials::Error::KubeClientFetchError { source }) => {
+                return Err(Error::KubeClientFetchError { source })
+            }
+        };
 
     Ok(credentials)
 }
@@ -116,7 +117,7 @@ pub async fn get_credentials_for_product(
 async fn list_stackable_stacklets(
     kube_client: &KubeClient,
     namespace: Option<&str>,
-) -> Result<Vec<Stacklet>, StackletError> {
+) -> Result<Vec<Stacklet>, Error> {
     let product_list = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = Vec::new();
 

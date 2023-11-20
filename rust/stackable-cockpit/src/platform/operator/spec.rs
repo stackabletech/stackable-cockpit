@@ -29,12 +29,12 @@ pub const VALID_OPERATORS: &[&str] = &[
 ];
 
 #[derive(Debug, Snafu)]
-pub enum OperatorSpecParseError {
+pub enum SpecParseError {
     #[snafu(display("invalid equal sign count in operator spec, expected one"))]
     InvalidEqualSignCount,
 
     #[snafu(display("failed to parse SemVer version"))]
-    ParseVersionError { source: semver::Error },
+    ParseVersion { source: semver::Error },
 
     #[snafu(display("the operator spec includes '=' but no version was specified"))]
     MissingVersion,
@@ -70,14 +70,14 @@ impl Display for OperatorSpec {
 }
 
 impl FromStr for OperatorSpec {
-    type Err = OperatorSpecParseError;
+    type Err = SpecParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let input = s.trim();
 
         // Empty input is not allowed
         if input.is_empty() {
-            return Err(OperatorSpecParseError::EmptyInput);
+            return Err(SpecParseError::EmptyInput);
         }
 
         // Split at each equal sign
@@ -87,7 +87,7 @@ impl FromStr for OperatorSpec {
         // If there are more than 2 equal signs, return error
         // because of invalid spec format
         if len > 2 {
-            return Err(OperatorSpecParseError::InvalidEqualSignCount);
+            return Err(SpecParseError::InvalidEqualSignCount);
         }
 
         // If there is only one part, the input didn't include
@@ -101,11 +101,11 @@ impl FromStr for OperatorSpec {
 
         // If there is an equal sign, but no version after
         if parts[1].is_empty() {
-            return Err(OperatorSpecParseError::MissingVersion);
+            return Err(SpecParseError::MissingVersion);
         }
 
         if !VALID_OPERATORS.contains(&parts[0]) {
-            return Err(OperatorSpecParseError::InvalidName {
+            return Err(SpecParseError::InvalidName {
                 name: parts[0].to_string(),
             });
         }
@@ -121,7 +121,7 @@ impl FromStr for OperatorSpec {
 }
 
 impl TryFrom<String> for OperatorSpec {
-    type Error = OperatorSpecParseError;
+    type Error = SpecParseError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         Self::from_str(&value)
@@ -129,7 +129,7 @@ impl TryFrom<String> for OperatorSpec {
 }
 
 impl TryFrom<&str> for OperatorSpec {
-    type Error = OperatorSpecParseError;
+    type Error = SpecParseError;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
         Self::try_from(value.to_string())
@@ -137,14 +137,14 @@ impl TryFrom<&str> for OperatorSpec {
 }
 
 impl OperatorSpec {
-    pub fn new<T>(name: T, version: Option<Version>) -> Result<Self, OperatorSpecParseError>
+    pub fn new<T>(name: T, version: Option<Version>) -> Result<Self, SpecParseError>
     where
         T: AsRef<str>,
     {
         let name = name.as_ref();
 
         if !VALID_OPERATORS.contains(&name) {
-            return Err(OperatorSpecParseError::InvalidName {
+            return Err(SpecParseError::InvalidName {
                 name: name.to_string(),
             });
         }
@@ -174,7 +174,7 @@ impl OperatorSpec {
 
     /// Installs the operator using Helm.
     #[instrument(skip_all)]
-    pub fn install(&self, namespace: &str) -> Result<(), helm::HelmError> {
+    pub fn install(&self, namespace: &str) -> Result<(), helm::Error> {
         info!("Installing operator {}", self);
 
         let version = self.version.as_ref().map(|v| v.to_string());
@@ -200,7 +200,7 @@ impl OperatorSpec {
 
     /// Uninstalls the operator using Helm.
     #[instrument]
-    pub fn uninstall<T>(&self, namespace: T) -> Result<(), helm::HelmError>
+    pub fn uninstall<T>(&self, namespace: T) -> Result<(), helm::Error>
     where
         T: AsRef<str> + std::fmt::Debug,
     {
@@ -218,7 +218,7 @@ impl OperatorSpec {
 mod test {
     use semver::Version;
 
-    use crate::platform::operator::{OperatorSpec, OperatorSpecParseError};
+    use crate::platform::operator::{OperatorSpec, SpecParseError};
 
     #[test]
     fn simple_operator_spec() {
@@ -246,7 +246,7 @@ mod test {
     fn empty_operator_spec() {
         match OperatorSpec::try_from("") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
-            Err(err) => assert!(matches!(err, OperatorSpecParseError::EmptyInput)),
+            Err(err) => assert!(matches!(err, SpecParseError::EmptyInput)),
         }
     }
 
@@ -254,7 +254,7 @@ mod test {
     fn empty_version_operator_spec() {
         match OperatorSpec::try_from("operator=") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
-            Err(err) => assert!(matches!(err, OperatorSpecParseError::MissingVersion)),
+            Err(err) => assert!(matches!(err, SpecParseError::MissingVersion)),
         }
     }
 
@@ -262,7 +262,7 @@ mod test {
     fn invalid_version_operator_spec() {
         match OperatorSpec::try_from("operator=1.2.3=") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
-            Err(err) => assert!(matches!(err, OperatorSpecParseError::InvalidEqualSignCount)),
+            Err(err) => assert!(matches!(err, SpecParseError::InvalidEqualSignCount)),
         }
     }
 }

@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-use crate::common::list::{List, SpecIter};
+use crate::common::list::SpecIter;
 
 mod spec;
 
@@ -12,13 +12,13 @@ pub use spec::*;
 #[serde(rename_all = "camelCase")]
 pub struct DemosV2 {
     #[serde(with = "serde_yaml::with::singleton_map_recursive")]
-    demos: IndexMap<String, DemoSpecV2>,
+    demos: IndexMap<String, DemoSpec>,
 }
 
-impl SpecIter<DemoSpecV2> for DemosV2 {
-    fn inner(&self) -> &IndexMap<String, DemoSpecV2> {
+impl SpecIter<DemoSpec> for DemosV2 {
+    fn inner(&self) -> &IndexMap<String, DemoSpec> {
         &self.demos
     }
 }
 
-pub type DemoList = List<DemosV2, DemoSpecV2>;
+pub type List = crate::common::list::List<DemosV2, DemoSpec>;
