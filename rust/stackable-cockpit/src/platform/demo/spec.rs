@@ -13,7 +13,7 @@ use crate::{
         stack,
     },
     utils::params::{Parameter, RawParameter, RawParameterParseError},
-    xfer::FileTransferClient,
+    xfer::Client,
 };
 
 pub type RawDemoParameterParseError = RawParameterParseError;
@@ -130,7 +130,7 @@ impl DemoSpec {
         product_namespace: &str,
         stack_parameters: &[String],
         demo_parameters: &[String],
-        transfer_client: &FileTransferClient,
+        transfer_client: &Client,
         skip_release: bool,
     ) -> Result<(), Error> {
         // Get the stack spec based on the name defined in the demo spec

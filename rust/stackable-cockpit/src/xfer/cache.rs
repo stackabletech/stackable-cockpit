@@ -36,7 +36,7 @@ pub enum Error {
 #[derive(Debug)]
 pub struct Cache {
     pub(crate) auto_purge_interval: Duration,
-    pub(crate) backend: CacheBackend,
+    pub(crate) backend: Backend,
     pub(crate) max_age: Duration,
 }
 
@@ -44,8 +44,8 @@ impl Cache {
     /// Returns wether the cache is enabled.
     pub fn is_enabled(&self) -> bool {
         match self.backend {
-            CacheBackend::Disk { .. } => true,
-            CacheBackend::Disabled => false,
+            Backend::Disk { .. } => true,
+            Backend::Disabled => false,
         }
     }
 
@@ -55,13 +55,13 @@ impl Cache {
     /// read from within the cache base path. The status is indicated by
     /// [`CacheStatus`]. An error is returned when the cache was unable to read
     /// data from disk.
-    pub async fn retrieve(&self, file_url: &Url) -> Result<CacheStatus<String>> {
+    pub async fn retrieve(&self, file_url: &Url) -> Result<Status<String>> {
         match &self.backend {
-            CacheBackend::Disk { base_path } => {
+            Backend::Disk { base_path } => {
                 let file_path = Self::file_path(base_path, file_url);
 
                 if !file_path.is_file() {
-                    return Ok(CacheStatus::Miss);
+                    return Ok(Status::Miss);
                 }
 
                 let modified = file_path
@@ -73,13 +73,13 @@ impl Cache {
                 let elapsed = modified.elapsed().context(SystemTimeSnafu {})?;
 
                 if elapsed > self.max_age {
-                    return Ok(CacheStatus::Expired);
+                    return Ok(Status::Expired);
                 }
 
                 let content = Self::read(file_path).await?;
-                Ok(CacheStatus::Hit(content))
+                Ok(Status::Hit(content))
             }
-            CacheBackend::Disabled => Ok(CacheStatus::Miss),
+            Backend::Disabled => Ok(Status::Miss),
         }
     }
 
@@ -88,11 +88,11 @@ impl Cache {
     /// or the cache is disabled.
     pub async fn store(&self, file_url: &Url, file_content: &str) -> Result<()> {
         match &self.backend {
-            CacheBackend::Disk { base_path } => {
+            Backend::Disk { base_path } => {
                 let file_path = Self::file_path(base_path, file_url);
                 Self::write(file_path, file_content).await
             }
-            CacheBackend::Disabled => Ok(()),
+            Backend::Disabled => Ok(()),
         }
     }
 
@@ -101,7 +101,7 @@ impl Cache {
     /// by the cache.
     pub async fn list(&self) -> Result<Vec<(PathBuf, SystemTime)>> {
         match &self.backend {
-            CacheBackend::Disk { base_path } => {
+            Backend::Disk { base_path } => {
                 let mut files = Vec::new();
 
                 let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
@@ -119,7 +119,7 @@ impl Cache {
 
                 Ok(files)
             }
-            CacheBackend::Disabled => Ok(vec![]),
+            Backend::Disabled => Ok(vec![]),
         }
     }
 
@@ -127,7 +127,7 @@ impl Cache {
     /// recreating it.
     pub async fn purge(&self, delete_filter: DeleteFilter) -> Result<()> {
         match &self.backend {
-            CacheBackend::Disk { base_path } => {
+            Backend::Disk { base_path } => {
                 let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
 
                 while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
@@ -157,13 +157,13 @@ impl Cache {
 
                 Ok(())
             }
-            CacheBackend::Disabled => Ok(()),
+            Backend::Disabled => Ok(()),
         }
     }
 
     pub async fn auto_purge(&self) -> Result<()> {
         match &self.backend {
-            CacheBackend::Disk { base_path } => {
+            Backend::Disk { base_path } => {
                 let cache_auto_purge_filepath = base_path.join(CACHE_LAST_AUTO_PURGE_FILEPATH);
 
                 // Read and covert timestamp
@@ -189,11 +189,11 @@ impl Cache {
 
                 Ok(())
             }
-            CacheBackend::Disabled => Ok(()),
+            Backend::Disabled => Ok(()),
         }
     }
 
-    fn new(backend: CacheBackend, max_age: Duration, auto_purge_interval: Duration) -> Self {
+    fn new(backend: Backend, max_age: Duration, auto_purge_interval: Duration) -> Self {
         Self {
             auto_purge_interval,
             backend,
@@ -225,21 +225,21 @@ impl Cache {
     }
 }
 
-pub enum CacheStatus<T> {
+pub enum Status<T> {
     Hit(T),
     Expired,
     Miss,
 }
 
 #[derive(Debug, Clone)]
-pub struct CacheSettings {
+pub struct Settings {
     pub auto_purge_interval: Duration,
-    pub backend: CacheBackend,
+    pub backend: Backend,
     pub max_age: Duration,
 }
 
-impl From<CacheBackend> for CacheSettings {
-    fn from(backend: CacheBackend) -> Self {
+impl From<Backend> for Settings {
+    fn from(backend: Backend) -> Self {
         Self {
             auto_purge_interval: DEFAULT_AUTO_PURGE_INTERVAL,
             max_age: DEFAULT_CACHE_MAX_AGE,
@@ -248,16 +248,16 @@ impl From<CacheBackend> for CacheSettings {
     }
 }
 
-impl CacheSettings {
+impl Settings {
     pub fn disk(base_path: impl Into<PathBuf>) -> Self {
-        CacheBackend::Disk {
+        Backend::Disk {
             base_path: base_path.into(),
         }
         .into()
     }
 
     pub fn disabled() -> Self {
-        CacheBackend::Disabled.into()
+        Backend::Disabled.into()
     }
 
     /// Creates a new [`Cache`] instance with the provided `settings`. It also
@@ -265,7 +265,7 @@ impl CacheSettings {
     /// needed for operation are created.
     pub async fn try_into_cache(self) -> Result<Cache> {
         match &self.backend {
-            CacheBackend::Disk { base_path } => {
+            Backend::Disk { base_path } => {
                 fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
 
                 Ok(Cache::new(
@@ -274,7 +274,7 @@ impl CacheSettings {
                     self.auto_purge_interval,
                 ))
             }
-            CacheBackend::Disabled => Ok(Cache::new(
+            Backend::Disabled => Ok(Cache::new(
                 self.backend,
                 self.max_age,
                 self.auto_purge_interval,
@@ -284,7 +284,7 @@ impl CacheSettings {
 }
 
 #[derive(Debug, Clone)]
-pub enum CacheBackend {
+pub enum Backend {
     Disk { base_path: PathBuf },
     Disabled,
 }

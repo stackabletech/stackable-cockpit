@@ -8,27 +8,24 @@ use kube::{
     api::{ListParams, Patch, PatchParams, PostParams},
     core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
     discovery::Scope,
-    Api, Client, Discovery, ResourceExt,
+    Api, Discovery, ResourceExt,
 };
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 
 use crate::{
-    platform::{
-        cluster::{ClusterInfo, Error},
-        credentials::Credentials,
-    },
+    platform::{cluster, credentials::Credentials},
     utils::k8s::ByteStringExt,
 };
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
 
-pub type ListResult<T, E = KubeClientError> = Result<ObjectList<T>, E>;
-pub type Result<T, E = KubeClientError> = std::result::Result<T, E>;
+pub type ListResult<T, E = Error> = Result<ObjectList<T>, E>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
-pub enum KubeClientError {
+pub enum Error {
     #[snafu(display("kubernetes error"))]
     KubeError { source: kube::error::Error },
 
@@ -48,7 +45,7 @@ pub enum KubeClientError {
     MissingServiceNamespace { service: String },
 
     #[snafu(display("failed to retrieve cluster information"))]
-    ClusterError { source: Error },
+    ClusterError { source: cluster::Error },
 
     #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
     InvalidSecretData { secret_name: String },
@@ -60,16 +57,16 @@ pub enum KubeClientError {
     NoPasswordKey { secret_name: String },
 }
 
-pub struct KubeClient {
-    client: Client,
+pub struct Client {
+    client: kube::Client,
     discovery: Discovery,
 }
 
-impl KubeClient {
+impl Client {
     /// Tries to create a new default Kubernetes client and immediately runs
     /// a discovery.
     pub async fn new() -> Result<Self> {
-        let client = Client::try_default().await.context(KubeSnafu)?;
+        let client = kube::Client::try_default().await.context(KubeSnafu)?;
         let discovery = Discovery::new(client.clone())
             .run()
             .await
@@ -128,7 +125,7 @@ impl KubeClient {
         &self,
         gvk: &GroupVersionKind,
         namespace: Option<&str>,
-    ) -> Result<Option<ObjectList<DynamicObject>>, KubeClientError> {
+    ) -> Result<Option<ObjectList<DynamicObject>>, Error> {
         let object_api_resource = match self.discovery.resolve_gvk(gvk) {
             Some((object_api_resource, _)) => object_api_resource,
             None => {
@@ -156,7 +153,7 @@ impl KubeClient {
         namespace: &str,
         object_name: &str,
         gvk: &GroupVersionKind,
-    ) -> Result<Option<DynamicObject>, KubeClientError> {
+    ) -> Result<Option<DynamicObject>, Error> {
         let object_api_resource = match self.discovery.resolve_gvk(gvk) {
             Some((object_api_resource, _)) => object_api_resource,
             None => {
@@ -318,9 +315,9 @@ impl KubeClient {
     /// current cluster. It should be noted that [`ClusterInfo`] contains data
     /// about allocatable resources. These values don't reflect currently
     /// available resources.
-    pub async fn get_cluster_info(&self) -> Result<ClusterInfo> {
+    pub async fn get_cluster_info(&self) -> Result<cluster::ClusterInfo> {
         let nodes = self.list_nodes().await?;
-        ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
+        cluster::ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
     }
 
     pub async fn get_endpoints(&self, namespace: &str, name: &str) -> Result<Endpoints> {

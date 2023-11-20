@@ -11,17 +11,16 @@ use crate::{
     platform::{operator, product},
 };
 
+type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Snafu)]
-pub enum InstallError {
+pub enum Error {
     #[snafu(display("failed to parse operator spec"))]
     OperatorSpecParse { source: operator::SpecParseError },
 
     #[snafu(display("failed to install release using Helm"))]
     HelmInstallError { source: helm::Error },
-}
 
-#[derive(Debug, Snafu)]
-pub enum UninstallError {
     #[snafu(display("failed to uninstall release using Helm"))]
     HelmUninstallError { source: helm::Error },
 }
@@ -49,7 +48,7 @@ impl ReleaseSpec {
         include_products: &[String],
         exclude_products: &[String],
         namespace: &str,
-    ) -> Result<(), InstallError> {
+    ) -> Result<()> {
         info!("Installing release");
 
         for (product_name, product) in self.filter_products(include_products, exclude_products) {
@@ -66,7 +65,7 @@ impl ReleaseSpec {
         Ok(())
     }
 
-    pub fn uninstall(&self, namespace: &str) -> Result<(), UninstallError> {
+    pub fn uninstall(&self, namespace: &str) -> Result<()> {
         for (product_name, _) in &self.products {
             helm::uninstall_release(product_name, namespace, true).context(HelmUninstallSnafu)?;
         }

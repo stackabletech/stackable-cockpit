@@ -134,7 +134,7 @@ export interface components {
     SessionToken: string;
     Stacklet: {
       /** @description Multiple cluster conditions. */
-      conditions: components["schemas"]["DisplayCondition"][];
+      conditions: components["schemas"]["k8s.DisplayCondition"][];
       /**
        * @description Endpoint addresses the product is reachable at.
        * The key is the service name (e.g. `web-ui`), the value is the URL.

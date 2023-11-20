@@ -12,7 +12,7 @@ use stackable_cockpit::{
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
-    xfer::{cache::CacheSettings, FileTransferClient},
+    xfer::{cache::Settings, Client},
 };
 
 use crate::{
@@ -98,7 +98,7 @@ impl Cli {
         Ok(files)
     }
 
-    pub async fn get_demo_list(&self, transfer_client: &FileTransferClient) -> List {
+    pub async fn get_demo_list(&self, transfer_client: &Client) -> List {
         let files = self.get_demo_files().unwrap();
         List::build(&files, transfer_client).await.unwrap()
     }
@@ -146,9 +146,9 @@ impl Cli {
     }
 
     #[instrument]
-    pub fn cache_settings(&self) -> Result<CacheSettings, CacheSettingsError> {
+    pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
-            Ok(CacheSettings::disabled())
+            Ok(Settings::disabled())
         } else {
             let project_dir = ProjectDirs::from(
                 USER_DIR_QUALIFIER,
@@ -157,7 +157,7 @@ impl Cli {
             )
             .ok_or(CacheSettingsError::UserDir)?;
 
-            Ok(CacheSettings::disk(project_dir.cache_dir()))
+            Ok(Settings::disk(project_dir.cache_dir()))
         }
     }
 

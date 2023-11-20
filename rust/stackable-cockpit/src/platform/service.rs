@@ -13,12 +13,12 @@ use kube::{api::ListParams, ResourceExt};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, warn};
 
-use crate::utils::k8s::{KubeClient, KubeClientError, ListParamsExt, ProductLabel};
+use crate::utils::k8s::{self, ListParamsExt};
 
 #[derive(Debug, Snafu)]
-pub enum ServiceError {
+pub enum Error {
     #[snafu(display("failed to fetch data from kubernetes api"))]
-    KubeClientFetchError { source: KubeClientError },
+    KubeClientFetchError { source: k8s::Error },
 
     #[snafu(display("missing namespace for service '{service}'"))]
     MissingServiceNamespace { service: String },
@@ -39,14 +39,14 @@ pub enum ServiceError {
     NodeMissingInIpMapping { node_name: String },
 }
 
-pub async fn get_service_endpoints(
-    kube_client: &KubeClient,
+pub async fn get_endpoints(
+    kube_client: &k8s::Client,
     product_name: &str,
     object_name: &str,
     object_namespace: &str,
-) -> Result<IndexMap<String, String>, ServiceError> {
+) -> Result<IndexMap<String, String>, Error> {
     let service_list_params =
-        ListParams::from_product(product_name, Some(object_name), ProductLabel::Name);
+        ListParams::from_product(product_name, Some(object_name), k8s::ProductLabel::Name);
 
     let services = kube_client
         .list_services(Some(object_namespace), &service_list_params)
@@ -56,7 +56,7 @@ pub async fn get_service_endpoints(
     let mut endpoints = IndexMap::new();
 
     for service in services {
-        match get_service_endpoint_urls(kube_client, &service, object_name).await {
+        match get_endpoint_urls(kube_client, &service, object_name).await {
             Ok(urls) => endpoints.extend(urls),
             Err(err) => warn!(
                 "Failed to get endpoint_urls of service {service_name}: {err}",
@@ -68,11 +68,11 @@ pub async fn get_service_endpoints(
     Ok(endpoints)
 }
 
-pub async fn get_service_endpoint_urls(
-    kube_client: &KubeClient,
+pub async fn get_endpoint_urls(
+    kube_client: &k8s::Client,
     service: &Service,
     referenced_object_name: &str,
-) -> Result<IndexMap<String, String>, ServiceError> {
+) -> Result<IndexMap<String, String>, Error> {
     let service_name = service.name_unchecked();
 
     let service_namespace = service.namespace().context(MissingServiceNamespaceSnafu {
@@ -85,7 +85,7 @@ pub async fn get_service_endpoint_urls(
 
     let endpoints = match service_spec.type_.as_deref() {
         Some("NodePort") => {
-            get_service_endpoint_urls_for_nodeport(
+            get_endpoint_urls_for_nodeport(
                 kube_client,
                 &service_name,
                 service_spec,
@@ -95,7 +95,7 @@ pub async fn get_service_endpoint_urls(
             .await?
         }
         Some("LoadBalancer") => {
-            get_service_endpoint_urls_for_loadbalancer(
+            get_endpoint_urls_for_loadbalancer(
                 &service_name,
                 service,
                 service_spec,
@@ -109,13 +109,13 @@ pub async fn get_service_endpoint_urls(
     Ok(endpoints)
 }
 
-pub async fn get_service_endpoint_urls_for_nodeport(
-    kube_client: &KubeClient,
+pub async fn get_endpoint_urls_for_nodeport(
+    kube_client: &k8s::Client,
     service_name: &str,
     service_spec: &ServiceSpec,
     service_namespace: &str,
     referenced_object_name: &str,
-) -> Result<IndexMap<String, String>, ServiceError> {
+) -> Result<IndexMap<String, String>, Error> {
     let endpoints = kube_client
         .get_endpoints(service_namespace, service_name)
         .await
@@ -179,12 +179,12 @@ pub async fn get_service_endpoint_urls_for_nodeport(
     Ok(endpoints)
 }
 
-pub async fn get_service_endpoint_urls_for_loadbalancer(
+pub async fn get_endpoint_urls_for_loadbalancer(
     service_name: &str,
     service: &Service,
     service_spec: &ServiceSpec,
     referenced_object_name: &str,
-) -> Result<IndexMap<String, String>, ServiceError> {
+) -> Result<IndexMap<String, String>, Error> {
     let mut endpoints = IndexMap::new();
 
     let lb_host = service
@@ -223,7 +223,7 @@ pub async fn get_service_endpoint_urls_for_loadbalancer(
     Ok(endpoints)
 }
 
-async fn get_node_ip(kube_client: &KubeClient, node_name: &str) -> Result<String, ServiceError> {
+async fn get_node_ip(kube_client: &k8s::Client, node_name: &str) -> Result<String, Error> {
     let node_name_ip_mapping = get_node_name_ip_mapping(kube_client).await?;
 
     match node_name_ip_mapping.get(node_name) {
@@ -235,8 +235,8 @@ async fn get_node_ip(kube_client: &KubeClient, node_name: &str) -> Result<String
 // TODO(sbernauer): Add caching. Not going to do so now, as listener-op
 // will replace this code entirely anyway.
 async fn get_node_name_ip_mapping(
-    kube_client: &KubeClient,
-) -> Result<HashMap<String, String>, ServiceError> {
+    kube_client: &k8s::Client,
+) -> Result<HashMap<String, String>, Error> {
     let nodes = kube_client
         .list_nodes()
         .await

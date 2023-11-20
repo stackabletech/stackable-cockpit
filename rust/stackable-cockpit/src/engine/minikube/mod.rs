@@ -29,12 +29,12 @@ pub enum Error {
 }
 
 #[derive(Debug)]
-pub struct MinikubeCluster {
+pub struct Cluster {
     node_count: usize,
     name: String,
 }
 
-impl MinikubeCluster {
+impl Cluster {
     /// Create a new kind cluster. This will NOT yet create the cluster on the system, but instead will return a data
     /// structure representing the cluster. To actually create the cluster, the `create` method must be called.
     pub fn new(node_count: usize, name: Option<String>) -> Self {

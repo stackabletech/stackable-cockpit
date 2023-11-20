@@ -11,7 +11,7 @@ use stackable_cockpit::{
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{namespace, release, stack},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, Client, Error},
 };
 
 use crate::{
@@ -119,7 +119,7 @@ pub enum CmdError {
     CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("transfer error"))]
-    TransferError { source: FileTransferError },
+    TransferError { source: Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceError {
@@ -132,7 +132,7 @@ impl StackArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
-        let transfer_client = FileTransferClient::new_with(cache);
+        let transfer_client = Client::new_with(cache);
         let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
 
         let stack_list = stack::List::build(&files, &transfer_client)
@@ -253,7 +253,7 @@ async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
     stack_list: stack::List,
-    transfer_client: &FileTransferClient,
+    transfer_client: &Client,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 

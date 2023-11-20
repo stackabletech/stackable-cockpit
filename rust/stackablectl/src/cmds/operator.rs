@@ -15,7 +15,7 @@ use stackable_cockpit::{
     constants::{
         DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
-    helm::{self, HelmRelease, HelmRepo},
+    helm::{self, Release, Repository},
     platform::{namespace, operator},
     utils,
 };
@@ -353,7 +353,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing installed operators");
 
-    type ReleaseList = IndexMap<String, HelmRelease>;
+    type ReleaseList = IndexMap<String, Release>;
 
     let installed: ReleaseList = helm::list_releases(&args.operator_namespace)
         .context(HelmSnafu)?
@@ -417,7 +417,7 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
 
 /// Builds a map which maps Helm repo name to Helm repo URL.
 #[instrument]
-async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, CmdError> {
+async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, Repository>, CmdError> {
     debug!("Building Helm index file list");
 
     let mut helm_index_files = HashMap::new();
@@ -445,7 +445,7 @@ async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, HelmRepo>, 
 /// by stable, test and dev lines based on the list of Helm repo index files.
 #[instrument]
 fn build_versions_list(
-    helm_index_files: &HashMap<&str, HelmRepo>,
+    helm_index_files: &HashMap<&str, Repository>,
 ) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
     debug!("Building versions list");
 
@@ -468,7 +468,7 @@ fn build_versions_list(
 #[instrument]
 fn build_versions_list_for_operator<T>(
     operator_name: T,
-    helm_index_files: &HashMap<&str, HelmRepo>,
+    helm_index_files: &HashMap<&str, Repository>,
 ) -> Result<OperatorVersionList, CmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
@@ -493,7 +493,7 @@ where
 #[instrument]
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
-    helm_repo: &HelmRepo,
+    helm_repo: &Repository,
 ) -> Result<Vec<String>, CmdError>
 where
     T: AsRef<str> + std::fmt::Debug,

@@ -13,18 +13,18 @@ use crate::{
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoParameter,
-        release::{InstallError, List},
+        release,
     },
     utils::{
-        k8s::{KubeClient, KubeClientError},
+        k8s,
         params::{
             IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
         },
         path::{IntoPathOrUrl, PathOrUrlParseError},
     },
     xfer::{
+        self,
         processor::{Processor, Template, Yaml},
-        FileTransferClient, FileTransferError,
     },
 };
 
@@ -46,7 +46,7 @@ pub enum Error {
 
     /// This error indicates that the release failed to install.
     #[snafu(display("failed to install release"))]
-    ReleaseInstallError { source: InstallError },
+    ReleaseInstallError { source: release::Error },
 
     /// This error indicates that the Helm wrapper failed to add the Helm
     /// repository.
@@ -66,11 +66,11 @@ pub enum Error {
 
     /// This error indicates that the creation of a kube client failed.
     #[snafu(display("failed to create kubernetes client"))]
-    KubeClientCreateError { source: KubeClientError },
+    KubeClientCreateError { source: k8s::Error },
 
     /// This error indicates that the kube client failed to deloy manifests.
     #[snafu(display("failed to deploy manifests using the kube client"))]
-    ManifestDeployError { source: KubeClientError },
+    ManifestDeployError { source: k8s::Error },
 
     /// This error indicates that Helm chart options could not be serialized
     /// into YAML.
@@ -89,7 +89,7 @@ pub enum Error {
 
     /// This error indicates that receiving remote content failed.
     #[snafu(display("failed to receive remote content"))]
-    TransferError { source: FileTransferError },
+    TransferError { source: xfer::Error },
 
     /// This error indicates that the stack doesn't support being installed in
     /// the provided namespace.
@@ -179,7 +179,7 @@ impl StackSpec {
     #[instrument(skip(self, release_list))]
     pub async fn install_release(
         &self,
-        release_list: List,
+        release_list: release::List,
         operator_namespace: &str,
         product_namespace: &str,
     ) -> Result<(), Error> {
@@ -205,7 +205,7 @@ impl StackSpec {
         &self,
         parameters: &[String],
         product_namespace: &str,
-        transfer_client: &FileTransferClient,
+        transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
 
@@ -231,7 +231,7 @@ impl StackSpec {
         valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
         product_namespace: &str,
-        transfer_client: &FileTransferClient,
+        transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
 
@@ -250,7 +250,7 @@ impl StackSpec {
         manifests: &Vec<ManifestSpec>,
         parameters: &HashMap<String, String>,
         product_namespace: &str,
-        transfer_client: &FileTransferClient,
+        transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
 
@@ -317,7 +317,7 @@ impl StackSpec {
                         .await
                         .context(TransferSnafu)?;
 
-                    let kube_client = KubeClient::new().await.context(KubeClientCreateSnafu)?;
+                    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
 
                     kube_client
                         .deploy_manifests(&manifests, product_namespace)

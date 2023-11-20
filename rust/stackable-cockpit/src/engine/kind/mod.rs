@@ -45,13 +45,13 @@ pub enum Error {
 }
 
 #[derive(Debug)]
-pub struct KindCluster {
+pub struct Cluster {
     cp_node_count: usize,
     node_count: usize,
     name: String,
 }
 
-impl KindCluster {
+impl Cluster {
     /// Create a new kind cluster. This will NOT yet create the cluster on the
     /// system, but instead will return a data structure representing the
     /// cluster. To actually create the cluster, the `create` method must be

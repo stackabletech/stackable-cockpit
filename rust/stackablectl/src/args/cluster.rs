@@ -3,10 +3,7 @@ use snafu::{ensure, ResultExt, Snafu};
 
 use stackable_cockpit::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    engine::{
-        kind::{self, KindCluster},
-        minikube::{self, MinikubeCluster},
-    },
+    engine::{kind, minikube},
 };
 
 #[derive(Debug, Snafu)]
@@ -90,7 +87,7 @@ impl CommonClusterArgs {
                 match cluster_type {
                     ClusterType::Kind => {
                         let kind_cluster =
-                            KindCluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
+                            kind::Cluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
 
                         kind_cluster
                             .create_if_not_exists()
@@ -98,7 +95,7 @@ impl CommonClusterArgs {
                             .context(KindClusterSnafu)
                     }
                     ClusterType::Minikube => {
-                        let minikube_cluster = MinikubeCluster::new(self.cluster_nodes, name);
+                        let minikube_cluster = minikube::Cluster::new(self.cluster_nodes, name);
 
                         minikube_cluster
                             .create_if_not_exists()

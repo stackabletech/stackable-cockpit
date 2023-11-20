@@ -11,7 +11,7 @@ use stackable_cockpit::{
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{demo, namespace, release, stack},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, Client, Error},
 };
 
 use crate::{
@@ -132,7 +132,7 @@ pub enum CmdError {
     CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("file transfer error"))]
-    TransferError { source: FileTransferError },
+    TransferError { source: Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceError {
@@ -146,7 +146,7 @@ impl DemoArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
 
-        let transfer_client = FileTransferClient::new_with(cache);
+        let transfer_client = Client::new_with(cache);
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
@@ -261,7 +261,7 @@ async fn install_cmd(
     args: &DemoInstallArgs,
     cli: &Cli,
     list: demo::List,
-    transfer_client: &FileTransferClient,
+    transfer_client: &Client,
 ) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
 

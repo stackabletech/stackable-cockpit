@@ -6,7 +6,7 @@ use snafu::{ResultExt, Snafu};
 
 use crate::{
     utils::path::PathOrUrl,
-    xfer::{processor::Yaml, FileTransferClient, FileTransferError},
+    xfer::{self, processor::Yaml},
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -14,7 +14,7 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to transfer the list file"))]
-    FileTransfer { source: FileTransferError },
+    FileTransfer { source: xfer::Error },
 }
 
 pub trait SpecIter<S> {
@@ -44,7 +44,7 @@ where
     /// Builds a list of specs of type `S` based on a list of files. These files
     /// can be located locally (on disk) or remotely. Remote files will get
     /// downloaded.
-    pub async fn build(files: &[PathOrUrl], transfer_client: &FileTransferClient) -> Result<Self> {
+    pub async fn build(files: &[PathOrUrl], transfer_client: &xfer::Client) -> Result<Self> {
         let mut map = IndexMap::new();
 
         for file in files {

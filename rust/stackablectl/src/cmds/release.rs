@@ -9,12 +9,9 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::{
-        namespace::{self, Error},
-        release::{InstallError, List, UninstallError},
-    },
+    platform::{namespace, release},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, Client, Error},
 };
 
 use crate::{
@@ -110,30 +107,33 @@ pub enum CmdError {
     ListError { source: list::Error },
 
     #[snafu(display("release install error"))]
-    ReleaseInstallError { source: InstallError },
+    ReleaseInstallError { source: release::Error },
 
     #[snafu(display("release uninstall error"))]
-    ReleaseUninstallError { source: UninstallError },
+    ReleaseUninstallError { source: release::Error },
 
     #[snafu(display("cluster argument error"))]
     CommonClusterArgsError { source: CommonClusterArgsError },
 
     #[snafu(display("transfer error"))]
-    TransferError { source: FileTransferError },
+    TransferError { source: Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError { source: Error, namespace: String },
+    NamespaceError {
+        source: namespace::Error,
+        namespace: String,
+    },
 }
 
 impl ReleaseArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle release args");
 
-        let transfer_client = FileTransferClient::new_with(cache);
+        let transfer_client = Client::new_with(cache);
 
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
-        let release_list = List::build(&files, &transfer_client)
+        let release_list = release::List::build(&files, &transfer_client)
             .await
             .context(ListSnafu)?;
 
@@ -154,7 +154,7 @@ impl ReleaseArgs {
 async fn list_cmd(
     args: &ReleaseListArgs,
     cli: &Cli,
-    release_list: List,
+    release_list: release::List,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
 
@@ -204,7 +204,7 @@ async fn list_cmd(
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     cli: &Cli,
-    release_list: List,
+    release_list: release::List,
 ) -> Result<String, CmdError> {
     info!("Describing release");
 
@@ -260,7 +260,7 @@ async fn describe_cmd(
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
-    release_list: List,
+    release_list: release::List,
 ) -> Result<String, CmdError> {
     info!("Installing release");
 
@@ -310,7 +310,7 @@ async fn install_cmd(
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     cli: &Cli,
-    release_list: List,
+    release_list: release::List,
 ) -> Result<String, CmdError> {
     info!("Installing release");
 

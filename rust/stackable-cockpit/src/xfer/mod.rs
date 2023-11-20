@@ -10,15 +10,15 @@ pub mod processor;
 use crate::{
     utils::path::PathOrUrl,
     xfer::{
-        cache::{Cache, CacheSettings, CacheStatus},
+        cache::{Cache, Settings, Status},
         processor::{Processor, ProcessorError},
     },
 };
 
-type Result<T, E = FileTransferError> = core::result::Result<T, E>;
+type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
-pub enum FileTransferError {
+pub enum Error {
     #[snafu(display("failed to read local file"))]
     ReadLocalFile { source: std::io::Error },
 
@@ -42,14 +42,14 @@ pub enum FileTransferError {
 }
 
 #[derive(Debug)]
-pub struct FileTransferClient {
+pub struct Client {
     pub(crate) client: reqwest::Client,
     pub(crate) cache: Cache,
 }
 
-impl FileTransferClient {
+impl Client {
     /// Creates a new [`FileTransferClient`] with caching capabilities.
-    pub async fn new(cache_settings: CacheSettings) -> Result<Self> {
+    pub async fn new(cache_settings: Settings) -> Result<Self> {
         let cache = cache_settings
             .try_into_cache()
             .await
@@ -90,8 +90,8 @@ impl FileTransferClient {
     /// or is expired.
     async fn get_from_cache_or_remote(&self, url: &Url) -> Result<String> {
         match self.cache.retrieve(url).await.context(CacheRetrieveSnafu)? {
-            CacheStatus::Hit(content) => Ok(content),
-            CacheStatus::Expired | CacheStatus::Miss => {
+            Status::Hit(content) => Ok(content),
+            Status::Expired | Status::Miss => {
                 let content = self.get_from_remote(url).await?;
                 self.cache
                     .store(url, &content)
