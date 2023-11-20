@@ -267,24 +267,20 @@ async fn install_cmd(
     match release_list.get(&args.release) {
         Some(release) => {
             let mut output = cli.result();
-            output.enable_progress(format!("Installing release '{}'", args.release));
 
             // Install local cluster if needed
-            output.set_progress_message("Installing local cluster");
             args.local_cluster
                 .install_if_needed(None)
                 .await
                 .context(CommonClusterArgsSnafu)?;
 
             // Create operator namespace if needed
-            output.set_progress_message("Creating operator namespace");
             namespace::create_if_needed(args.operator_namespace.clone())
                 .await
                 .context(NamespaceSnafu {
                     namespace: args.operator_namespace.clone(),
                 })?;
 
-            output.set_progress_message("Installing release manifests");
             release
                 .install(
                     &args.included_products,
@@ -300,7 +296,6 @@ async fn install_cmd(
                 )
                 .with_output(format!("Installed release '{}'", args.release));
 
-            output.finish_progress("Done");
             Ok(output.render())
         }
         None => Ok("No such release".into()),

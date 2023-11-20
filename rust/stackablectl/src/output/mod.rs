@@ -4,7 +4,6 @@ use std::{
 };
 
 use snafu::{ResultExt, Snafu};
-use spinoff::{spinners, Color, Spinner};
 use tera::Tera;
 
 mod error;
@@ -93,7 +92,6 @@ pub struct Output<C>
 where
     C: ContextExt,
 {
-    progress: Option<Spinner>,
     renderer: Tera,
     context: C,
 }
@@ -107,28 +105,7 @@ where
         let no_color = use_colored_output(!no_color);
         context.set_no_color(no_color);
 
-        Ok(Self {
-            progress: None,
-            renderer,
-            context,
-        })
-    }
-
-    pub fn enable_progress(&mut self, initial_message: String) {
-        self.progress
-            .get_or_insert(Spinner::new(spinners::Dots, initial_message, Color::Green));
-    }
-
-    pub fn set_progress_message(&mut self, message: impl Into<String>) {
-        if let Some(progress) = self.progress.as_mut() {
-            progress.update_text(message.into())
-        }
-    }
-
-    pub fn finish_progress(&mut self, message: impl AsRef<str>) {
-        if let Some(progress) = self.progress.as_mut() {
-            progress.success(message.as_ref())
-        }
+        Ok(Self { renderer, context })
     }
 
     pub fn render(self) -> String {

@@ -278,10 +278,8 @@ async fn install_cmd(
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             let mut output = cli.result();
-            output.enable_progress(format!("Installing stack '{}'", args.stack_name));
 
             // Install local cluster if needed
-            output.set_progress_message("Creating local cluster");
             args.local_cluster
                 .install_if_needed(None)
                 .await
@@ -295,14 +293,12 @@ async fn install_cmd(
 
             // Install release if not opted out
             if !args.skip_release {
-                output.set_progress_message("Creating operator namespace");
                 namespace::create_if_needed(operator_namespace.clone())
                     .await
                     .context(NamespaceSnafu {
                         namespace: operator_namespace.clone(),
                     })?;
 
-                output.set_progress_message("Installing release manifests");
                 stack_spec
                     .install_release(release_list, &operator_namespace, &product_namespace)
                     .await
@@ -312,7 +308,6 @@ async fn install_cmd(
             }
 
             // Create product namespace if needed
-            output.set_progress_message("Creating product namespace");
             namespace::create_if_needed(product_namespace.clone())
                 .await
                 .context(NamespaceSnafu {
@@ -320,7 +315,6 @@ async fn install_cmd(
                 })?;
 
             // Install stack
-            output.set_progress_message("Installing stack manifests");
             stack_spec
                 .install_stack_manifests(
                     &args.stack_parameters,
@@ -353,7 +347,6 @@ async fn install_cmd(
                 .with_command_hint(stacklet_cmd, "display the installed stacklets")
                 .with_output(format!("Installed stack '{}'", args.stack_name));
 
-            output.finish_progress("Done");
             Ok(output.render())
         }
         None => Ok("No such stack".into()),
