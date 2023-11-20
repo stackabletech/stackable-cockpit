@@ -53,12 +53,13 @@ will install the operators in their latest nightly version - built from the main
 
 [source,console]
 ----
-$ stackablectl operator install airflow commons secret
-Installing 3 operators
+$ stackablectl operator install airflow commons secret listener
+Installing 4 operators
 Installed airflow operator
 Installed commons operator
 Installed secret operator
-Installed 3 operators
+Installed listener operator
+Installed 4 operators
 ----
 
 If you don't have a Kubernetes cluster available, `stackablectl` can spin up a https://kind.sigs.k8s.io/[kind] or
@@ -66,22 +67,23 @@ https://minikube.sigs.k8s.io/docs/[minikube] Kubernetes cluster for you. Based o
 use, ensure you have either `kind` or `minikube` installed on your system. See
 xref:commands/demo.adoc#_using_a_local_kubernetes_cluster[here] for more information.
 
-With this command, we installed the operator for Apache Airflow and two operators needed internally by the Stackable
-Data Platform (commons and secret). As we didn't specify a specific version to install, the operators were installed in
+With this command, we installed the operator for Apache Airflow and three operators needed internally by the Stackable
+Data Platform (commons, secret and listener). As we didn't specify a specific version to install, the operators were installed in
 the latest nightly version - built from the main branch of the operators. If you want to install a specific version, you
 can add the version to each operator to install as follows:
 
 [source,console]
 ----
-$ stackablectl operator install airflow=23.7 commons=23.7 secret=23.7
-Installing 3 operators
+$ stackablectl operator install airflow=23.7 commons=23.7 secret=23.7 listener=23.7
+Installing 4 operators
 Installed airflow=23.7 operator
 Installed commons=23.7 operator
 Installed secret=23.7 operator
-Installed 3 operators
+Installed listener=23.7 operator
+Installed 4 operators
 ----
 
-As you can see, the three operators were installed in the requested version.
+As you can see, the four operators were installed in the requested version.
 
 Remember: If you want to install a recommended and tested set of operator versions, look at the
 xref:commands/release.adoc[`stackablectl release`] command.
@@ -93,15 +95,17 @@ After installing some operators, you can list which operators are installed in y
 [source,console]
 ----
 $ stackablectl operator installed
-┌──────────────────┬─────────┬─────────────────────┬──────────┬──────────────────────────────────────────┐
-│ OPERATOR         ┆ VERSION ┆ NAMESPACE           ┆ STATUS   ┆ LAST UPDATED                             │
-╞══════════════════╪═════════╪═════════════════════╪══════════╪══════════════════════════════════════════╡
-│ airflow-operator ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:01.509777626 +0200 CEST │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ commons-operator ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:04.012698515 +0200 CEST │
-├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ secret-operator  ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:06.328410802 +0200 CEST │
-└──────────────────┴─────────┴─────────────────────┴──────────┴──────────────────────────────────────────┘
+┌────────────────────┬─────────┬─────────────────────┬──────────┬──────────────────────────────────────────┐
+│ OPERATOR           ┆ VERSION ┆ NAMESPACE           ┆ STATUS   ┆ LAST UPDATED                             │
+╞════════════════════╪═════════╪═════════════════════╪══════════╪══════════════════════════════════════════╡
+│ airflow-operator   ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:01.509777626 +0200 CEST │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ commons-operator   ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:04.012698515 +0200 CEST │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ listener-operator  ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:07.217309791 +0200 CEST │
+├╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ secret-operator    ┆ 23.7.0  ┆ stackable-operators ┆ deployed ┆ 2023-08-23 17:33:06.328410802 +0200 CEST │
+└────────────────────┴─────────┴─────────────────────┴──────────┴──────────────────────────────────────────┘
 ----
 
 == Uninstalling Operators
@@ -110,9 +114,10 @@ You can use the `stackablectl operator uninstall` command to uninstall the opera
 
 [source,console]
 ----
-$ stackablectl operator uninstall airflow commons secret
+$ stackablectl operator uninstall airflow commons secret listener
 The release airflow-operator was successfully uninstalled.
 The release commons-operator was successfully uninstalled.
 The release secret-operator was successfully uninstalled.
-Uninstalled 3 operators
+The release listener-operator was successfully uninstalled.
+Uninstalled 4 operators
 ----
