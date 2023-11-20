@@ -311,10 +311,10 @@ impl Client {
         Ok(())
     }
 
-    /// Retrieves [`ClusterInfo`] which contains resource information for the
-    /// current cluster. It should be noted that [`ClusterInfo`] contains data
-    /// about allocatable resources. These values don't reflect currently
-    /// available resources.
+    /// Retrieves [`ClusterInfo`][cluster::ClusterInfo] which contains resource
+    /// information for the current cluster. It should be noted that
+    /// [`ClusterInfo`][cluster::ClusterInfo] contains data about allocatable
+    /// resources. These values don't reflect currently available resources.
     pub async fn get_cluster_info(&self) -> Result<cluster::ClusterInfo> {
         let nodes = self.list_nodes().await?;
         cluster::ClusterInfo::from_nodes(nodes).context(ClusterSnafu)

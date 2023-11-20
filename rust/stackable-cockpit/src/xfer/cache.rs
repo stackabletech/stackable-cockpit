@@ -53,7 +53,7 @@ impl Cache {
     /// the `file_name` should only contain the file name and extension without
     /// any path segments prefixed. The cache internally makes sure the file is
     /// read from within the cache base path. The status is indicated by
-    /// [`CacheStatus`]. An error is returned when the cache was unable to read
+    /// [`Status`]. An error is returned when the cache was unable to read
     /// data from disk.
     pub async fn retrieve(&self, file_url: &Url) -> Result<Status<String>> {
         match &self.backend {

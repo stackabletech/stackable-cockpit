@@ -48,7 +48,7 @@ pub struct Client {
 }
 
 impl Client {
-    /// Creates a new [`FileTransferClient`] with caching capabilities.
+    /// Creates a new [`Client`] with caching capabilities.
     pub async fn new(cache_settings: Settings) -> Result<Self> {
         let cache = cache_settings
             .try_into_cache()
