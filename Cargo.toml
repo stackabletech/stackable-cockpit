@@ -22,7 +22,6 @@ bindgen = "0.68.1"
 cc = "1.0.83"
 clap = { version = "4.2.1", features = ["derive", "env"] }
 clap_complete = "4.2"
-color-print = "0.3.5"
 comfy-table = { version = "7.0", features = ["custom_styling"] }
 directories = "5.0"
 dotenvy = "0.15"

@@ -54,21 +54,12 @@ impl ResultContext {
         command: impl Into<String>,
         description: impl Into<String>,
     ) -> &mut Self {
-        // let hint = if self.no_color {
-        //     format!("Use \"{}\" to {}.", command.into(), description.into())
-        // } else {
-        //     color_print::cformat!(
-        //         "Use <s><g>\"{}\"</> to {}.",
-        //         command.into(),
-        //         description.into()
-        //     )
-        // };
-
-        self.command_hints.push(color_print::cformat!(
-            "Use <s><g>\"{}\"</></> to {}.",
+        self.command_hints.push(format!(
+            "Use \"{}\" to {}.",
             command.into(),
             description.into()
         ));
+
         self
     }
 }

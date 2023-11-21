@@ -52,11 +52,7 @@ where
         let mut report = String::new();
 
         // Print top most error
-        write!(
-            report,
-            "{}",
-            color_print::cformat!("An unrecoverable error occured: <s><r>{}</></>\n\n", self)
-        )?;
+        write!(report, "An unrecoverable error occured: {}\n\n", self)?;
         writeln!(
             report,
             "Caused by these errors (recent errors listed first):"
@@ -74,11 +70,7 @@ where
                 &source_string
             };
 
-            writeln!(
-                report,
-                "{}",
-                color_print::cformat!(" {}: <r>{}</>", index, cleaned)
-            )?;
+            writeln!(report, " {}: {}", index, cleaned)?;
 
             error = source;
             index += 1;

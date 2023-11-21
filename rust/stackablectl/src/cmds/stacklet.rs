@@ -262,8 +262,7 @@ fn render_condition_error(
 ) -> Option<String> {
     if !is_good.unwrap_or(true) {
         let message = message.unwrap_or("-".into());
-        let error = color_print::cformat!("<r>[{}]: {}</>", error_index, message);
-        return Some(error);
+        return Some(format!("[{}]: {}", error_index, message));
     }
 
     None
@@ -275,9 +274,9 @@ fn color_condition(condition: &str, is_good: Option<bool>, error_index: usize) -
     match is_good {
         Some(is_good) => {
             if is_good {
-                color_print::cformat!("<g>{}</>", condition)
+                condition.to_owned()
             } else {
-                color_print::cformat!("<r>{}: See [{}]</>", condition, error_index)
+                format!("{}: See [{}]", condition, error_index)
             }
         }
         None => condition.to_owned(),

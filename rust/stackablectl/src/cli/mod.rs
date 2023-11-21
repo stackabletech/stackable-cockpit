@@ -196,11 +196,11 @@ impl Cli {
 
     // Output utility functions
     pub fn result(&self) -> Output<ResultContext> {
-        Output::new(ResultContext::default(), false).expect("Failed to create output renderer")
+        Output::new(ResultContext::default(), true).expect("Failed to create output renderer")
     }
 
     pub fn error(&self) -> Output<ErrorContext> {
-        Output::new(ErrorContext::default(), false).expect("Failed to create output renderer")
+        Output::new(ErrorContext::default(), true).expect("Failed to create output renderer")
     }
 }
 
