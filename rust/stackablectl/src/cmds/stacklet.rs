@@ -268,8 +268,8 @@ fn render_condition_error(
     None
 }
 
-/// Colors a single condition (green or red) and additionally adds an error
-/// index to the output.
+// TODO (Techassi): Add back color support
+/// Adds an error index to the output.
 fn color_condition(condition: &str, is_good: Option<bool>, error_index: usize) -> String {
     match is_good {
         Some(is_good) => {
