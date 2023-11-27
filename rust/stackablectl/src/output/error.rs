@@ -37,8 +37,12 @@ impl ContextExt for ErrorContext {
 
 impl ErrorContext {
     pub fn with_error_report(&mut self, error: impl ErrorReport) -> &mut Self {
-        // TODO (Techassi): Remove unwrap
-        self.error_report = error.into_error_report().unwrap();
+        // We use expect here because we want to render the error report. If
+        // this fails, there is no point in catching an error while trying to
+        // render a different error.
+        self.error_report = error
+            .into_error_report()
+            .expect("failed to render error report");
         self
     }
 
