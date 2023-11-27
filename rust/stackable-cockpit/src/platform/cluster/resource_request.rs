@@ -68,7 +68,7 @@ pub enum ResourceRequestsError {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsValidationError {
     #[snafu(display(
-        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster",
+        "The {object_name} requires {} CPU core(s), but there are only {} CPU core(s) available in the cluster",
         required.as_cpu_count(), available.as_cpu_count()
     ))]
     InsufficientCpu {

@@ -242,7 +242,7 @@ async fn describe_cmd(
                 result
                     .with_command_hint(
                         format!("stackablectl release install {}", args.release),
-                        "install the demo",
+                        "install the release",
                     )
                     .with_command_hint("stackablectl release list", "list all available releases")
                     .with_output(table.to_string());

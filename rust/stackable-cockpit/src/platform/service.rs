@@ -17,7 +17,7 @@ use crate::utils::k8s::{self, ListParamsExt};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("failed to fetch data from kubernetes api"))]
+    #[snafu(display("failed to fetch data from kubernetes API"))]
     KubeClientFetchError { source: k8s::Error },
 
     #[snafu(display("missing namespace for service '{service}'"))]
