@@ -16,6 +16,7 @@ pub const VALID_OPERATORS: &[&str] = &[
     "druid",
     "hbase",
     "hdfs",
+    "hello-world",
     "hive",
     "kafka",
     "listener",
