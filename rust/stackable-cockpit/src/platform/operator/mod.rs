@@ -1,7 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use semver::Version;
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use crate::{
@@ -77,9 +77,7 @@ impl FromStr for OperatorSpec {
         let input = s.trim();
 
         // Empty input is not allowed
-        if input.is_empty() {
-            return Err(SpecParseError::EmptyInput);
-        }
+        ensure!(!input.is_empty(), EmptyInputSnafu);
 
         // Split at each equal sign
         let parts: Vec<&str> = input.split('=').collect();
@@ -87,9 +85,13 @@ impl FromStr for OperatorSpec {
 
         // If there are more than 2 equal signs, return error
         // because of invalid spec format
-        if len > 2 {
-            return Err(SpecParseError::InvalidEqualSignCount);
-        }
+        ensure!(len <= 2, InvalidEqualSignCountSnafu);
+
+        // Check if the provided operator name is in the list of valid operators
+        ensure!(
+            VALID_OPERATORS.contains(&parts[0]),
+            InvalidNameSnafu { name: parts[0] }
+        );
 
         // If there is only one part, the input didn't include
         // the optional version identifier
@@ -101,15 +103,7 @@ impl FromStr for OperatorSpec {
         }
 
         // If there is an equal sign, but no version after
-        if parts[1].is_empty() {
-            return Err(SpecParseError::MissingVersion);
-        }
-
-        if !VALID_OPERATORS.contains(&parts[0]) {
-            return Err(SpecParseError::InvalidName {
-                name: parts[0].to_string(),
-            });
-        }
+        ensure!(!parts[1].is_empty(), MissingVersionSnafu);
 
         // There are two parts, so an operator name and version
         let version: Version = parts[1].parse().context(ParseVersionSnafu)?;
