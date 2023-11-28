@@ -4,7 +4,7 @@ use crate::utils::k8s;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("failed to create kubernetes client"))]
+    #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
     #[snafu(display("permission denied - try to create the namespace manually or choose an already existing one to which you have access to"))]

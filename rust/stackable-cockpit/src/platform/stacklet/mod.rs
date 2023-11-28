@@ -45,10 +45,10 @@ pub struct Stacklet {
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("failed to create kubernetes client"))]
+    #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
-    #[snafu(display("failed to fetch data from the kubernetes api"))]
+    #[snafu(display("failed to fetch data from the Kubernetes API"))]
     KubeClientFetch { source: k8s::Error },
 
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]

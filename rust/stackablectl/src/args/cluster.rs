@@ -8,10 +8,10 @@ use stackable_cockpit::{
 
 #[derive(Debug, Snafu)]
 pub enum CommonClusterArgsError {
-    #[snafu(display("failed to create kind cluster"))]
+    #[snafu(display("failed to create Kind cluster"))]
     KindClusterCreate { source: kind::Error },
 
-    #[snafu(display("minikube cluster error"))]
+    #[snafu(display("failed to create Minikube cluster"))]
     MinikubeClusterCreate { source: minikube::Error },
 
     #[snafu(display(

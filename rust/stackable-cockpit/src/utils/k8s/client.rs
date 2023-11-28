@@ -26,13 +26,13 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("failed to create kubernetes client"))]
+    #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: kube::error::Error },
 
-    #[snafu(display("failed to fetch data from kubernetes API"))]
+    #[snafu(display("failed to fetch data from Kubernetes API"))]
     KubeClientFetch { source: kube::error::Error },
 
-    #[snafu(display("failed to patch/create kubernetes object"))]
+    #[snafu(display("failed to patch/create Kubernetes object"))]
     KubeClientPatch { source: kube::error::Error },
 
     #[snafu(display("failed to deserialize YAML data"))]

@@ -65,7 +65,7 @@ pub enum Error {
     },
 
     /// This error indicates that the creation of a kube client failed.
-    #[snafu(display("failed to create kubernetes client"))]
+    #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
     /// This error indicates that the kube client failed to deloy manifests.
