@@ -20,14 +20,23 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("filesystem io error"))]
-    CacheIoError { source: io::Error },
+    #[snafu(display("failed to rereive filesystem metadata"))]
+    IoMetadata { source: io::Error },
+
+    #[snafu(display("failed to read from filesystem"))]
+    IoRead { source: io::Error },
+
+    #[snafu(display("failed to write to filesystem"))]
+    IoWrite { source: io::Error },
+
+    #[snafu(display("failed to delete file from filesystem"))]
+    IoDelete { source: io::Error },
 
     #[snafu(display("system time error"))]
-    SystemTimeError { source: SystemTimeError },
+    SystemTime { source: SystemTimeError },
 
     #[snafu(display("failed to parse last auto-purge timestamp from file"))]
-    ParseIntError { source: ParseIntError },
+    ParsePurgeTimestamp { source: ParseIntError },
 
     #[snafu(display("tried to write file with disabled cache"))]
     WriteDisabled,
@@ -66,9 +75,9 @@ impl Cache {
 
                 let modified = file_path
                     .metadata()
-                    .context(CacheIoSnafu {})?
+                    .context(IoMetadataSnafu)?
                     .modified()
-                    .context(CacheIoSnafu {})?;
+                    .context(IoMetadataSnafu)?;
 
                 let elapsed = modified.elapsed().context(SystemTimeSnafu {})?;
 
@@ -104,17 +113,17 @@ impl Cache {
             Backend::Disk { base_path } => {
                 let mut files = Vec::new();
 
-                let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
+                let mut entries = fs::read_dir(base_path).await.context(IoReadSnafu)?;
 
-                while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
-                    let metadata = entry.metadata().await.context(CacheIoSnafu)?;
+                while let Some(entry) = entries.next_entry().await.context(IoReadSnafu)? {
+                    let metadata = entry.metadata().await.context(IoMetadataSnafu)?;
 
                     // Skip protected files
                     if is_protected_file(entry.file_name()) {
                         continue;
                     }
 
-                    files.push((entry.path(), metadata.modified().context(CacheIoSnafu)?))
+                    files.push((entry.path(), metadata.modified().context(IoMetadataSnafu)?))
                 }
 
                 Ok(files)
@@ -128,10 +137,10 @@ impl Cache {
     pub async fn purge(&self, delete_filter: DeleteFilter) -> Result<()> {
         match &self.backend {
             Backend::Disk { base_path } => {
-                let mut entries = fs::read_dir(base_path).await.context(CacheIoSnafu)?;
+                let mut entries = fs::read_dir(base_path).await.context(IoReadSnafu)?;
 
-                while let Some(entry) = entries.next_entry().await.context(CacheIoSnafu)? {
-                    let metadata = entry.metadata().await.context(CacheIoSnafu)?;
+                while let Some(entry) = entries.next_entry().await.context(IoReadSnafu)? {
+                    let metadata = entry.metadata().await.context(IoMetadataSnafu)?;
 
                     let should_delete_file = match delete_filter {
                         // Skip protected files
@@ -143,7 +152,7 @@ impl Cache {
                         DeleteFilter::OnlyExpired => {
                             metadata
                                 .modified()
-                                .context(CacheIoSnafu)?
+                                .context(IoMetadataSnafu)?
                                 .elapsed()
                                 .context(SystemTimeSnafu)?
                                 > self.max_age
@@ -151,7 +160,7 @@ impl Cache {
                     };
 
                     if should_delete_file {
-                        fs::remove_file(entry.path()).await.context(CacheIoSnafu)?;
+                        fs::remove_file(entry.path()).await.context(IoDeleteSnafu)?;
                     }
                 }
 
@@ -168,11 +177,12 @@ impl Cache {
 
                 // Read and covert timestamp
                 let last_purged_at = match fs::read_to_string(&cache_auto_purge_filepath).await {
-                    Ok(timestamp) => Some(
-                        UNIX_EPOCH + Duration::from_secs(timestamp.parse().context(ParseIntSnafu)?),
-                    ),
+                    Ok(timestamp) => {
+                        let ts = timestamp.parse().context(ParsePurgeTimestampSnafu)?;
+                        Some(UNIX_EPOCH + Duration::from_secs(ts))
+                    }
                     Err(err) if err.kind() == std::io::ErrorKind::NotFound => None,
-                    Err(err) => return Err(err).context(CacheIoSnafu),
+                    Err(err) => return Err(err).context(IoReadSnafu),
                 };
 
                 // If the auto purge interval elapsed, run purge and write
@@ -202,13 +212,13 @@ impl Cache {
     }
 
     async fn read(file_path: PathBuf) -> Result<String> {
-        fs::read_to_string(file_path).await.context(CacheIoSnafu {})
+        fs::read_to_string(file_path).await.context(IoReadSnafu)
     }
 
     async fn write(file_path: PathBuf, file_content: &str) -> Result<()> {
         fs::write(file_path, file_content)
             .await
-            .context(CacheIoSnafu {})
+            .context(IoWriteSnafu {})
     }
 
     fn file_path(base_path: &Path, file_url: &Url) -> PathBuf {
@@ -266,7 +276,7 @@ impl Settings {
     pub async fn try_into_cache(self) -> Result<Cache> {
         match &self.backend {
             Backend::Disk { base_path } => {
-                fs::create_dir_all(base_path).await.context(CacheIoSnafu)?;
+                fs::create_dir_all(base_path).await.context(IoWriteSnafu)?;
 
                 Ok(Cache::new(
                     self.backend,
@@ -305,7 +315,7 @@ async fn write_cache_auto_purge_file(path: &Path) -> Result<()> {
             .as_bytes(),
     )
     .await
-    .context(CacheIoSnafu)
+    .context(IoWriteSnafu)
 }
 
 fn is_protected_file(filename: OsString) -> bool {

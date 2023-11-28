@@ -12,7 +12,7 @@ pub enum PathOrUrl {
 #[derive(Debug, Snafu)]
 pub enum PathOrUrlParseError {
     #[snafu(display("failed to parse URL"))]
-    UrlParseError { source: ParseError },
+    UrlParse { source: ParseError },
 }
 
 pub trait IntoPathOrUrl: Sized {

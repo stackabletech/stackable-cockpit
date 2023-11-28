@@ -34,8 +34,11 @@ pub struct CacheCleanArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("failed to read from cache"))]
-    CacheError { source: cache::Error },
+    #[snafu(display("failed to list cached files"))]
+    ListCachedFiles { source: cache::Error },
+
+    #[snafu(display("failed to purge cached files"))]
+    PurgeCachedFiles { source: cache::Error },
 }
 
 impl CacheArgs {
@@ -51,7 +54,7 @@ impl CacheArgs {
 async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing cached files");
 
-    let files = cache.list().await.context(CacheSnafu)?;
+    let files = cache.list().await.context(ListCachedFilesSnafu)?;
 
     if files.is_empty() {
         return Ok("No cached files".into());
@@ -93,6 +96,10 @@ async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CmdErr
         DeleteFilter::All
     };
 
-    cache.purge(delete_filter).await.context(CacheSnafu)?;
+    cache
+        .purge(delete_filter)
+        .await
+        .context(PurgeCachedFilesSnafu)?;
+
     Ok("Cleaned cached files".into())
 }

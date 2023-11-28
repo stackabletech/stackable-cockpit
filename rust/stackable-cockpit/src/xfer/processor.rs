@@ -10,10 +10,10 @@ pub type Result<T, E = ProcessorError> = std::result::Result<T, E>;
 #[derive(Debug, Snafu)]
 pub enum ProcessorError {
     #[snafu(display("failed to deserialize YAML content"))]
-    DeserializeYamlError { source: serde_yaml::Error },
+    DeserializeYaml { source: serde_yaml::Error },
 
     #[snafu(display("failed to render templated content"))]
-    TemplatingError { source: tera::Error },
+    RenderTemplate { source: tera::Error },
 }
 
 pub trait Processor: Sized {
@@ -96,7 +96,7 @@ impl<'a> Processor for Template<'a> {
     type Output = String;
 
     fn process(&self, input: Self::Input) -> Result<Self::Output> {
-        templating::render(&input, self.0).context(TemplatingSnafu)
+        templating::render(&input, self.0).context(RenderTemplateSnafu)
     }
 }
 

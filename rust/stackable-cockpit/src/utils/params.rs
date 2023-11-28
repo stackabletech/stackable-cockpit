@@ -33,7 +33,7 @@ pub struct Parameter {
 #[derive(Debug, Snafu, PartialEq)]
 pub enum IntoParametersError {
     #[snafu(display("failed to parse raw parameter"))]
-    ParseError { source: RawParameterParseError },
+    RawParse { source: RawParameterParseError },
 
     #[snafu(display("invalid parameter '{parameter}', expected one of {expected}"))]
     InvalidParameter { parameter: String, expected: String },
@@ -47,7 +47,7 @@ pub trait IntoParameters: Sized + IntoRawParameters {
     where
         T: AsRef<[Parameter]>,
     {
-        let raw_parameters = self.into_raw_params().context(ParseSnafu)?;
+        let raw_parameters = self.into_raw_params().context(RawParseSnafu)?;
         let parameters = valid_parameters.as_ref();
 
         let mut parameters: HashMap<String, String> = parameters

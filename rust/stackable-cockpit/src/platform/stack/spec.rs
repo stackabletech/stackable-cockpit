@@ -37,7 +37,7 @@ pub enum Error {
     /// This error indicates that parsing a string into stack / demo parameters
     /// failed.
     #[snafu(display("failed to parse demo / stack parameters"))]
-    ParameterError { source: IntoParametersError },
+    ParameterParse { source: IntoParametersError },
 
     /// This error indicates that the requested release doesn't exist in the
     /// loaded list of releases.
@@ -46,12 +46,12 @@ pub enum Error {
 
     /// This error indicates that the release failed to install.
     #[snafu(display("failed to install release"))]
-    ReleaseInstallError { source: release::Error },
+    ReleaseInstall { source: release::Error },
 
     /// This error indicates that the Helm wrapper failed to add the Helm
     /// repository.
     #[snafu(display("failed to add Helm repository {repo_name}"))]
-    HelmAddRepositoryError {
+    HelmAddRepository {
         source: helm::Error,
         repo_name: String,
     },
@@ -59,37 +59,37 @@ pub enum Error {
     /// This error indicates that the Hlm wrapper failed to install the Helm
     /// release.
     #[snafu(display("failed to install Helm release {release_name}"))]
-    HelmInstallReleaseError {
+    HelmInstallRelease {
         release_name: String,
         source: helm::Error,
     },
 
     /// This error indicates that the creation of a kube client failed.
     #[snafu(display("failed to create kubernetes client"))]
-    KubeClientCreateError { source: k8s::Error },
+    KubeClientCreate { source: k8s::Error },
 
     /// This error indicates that the kube client failed to deloy manifests.
     #[snafu(display("failed to deploy manifests using the kube client"))]
-    ManifestDeployError { source: k8s::Error },
+    ManifestDeploy { source: k8s::Error },
 
     /// This error indicates that Helm chart options could not be serialized
     /// into YAML.
     #[snafu(display("failed to serialize Helm chart options"))]
-    SerializeOptionsError { source: serde_yaml::Error },
+    SerializeOptions { source: serde_yaml::Error },
 
     #[snafu(display("stack resource requests error"), context(false))]
-    StackResourceRequestsError { source: ResourceRequestsError },
+    StackResourceRequests { source: ResourceRequestsError },
 
     /// This error indicates that parsing a string into a path or URL failed.
     #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
-    PathOrUrlParseError {
+    PathOrUrlParse {
         source: PathOrUrlParseError,
         path_or_url: String,
     },
 
     /// This error indicates that receiving remote content failed.
     #[snafu(display("failed to receive remote content"))]
-    TransferError { source: xfer::Error },
+    FileTransfer { source: xfer::Error },
 
     /// This error indicates that the stack doesn't support being installed in
     /// the provided namespace.
@@ -212,7 +212,7 @@ impl StackSpec {
         let parameters = parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterSnafu)?;
+            .context(ParameterParseSnafu)?;
 
         Self::install_manifests(
             &self.manifests,
@@ -238,7 +238,7 @@ impl StackSpec {
         let parameters = demo_parameters
             .to_owned()
             .into_params(valid_demo_parameters)
-            .context(ParameterSnafu)?;
+            .context(ParameterParseSnafu)?;
 
         Self::install_manifests(manifests, &parameters, product_namespace, transfer_client).await?;
         Ok(())
@@ -267,7 +267,7 @@ impl StackSpec {
                     let helm_chart: helm::Chart = transfer_client
                         .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
                         .await
-                        .context(TransferSnafu)?;
+                        .context(FileTransferSnafu)?;
 
                     info!(
                         "Installing Helm chart {} ({})",
@@ -315,7 +315,7 @@ impl StackSpec {
                     let manifests = transfer_client
                         .get(&path_or_url, &Template::new(parameters))
                         .await
-                        .context(TransferSnafu)?;
+                        .context(FileTransferSnafu)?;
 
                     let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
 

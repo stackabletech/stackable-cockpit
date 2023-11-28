@@ -11,7 +11,7 @@ use stackable_cockpit::{
     constants::DEFAULT_OPERATOR_NAMESPACE,
     platform::{namespace, release},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, Client, Error},
+    xfer::{cache::Cache, Client},
 };
 
 use crate::{
@@ -94,32 +94,29 @@ pub struct ReleaseUninstallArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("unable to format YAML output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format JSON output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("path/url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    #[snafu(display("failed to parse path/url"))]
+    PathOrUrlParse { source: PathOrUrlParseError },
 
-    #[snafu(display("list error"))]
-    ListError { source: list::Error },
+    #[snafu(display("failed to build release list"))]
+    BuildList { source: list::Error },
 
-    #[snafu(display("release install error"))]
-    ReleaseInstallError { source: release::Error },
+    #[snafu(display("failed to install release"))]
+    ReleaseInstall { source: release::Error },
 
-    #[snafu(display("release uninstall error"))]
-    ReleaseUninstallError { source: release::Error },
+    #[snafu(display("failed to uninstall release"))]
+    ReleaseUninstall { source: release::Error },
 
     #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
-
-    #[snafu(display("transfer error"))]
-    TransferError { source: Error },
+    CommonClusterArgs { source: CommonClusterArgsError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
+    NamespaceCreate {
         source: namespace::Error,
         namespace: String,
     },
@@ -130,12 +127,10 @@ impl ReleaseArgs {
         debug!("Handle release args");
 
         let transfer_client = Client::new_with(cache);
-
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-
         let release_list = release::List::build(&files, &transfer_client)
             .await
-            .context(ListSnafu)?;
+            .context(BuildListSnafu)?;
 
         if release_list.inner().is_empty() {
             return Ok("No releases".into());
@@ -195,8 +190,8 @@ async fn list_cmd(
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&release_list).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&release_list).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&release_list).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&release_list).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -249,8 +244,8 @@ async fn describe_cmd(
 
                 Ok(result.render())
             }
-            OutputType::Json => serde_json::to_string(&release).context(JsonOutputFormatSnafu),
-            OutputType::Yaml => serde_yaml::to_string(&release).context(YamlOutputFormatSnafu),
+            OutputType::Json => serde_json::to_string(&release).context(SerializeJsonOutputSnafu),
+            OutputType::Yaml => serde_yaml::to_string(&release).context(SerializeYamlOutputSnafu),
         },
         None => Ok("No such release".into()),
     }
@@ -277,7 +272,7 @@ async fn install_cmd(
             // Create operator namespace if needed
             namespace::create_if_needed(args.operator_namespace.clone())
                 .await
-                .context(NamespaceSnafu {
+                .context(NamespaceCreateSnafu {
                     namespace: args.operator_namespace.clone(),
                 })?;
 

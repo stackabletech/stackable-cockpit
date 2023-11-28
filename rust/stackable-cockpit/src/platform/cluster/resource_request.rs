@@ -44,10 +44,10 @@ impl Display for ResourceRequests {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsError {
     #[snafu(display("failed to create kube client"))]
-    KubeClientError { source: Error },
+    KubeClientCreate { source: Error },
 
     #[snafu(display("failed to retrieve cluster info"))]
-    ClusterInfoError { source: Error },
+    ClusterInfo { source: Error },
 
     #[snafu(display("failed to parse cpu resource requirements"))]
     ParseCpuResourceRequirements {
@@ -92,7 +92,7 @@ impl ResourceRequests {
     /// resources to the available ones in the current cluster. `object_name`
     /// should be `stack` or `demo`.
     pub async fn validate_cluster_size(&self, object_name: &str) -> Result<()> {
-        let kube_client = Client::new().await.context(KubeClientSnafu)?;
+        let kube_client = Client::new().await.context(KubeClientCreateSnafu)?;
         let cluster_info = kube_client
             .get_cluster_info()
             .await

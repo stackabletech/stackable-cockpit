@@ -38,7 +38,7 @@ pub enum Error {
     InstallDemoManifests { source: stack::Error },
 
     #[snafu(display("demo resource requests error"), context(false))]
-    DemoResourceRequestsError { source: ResourceRequestsError },
+    DemoResourceRequests { source: ResourceRequestsError },
 
     #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {

@@ -22,10 +22,10 @@ pub enum Error {
     MissingBinary { binary: String },
 
     #[snafu(display("failed to execute minikube command"))]
-    CommandError { source: std::io::Error },
+    MinikubeCommand { source: std::io::Error },
 
     #[snafu(display("failed to determine if Docker is running"))]
-    DockerError { source: docker::Error },
+    DockerCheckCommand { source: docker::Error },
 }
 
 #[derive(Debug)]
@@ -55,7 +55,9 @@ impl Cluster {
         }
 
         // Check if Docker is running
-        check_if_docker_is_running().await.context(DockerSnafu)?;
+        check_if_docker_is_running()
+            .await
+            .context(DockerCheckCommandSnafu)?;
 
         // Create local cluster via minikube
         debug!("Creating minikube cluster");
@@ -66,7 +68,7 @@ impl Cluster {
             .args(["-p", self.name.as_str()])
             .status()
             .await
-            .context(CommandSnafu)?;
+            .context(MinikubeCommandSnafu)?;
 
         Ok(())
     }

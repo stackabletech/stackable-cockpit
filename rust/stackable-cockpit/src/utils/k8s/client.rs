@@ -26,26 +26,32 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("kubernetes error"))]
-    KubeError { source: kube::error::Error },
+    #[snafu(display("failed to create kubernetes client"))]
+    KubeClientCreate { source: kube::error::Error },
+
+    #[snafu(display("failed to fetch data from kubernetes API"))]
+    KubeClientFetch { source: kube::error::Error },
+
+    #[snafu(display("failed to patch/create kubernetes object"))]
+    KubeClientPatch { source: kube::error::Error },
 
     #[snafu(display("failed to deserialize YAML data"))]
-    DeserializeYamlError { source: serde_yaml::Error },
+    DeserializeYaml { source: serde_yaml::Error },
 
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
-    ObjectTypeError { object: DynamicObject },
+    ObjectType { object: DynamicObject },
 
     #[snafu(display("failed to deploy manifest because GVK {gvk:?} cannot be resolved"))]
-    DiscoveryError { gvk: GroupVersionKind },
+    DiscoveryResolve { gvk: GroupVersionKind },
 
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
-    ByteStringConvertError { source: FromUtf8Error },
+    ByteStringConvert { source: FromUtf8Error },
 
     #[snafu(display("missing namespace for service '{service}'"))]
     MissingServiceNamespace { service: String },
 
     #[snafu(display("failed to retrieve cluster information"))]
-    ClusterError { source: cluster::Error },
+    ClusterInformation { source: cluster::Error },
 
     #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
     InvalidSecretData { secret_name: String },
@@ -66,11 +72,14 @@ impl Client {
     /// Tries to create a new default Kubernetes client and immediately runs
     /// a discovery.
     pub async fn new() -> Result<Self> {
-        let client = kube::Client::try_default().await.context(KubeSnafu)?;
+        let client = kube::Client::try_default()
+            .await
+            .context(KubeClientCreateSnafu)?;
+
         let discovery = Discovery::new(client.clone())
             .run()
             .await
-            .context(KubeSnafu)?;
+            .context(KubeClientFetchSnafu)?;
 
         Ok(Self { client, discovery })
     }
@@ -93,7 +102,7 @@ impl Client {
             let (resource, capabilities) = self
                 .discovery
                 .resolve_gvk(&gvk)
-                .ok_or(DiscoverySnafu { gvk }.build())?;
+                .ok_or(DiscoveryResolveSnafu { gvk }.build())?;
 
             let api: Api<DynamicObject> = match capabilities.scope {
                 Scope::Cluster => {
@@ -111,7 +120,7 @@ impl Client {
                 &Patch::Apply(object),
             )
             .await
-            .context(KubeSnafu)?;
+            .context(KubeClientPatchSnafu)?;
         }
 
         Ok(())
@@ -143,7 +152,7 @@ impl Client {
         let objects = object_api
             .list(&ListParams::default())
             .await
-            .context(KubeSnafu)?;
+            .context(KubeClientFetchSnafu)?;
 
         Ok(Some(objects))
     }
@@ -162,7 +171,9 @@ impl Client {
         };
 
         let api = Api::namespaced_with(self.client.clone(), namespace, &object_api_resource);
-        Ok(Some(api.get(object_name).await.context(KubeSnafu)?))
+        Ok(Some(
+            api.get(object_name).await.context(KubeClientFetchSnafu)?,
+        ))
     }
 
     /// Lists [`Service`]s by matching labels. The services can be matched by
@@ -179,7 +190,11 @@ impl Client {
             None => Api::all(self.client.clone()),
         };
 
-        let services = service_api.list(list_params).await.context(KubeSnafu)?;
+        let services = service_api
+            .list(list_params)
+            .await
+            .context(KubeClientFetchSnafu)?;
+
         Ok(services)
     }
 
@@ -196,7 +211,10 @@ impl Client {
     ) -> Result<Credentials> {
         let secret_api: Api<Secret> = Api::namespaced(self.client.clone(), secret_namespace);
 
-        let secret = secret_api.get(secret_name).await.context(KubeSnafu)?;
+        let secret = secret_api
+            .get(secret_name)
+            .await
+            .context(KubeClientFetchSnafu)?;
         let secret_name = secret.name_any();
 
         let secret_data = secret.data.context(InvalidSecretDataSnafu {
@@ -233,7 +251,10 @@ impl Client {
             None => Api::all(self.client.clone()),
         };
 
-        let deployments = deployment_api.list(list_params).await.context(KubeSnafu)?;
+        let deployments = deployment_api
+            .list(list_params)
+            .await
+            .context(KubeClientFetchSnafu)?;
 
         Ok(deployments)
     }
@@ -254,7 +275,7 @@ impl Client {
         let stateful_sets = stateful_set_api
             .list(list_params)
             .await
-            .context(KubeSnafu)?;
+            .context(KubeClientFetchSnafu)?;
 
         Ok(stateful_sets)
     }
@@ -265,7 +286,7 @@ impl Client {
         let nodes = node_api
             .list(&ListParams::default())
             .await
-            .context(KubeSnafu)?;
+            .context(KubeClientFetchSnafu)?;
 
         Ok(nodes)
     }
@@ -274,7 +295,10 @@ impl Client {
     /// exist, this method returns [`None`].
     pub async fn get_namespace(&self, name: &str) -> Result<Option<Namespace>> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
-        namespace_api.get_opt(name).await.context(KubeSnafu)
+        namespace_api
+            .get_opt(name)
+            .await
+            .context(KubeClientFetchSnafu)
     }
 
     /// Creates a [`Namespace`] with `name` in the cluster. This method will
@@ -297,7 +321,7 @@ impl Client {
                 },
             )
             .await
-            .context(KubeSnafu)?;
+            .context(KubeClientPatchSnafu)?;
 
         Ok(())
     }
@@ -317,12 +341,12 @@ impl Client {
     /// resources. These values don't reflect currently available resources.
     pub async fn get_cluster_info(&self) -> Result<cluster::ClusterInfo> {
         let nodes = self.list_nodes().await?;
-        cluster::ClusterInfo::from_nodes(nodes).context(ClusterSnafu)
+        cluster::ClusterInfo::from_nodes(nodes).context(ClusterInformationSnafu)
     }
 
     pub async fn get_endpoints(&self, namespace: &str, name: &str) -> Result<Endpoints> {
         let endpoints_api: Api<Endpoints> = Api::namespaced(self.client.clone(), namespace);
-        endpoints_api.get(name).await.context(KubeSnafu)
+        endpoints_api.get(name).await.context(KubeClientFetchSnafu)
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].

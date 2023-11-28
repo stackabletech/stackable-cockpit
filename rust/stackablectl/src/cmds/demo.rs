@@ -11,7 +11,7 @@ use stackable_cockpit::{
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{demo, namespace, release, stack},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, Client, Error},
+    xfer::{cache::Cache, Client},
 };
 
 use crate::{
@@ -107,11 +107,11 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("unable to format YAML output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format JSON output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
     NoSuchDemo { name: String },
@@ -119,23 +119,20 @@ pub enum CmdError {
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("list error"))]
-    ListError { source: list::Error },
+    #[snafu(display("failed to build demo/stack/release list"))]
+    BuildList { source: list::Error },
 
-    #[snafu(display("demo error"))]
-    DemoError { source: demo::Error },
+    #[snafu(display("failed to install demo"))]
+    DemoInstall { source: demo::Error },
 
     #[snafu(display("path/url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    PathOrUrlParse { source: PathOrUrlParseError },
 
     #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
-
-    #[snafu(display("file transfer error"))]
-    TransferError { source: Error },
+    CommonClusterArgs { source: CommonClusterArgsError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
+    NamespaceCreate {
         source: namespace::Error,
         namespace: String,
     },
@@ -154,7 +151,7 @@ impl DemoArgs {
 
         let list = demo::List::build(&files, &transfer_client)
             .await
-            .context(ListSnafu)?;
+            .context(BuildListSnafu)?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, cli, list).await,
@@ -203,8 +200,8 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&list.inner()).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -250,8 +247,8 @@ async fn describe_cmd(
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&demo).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&demo).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -276,13 +273,13 @@ async fn install_cmd(
     let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
     let stack_list = stack::List::build(&files, transfer_client)
         .await
-        .context(ListSnafu)?;
+        .context(BuildListSnafu)?;
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
     let release_list = release::List::build(&files, transfer_client)
         .await
-        .context(ListSnafu)?;
+        .context(BuildListSnafu)?;
 
     // Install local cluster if needed
     args.local_cluster
@@ -305,14 +302,14 @@ async fn install_cmd(
     if !args.skip_release {
         namespace::create_if_needed(operator_namespace.clone())
             .await
-            .context(NamespaceSnafu {
+            .context(NamespaceCreateSnafu {
                 namespace: operator_namespace.clone(),
             })?;
     }
 
     namespace::create_if_needed(product_namespace.clone())
         .await
-        .context(NamespaceSnafu {
+        .context(NamespaceCreateSnafu {
             namespace: product_namespace.clone(),
         })?;
 
@@ -328,7 +325,7 @@ async fn install_cmd(
             args.skip_release,
         )
         .await
-        .context(DemoSnafu)?;
+        .context(DemoInstallSnafu)?;
 
     let operator_cmd = format!(
         "stackablectl operator installed{}",

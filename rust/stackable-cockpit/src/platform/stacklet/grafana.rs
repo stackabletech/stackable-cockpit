@@ -4,7 +4,7 @@ use snafu::ResultExt;
 use crate::{
     platform::{
         service::get_endpoint_urls,
-        stacklet::{Error, KubeClientFetchSnafu, ServiceSnafu, Stacklet},
+        stacklet::{Error, KubeClientFetchSnafu, ServiceFetchSnafu, Stacklet},
     },
     utils::k8s::{Client, ListParamsExt, ProductLabel},
 };
@@ -25,7 +25,7 @@ pub(super) async fn list(
         let service_name = service.name_any();
         let endpoints = get_endpoint_urls(kube_client, &service, &service_name)
             .await
-            .context(ServiceSnafu)?;
+            .context(ServiceFetchSnafu)?;
 
         stacklets.push(Stacklet {
             conditions: Vec::new(),

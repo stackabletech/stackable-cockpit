@@ -9,10 +9,10 @@ use stackable_cockpit::{
 #[derive(Debug, Snafu)]
 pub enum CommonClusterArgsError {
     #[snafu(display("failed to create kind cluster"))]
-    KindClusterError { source: kind::Error },
+    KindClusterCreate { source: kind::Error },
 
     #[snafu(display("minikube cluster error"))]
-    MinikubeClusterError { source: minikube::Error },
+    MinikubeClusterCreate { source: minikube::Error },
 
     #[snafu(display(
         "invalid total node count - at least two nodes in total are needed to run a local cluster"
@@ -92,7 +92,7 @@ impl CommonClusterArgs {
                         kind_cluster
                             .create_if_not_exists()
                             .await
-                            .context(KindClusterSnafu)
+                            .context(KindClusterCreateSnafu)
                     }
                     ClusterType::Minikube => {
                         let minikube_cluster = minikube::Cluster::new(self.cluster_nodes, name);
@@ -100,7 +100,7 @@ impl CommonClusterArgs {
                         minikube_cluster
                             .create_if_not_exists()
                             .await
-                            .context(MinikubeClusterSnafu)
+                            .context(MinikubeClusterCreateSnafu)
                     }
                 }
             }

@@ -19,10 +19,10 @@ pub enum Error {
     OperatorSpecParse { source: operator::SpecParseError },
 
     #[snafu(display("failed to install release using Helm"))]
-    HelmInstallError { source: helm::Error },
+    HelmInstall { source: helm::Error },
 
     #[snafu(display("failed to uninstall release using Helm"))]
-    HelmUninstallError { source: helm::Error },
+    HelmUninstall { source: helm::Error },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

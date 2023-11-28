@@ -120,29 +120,26 @@ pub struct OperatorInstalledArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("invalid repo name"))]
-    InvalidRepoNameError { source: InvalidRepoNameError },
+    #[snafu(display("invalid repository name"))]
+    InvalidRepoName { source: InvalidRepoNameError },
 
-    #[snafu(display("unknown repo name: {name}"))]
-    UnknownRepoNameError { name: String },
+    #[snafu(display("unknown repository name '{name}'"))]
+    UnknownRepoName { name: String },
 
     #[snafu(display("Helm error"))]
     HelmError { source: helm::Error },
 
     #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
+    CommonClusterArgs { source: CommonClusterArgsError },
 
-    #[snafu(display("semver parse error"))]
-    SemVerParseError { source: semver::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format YAML output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
-
-    #[snafu(display("unable to format JSON output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
+    NamespaceCreate {
         source: namespace::Error,
         namespace: String,
     },
@@ -213,12 +210,8 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 
             Ok(result.render())
         }
-        OutputType::Json => {
-            Ok(serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu)?)
-        }
-        OutputType::Yaml => {
-            Ok(serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu)?)
-        }
+        OutputType::Json => serde_json::to_string(&versions_list).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -270,8 +263,8 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&versions_list).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&versions_list).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&versions_list).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -286,17 +279,16 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 
     namespace::create_if_needed(args.operator_namespace.clone())
         .await
-        .context(NamespaceSnafu {
+        .context(NamespaceCreateSnafu {
             namespace: args.operator_namespace.clone(),
         })?;
 
     for operator in &args.operators {
-        match operator.install(&args.operator_namespace) {
-            Ok(_) => println!("Installed {} operator", operator),
-            Err(err) => {
-                return Err(CmdError::HelmError { source: err });
-            }
-        };
+        operator
+            .install(&args.operator_namespace)
+            .context(HelmSnafu)?;
+
+        println!("Installed {} operator", operator);
     }
 
     let mut result = cli.result();
@@ -410,8 +402,8 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
 
             Ok(result.render())
         }
-        OutputType::Json => Ok(serde_json::to_string(&installed).context(JsonOutputFormatSnafu)?),
-        OutputType::Yaml => Ok(serde_yaml::to_string(&installed).context(YamlOutputFormatSnafu)?),
+        OutputType::Json => serde_json::to_string(&installed).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&installed).context(SerializeYamlOutputSnafu),
     }
 }
 

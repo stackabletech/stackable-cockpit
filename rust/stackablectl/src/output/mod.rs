@@ -19,10 +19,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to create output renderer"))]
-    CreationError { source: tera::Error },
-
-    #[snafu(display("failed to render console output"))]
-    RenderError { source: tera::Error },
+    CreateRenderer { source: tera::Error },
 }
 
 #[derive(Debug)]
@@ -123,7 +120,7 @@ where
                 ("result", include_str!("templates/result.tpl")),
                 ("error", include_str!("templates/error.tpl")),
             ])
-            .context(CreationSnafu)?;
+            .context(CreateRendererSnafu)?;
 
         Ok(renderer)
     }

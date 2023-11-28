@@ -8,7 +8,7 @@ use tracing::{info, instrument};
 
 use stackable_cockpit::{
     constants::DEFAULT_PRODUCT_NAMESPACE,
-    platform::stacklet::{get_credentials_for_product, list_stacklets, Error},
+    platform::stacklet::{self, get_credentials_for_product, list_stacklets},
     utils::k8s::DisplayCondition,
 };
 
@@ -66,16 +66,16 @@ pub struct StackletListArgs {
 #[derive(Debug, Snafu)]
 pub enum CmdError {
     #[snafu(display("failed to list stacklets"))]
-    StackletListError { source: Error },
+    StackletList { source: stacklet::Error },
 
     #[snafu(display("failed to retrieve credentials for stacklet"))]
-    StackletCredentialsError { source: Error },
+    StackletCredentials { source: stacklet::Error },
 
-    #[snafu(display("unable to format YAML output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format JSON output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 }
 
 impl StackletArgs {
@@ -185,8 +185,8 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&stacklets).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(SerializeYamlOutputSnafu),
     }
 }
 

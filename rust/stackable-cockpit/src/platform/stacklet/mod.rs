@@ -46,19 +46,19 @@ pub struct Stacklet {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to create kubernetes client"))]
-    KubeClientCreateError { source: k8s::Error },
+    KubeClientCreate { source: k8s::Error },
 
     #[snafu(display("failed to fetch data from the kubernetes api"))]
-    KubeClientFetchError { source: k8s::Error },
+    KubeClientFetch { source: k8s::Error },
 
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
-    CustomCrdNamespaceError { crd_name: String },
+    CustomCrdNamespace { crd_name: String },
 
     #[snafu(display("failed to deserialize cluster conditions from JSON"))]
-    DeserializeConditionsError { source: serde_json::Error },
+    DeserializeConditions { source: serde_json::Error },
 
-    #[snafu(display("service error"))]
-    ServiceError { source: service::Error },
+    #[snafu(display("failed to receive service information"))]
+    ServiceFetch { source: service::Error },
 }
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
@@ -102,8 +102,8 @@ pub async fn get_credentials_for_product(
     let credentials = match credentials::get(&kube_client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
         Err(credentials::Error::NoSecret) => None,
-        Err(credentials::Error::KubeClientFetchError { source }) => {
-            return Err(Error::KubeClientFetchError { source })
+        Err(credentials::Error::KubeClientFetch { source }) => {
+            return Err(Error::KubeClientFetch { source })
         }
     };
 
@@ -150,7 +150,7 @@ async fn list_stackable_stacklets(
             let endpoints =
                 service::get_endpoints(kube_client, product_name, &object_name, &object_namespace)
                     .await
-                    .context(ServiceSnafu)?;
+                    .context(ServiceFetchSnafu)?;
 
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),

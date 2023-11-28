@@ -35,10 +35,10 @@ pub enum Error {
     CommandErroredOut { error: String },
 
     #[snafu(display("missing required binary: {binary}"))]
-    MissingBinaryError { binary: String },
+    MissingBinary { binary: String },
 
     #[snafu(display("failed to determine if Docker is running"))]
-    DockerError { source: docker::Error },
+    DockerCheckCommand { source: docker::Error },
 
     #[snafu(display("failed to covert kind config to YAML"))]
     ConfigSerialization { source: serde_yaml::Error },
@@ -71,11 +71,13 @@ impl Cluster {
 
         // Check if required binaries are present
         if let Some(binary) = binaries_present_with_name(&["docker", "kind"]) {
-            return Err(Error::MissingBinaryError { binary });
+            return Err(Error::MissingBinary { binary });
         }
 
         // Check if Docker is running
-        check_if_docker_is_running().await.context(DockerSnafu)?;
+        check_if_docker_is_running()
+            .await
+            .context(DockerCheckCommandSnafu)?;
 
         debug!("Creating kind cluster config");
         let config = Config::new(self.node_count, self.cp_node_count);

@@ -11,7 +11,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to fetch data from kubernetes API"))]
-    KubeClientFetchError { source: k8s::Error },
+    KubeClientFetch { source: k8s::Error },
 
     #[snafu(display("no credentials secret found"))]
     NoSecret,

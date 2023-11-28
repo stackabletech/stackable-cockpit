@@ -93,7 +93,7 @@ pub enum InstallReleaseError {
     /// is not typed, as the error is a plain string coming directly from the
     /// FFI bindings.
     #[snafu(display("helm error: {error}"))]
-    HelmWrapperError { error: String },
+    HelmWrapper { error: String },
 }
 
 #[derive(Debug)]
@@ -282,7 +282,7 @@ fn install_release(
         );
 
         return Err(Error::InstallRelease {
-            source: InstallReleaseError::HelmWrapperError { error },
+            source: InstallReleaseError::HelmWrapper { error },
         });
     }
 
