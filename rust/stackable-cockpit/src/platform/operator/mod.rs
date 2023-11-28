@@ -217,9 +217,9 @@ mod test {
 
     #[test]
     fn simple_operator_spec() {
-        match OperatorSpec::try_from("operator") {
+        match OperatorSpec::try_from("airflow") {
             Ok(spec) => {
-                assert_eq!(spec.name, String::from("operator"));
+                assert_eq!(spec.name, String::from("airflow"));
                 assert_eq!(spec.version, None);
             }
             Err(err) => panic!("{err}"),
@@ -247,7 +247,7 @@ mod test {
 
     #[test]
     fn empty_version_operator_spec() {
-        match OperatorSpec::try_from("operator=") {
+        match OperatorSpec::try_from("airflow=") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
             Err(err) => assert!(matches!(err, SpecParseError::MissingVersion)),
         }
@@ -255,7 +255,7 @@ mod test {
 
     #[test]
     fn invalid_version_operator_spec() {
-        match OperatorSpec::try_from("operator=1.2.3=") {
+        match OperatorSpec::try_from("airflow=1.2.3=") {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
             Err(err) => assert!(matches!(err, SpecParseError::InvalidEqualSignCount)),
         }
