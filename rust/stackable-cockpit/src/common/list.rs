@@ -6,29 +6,19 @@ use snafu::{ResultExt, Snafu};
 
 use crate::{
     utils::path::PathOrUrl,
-    xfer::{processor::Yaml, FileTransferClient, FileTransferError},
+    xfer::{self, processor::Yaml},
 };
+
+type Result<T, E = Error> = std::result::Result<T, E>;
+
+#[derive(Debug, Snafu)]
+pub enum Error {
+    #[snafu(display("failed to transfer the list file"))]
+    FileTransfer { source: xfer::Error },
+}
 
 pub trait SpecIter<S> {
     fn inner(&self) -> &IndexMap<String, S>;
-}
-
-#[derive(Debug, Snafu)]
-pub enum ListError {
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
-
-    #[snafu(display("url parse error"))]
-    ParseUrlError { source: url::ParseError },
-
-    #[snafu(display("yaml error"))]
-    YamlError { source: serde_yaml::Error },
-
-    #[snafu(display("invalid file url"))]
-    InvalidFileUrl,
-
-    #[snafu(display("transfer error"))]
-    TransferError { source: FileTransferError },
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for
@@ -54,17 +44,14 @@ where
     /// Builds a list of specs of type `S` based on a list of files. These files
     /// can be located locally (on disk) or remotely. Remote files will get
     /// downloaded.
-    pub async fn build(
-        files: &[PathOrUrl],
-        transfer_client: &FileTransferClient,
-    ) -> Result<Self, ListError> {
+    pub async fn build(files: &[PathOrUrl], transfer_client: &xfer::Client) -> Result<Self> {
         let mut map = IndexMap::new();
 
         for file in files {
             let specs = transfer_client
                 .get(file, &Yaml::<L>::new())
                 .await
-                .context(TransferSnafu)?;
+                .context(FileTransferSnafu)?;
 
             for (spec_name, spec) in specs.inner() {
                 map.insert(spec_name.clone(), spec.clone());

@@ -3,7 +3,6 @@ use k8s_openapi::{
     apimachinery::pkg::apis::meta::v1::Condition,
 };
 use serde::Serialize;
-
 use stackable_operator::status::condition::ClusterCondition;
 
 #[cfg(feature = "openapi")]

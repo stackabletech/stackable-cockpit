@@ -7,26 +7,22 @@ use tracing::{info, instrument};
 use utoipa::ToSchema;
 
 use crate::{
-    helm::{self, HelmError},
-    platform::{
-        operator::{OperatorSpec, OperatorSpecParseError},
-        product::ProductSpec,
-    },
+    helm,
+    platform::{operator, product},
 };
 
-#[derive(Debug, Snafu)]
-pub enum ReleaseInstallError {
-    #[snafu(display("failed to parse operator spec: {source}"))]
-    OperatorSpecParseError { source: OperatorSpecParseError },
-
-    #[snafu(display("failed with Helm error: {source}"))]
-    HelmError { source: HelmError },
-}
+type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
-pub enum ReleaseUninstallError {
-    #[snafu(display("failed with Helm error"))]
-    HelmUninstallError { source: HelmError },
+pub enum Error {
+    #[snafu(display("failed to parse operator spec"))]
+    OperatorSpecParse { source: operator::SpecParseError },
+
+    #[snafu(display("failed to install release using Helm"))]
+    HelmInstall { source: helm::Error },
+
+    #[snafu(display("failed to uninstall release using Helm"))]
+    HelmUninstall { source: helm::Error },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -41,7 +37,7 @@ pub struct ReleaseSpec {
     pub description: String,
 
     /// List of products and their version in this release
-    pub products: IndexMap<String, ProductSpec>,
+    pub products: IndexMap<String, product::ProductSpec>,
 }
 
 impl ReleaseSpec {
@@ -52,23 +48,24 @@ impl ReleaseSpec {
         include_products: &[String],
         exclude_products: &[String],
         namespace: &str,
-    ) -> Result<(), ReleaseInstallError> {
+    ) -> Result<()> {
         info!("Installing release");
 
         for (product_name, product) in self.filter_products(include_products, exclude_products) {
             info!("Installing product {}", product_name);
 
             // Create operator spec
-            let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
+            let operator = operator::OperatorSpec::new(product_name, Some(product.version.clone()))
                 .context(OperatorSpecParseSnafu)?;
 
             // Install operator
-            operator.install(namespace).context(HelmSnafu)?
+            operator.install(namespace).context(HelmInstallSnafu)?
         }
+
         Ok(())
     }
 
-    pub fn uninstall(&self, namespace: &str) -> Result<(), ReleaseUninstallError> {
+    pub fn uninstall(&self, namespace: &str) -> Result<()> {
         for (product_name, _) in &self.products {
             helm::uninstall_release(product_name, namespace, true).context(HelmUninstallSnafu)?;
         }
@@ -81,7 +78,7 @@ impl ReleaseSpec {
         &self,
         include_products: &[String],
         exclude_products: &[String],
-    ) -> Vec<(String, ProductSpec)> {
+    ) -> Vec<(String, product::ProductSpec)> {
         self.products
             .iter()
             .filter(|(name, _)| include_products.is_empty() || include_products.contains(name))

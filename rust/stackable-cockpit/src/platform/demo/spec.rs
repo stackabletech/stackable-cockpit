@@ -1,30 +1,57 @@
 use serde::{Deserialize, Serialize};
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, instrument, warn};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
 use crate::{
-    common::ManifestSpec,
+    common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
-        release::ReleaseList,
-        stack::{StackError, StackList},
+        release::List,
+        stack,
     },
     utils::params::{Parameter, RawParameter, RawParameterParseError},
-    xfer::FileTransferClient,
+    xfer::Client,
 };
 
 pub type RawDemoParameterParseError = RawParameterParseError;
 pub type RawDemoParameter = RawParameter;
 pub type DemoParameter = Parameter;
 
+#[derive(Debug, Snafu)]
+pub enum Error {
+    #[snafu(display("no stack named '{name}'"))]
+    NoSuchStack { name: String },
+
+    #[snafu(display("failed to install stack because some prerequisites failed"))]
+    StackPrerequisites { source: stack::Error },
+
+    #[snafu(display("failed to install release associated with stack"))]
+    StackInstallRelease { source: stack::Error },
+
+    #[snafu(display("failed to install stack manifests"))]
+    InstallStackManifests { source: stack::Error },
+
+    #[snafu(display("failed to install demo manifests"))]
+    InstallDemoManifests { source: stack::Error },
+
+    #[snafu(display("demo resource requests error"), context(false))]
+    DemoResourceRequests { source: ResourceRequestsError },
+
+    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    UnsupportedNamespace {
+        requested: String,
+        supported: Vec<String>,
+    },
+}
+
 /// This struct describes a demo with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
-pub struct DemoSpecV2 {
+pub struct DemoSpec {
     /// A short description of the demo
     pub description: String,
 
@@ -57,38 +84,20 @@ pub struct DemoSpecV2 {
     pub parameters: Vec<Parameter>,
 }
 
-#[derive(Debug, Snafu)]
-pub enum DemoError {
-    #[snafu(display("no stack with name '{name}'"))]
-    NoSuchStack { name: String },
-
-    #[snafu(display("stack error"))]
-    StackError { source: StackError },
-
-    #[snafu(display("demo resource requests error"), context(false))]
-    DemoResourceRequestsError { source: ResourceRequestsError },
-
-    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
-    UnsupportedNamespace {
-        requested: String,
-        supported: Vec<String>,
-    },
-}
-
-impl DemoSpecV2 {
+impl DemoSpec {
     /// Checks if the prerequisites to run this demo are met. These checks
     /// include:
     ///
     /// - Does the demo support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this demo?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), DemoError> {
+    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing demo");
 
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
         if !self.supports_namespace(product_namespace) {
-            return Err(DemoError::UnsupportedNamespace {
+            return Err(Error::UnsupportedNamespace {
                 requested: product_namespace.to_string(),
                 supported: self.supported_namespaces.clone(),
             });
@@ -115,25 +124,27 @@ impl DemoSpecV2 {
     #[allow(clippy::too_many_arguments)]
     pub async fn install(
         &self,
-        stack_list: StackList,
-        release_list: ReleaseList,
+        stack_list: stack::List,
+        release_list: List,
         operator_namespace: &str,
         product_namespace: &str,
         stack_parameters: &[String],
         demo_parameters: &[String],
-        transfer_client: &FileTransferClient,
+        transfer_client: &Client,
         skip_release: bool,
-    ) -> Result<(), DemoError> {
+    ) -> Result<(), Error> {
         // Get the stack spec based on the name defined in the demo spec
-        let stack_spec = stack_list.get(&self.stack).ok_or(DemoError::NoSuchStack {
+        let stack_spec = stack_list.get(&self.stack).context(NoSuchStackSnafu {
             name: self.stack.clone(),
         })?;
 
-        // Check prerequisites
+        // Check stack prerequisites
         stack_spec
             .check_prerequisites(product_namespace)
             .await
-            .context(StackSnafu)?;
+            .context(StackPrerequisitesSnafu)?;
+
+        // Check demo prerequisites
         self.check_prerequisites(product_namespace).await?;
 
         // Install release if not opted out
@@ -141,14 +152,14 @@ impl DemoSpecV2 {
             stack_spec
                 .install_release(release_list, operator_namespace, product_namespace)
                 .await
-                .context(StackSnafu)?;
+                .context(StackInstallReleaseSnafu)?;
         }
 
         // Install stack
         stack_spec
             .install_stack_manifests(stack_parameters, product_namespace, transfer_client)
             .await
-            .context(StackSnafu)?;
+            .context(InstallStackManifestsSnafu)?;
 
         // Install demo manifests
         stack_spec
@@ -160,7 +171,7 @@ impl DemoSpecV2 {
                 transfer_client,
             )
             .await
-            .context(StackSnafu)?;
+            .context(InstallDemoManifestsSnafu)?;
 
         Ok(())
     }

@@ -33,7 +33,7 @@ async fn main() -> Result<(), Error> {
 
     // Load env vars from optional .env file
     match dotenv() {
-        Ok(_) => {}
+        Ok(_) => (),
         Err(err) => {
             if !err.not_found() {
                 println!("{err}")
@@ -41,7 +41,15 @@ async fn main() -> Result<(), Error> {
         }
     }
 
-    let output = app.run().await?;
-    println!("{output}");
+    match app.run().await {
+        Ok(result) => print!("{result}"),
+        Err(err) => {
+            let mut output = app.error();
+            output.with_error_report(err);
+
+            eprint!("{}", output.render())
+        }
+    }
+
     Ok(())
 }

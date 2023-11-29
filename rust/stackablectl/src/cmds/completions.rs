@@ -24,8 +24,8 @@ pub enum CompletionCommands {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("string error: {source}"))]
-    StringError { source: std::string::FromUtf8Error },
+    #[snafu(display("failed to convert completion output into string"))]
+    StringConvert { source: std::string::FromUtf8Error },
 }
 
 impl CompletionsArgs {
@@ -43,5 +43,5 @@ fn generate_completions(shell: Shell) -> Result<String, CmdError> {
     let mut buf = Vec::new();
 
     generate(shell, &mut cmd, "stackablectl", &mut buf);
-    String::from_utf8(buf).context(StringSnafu)
+    String::from_utf8(buf).context(StringConvertSnafu)
 }

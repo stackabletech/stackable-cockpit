@@ -4,13 +4,13 @@ use crate::engine::NodeRole;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct KindClusterConfig {
+pub struct Config {
     kind: String,
     api_version: String,
-    nodes: Vec<KindClusterNodeConfig>,
+    nodes: Vec<NodeConfig>,
 }
 
-impl Default for KindClusterConfig {
+impl Default for Config {
     fn default() -> Self {
         Self {
             kind: "Cluster".into(),
@@ -22,11 +22,11 @@ impl Default for KindClusterConfig {
 
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct KindClusterNodeConfig {
+pub struct NodeConfig {
     role: NodeRole,
 }
 
-impl KindClusterConfig {
+impl Config {
     pub fn new(node_count: usize, cp_node_count: usize) -> Self {
         let mut cp_node_count = cp_node_count;
 
@@ -38,7 +38,7 @@ impl KindClusterConfig {
         let mut control_plane_nodes = Vec::new();
 
         for _ in 0..cp_node_count {
-            control_plane_nodes.push(KindClusterNodeConfig {
+            control_plane_nodes.push(NodeConfig {
                 role: NodeRole::ControlPlane,
             });
         }
@@ -47,7 +47,7 @@ impl KindClusterConfig {
         let mut worker_nodes = Vec::new();
 
         for _ in 0..node_count - cp_node_count {
-            worker_nodes.push(KindClusterNodeConfig {
+            worker_nodes.push(NodeConfig {
                 role: NodeRole::Worker,
             })
         }
