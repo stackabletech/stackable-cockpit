@@ -34,3 +34,6 @@ tracing.workspace = true
 url.workspace = true
 utoipa = { workspace = true, optional = true }
 which.workspace = true
+
+[dev-dependencies]
+rstest.workspace = true

@@ -158,10 +158,17 @@ impl OperatorSpec {
     /// Returns the repo used by Helm based on the specified version
     pub fn helm_repo_name(&self) -> String {
         match &self.version {
-            Some(version) if version.pre.as_str() == "-nightly" => HELM_REPO_NAME_DEV,
-            Some(version) if version.pre.as_str() == "-dev" => HELM_REPO_NAME_DEV,
-            Some(version) if version.pre.as_str() == "-pr" => HELM_REPO_NAME_TEST,
-            Some(_) => HELM_REPO_NAME_STABLE,
+            Some(version) => match version.pre.as_str() {
+                "nightly" => HELM_REPO_NAME_DEV,
+                "dev" => HELM_REPO_NAME_DEV,
+                v => {
+                    if v.starts_with("pr") {
+                        HELM_REPO_NAME_TEST
+                    } else {
+                        HELM_REPO_NAME_STABLE
+                    }
+                }
+            },
             None => HELM_REPO_NAME_DEV,
         }
         .into()
@@ -211,9 +218,13 @@ impl OperatorSpec {
 
 #[cfg(test)]
 mod test {
+    use rstest::rstest;
     use semver::Version;
 
-    use crate::platform::operator::{OperatorSpec, SpecParseError};
+    use crate::{
+        constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+        platform::operator::{OperatorSpec, SpecParseError},
+    };
 
     #[test]
     fn simple_operator_spec() {
@@ -259,5 +270,16 @@ mod test {
             Ok(spec) => panic!("SHOULD FAIL: {spec}"),
             Err(err) => assert!(matches!(err, SpecParseError::InvalidEqualSignCount)),
         }
+    }
+
+    #[rstest]
+    #[case("airflow=0.0.0-nightly", HELM_REPO_NAME_DEV)]
+    #[case("airflow=0.0.0-pr123", HELM_REPO_NAME_TEST)]
+    #[case("airflow=0.0.0-dev", HELM_REPO_NAME_DEV)]
+    #[case("airflow=1.2.3", HELM_REPO_NAME_STABLE)]
+    #[case("airflow", HELM_REPO_NAME_DEV)]
+    fn repo_name(#[case] input: &str, #[case] repo: &str) {
+        let spec = OperatorSpec::try_from(input).unwrap();
+        assert_eq!(spec.helm_repo_name(), repo);
     }
 }
