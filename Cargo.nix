@@ -1297,6 +1297,7 @@ rec {
         crateName = "clang-sys";
         version = "1.6.1";
         edition = "2015";
+        links = "clang";
         sha256 = "0vxg1dchm5nhiqj1z3nm5dmddqbbm0q8ibjcd3my62188dsgr266";
         authors = [
           "Kyle Mayes <kyle@mayeses.com>"
@@ -3131,6 +3132,7 @@ rec {
         crateName = "helm-sys";
         version = "0.0.0-dev";
         edition = "2021";
+        links = "helm";
         # We can't filter paths with references in Nix 2.4
         # See https://github.com/NixOS/nix/issues/5410
         src = if ((lib.versionOlder builtins.nixVersion "2.4pre20211007") || (lib.versionOlder "2.5" builtins.nixVersion ))
@@ -3931,6 +3933,7 @@ rec {
         crateName = "k8s-openapi";
         version = "0.20.0";
         edition = "2021";
+        links = "k8s-openapi-0.20.0";
         sha256 = "19i30l9v9xss0b8bq7gssv3700jdd0jvp11gvf4pkjkas5pn1hzd";
         authors = [
           "Arnav Singh <me@arnavion.dev>"
@@ -5777,6 +5780,7 @@ rec {
         crateName = "prettyplease";
         version = "0.2.15";
         edition = "2021";
+        links = "prettyplease02";
         sha256 = "17az47j29q76gnyqvd5giryjz2fp7zw7vzcka1rb8ndbfgbmn05f";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
@@ -6563,6 +6567,7 @@ rec {
         crateName = "ring";
         version = "0.17.5";
         edition = "2021";
+        links = "ring_core_0_17_5";
         sha256 = "02sd768l7594rm3jw048z7kkml7zcyw4ir62p6cxirap8wq0a0pv";
         authors = [
           "Brian Smith <brian@briansmith.org>"
@@ -10707,6 +10712,7 @@ rec {
         crateName = "wasm-bindgen-shared";
         version = "0.2.88";
         edition = "2018";
+        links = "wasm_bindgen";
         sha256 = "02vmw2rzsla1qm0zgfng4kqz52xn8k54v8ads4g1macv09fnq10d";
         authors = [
           "The wasm-bindgen Developers"
@@ -13041,3 +13047,4 @@ rec {
   #
   };
 }
+
