@@ -1,30 +1,30 @@
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, info, instrument, log::warn};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
 use crate::{
-    common::ManifestSpec,
-    helm::{self, HelmChart, HelmError},
+    common::manifest::ManifestSpec,
+    helm,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoParameter,
-        release::{ReleaseInstallError, ReleaseList},
+        release,
     },
     utils::{
-        k8s::{KubeClient, KubeClientError},
+        k8s,
         params::{
             IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
         },
         path::{IntoPathOrUrl, PathOrUrlParseError},
     },
     xfer::{
+        self,
         processor::{Processor, Template, Yaml},
-        FileTransferClient, FileTransferError,
     },
 };
 
@@ -32,44 +32,67 @@ pub type RawStackParameterParseError = RawParameterParseError;
 pub type RawStackParameter = RawParameter;
 pub type StackParameter = Parameter;
 
-/// This error indicates that the stack, the stack manifests or the demo
-/// manifests failed to install.
 #[derive(Debug, Snafu)]
-pub enum StackError {
+pub enum Error {
     /// This error indicates that parsing a string into stack / demo parameters
     /// failed.
-    #[snafu(display("parameter parse error: {source}"))]
-    ParameterError { source: IntoParametersError },
+    #[snafu(display("failed to parse demo / stack parameters"))]
+    ParameterParse { source: IntoParametersError },
 
-    /// This error indicates that the requested stack doesn't exist in the
-    /// loaded list of stacks.
-    #[snafu(display("no such stack"))]
-    NoSuchStack,
+    /// This error indicates that the requested release doesn't exist in the
+    /// loaded list of releases.
+    #[snafu(display("no release named {name}"))]
+    NoSuchRelease { name: String },
 
     /// This error indicates that the release failed to install.
-    #[snafu(display("release install error: {source}"))]
-    ReleaseInstallError { source: ReleaseInstallError },
+    #[snafu(display("failed to install release"))]
+    ReleaseInstall { source: release::Error },
 
-    /// This error indicates the Helm wrapper encountered an error.
-    #[snafu(display("Helm error: {source}"))]
-    HelmError { source: HelmError },
+    /// This error indicates that the Helm wrapper failed to add the Helm
+    /// repository.
+    #[snafu(display("failed to add Helm repository {repo_name}"))]
+    HelmAddRepository {
+        source: helm::Error,
+        repo_name: String,
+    },
 
-    #[snafu(display("kube error: {source}"))]
-    KubeError { source: KubeClientError },
+    /// This error indicates that the Hlm wrapper failed to install the Helm
+    /// release.
+    #[snafu(display("failed to install Helm release {release_name}"))]
+    HelmInstallRelease {
+        release_name: String,
+        source: helm::Error,
+    },
 
-    /// This error indicates a YAML error occurred.
-    #[snafu(display("yaml error: {source}"))]
-    YamlError { source: serde_yaml::Error },
+    /// This error indicates that the creation of a kube client failed.
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
+
+    /// This error indicates that the kube client failed to deloy manifests.
+    #[snafu(display("failed to deploy manifests using the kube client"))]
+    ManifestDeploy { source: k8s::Error },
+
+    /// This error indicates that Helm chart options could not be serialized
+    /// into YAML.
+    #[snafu(display("failed to serialize Helm chart options"))]
+    SerializeOptions { source: serde_yaml::Error },
 
     #[snafu(display("stack resource requests error"), context(false))]
-    StackResourceRequestsError { source: ResourceRequestsError },
+    StackResourceRequests { source: ResourceRequestsError },
 
-    #[snafu(display("path or url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    /// This error indicates that parsing a string into a path or URL failed.
+    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
+    PathOrUrlParse {
+        source: PathOrUrlParseError,
+        path_or_url: String,
+    },
 
-    #[snafu(display("transfer error"))]
-    TransferError { source: FileTransferError },
+    /// This error indicates that receiving remote content failed.
+    #[snafu(display("failed to receive remote content"))]
+    FileTransfer { source: xfer::Error },
 
+    /// This error indicates that the stack doesn't support being installed in
+    /// the provided namespace.
     #[snafu(display("cannot install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
@@ -81,7 +104,7 @@ pub enum StackError {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
-pub struct StackSpecV2 {
+pub struct StackSpec {
     /// A short description of the demo
     pub description: String,
 
@@ -114,14 +137,14 @@ pub struct StackSpecV2 {
     pub parameters: Vec<StackParameter>,
 }
 
-impl StackSpecV2 {
+impl StackSpec {
     /// Checks if the prerequisites to run this stack are met. These checks
     /// include:
     ///
     /// - Does the stack support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this stack?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), StackError> {
+    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing stack");
 
         // Returns an error if the stack doesn't support to be installed in the
@@ -129,7 +152,7 @@ impl StackSpecV2 {
         // already done on the demo spec level, however we still need to check
         // here, as stacks can be installed on their own.
         if !self.supports_namespace(product_namespace) {
-            return Err(StackError::UnsupportedNamespace {
+            return Err(Error::UnsupportedNamespace {
                 supported: self.supported_namespaces.clone(),
                 requested: product_namespace.to_string(),
             });
@@ -156,16 +179,18 @@ impl StackSpecV2 {
     #[instrument(skip(self, release_list))]
     pub async fn install_release(
         &self,
-        release_list: ReleaseList,
+        release_list: release::List,
         operator_namespace: &str,
         product_namespace: &str,
-    ) -> Result<(), StackError> {
+    ) -> Result<(), Error> {
         info!("Trying to install release {}", self.release);
 
         // Get the release by name
         let release = release_list
             .get(&self.release)
-            .ok_or(StackError::NoSuchStack)?;
+            .context(NoSuchReleaseSnafu {
+                name: self.release.clone(),
+            })?;
 
         // Install the release
         release
@@ -180,14 +205,14 @@ impl StackSpecV2 {
         &self,
         parameters: &[String],
         product_namespace: &str,
-        transfer_client: &FileTransferClient,
-    ) -> Result<(), StackError> {
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
         info!("Installing stack manifests");
 
         let parameters = parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterSnafu)?;
+            .context(ParameterParseSnafu)?;
 
         Self::install_manifests(
             &self.manifests,
@@ -206,14 +231,14 @@ impl StackSpecV2 {
         valid_demo_parameters: &[DemoParameter],
         demo_parameters: &[String],
         product_namespace: &str,
-        transfer_client: &FileTransferClient,
-    ) -> Result<(), StackError> {
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
         info!("Installing demo manifests");
 
         let parameters = demo_parameters
             .to_owned()
             .into_params(valid_demo_parameters)
-            .context(ParameterSnafu)?;
+            .context(ParameterParseSnafu)?;
 
         Self::install_manifests(manifests, &parameters, product_namespace, transfer_client).await?;
         Ok(())
@@ -225,8 +250,8 @@ impl StackSpecV2 {
         manifests: &Vec<ManifestSpec>,
         parameters: &HashMap<String, String>,
         product_namespace: &str,
-        transfer_client: &FileTransferClient,
-    ) -> Result<(), StackError> {
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
 
         for manifest in manifests {
@@ -235,23 +260,29 @@ impl StackSpecV2 {
                     debug!("Installing manifest from Helm chart {}", helm_file);
 
                     // Read Helm chart YAML and apply templating
-                    let helm_file = helm_file.into_path_or_url().context(PathOrUrlParseSnafu)?;
-                    let helm_chart: HelmChart = transfer_client
+                    let helm_file = helm_file.into_path_or_url().context(PathOrUrlParseSnafu {
+                        path_or_url: helm_file.clone(),
+                    })?;
+
+                    let helm_chart: helm::Chart = transfer_client
                         .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
                         .await
-                        .context(TransferSnafu)?;
+                        .context(FileTransferSnafu)?;
 
                     info!(
                         "Installing Helm chart {} ({})",
                         helm_chart.name, helm_chart.version
                     );
 
-                    helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url)
-                        .context(HelmSnafu)?;
+                    helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
+                        HelmAddRepositorySnafu {
+                            repo_name: helm_chart.repo.name.clone(),
+                        },
+                    )?;
 
                     // Serialize chart options to string
-                    let values_yaml =
-                        serde_yaml::to_string(&helm_chart.options).context(YamlSnafu)?;
+                    let values_yaml = serde_yaml::to_string(&helm_chart.options)
+                        .context(SerializeOptionsSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
@@ -264,28 +295,34 @@ impl StackSpecV2 {
                         },
                         Some(&values_yaml),
                         product_namespace,
-                        false,
+                        true,
                     )
-                    .context(HelmSnafu)?;
+                    .context(HelmInstallReleaseSnafu {
+                        release_name: helm_chart.release_name,
+                    })?;
                 }
-                ManifestSpec::PlainYaml(path_or_url) => {
-                    debug!("Installing YAML manifest from {}", path_or_url);
+                ManifestSpec::PlainYaml(manifest_file) => {
+                    debug!("Installing YAML manifest from {}", manifest_file);
 
                     // Read YAML manifest and apply templating
-                    let path_or_url = path_or_url
-                        .into_path_or_url()
-                        .context(PathOrUrlParseSnafu)?;
+                    let path_or_url =
+                        manifest_file
+                            .into_path_or_url()
+                            .context(PathOrUrlParseSnafu {
+                                path_or_url: manifest_file.clone(),
+                            })?;
 
                     let manifests = transfer_client
                         .get(&path_or_url, &Template::new(parameters))
                         .await
-                        .context(TransferSnafu)?;
+                        .context(FileTransferSnafu)?;
 
-                    let kube_client = KubeClient::new().await.context(KubeSnafu)?;
+                    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
+
                     kube_client
                         .deploy_manifests(&manifests, product_namespace)
                         .await
-                        .context(KubeSnafu)?
+                        .context(ManifestDeploySnafu)?
                 }
             }
         }

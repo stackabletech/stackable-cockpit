@@ -7,15 +7,11 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
-    common::ListError,
+    common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{
-        namespace::{self, NamespaceError},
-        release::ReleaseList,
-        stack::{StackError, StackList},
-    },
+    platform::{namespace, release, stack},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, Client},
 };
 
 use crate::{
@@ -105,56 +101,52 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 #[derive(Debug, Snafu)]
 pub enum CmdError {
     #[snafu(display("path/url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    PathOrUrlParse { source: PathOrUrlParseError },
 
-    #[snafu(display("unable to format yaml output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("stack error"))]
-    StackError { source: StackError },
+    #[snafu(display("failed to install stack"))]
+    StackInstall { source: stack::Error },
 
-    #[snafu(display("list error"))]
-    ListError { source: ListError },
+    #[snafu(display("failed to build stack/release list"))]
+    BuildList { source: list::Error },
 
     #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
-
-    #[snafu(display("transfer error"))]
-    TransferError { source: FileTransferError },
+    CommonClusterArgs { source: CommonClusterArgsError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
-        source: NamespaceError,
+    NamespaceCreate {
+        source: namespace::Error,
         namespace: String,
     },
 }
 
 impl StackArgs {
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
-        let transfer_client = FileTransferClient::new_with(cache);
-        let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
-
-        let stack_list = StackList::build(&files, &transfer_client)
+        let transfer_client = Client::new_with(cache);
+        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+        let stack_list = stack::List::build(&files, &transfer_client)
             .await
-            .context(ListSnafu)?;
+            .context(BuildListSnafu)?;
 
         match &self.subcommand {
-            StackCommands::List(args) => list_cmd(args, stack_list),
-            StackCommands::Describe(args) => describe_cmd(args, stack_list),
+            StackCommands::List(args) => list_cmd(args, cli, stack_list),
+            StackCommands::Describe(args) => describe_cmd(args, cli, stack_list),
             StackCommands::Install(args) => {
-                install_cmd(args, common_args, stack_list, &transfer_client).await
+                install_cmd(args, cli, stack_list, &transfer_client).await
             }
         }
     }
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdError> {
+fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -175,15 +167,32 @@ fn list_cmd(args: &StackListArgs, stack_list: StackList) -> Result<String, CmdEr
                 ]);
             }
 
-            Ok(table.to_string())
+            let mut result = cli.result();
+
+            result
+                .with_command_hint(
+                    "stackablectl stack describe [OPTIONS] <STACK>",
+                    "display further information for the specified stack",
+                )
+                .with_command_hint(
+                    "stackablectl stack install [OPTIONS] <STACK>...",
+                    "install a stack",
+                )
+                .with_output(table.to_string());
+
+            Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&stack_list).context(JsonOutputFormatSnafu {}),
-        OutputType::Yaml => serde_yaml::to_string(&stack_list).context(YamlOutputFormatSnafu {}),
+        OutputType::Json => serde_json::to_string(&stack_list).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&stack_list).context(SerializeYamlOutputSnafu),
     }
 }
 
 #[instrument]
-fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<String, CmdError> {
+fn describe_cmd(
+    args: &StackDescribeArgs,
+    cli: &Cli,
+    stack_list: stack::List,
+) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
     match stack_list.get(&args.stack_name) {
@@ -216,31 +225,38 @@ fn describe_cmd(args: &StackDescribeArgs, stack_list: StackList) -> Result<Strin
                     .add_row(vec!["LABELS", stack.labels.join(", ").as_str()])
                     .add_row(vec!["PARAMETERS", parameter_table.to_string().as_str()]);
 
-                Ok(table.to_string())
+                let mut result = cli.result();
+
+                result
+                    .with_command_hint(
+                        format!("stackablectl stack install {}", args.stack_name),
+                        "install the stack",
+                    )
+                    .with_command_hint("stackablectl stack list", "list all available stacks")
+                    .with_output(table.to_string());
+
+                Ok(result.render())
             }
-            OutputType::Json => serde_json::to_string(&stack).context(JsonOutputFormatSnafu {}),
-            OutputType::Yaml => serde_yaml::to_string(&stack).context(YamlOutputFormatSnafu {}),
+            OutputType::Json => serde_json::to_string(&stack).context(SerializeJsonOutputSnafu),
+            OutputType::Yaml => serde_yaml::to_string(&stack).context(SerializeYamlOutputSnafu),
         },
         None => Ok("No such stack".into()),
     }
 }
 
-#[instrument(skip(common_args, stack_list, transfer_client))]
+#[instrument(skip(cli, stack_list, transfer_client))]
 async fn install_cmd(
     args: &StackInstallArgs,
-    common_args: &Cli,
-    stack_list: StackList,
-    transfer_client: &FileTransferClient,
+    cli: &Cli,
+    stack_list: stack::List,
+    transfer_client: &Client,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu)?;
-
-    let release_list = ReleaseList::build(&files, transfer_client)
+    let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+    let release_list = release::List::build(&files, transfer_client)
         .await
-        .context(ListSnafu)?;
+        .context(BuildListSnafu)?;
 
     let product_namespace = args
         .namespaces
@@ -256,6 +272,8 @@ async fn install_cmd(
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
+            let mut output = cli.result();
+
             // Install local cluster if needed
             args.local_cluster
                 .install_if_needed(None)
@@ -266,20 +284,20 @@ async fn install_cmd(
             stack_spec
                 .check_prerequisites(&product_namespace)
                 .await
-                .context(StackSnafu)?;
+                .context(StackInstallSnafu)?;
 
             // Install release if not opted out
             if !args.skip_release {
                 namespace::create_if_needed(operator_namespace.clone())
                     .await
-                    .context(NamespaceSnafu {
+                    .context(NamespaceCreateSnafu {
                         namespace: operator_namespace.clone(),
                     })?;
 
                 stack_spec
                     .install_release(release_list, &operator_namespace, &product_namespace)
                     .await
-                    .context(StackSnafu)?;
+                    .context(StackInstallSnafu)?;
             } else {
                 info!("Skipping release installation during stack installation process");
             }
@@ -287,7 +305,7 @@ async fn install_cmd(
             // Create product namespace if needed
             namespace::create_if_needed(product_namespace.clone())
                 .await
-                .context(NamespaceSnafu {
+                .context(NamespaceCreateSnafu {
                     namespace: product_namespace.clone(),
                 })?;
 
@@ -299,18 +317,19 @@ async fn install_cmd(
                     transfer_client,
                 )
                 .await
-                .context(StackSnafu)?;
+                .context(StackInstallSnafu)?;
 
-            let output = format!(
-                "Installed stack {}\n\n\
-            Use \"stackablectl operator installed{}\" to display the installed operators\n\
-            Use \"stackablectl stacklet list{}\" to display the installed stacklets",
-                args.stack_name,
+            let operator_cmd = format!(
+                "stackablectl operator installed{}",
                 if args.namespaces.operator_namespace.is_some() {
                     format!(" --operator-namespace {}", operator_namespace)
                 } else {
                     "".into()
-                },
+                }
+            );
+
+            let stacklet_cmd = format!(
+                "stackablectl stacklet list{}",
                 if args.namespaces.product_namespace.is_some() {
                     format!(" --product-namespace {}", product_namespace)
                 } else {
@@ -318,7 +337,12 @@ async fn install_cmd(
                 }
             );
 
-            Ok(output)
+            output
+                .with_command_hint(operator_cmd, "display the installed operators")
+                .with_command_hint(stacklet_cmd, "display the installed stacklets")
+                .with_output(format!("Installed stack '{}'", args.stack_name));
+
+            Ok(output.render())
         }
         None => Ok("No such stack".into()),
     }

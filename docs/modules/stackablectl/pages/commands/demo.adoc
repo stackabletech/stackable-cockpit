@@ -79,13 +79,8 @@ You can now use your cluster with:
 
 kubectl cluster-info --context kind-stackable-data-platform
 
-Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
-The release commons-operator was successfully installed.
-The release hive-operator was successfully installed.
-The release opa-operator was successfully installed.
-The release secret-operator was successfully installed.
-The release superset-operator was successfully installed.
-The release trino-operator was successfully installed.
+Have a nice day! 👋
+
 Installed demo trino-taxi-data
 
 Use "stackablectl operator installed" to display the installed operators
@@ -124,12 +119,6 @@ $ stackablectl demo install trino-taxi-data -c minikube
     ▪ env NO_PROXY=192.168.58.2
 🔎  Verifying Kubernetes components...
 🏄  Done! kubectl is now configured to use "stackable-data-platform" cluster and "default" namespace by default
-The release commons-operator was successfully installed.
-The release hive-operator was successfully installed.
-The release opa-operator was successfully installed.
-The release secret-operator was successfully installed.
-The release superset-operator was successfully installed.
-The release trino-operator was successfully installed.
 Installed demo trino-taxi-data
 
 Use "stackablectl operator installed" to display the installed operators

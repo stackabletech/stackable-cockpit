@@ -1,12 +1,20 @@
 use std::{collections::HashMap, marker::PhantomData};
 
 use serde::de::DeserializeOwned;
-use snafu::ResultExt;
+use snafu::{ResultExt, Snafu};
 
-use crate::{
-    utils::templating,
-    xfer::{Result, TemplatingSnafu, YamlSnafu},
-};
+use crate::utils::templating;
+
+pub type Result<T, E = ProcessorError> = std::result::Result<T, E>;
+
+#[derive(Debug, Snafu)]
+pub enum ProcessorError {
+    #[snafu(display("failed to deserialize YAML content"))]
+    DeserializeYaml { source: serde_yaml::Error },
+
+    #[snafu(display("failed to render templated content"))]
+    RenderTemplate { source: tera::Error },
+}
 
 pub trait Processor: Sized {
     type Input;
@@ -63,7 +71,7 @@ where
     type Output = T;
 
     fn process(&self, input: Self::Input) -> Result<Self::Output> {
-        serde_yaml::from_str(&input).context(YamlSnafu)
+        serde_yaml::from_str(&input).context(DeserializeYamlSnafu)
     }
 }
 
@@ -88,7 +96,7 @@ impl<'a> Processor for Template<'a> {
     type Output = String;
 
     fn process(&self, input: Self::Input) -> Result<Self::Output> {
-        templating::render(&input, self.0).context(TemplatingSnafu)
+        templating::render(&input, self.0).context(RenderTemplateSnafu)
     }
 }
 

@@ -6,7 +6,7 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
 use tracing::{info, instrument};
 
-use crate::cli::CacheSettingsError;
+use crate::cli::Cli;
 
 #[derive(Debug, Args)]
 pub struct CacheArgs {
@@ -34,27 +34,27 @@ pub struct CacheCleanArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("cache settings error"))]
-    CacheSettingsError { source: CacheSettingsError },
+    #[snafu(display("failed to list cached files"))]
+    ListCachedFiles { source: cache::Error },
 
-    #[snafu(display("cache error"))]
-    CacheError { source: cache::Error },
+    #[snafu(display("failed to purge cached files"))]
+    PurgeCachedFiles { source: cache::Error },
 }
 
 impl CacheArgs {
-    pub async fn run(&self, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         match &self.subcommand {
-            CacheCommands::List => list_cmd(cache).await,
+            CacheCommands::List => list_cmd(cache, cli).await,
             CacheCommands::Clean(args) => clean_cmd(args, cache).await,
         }
     }
 }
 
 #[instrument(skip_all)]
-async fn list_cmd(cache: Cache) -> Result<String, CmdError> {
+async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing cached files");
 
-    let files = cache.list().await.context(CacheSnafu)?;
+    let files = cache.list().await.context(ListCachedFilesSnafu)?;
 
     if files.is_empty() {
         return Ok("No cached files".into());
@@ -77,7 +77,13 @@ async fn list_cmd(cache: Cache) -> Result<String, CmdError> {
         table.add_row(vec![file_path, format!("{modified} seconds ago")]);
     }
 
-    Ok(table.to_string())
+    let mut result = cli.result();
+
+    result
+        .with_command_hint("stackablectl cache clean", "to clean all cached files")
+        .with_output(table.to_string());
+
+    Ok(result.render())
 }
 
 #[instrument(skip_all)]
@@ -90,6 +96,10 @@ async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CmdErr
         DeleteFilter::All
     };
 
-    cache.purge(delete_filter).await.context(CacheSnafu)?;
+    cache
+        .purge(delete_filter)
+        .await
+        .context(PurgeCachedFilesSnafu)?;
+
     Ok("Cleaned cached files".into())
 }

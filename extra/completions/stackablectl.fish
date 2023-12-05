@@ -279,7 +279,6 @@ complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_se
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
-complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -s c -l color -d 'Controls if the output will use color. This only applies to the output type \'plain\''
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_seen_subcommand_from stacklet; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'

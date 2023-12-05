@@ -1,7 +1,7 @@
 use stackable_cockpit::{
-    common::ManifestSpec,
+    common::manifest::ManifestSpec,
     platform::{
-        cluster::ResourceRequests, demo::DemoSpecV2, release::ReleaseSpec, stacklet::Stacklet,
+        cluster::ResourceRequests, demo, product::ProductSpec, release, stacklet::Stacklet,
     },
     utils::{k8s::DisplayCondition, params::Parameter},
 };
@@ -32,9 +32,9 @@ use crate::{
         middleware::authentication::log_in,
     ),
     components(schemas(
-        DemoSpecV2, ManifestSpec, Parameter, ReleaseSpec,
+        demo::DemoSpec, ManifestSpec, Parameter, release::ReleaseSpec,
         Stacklet, DisplayCondition, synthetic_types::ObjectMeta,
-        Session, SessionToken, ResourceRequests
+        Session, SessionToken, ResourceRequests, ProductSpec
     ))
 )]
 struct ApiDoc {}

@@ -10,12 +10,9 @@ use utoipa::ToSchema;
 
 use crate::{
     constants::PRODUCT_NAMES,
-    platform::{
-        credentials::{get_credentials, Credentials, CredentialsError},
-        service::{get_service_endpoints, ServiceError},
-    },
+    platform::{credentials, service},
     utils::{
-        k8s::{ConditionsExt, DisplayCondition, KubeClient, KubeClientError},
+        k8s::{self, ConditionsExt},
         string::Casing,
     },
 };
@@ -26,8 +23,8 @@ mod opensearch;
 mod prometheus;
 
 #[derive(Debug, Serialize)]
-#[cfg_attr(feature = "openapi", derive(ToSchema))]
 #[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct Stacklet {
     /// Name of the stacklet.
     pub name: String,
@@ -43,30 +40,33 @@ pub struct Stacklet {
     pub endpoints: IndexMap<String, String>,
 
     /// Multiple cluster conditions.
-    pub conditions: Vec<DisplayCondition>,
+    pub conditions: Vec<k8s::DisplayCondition>,
 }
 
 #[derive(Debug, Snafu)]
-pub enum StackletError {
-    #[snafu(display("kubernetes error"), context(false))]
-    KubeError { source: KubeClientError },
+pub enum Error {
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
+
+    #[snafu(display("failed to fetch data from the Kubernetes API"))]
+    KubeClientFetch { source: k8s::Error },
 
     #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
-    CustomCrdNamespaceError { crd_name: String },
+    CustomCrdNamespace { crd_name: String },
 
-    #[snafu(display("JSON error"))]
-    JsonError { source: serde_json::Error },
+    #[snafu(display("failed to deserialize cluster conditions from JSON"))]
+    DeserializeConditions { source: serde_json::Error },
 
-    #[snafu(display("service error"))]
-    ServiceError { source: ServiceError },
+    #[snafu(display("failed to receive service information"))]
+    ServiceFetch { source: service::Error },
 }
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, StackletError> {
-    let kube_client = KubeClient::new().await?;
+pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, Error> {
+    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
 
     let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
     stacklets.extend(grafana::list(&kube_client, namespace).await?);
@@ -81,13 +81,14 @@ pub async fn get_credentials_for_product(
     namespace: &str,
     object_name: &str,
     product_name: &str,
-) -> Result<Option<Credentials>, StackletError> {
-    let kube_client = KubeClient::new().await?;
+) -> Result<Option<credentials::Credentials>, Error> {
+    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
 
     let product_gvk = gvk_from_product_name(product_name);
     let product_cluster = match kube_client
         .get_namespaced_object(namespace, object_name, &product_gvk)
-        .await?
+        .await
+        .context(KubeClientFetchSnafu)?
     {
         Some(obj) => obj,
         None => {
@@ -98,24 +99,30 @@ pub async fn get_credentials_for_product(
         }
     };
 
-    let credentials = match get_credentials(&kube_client, product_name, &product_cluster).await {
+    let credentials = match credentials::get(&kube_client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
-        Err(CredentialsError::NoSecret) => None,
-        Err(CredentialsError::KubeError { source }) => return Err(source.into()),
+        Err(credentials::Error::NoSecret) => None,
+        Err(credentials::Error::KubeClientFetch { source }) => {
+            return Err(Error::KubeClientFetch { source })
+        }
     };
 
     Ok(credentials)
 }
 
 async fn list_stackable_stacklets(
-    kube_client: &KubeClient,
+    kube_client: &k8s::Client,
     namespace: Option<&str>,
-) -> Result<Vec<Stacklet>, StackletError> {
+) -> Result<Vec<Stacklet>, Error> {
     let product_list = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = Vec::new();
 
     for (product_name, product_gvk) in product_list {
-        let objects = match kube_client.list_objects(&product_gvk, namespace).await? {
+        let objects = match kube_client
+            .list_objects(&product_gvk, namespace)
+            .await
+            .context(KubeClientFetchSnafu)?
+        {
             Some(obj) => obj,
             None => {
                 info!(
@@ -128,9 +135,8 @@ async fn list_stackable_stacklets(
         for object in objects {
             let conditions: Vec<ClusterCondition> = match object.data.pointer("/status/conditions")
             {
-                Some(conditions) => {
-                    serde_json::from_value(conditions.clone()).context(JsonSnafu)?
-                }
+                Some(conditions) => serde_json::from_value(conditions.clone())
+                    .context(DeserializeConditionsSnafu)?,
                 None => vec![],
             };
 
@@ -142,9 +148,9 @@ async fn list_stackable_stacklets(
             };
 
             let endpoints =
-                get_service_endpoints(kube_client, product_name, &object_name, &object_namespace)
+                service::get_endpoints(kube_client, product_name, &object_name, &object_namespace)
                     .await
-                    .context(ServiceSnafu)?;
+                    .context(ServiceFetchSnafu)?;
 
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),

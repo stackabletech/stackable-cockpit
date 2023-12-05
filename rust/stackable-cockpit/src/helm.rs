@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::str::{self, Utf8Error};
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
@@ -11,7 +10,7 @@ use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_REPO_INDEX_FILE};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct HelmRelease {
+pub struct Release {
     pub name: String,
     pub version: String,
     pub namespace: String,
@@ -21,63 +20,60 @@ pub struct HelmRelease {
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct HelmChart {
+pub struct Chart {
     pub release_name: String,
     pub name: String,
-    pub repo: HelmChartRepo,
+    pub repo: ChartRepo,
     pub version: String,
     pub options: serde_yaml::Value,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct HelmChartRepo {
+pub struct ChartRepo {
     pub name: String,
     pub url: String,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct HelmRepo {
-    pub entries: HashMap<String, Vec<HelmRepoEntry>>,
+pub struct Repository {
+    pub entries: HashMap<String, Vec<RepositoryEntry>>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct HelmRepoEntry {
+pub struct RepositoryEntry {
     pub name: String,
     pub version: String,
 }
 
 #[derive(Debug, Snafu)]
-pub enum HelmError {
-    #[snafu(display("str utf-8 error: {source}"))]
-    StrUtf8Error { source: Utf8Error },
+pub enum Error {
+    #[snafu(display("failed to parse URL"))]
+    UrlParse { source: url::ParseError },
 
-    #[snafu(display("url parse error: {source}"))]
-    UrlParseError { source: url::ParseError },
+    #[snafu(display("failed to deserialize JSON data"))]
+    DeserializeJson { source: serde_json::Error },
 
-    #[snafu(display("json error: {source}"))]
-    JsonError { source: serde_json::Error },
+    #[snafu(display("failed to deserialize YAML data"))]
+    DeserializeYaml { source: serde_yaml::Error },
 
-    #[snafu(display("yaml error: {source}"))]
-    YamlError { source: serde_yaml::Error },
-
-    #[snafu(display("request error: {source}"))]
-    RequestError { source: reqwest::Error },
+    #[snafu(display("failed to retrieve remote content"))]
+    FetchRemoteContent { source: reqwest::Error },
 
     #[snafu(display("failed to add Helm repo ({error})"))]
-    AddRepoError { error: String },
+    AddRepo { error: String },
 
     #[snafu(display("failed to list Helm releases: {error}"))]
-    ListReleasesError { error: String },
+    ListReleases { error: String },
 
-    #[snafu(display("failed to install Helm release: {source}"))]
-    InstallReleaseError { source: HelmInstallReleaseError },
+    #[snafu(display("failed to install Helm release"))]
+    InstallRelease { source: InstallReleaseError },
 
     #[snafu(display("failed to uninstall Helm release: {error}"))]
-    UninstallReleaseError { error: String },
+    UninstallRelease { error: String },
 }
 
 #[derive(Debug, Snafu)]
-pub enum HelmInstallReleaseError {
+pub enum InstallReleaseError {
     /// This error indicates that the Helm release was not found, instead of
     /// `check_release_exists` returning true.
     #[snafu(display("failed to find release {name}"))]
@@ -97,11 +93,11 @@ pub enum HelmInstallReleaseError {
     /// is not typed, as the error is a plain string coming directly from the
     /// FFI bindings.
     #[snafu(display("helm error: {error}"))]
-    HelmWrapperError { error: String },
+    HelmWrapper { error: String },
 }
 
 #[derive(Debug)]
-pub enum HelmInstallReleaseStatus {
+pub enum InstallReleaseStatus {
     /// Indicates that a release is already installed with a different version
     /// than requested.
     ReleaseAlreadyInstalledWithVersion {
@@ -121,10 +117,10 @@ pub enum HelmInstallReleaseStatus {
     Installed(String),
 }
 
-impl Display for HelmInstallReleaseStatus {
+impl Display for InstallReleaseStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
+            InstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
                 release_name,
                 current_version,
                 requested_version,
@@ -135,7 +131,7 @@ impl Display for HelmInstallReleaseStatus {
                     release_name, current_version, requested_version
                 )
             }
-            HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
+            InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
                 release_name,
                 current_version,
             } => {
@@ -146,7 +142,7 @@ impl Display for HelmInstallReleaseStatus {
                     current_version
                 )
             }
-            HelmInstallReleaseStatus::Installed(release_name) => {
+            InstallReleaseStatus::Installed(release_name) => {
                 write!(
                     f,
                     "The release {} was successfully installed.",
@@ -158,22 +154,22 @@ impl Display for HelmInstallReleaseStatus {
 }
 
 #[derive(Debug)]
-pub enum HelmUninstallReleaseStatus {
+pub enum UninstallReleaseStatus {
     NotInstalled(String),
     Uninstalled(String),
 }
 
-impl Display for HelmUninstallReleaseStatus {
+impl Display for UninstallReleaseStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HelmUninstallReleaseStatus::NotInstalled(release_name) => {
+            UninstallReleaseStatus::NotInstalled(release_name) => {
                 write!(
                     f,
                     "The release {} is not installed, skipping.",
                     release_name
                 )
             }
-            HelmUninstallReleaseStatus::Uninstalled(release_name) => {
+            UninstallReleaseStatus::Uninstalled(release_name) => {
                 write!(
                     f,
                     "The release {} was successfully uninstalled.",
@@ -203,32 +199,29 @@ pub fn install_release_from_repo(
     values_yaml: Option<&str>,
     namespace: &str,
     suppress_output: bool,
-) -> Result<HelmInstallReleaseStatus, HelmError> {
+) -> Result<InstallReleaseStatus, Error> {
     debug!("Install Helm release from repo");
 
     if check_release_exists(release_name, namespace)? {
-        let release =
-            get_release(release_name, namespace)?.ok_or(HelmError::InstallReleaseError {
-                source: HelmInstallReleaseError::NoSuchRelease {
-                    name: release_name.to_owned(),
-                },
-            })?;
+        let release = get_release(release_name, namespace)?.ok_or(Error::InstallRelease {
+            source: InstallReleaseError::NoSuchRelease {
+                name: release_name.to_owned(),
+            },
+        })?;
 
         let current_version = release.version;
 
         match chart_version {
             Some(chart_version) => {
                 if chart_version == current_version {
-                    return Ok(
-                        HelmInstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
-                            requested_version: chart_version.to_string(),
-                            release_name: release_name.to_string(),
-                            current_version,
-                        },
-                    );
+                    return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
+                        requested_version: chart_version.to_string(),
+                        release_name: release_name.to_string(),
+                        current_version,
+                    });
                 } else {
-                    return Err(HelmError::InstallReleaseError {
-                        source: HelmInstallReleaseError::ReleaseAlreadyInstalled {
+                    return Err(Error::InstallRelease {
+                        source: InstallReleaseError::ReleaseAlreadyInstalled {
                             requested_version: chart_version.into(),
                             name: release_name.into(),
                             current_version,
@@ -237,12 +230,10 @@ pub fn install_release_from_repo(
                 }
             }
             None => {
-                return Ok(
-                    HelmInstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
-                        release_name: release_name.to_string(),
-                        current_version,
-                    },
-                )
+                return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
+                    release_name: release_name.to_string(),
+                    current_version,
+                })
             }
         }
     }
@@ -264,9 +255,7 @@ pub fn install_release_from_repo(
         suppress_output,
     )?;
 
-    Ok(HelmInstallReleaseStatus::Installed(
-        release_name.to_string(),
-    ))
+    Ok(InstallReleaseStatus::Installed(release_name.to_string()))
 }
 
 fn install_release(
@@ -276,7 +265,7 @@ fn install_release(
     values_yaml: Option<&str>,
     namespace: &str,
     suppress_output: bool,
-) -> Result<(), HelmError> {
+) -> Result<(), Error> {
     let result = helm_sys::install_helm_release(
         release_name,
         chart_name,
@@ -286,14 +275,14 @@ fn install_release(
         suppress_output,
     );
 
-    if let Some(err) = helm_sys::to_helm_error(&result) {
+    if let Some(error) = helm_sys::to_helm_error(&result) {
         error!(
             "Go wrapper function go_install_helm_release encountered an error: {}",
-            err
+            error
         );
 
-        return Err(HelmError::InstallReleaseError {
-            source: HelmInstallReleaseError::HelmWrapperError { error: err },
+        return Err(Error::InstallRelease {
+            source: InstallReleaseError::HelmWrapper { error },
         });
     }
 
@@ -306,7 +295,7 @@ pub fn uninstall_release(
     release_name: &str,
     namespace: &str,
     suppress_output: bool,
-) -> Result<HelmUninstallReleaseStatus, HelmError> {
+) -> Result<UninstallReleaseStatus, Error> {
     debug!("Uninstall Helm release");
 
     if check_release_exists(release_name, namespace)? {
@@ -318,10 +307,10 @@ pub fn uninstall_release(
                 err
             );
 
-            return Err(HelmError::UninstallReleaseError { error: err });
+            return Err(Error::UninstallRelease { error: err });
         }
 
-        return Ok(HelmUninstallReleaseStatus::Uninstalled(
+        return Ok(UninstallReleaseStatus::Uninstalled(
             release_name.to_string(),
         ));
     }
@@ -331,14 +320,14 @@ pub fn uninstall_release(
         release_name
     );
 
-    Ok(HelmUninstallReleaseStatus::NotInstalled(
+    Ok(UninstallReleaseStatus::NotInstalled(
         release_name.to_string(),
     ))
 }
 
 /// Returns if a Helm release exists
 #[instrument]
-pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool, HelmError> {
+pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool, Error> {
     debug!("Check if Helm release exists");
 
     // TODO (Techassi): Handle error
@@ -347,7 +336,7 @@ pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool,
 
 /// Returns a list of Helm releases
 #[instrument]
-pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
+pub fn list_releases(namespace: &str) -> Result<Vec<Release>, Error> {
     debug!("List Helm releases");
 
     let result = helm_sys::list_helm_releases(namespace);
@@ -358,15 +347,15 @@ pub fn list_releases(namespace: &str) -> Result<Vec<HelmRelease>, HelmError> {
             err
         );
 
-        return Err(HelmError::ListReleasesError { error: err });
+        return Err(Error::ListReleases { error: err });
     }
 
-    serde_json::from_str(&result).context(JsonSnafu)
+    serde_json::from_str(&result).context(DeserializeJsonSnafu)
 }
 
 /// Returns a single Helm release by `release_name`.
 #[instrument]
-pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<HelmRelease>, HelmError> {
+pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<Release>, Error> {
     debug!("Get Helm release");
 
     Ok(list_releases(namespace)?
@@ -376,7 +365,7 @@ pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<HelmRel
 
 /// Adds a Helm repo with `repo_name` and `repo_url`.
 #[instrument]
-pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), HelmError> {
+pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), Error> {
     debug!("Add Helm repo");
 
     let result = helm_sys::add_helm_repository(repository_name, repository_url);
@@ -387,7 +376,7 @@ pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), HelmE
             err
         );
 
-        return Err(HelmError::AddRepoError { error: err });
+        return Err(Error::AddRepo { error: err });
     }
 
     Ok(())
@@ -395,7 +384,7 @@ pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), HelmE
 
 /// Retrieves the Helm index file from the repository URL.
 #[instrument]
-pub async fn get_helm_index<T>(repo_url: T) -> Result<HelmRepo, HelmError>
+pub async fn get_helm_index<T>(repo_url: T) -> Result<Repository, Error>
 where
     T: AsRef<str> + std::fmt::Debug,
 {
@@ -406,12 +395,13 @@ where
 
     debug!("Using {} to retrieve Helm index file", url);
 
+    // TODO (Techassi): Use the FileTransferClient for that
     let index_file_content = reqwest::get(url)
         .await
-        .context(RequestSnafu)?
+        .context(FetchRemoteContentSnafu)?
         .text()
         .await
-        .context(RequestSnafu)?;
+        .context(FetchRemoteContentSnafu)?;
 
-    serde_yaml::from_str(&index_file_content).context(YamlSnafu)
+    serde_yaml::from_str(&index_file_content).context(DeserializeYamlSnafu)
 }

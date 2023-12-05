@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-use rand::Rng;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -9,7 +8,9 @@ use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
 
-use crate::utils::k8s::{KubeClient, KubeClientError};
+use crate::utils::k8s::{Client, Error};
+
+type Result<T, E = ResourceRequestsError> = std::result::Result<T, E>;
 
 /// Demos and stacks can define how much cluster resources they need to run
 /// via their definition. The struct [`ResourceRequests`] contains information
@@ -42,8 +43,11 @@ impl Display for ResourceRequests {
 /// can not be parsed or validation of those requests failed.
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsError {
-    #[snafu(display("kube error: {source}"), context(false))]
-    KubeError { source: KubeClientError },
+    #[snafu(display("failed to create kube client"))]
+    KubeClientCreate { source: Error },
+
+    #[snafu(display("failed to retrieve cluster info"))]
+    ClusterInfo { source: Error },
 
     #[snafu(display("failed to parse cpu resource requirements"))]
     ParseCpuResourceRequirements {
@@ -64,13 +68,13 @@ pub enum ResourceRequestsError {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsValidationError {
     #[snafu(display(
-        "The {object_name} requires {} CPU cores, but there are only {} CPU cores available in the cluster{}", required.as_cpu_count(), available.as_cpu_count(), help_message.clone().unwrap_or_default()
+        "The {object_name} requires {} CPU core(s), but there are only {} CPU core(s) available in the cluster",
+        required.as_cpu_count(), available.as_cpu_count()
     ))]
     InsufficientCpu {
         available: CpuQuantity,
         required: CpuQuantity,
         object_name: String,
-        help_message: Option<String>,
     },
 
     #[snafu(display(
@@ -87,12 +91,12 @@ impl ResourceRequests {
     /// Validates the struct [`ResourceRequests`] by comparing the required
     /// resources to the available ones in the current cluster. `object_name`
     /// should be `stack` or `demo`.
-    pub async fn validate_cluster_size(
-        &self,
-        object_name: &str,
-    ) -> Result<(), ResourceRequestsError> {
-        let kube_client = KubeClient::new().await?;
-        let cluster_info = kube_client.get_cluster_info().await?;
+    pub async fn validate_cluster_size(&self, object_name: &str) -> Result<()> {
+        let kube_client = Client::new().await.context(KubeClientCreateSnafu)?;
+        let cluster_info = kube_client
+            .get_cluster_info()
+            .await
+            .context(ClusterInfoSnafu)?;
 
         let stack_cpu =
             CpuQuantity::try_from(&self.cpu).context(ParseCpuResourceRequirementsSnafu)?;
@@ -106,12 +110,10 @@ impl ResourceRequests {
         let mut errors = Vec::new();
 
         if stack_cpu > cluster_info.untainted_allocatable_cpu {
-            let mut rng = rand::thread_rng();
             errors.push(ResourceRequestsValidationError::InsufficientCpu {
                 available: cluster_info.untainted_allocatable_cpu,
                 object_name: object_name.to_string(),
                 required: stack_cpu,
-                help_message: (rng.gen::<f32>() < 0.005).then_some(". Have a look at https://github.com/torvalds/linux/blob/f7757129e3dea336c407551c98f50057c22bb266/include/math-emu/double.h#L29 for a possible solution".to_string()),
             });
         }
 
@@ -124,9 +126,9 @@ impl ResourceRequests {
         }
 
         if !errors.is_empty() {
-            Err(ResourceRequestsError::ValidationErrors { errors })
-        } else {
-            Ok(())
+            return Err(ResourceRequestsError::ValidationErrors { errors });
         }
+
+        Ok(())
     }
 }
