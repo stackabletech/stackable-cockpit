@@ -1,5 +1,5 @@
 {
-  "product-config 0.5.0 (git+https://github.com/stackabletech/product-config.git?tag=0.5.0#439869d9e6a72fb6d912f6e494649a2f74f41d25)": "02li3pmppw85ydad2wv0274rd0mrsv58y29fgs4r6ij5cq2pq5yl",
-  "stackable-operator 0.47.0 (git+https://github.com/stackabletech/operator-rs.git?tag=0.47.0#b58f31eb70cd295d882367e13cf60a538ff79b51)": "028fl0pdli0khhdj849qk2303x50ivg5gbrw4ywda4p11ijdkj9h",
-  "stackable-operator-derive 0.47.0 (git+https://github.com/stackabletech/operator-rs.git?tag=0.47.0#b58f31eb70cd295d882367e13cf60a538ff79b51)": "028fl0pdli0khhdj849qk2303x50ivg5gbrw4ywda4p11ijdkj9h"
+  "product-config 0.6.0 (git+https://github.com/stackabletech/product-config.git?tag=0.6.0#ad2c3ea6a291e415d978eb4271fb309e75861ef0)": "1ixc2x7540sxdmc92hqdcwm24rj8i1ivjsvwk2d57pdsq03j2x41",
+  "stackable-operator 0.56.1 (git+https://github.com/stackabletech/operator-rs.git?tag=0.56.1#beeb39436024fa5f61d840402c26ee56fc5fbd29)": "0s3as76glwydk6x4ph5cgjvpqm8abzm1a4ahwg615dqr58lg0sn5",
+  "stackable-operator-derive 0.56.1 (git+https://github.com/stackabletech/operator-rs.git?tag=0.56.1#beeb39436024fa5f61d840402c26ee56fc5fbd29)": "0s3as76glwydk6x4ph5cgjvpqm8abzm1a4ahwg615dqr58lg0sn5"
 }
