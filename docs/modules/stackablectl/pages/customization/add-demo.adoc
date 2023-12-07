@@ -12,7 +12,7 @@ creating your stack.
 == 1. Create a demos.yaml
 
 For a custom demo, you must create a `mycorp-demos.yaml` containing demos according to the format defined by
-https://github.com/stackabletech/stackablectl/blob/main/demos/demos-v1.yaml[the Stackable provided demos].
+https://github.com/stackabletech/demos/blob/main/demos/demos-v2.yaml[the Stackable provided demos].
 
 As of writing, a `demos.yaml` file could look as follows:
 
