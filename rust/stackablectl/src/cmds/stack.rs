@@ -150,7 +150,7 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<
     info!("Listing stacks");
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             let mut table = Table::new();
 
             table
@@ -197,7 +197,7 @@ fn describe_cmd(
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
-            OutputType::Plain => {
+            OutputType::Table => {
                 let mut table = Table::new();
 
                 let mut parameter_table = Table::new();

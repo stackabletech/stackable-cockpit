@@ -175,7 +175,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
     let versions_list = build_versions_list(&helm_index_files)?;
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             let mut table = Table::new();
 
             table
@@ -226,7 +226,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     let versions_list = build_versions_list_for_operator(&args.operator_name, &helm_index_files)?;
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             let stable_versions_string = match versions_list.0.get(HELM_REPO_NAME_STABLE) {
                 Some(v) => v.join(", "),
                 None => "".into(),
@@ -359,7 +359,7 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
         .collect();
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             if installed.is_empty() {
                 return Ok("No installed operators".into());
             }

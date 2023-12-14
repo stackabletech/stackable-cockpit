@@ -167,7 +167,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
     info!("Listing demos");
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             let mut table = Table::new();
 
             table
@@ -219,7 +219,7 @@ async fn describe_cmd(
     })?;
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             let mut table = Table::new();
             table
                 .load_preset(NOTHING)

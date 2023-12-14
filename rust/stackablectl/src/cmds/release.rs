@@ -154,7 +154,7 @@ async fn list_cmd(
     info!("Listing releases");
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             if release_list.inner().is_empty() {
                 return Ok("No releases".into());
             }
@@ -207,7 +207,7 @@ async fn describe_cmd(
 
     match release {
         Some(release) => match args.output_type {
-            OutputType::Plain => {
+            OutputType::Table => {
                 let mut product_table = Table::new();
 
                 product_table

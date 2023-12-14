@@ -116,7 +116,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     }
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Table => {
             // The main table displays all installed (and discovered) stacklets
             // and their condition.
             let mut table = Table::new();
