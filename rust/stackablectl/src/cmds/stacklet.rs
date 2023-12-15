@@ -116,7 +116,12 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     }
 
     match args.output_type {
-        OutputType::Table => {
+        OutputType::Plain | OutputType::Table => {
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
+
             // The main table displays all installed (and discovered) stacklets
             // and their condition.
             let mut table = Table::new();
@@ -128,18 +133,21 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                     "ENDPOINTS",
                     "CONDITIONS",
                 ])
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(UTF8_FULL);
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             let mut error_list = Vec::new();
             let mut error_index = 1;
 
-            let max_endpoint_name_length = stacklets
-                .iter()
-                .flat_map(|s| &s.endpoints)
-                .map(|(endpoint_name, _)| endpoint_name.len())
-                .max()
-                .unwrap_or_default();
+            let max_endpoint_name_length = match args.output_type {
+                OutputType::Plain => 0,
+                _ => stacklets
+                    .iter()
+                    .flat_map(|s| &s.endpoints)
+                    .map(|(endpoint_name, _)| endpoint_name.len())
+                    .max()
+                    .unwrap_or_default(),
+            };
 
             for stacklet in stacklets {
                 let ConditionOutput { summary, errors } =
@@ -149,7 +157,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                     .endpoints
                     .iter()
                     .map(|(name, url)| {
-                        format!("{name:width$}{url}", width = max_endpoint_name_length + 1)
+                        format!("{name:width$} {url}", width = max_endpoint_name_length + 1)
                     })
                     .collect::<Vec<_>>()
                     .join("\n");

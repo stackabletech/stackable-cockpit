@@ -154,17 +154,21 @@ async fn list_cmd(
     info!("Listing releases");
 
     match args.output_type {
-        OutputType::Table => {
+        OutputType::Plain | OutputType::Table => {
             if release_list.inner().is_empty() {
                 return Ok("No releases".into());
             }
 
-            let mut table = Table::new();
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
+            let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(UTF8_FULL)
-                .set_header(vec!["#", "RELEASE", "RELEASE DATE", "DESCRIPTION"]);
+                .set_header(vec!["#", "RELEASE", "RELEASE DATE", "DESCRIPTION"])
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (index, (release_name, release_spec)) in release_list.inner().iter().enumerate() {
                 table.add_row(vec![
@@ -207,6 +211,7 @@ async fn describe_cmd(
 
     match release {
         Some(release) => match args.output_type {
+            OutputType::Plain => todo!(),
             OutputType::Table => {
                 let mut product_table = Table::new();
 

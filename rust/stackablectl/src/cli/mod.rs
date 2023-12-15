@@ -244,6 +244,9 @@ CRDs."
 
 #[derive(Clone, Debug, Default, ValueEnum)]
 pub enum OutputType {
+    /// Print output formatted as plain text
+    Plain,
+
     /// Print output formatted as a table
     #[default]
     Table,
