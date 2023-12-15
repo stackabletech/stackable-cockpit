@@ -211,14 +211,18 @@ async fn describe_cmd(
 
     match release {
         Some(release) => match args.output_type {
-            OutputType::Plain => todo!(),
-            OutputType::Table => {
+            OutputType::Plain | OutputType::Table => {
+                let arrangement = match args.output_type {
+                    OutputType::Plain => ContentArrangement::Disabled,
+                    _ => ContentArrangement::Dynamic,
+                };
+
                 let mut product_table = Table::new();
 
                 product_table
+                    .set_header(vec!["PRODUCT", "OPERATOR VERSION"])
                     .set_content_arrangement(ContentArrangement::Dynamic)
-                    .load_preset(NOTHING)
-                    .set_header(vec!["PRODUCT", "OPERATOR VERSION"]);
+                    .load_preset(NOTHING);
 
                 for (product_name, product) in &release.products {
                     product_table.add_row(vec![product_name, &product.version.to_string()]);
@@ -227,7 +231,7 @@ async fn describe_cmd(
                 let mut table = Table::new();
 
                 table
-                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_content_arrangement(arrangement)
                     .load_preset(NOTHING)
                     .add_row(vec!["RELEASE", &args.release])
                     .add_row(vec!["RELEASE DATE", release.date.as_str()])

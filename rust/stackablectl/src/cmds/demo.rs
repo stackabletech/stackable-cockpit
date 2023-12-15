@@ -223,12 +223,16 @@ async fn describe_cmd(
     })?;
 
     match args.output_type {
-        OutputType::Plain => todo!(),
-        OutputType::Table => {
+        OutputType::Plain | OutputType::Table => {
+            let arrangement = match args.output_type {
+                OutputType::Plain => ContentArrangement::Disabled,
+                _ => ContentArrangement::Dynamic,
+            };
+
             let mut table = Table::new();
             table
+                .set_content_arrangement(arrangement)
                 .load_preset(NOTHING)
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .add_row(vec!["DEMO", &args.demo_name])
                 .add_row(vec!["DESCRIPTION", &demo.description])
                 .add_row_if(

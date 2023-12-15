@@ -201,15 +201,19 @@ fn describe_cmd(
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
-            OutputType::Plain => todo!(),
-            OutputType::Table => {
+            OutputType::Plain | OutputType::Table => {
+                let arrangement = match args.output_type {
+                    OutputType::Plain => ContentArrangement::Disabled,
+                    _ => ContentArrangement::Dynamic,
+                };
+
                 let mut table = Table::new();
 
                 let mut parameter_table = Table::new();
 
                 parameter_table
                     .set_header(vec!["NAME", "DESCRIPTION", "DEFAULT VALUE"])
-                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_content_arrangement(arrangement.clone())
                     .load_preset(NOTHING);
 
                 for parameter in &stack.parameters {
@@ -221,7 +225,7 @@ fn describe_cmd(
                 }
 
                 table
-                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_content_arrangement(arrangement)
                     .load_preset(NOTHING)
                     .add_row(vec!["STACK", args.stack_name.as_str()])
                     .add_row(vec!["DESCRIPTION", stack.description.as_str()])

@@ -230,8 +230,12 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     let versions_list = build_versions_list_for_operator(&args.operator_name, &helm_index_files)?;
 
     match args.output_type {
-        OutputType::Plain => todo!(),
-        OutputType::Table => {
+        OutputType::Plain | OutputType::Table => {
+            let arrangement = match args.output_type {
+                OutputType::Plain => ContentArrangement::Disabled,
+                _ => ContentArrangement::Dynamic,
+            };
+
             let stable_versions_string = match versions_list.0.get(HELM_REPO_NAME_STABLE) {
                 Some(v) => v.join(", "),
                 None => "".into(),
@@ -249,7 +253,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
             let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
+                .set_content_arrangement(arrangement)
                 .load_preset(NOTHING)
                 .add_row(vec!["OPERATOR", &args.operator_name.to_string()])
                 .add_row(vec!["STABLE VERSIONS", stable_versions_string.as_str()])
