@@ -69,8 +69,5 @@ jobs:
       - name: Ensure shell completions up-to-date
         if: matrix.os = 'x86_64-unknown-linux-gnu'
         run: |
-          ./target/${{ matrix.target }}/debug/stackablectl completions bash > extra/completions/stackablectl.bash
-          ./target/${{ matrix.target }}/debug/stackablectl completions fish > extra/completions/stackablectl.fish
-          ./target/${{ matrix.target }}/debug/stackablectl completions zsh > extra/completions/_stackablectl
-
+          cargo xtask gen-comp
           git diff --exit-code
