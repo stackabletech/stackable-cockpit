@@ -65,3 +65,12 @@ jobs:
       - name: Build for non-Windows
         if: matrix.os != 'windows-latest'
         run: cargo build --target ${{ matrix.target }} -p stackablectl
+
+      - name: Ensure shell completions up-to-date
+        if: matrix.os = 'x86_64-unknown-linux-gnu'
+        run: |
+          ./target/${{ matrix.target }}/debug/stackablectl completions bash > extra/completions/stackablectl.bash
+          ./target/${{ matrix.target }}/debug/stackablectl completions fish > extra/completions/stackablectl.fish
+          ./target/${{ matrix.target }}/debug/stackablectl completions zsh > extra/completions/_stackablectl
+
+          git diff --exit-code
