@@ -154,17 +154,21 @@ async fn list_cmd(
     info!("Listing releases");
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Plain | OutputType::Table => {
             if release_list.inner().is_empty() {
                 return Ok("No releases".into());
             }
 
-            let mut table = Table::new();
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
+            let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(UTF8_FULL)
-                .set_header(vec!["#", "RELEASE", "RELEASE DATE", "DESCRIPTION"]);
+                .set_header(vec!["#", "RELEASE", "RELEASE DATE", "DESCRIPTION"])
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (index, (release_name, release_spec)) in release_list.inner().iter().enumerate() {
                 table.add_row(vec![
@@ -207,13 +211,18 @@ async fn describe_cmd(
 
     match release {
         Some(release) => match args.output_type {
-            OutputType::Plain => {
+            OutputType::Plain | OutputType::Table => {
+                let arrangement = match args.output_type {
+                    OutputType::Plain => ContentArrangement::Disabled,
+                    _ => ContentArrangement::Dynamic,
+                };
+
                 let mut product_table = Table::new();
 
                 product_table
+                    .set_header(vec!["PRODUCT", "OPERATOR VERSION"])
                     .set_content_arrangement(ContentArrangement::Dynamic)
-                    .load_preset(NOTHING)
-                    .set_header(vec!["PRODUCT", "OPERATOR VERSION"]);
+                    .load_preset(NOTHING);
 
                 for (product_name, product) in &release.products {
                     product_table.add_row(vec![product_name, &product.version.to_string()]);
@@ -222,7 +231,7 @@ async fn describe_cmd(
                 let mut table = Table::new();
 
                 table
-                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_content_arrangement(arrangement)
                     .load_preset(NOTHING)
                     .add_row(vec!["RELEASE", &args.release])
                     .add_row(vec!["RELEASE DATE", release.date.as_str()])
