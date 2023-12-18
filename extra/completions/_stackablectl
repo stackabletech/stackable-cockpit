@@ -73,9 +73,11 @@ _arguments "${_arguments_options[@]}" \
             (list)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -100,9 +102,11 @@ yaml\:"Print output formatted as YAML"))' \
 (describe)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -183,9 +187,11 @@ _arguments "${_arguments_options[@]}" \
 (installed)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
@@ -285,9 +291,11 @@ _arguments "${_arguments_options[@]}" \
             (list)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -312,9 +320,11 @@ yaml\:"Print output formatted as YAML"))' \
 (describe)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -468,9 +478,11 @@ _arguments "${_arguments_options[@]}" \
             (list)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -495,9 +507,11 @@ yaml\:"Print output formatted as YAML"))' \
 (describe)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -651,9 +665,11 @@ _arguments "${_arguments_options[@]}" \
 (list)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
@@ -744,9 +760,11 @@ _arguments "${_arguments_options[@]}" \
             (list)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
@@ -771,9 +789,11 @@ yaml\:"Print output formatted as YAML"))' \
 (describe)
 _arguments "${_arguments_options[@]}" \
 '-o+[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--output=[]:OUTPUT_TYPE:((plain\:"Print output formatted as plain text"
+table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
