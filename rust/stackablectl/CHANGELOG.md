@@ -9,8 +9,8 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Bumped Rust version from `1.74.0` to `1.75.0` ([#172]).
-- Bumped Rust and Go dependencies ([#135], [#162] [#167], [#168], [#170]).
-- Renamed output old style `plain` to `table`. The new output option `plain` will output a reduced view (which removes
+- Bumped Rust and Go dependencies ([#135], [#162], [#167], [#168], [#170]).
+- Renamed old output style `plain` to `table`. The new output option `plain` will output a reduced view (which removes
   borders from tables for example) ([#142], [#163]).
 
 [#135]: https://github.com/stackabletech/stackable-cockpit/pull/135
