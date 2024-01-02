@@ -4,32 +4,37 @@ use tracing::{debug, info, instrument};
 
 use crate::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    engine::{check_if_docker_is_running, DockerError},
-    utils::check::binaries_present,
+    engine::docker::{self, check_if_docker_is_running},
+    utils::check::binaries_present_with_name,
 };
 
 #[derive(Debug, Snafu)]
-pub enum MinikubeClusterError {
-    #[snafu(display("missing dependencies"))]
-    MissingDepsError,
+pub enum Error {
+    #[snafu(display(
+        "failed to determine if a Minikube cluster named '{cluster_name}' already exists"
+    ))]
+    CheckCluster {
+        source: std::io::Error,
+        cluster_name: String,
+    },
 
-    #[snafu(display("command error: {error}"))]
-    CmdError { error: String },
+    #[snafu(display("missing required binary: {binary}"))]
+    MissingBinary { binary: String },
 
-    #[snafu(display("Docker error"))]
-    DockerError { source: DockerError },
+    #[snafu(display("failed to execute Minikube command"))]
+    MinikubeCommand { source: std::io::Error },
 
-    #[snafu(display("io error"))]
-    IoError { source: std::io::Error },
+    #[snafu(display("failed to determine if Docker is running"))]
+    DockerCheckCommand { source: docker::Error },
 }
 
 #[derive(Debug)]
-pub struct MinikubeCluster {
+pub struct Cluster {
     node_count: usize,
     name: String,
 }
 
-impl MinikubeCluster {
+impl Cluster {
     /// Create a new kind cluster. This will NOT yet create the cluster on the system, but instead will return a data
     /// structure representing the cluster. To actually create the cluster, the `create` method must be called.
     pub fn new(node_count: usize, name: Option<String>) -> Self {
@@ -39,42 +44,39 @@ impl MinikubeCluster {
         }
     }
 
-    /// Create a new local cluster by calling the minikube binary
+    /// Create a new local cluster by calling the Minikube binary
     #[instrument]
-    pub async fn create(&self) -> Result<(), MinikubeClusterError> {
-        info!("Creating local cluster using minikube");
+    pub async fn create(&self) -> Result<(), Error> {
+        info!("Creating local cluster using Minikube");
 
         // Check if required binaries are present
-        if !binaries_present(&["docker", "minikube"]) {
-            return Err(MinikubeClusterError::MissingDepsError);
+        if let Some(binary) = binaries_present_with_name(&["docker", "minikube"]) {
+            return Err(Error::MissingBinary { binary });
         }
 
         // Check if Docker is running
-        check_if_docker_is_running().await.context(DockerSnafu)?;
+        check_if_docker_is_running()
+            .await
+            .context(DockerCheckCommandSnafu)?;
 
-        // Create local cluster via minikube
-        debug!("Creating minikube cluster");
-        let minikube_cmd = Command::new("minikube")
+        // Create local cluster via Minikube
+        debug!("Creating Minikube cluster");
+        Command::new("minikube")
             .arg("start")
             .args(["--driver", "docker"])
             .args(["--nodes", self.node_count.to_string().as_str()])
             .args(["-p", self.name.as_str()])
             .status()
-            .await;
-
-        if let Err(err) = minikube_cmd {
-            return Err(MinikubeClusterError::CmdError {
-                error: err.to_string(),
-            });
-        }
+            .await
+            .context(MinikubeCommandSnafu)?;
 
         Ok(())
     }
 
-    /// Creates a minikube cluster if it doesn't exist already.
+    /// Creates a Minikube cluster if it doesn't exist already.
     #[instrument]
-    pub async fn create_if_not_exists(&self) -> Result<(), MinikubeClusterError> {
-        info!("Creating cluster if it doesn't exist using minikube");
+    pub async fn create_if_not_exists(&self) -> Result<(), Error> {
+        info!("Creating cluster if it doesn't exist using Minikube");
 
         if Self::check_if_cluster_exists(&self.name).await? {
             return Ok(());
@@ -95,8 +97,8 @@ impl MinikubeCluster {
 
     /// Check if a kind cluster with the provided name already exists.
     #[instrument]
-    async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool, MinikubeClusterError> {
-        debug!("Checking if minikube cluster exists");
+    async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool, Error> {
+        debug!("Checking if Minikube cluster exists");
 
         let output = Command::new("minikube")
             .arg("status")
@@ -104,7 +106,7 @@ impl MinikubeCluster {
             .args(["-o", "json"])
             .output()
             .await
-            .context(IoSnafu)?;
+            .context(CheckClusterSnafu { cluster_name })?;
 
         if !output.status.success() {
             return Ok(false);

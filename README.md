@@ -62,7 +62,7 @@ hooks are:
 - `cargo clippy -- -D warnings`: Runs Clippy on all files and errors on warnings
 - `cargo fmt -- --check`: Checks if Rust code needs formatting
 - `cargo xtask gen-comp`: Runs shell completions generation for `stackablectl`
-- `cargo xtask gen-mam`: Runs man page generation for `stackablectl`
+- `cargo xtask gen-man`: Runs man page generation for `stackablectl`
 - `cargo xtask gen-openapi`: Runs OpenAPI spec generation to connect backend with frontend
 - `cargo xtask gen-ctl-readme`: Generates and inserts `stackablectl` help text into README
 

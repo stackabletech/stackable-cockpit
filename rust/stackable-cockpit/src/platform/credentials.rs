@@ -4,14 +4,14 @@ use kube::{core::DynamicObject, ResourceExt};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 
-use crate::utils::k8s::{KubeClient, KubeClientError};
+use crate::utils::k8s;
 
-pub type Result<T, E = CredentialsError> = std::result::Result<T, E>;
+pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
-pub enum CredentialsError {
-    #[snafu(display("kubernetes error"))]
-    KubeError { source: KubeClientError },
+pub enum Error {
+    #[snafu(display("failed to fetch data from Kubernetes API"))]
+    KubeClientFetch { source: k8s::Error },
 
     #[snafu(display("no credentials secret found"))]
     NoSecret,
@@ -33,8 +33,8 @@ impl Display for Credentials {
 /// in `secret_namespace`. The function returns [`Ok(None)`] if `username_key`
 /// and/or `password_key` are not found or the product does not provide
 /// any credentials.
-pub async fn get_credentials(
-    kube_client: &KubeClient,
+pub async fn get(
+    kube_client: &k8s::Client,
     product_name: &str,
     stacklet: &DynamicObject,
 ) -> Result<Option<Credentials>> {
@@ -64,7 +64,7 @@ pub async fn get_credentials(
                     "adminUser.password",
                 )
                 .await
-                .context(KubeSnafu)?
+                .context(KubeClientFetchSnafu)?
         }
         "nifi" => {
             let secret_name = stacklet.data["spec"]["clusterConfig"]["credentialsSecret"]
@@ -79,7 +79,7 @@ pub async fn get_credentials(
                     "password",
                 )
                 .await
-                .context(KubeSnafu)?
+                .context(KubeClientFetchSnafu)?
         }
         _ => return Ok(None),
     };

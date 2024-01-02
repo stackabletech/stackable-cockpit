@@ -2,7 +2,7 @@
 name = "stackablectl"
 description = "Command line tool to interact with the Stackable Data Platform"
 # See <project-root>/Cargo.toml
-version = "1.0.0-rc2"
+version = "23.11.1"
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -19,7 +19,6 @@ directories.workspace = true
 dotenvy.workspace = true
 indexmap.workspace = true
 lazy_static.workspace = true
-nu-ansi-term.workspace = true
 rand.workspace = true
 reqwest.workspace = true
 semver.workspace = true
@@ -27,6 +26,7 @@ serde_json.workspace = true
 serde_yaml.workspace = true
 serde.workspace = true
 snafu.workspace = true
+tera.workspace = true
 tokio.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true

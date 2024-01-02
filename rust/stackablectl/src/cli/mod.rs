@@ -7,12 +7,12 @@ use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
-    helm::{self, HelmError},
-    platform::demo::DemoList,
+    helm,
+    platform::demo::List,
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
-    xfer::{cache::CacheSettings, FileTransferClient},
+    xfer::{cache::Settings, Client},
 };
 
 use crate::{
@@ -23,20 +23,21 @@ use crate::{
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
         USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
+    output::{ErrorContext, Output, ResultContext},
 };
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("operator command error"))]
+    #[snafu(display("failed to execute operator (sub)command"))]
     Operator { source: operator::CmdError },
 
-    #[snafu(display("release command error"))]
+    #[snafu(display("failed to execute release (sub)command"))]
     Release { source: release::CmdError },
 
-    #[snafu(display("stack command error"))]
+    #[snafu(display("failed to execute stack (sub)command"))]
     Stack { source: stack::CmdError },
 
-    #[snafu(display("stacklets command error"))]
+    #[snafu(display("failed to execute stacklet (sub)command"))]
     Stacklet { source: stacklet::CmdError },
 
     #[snafu(display("demo command error"))]
@@ -49,7 +50,7 @@ pub enum Error {
     Cache { source: cache::CmdError },
 
     #[snafu(display("helm error"))]
-    Helm { source: HelmError },
+    Helm { source: helm::Error },
 }
 
 #[derive(Debug, Parser)]
@@ -97,9 +98,9 @@ impl Cli {
         Ok(files)
     }
 
-    pub async fn get_demo_list(&self, transfer_client: &FileTransferClient) -> DemoList {
+    pub async fn get_demo_list(&self, transfer_client: &Client) -> List {
         let files = self.get_demo_files().unwrap();
-        DemoList::build(&files, transfer_client).await.unwrap()
+        List::build(&files, transfer_client).await.unwrap()
     }
 
     /// Returns a list of stack files, consisting of entries which are either a path or URL. The list of files combines
@@ -129,7 +130,7 @@ impl Cli {
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
     #[instrument]
-    pub fn add_helm_repos(&self) -> Result<(), HelmError> {
+    pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
         debug!("Add Helm repos");
 
         // Stable repository
@@ -145,9 +146,9 @@ impl Cli {
     }
 
     #[instrument]
-    pub fn cache_settings(&self) -> Result<CacheSettings, CacheSettingsError> {
+    pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
-            Ok(CacheSettings::disabled())
+            Ok(Settings::disabled())
         } else {
             let project_dir = ProjectDirs::from(
                 USER_DIR_QUALIFIER,
@@ -156,7 +157,7 @@ impl Cli {
             )
             .ok_or(CacheSettingsError::UserDir)?;
 
-            Ok(CacheSettings::disk(project_dir.cache_dir()))
+            Ok(Settings::disk(project_dir.cache_dir()))
         }
     }
 
@@ -189,8 +190,17 @@ impl Cli {
             Commands::Stacklet(args) => args.run(self).await.context(StackletSnafu),
             Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
             Commands::Completions(args) => args.run().context(CompletionsSnafu),
-            Commands::Cache(args) => args.run(cache).await.context(CacheSnafu),
+            Commands::Cache(args) => args.run(self, cache).await.context(CacheSnafu),
         }
+    }
+
+    // Output utility functions
+    pub fn result(&self) -> Output<ResultContext> {
+        Output::new(ResultContext::default(), true).expect("Failed to create output renderer")
+    }
+
+    pub fn error(&self) -> Output<ErrorContext> {
+        Output::new(ErrorContext::default(), true).expect("Failed to create output renderer")
     }
 }
 
@@ -235,8 +245,11 @@ CRDs."
 #[derive(Clone, Debug, Default, ValueEnum)]
 pub enum OutputType {
     /// Print output formatted as plain text
-    #[default]
     Plain,
+
+    /// Print output formatted as a table
+    #[default]
+    Table,
 
     /// Print output formatted as JSON
     Json,

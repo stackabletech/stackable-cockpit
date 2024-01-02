@@ -4,7 +4,7 @@ name: Pull Request General
 on: workflow_call
 
 env:
-  RUST_VERSION: 1.70.0
+  RUST_VERSION: 1.74.0
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -37,10 +37,11 @@ jobs:
           cache: yarn
       - run: yarn install --frozen-lockfile
 
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+      - uses: Swatinem/rust-cache@a95ba195448af2da9b00fb742d14ffaaf3c21f43 # v2.7.0
         with:
           key: udeps
-      - run: cargo install cargo-udeps
+          cache-all-crates: "true"
+      - run: cargo install --locked cargo-udeps@0.1.39
       - run: cargo udeps --workspace
 
   run_cargodeny:

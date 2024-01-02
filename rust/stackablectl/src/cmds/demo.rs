@@ -7,16 +7,11 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
-    common::ListError,
+    common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{
-        demo::{DemoError, DemoList},
-        namespace::{self, NamespaceError},
-        release::ReleaseList,
-        stack::StackList,
-    },
+    platform::{demo, namespace, release, stack},
     utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, FileTransferClient, FileTransferError},
+    xfer::{cache::Cache, Client},
 };
 
 use crate::{
@@ -112,11 +107,11 @@ pub struct DemoUninstallArgs {}
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
-    #[snafu(display("unable to format yaml output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 
     #[snafu(display("no demo with name '{name}'"))]
     NoSuchDemo { name: String },
@@ -124,66 +119,65 @@ pub enum CmdError {
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("list error"))]
-    ListError { source: ListError },
+    #[snafu(display("failed to build demo/stack/release list"))]
+    BuildList { source: list::Error },
 
-    #[snafu(display("demo error"))]
-    DemoError { source: DemoError },
+    #[snafu(display("failed to install demo"))]
+    DemoInstall { source: demo::Error },
 
     #[snafu(display("path/url parse error"))]
-    PathOrUrlParseError { source: PathOrUrlParseError },
+    PathOrUrlParse { source: PathOrUrlParseError },
 
     #[snafu(display("cluster argument error"))]
-    CommonClusterArgsError { source: CommonClusterArgsError },
-
-    #[snafu(display("file transfer error"))]
-    TransferError { source: FileTransferError },
+    CommonClusterArgs { source: CommonClusterArgsError },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceError {
-        source: NamespaceError,
+    NamespaceCreate {
+        source: namespace::Error,
         namespace: String,
     },
 }
 
 impl DemoArgs {
     #[instrument]
-    pub async fn run(&self, common_args: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
 
-        let transfer_client = FileTransferClient::new_with(cache);
+        let transfer_client = Client::new_with(cache);
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = common_args.get_demo_files().context(PathOrUrlParseSnafu)?;
+        let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
 
-        let list = DemoList::build(&files, &transfer_client)
+        let list = demo::List::build(&files, &transfer_client)
             .await
-            .context(ListSnafu)?;
+            .context(BuildListSnafu)?;
 
         match &self.subcommand {
-            DemoCommands::List(args) => list_cmd(args, list).await,
-            DemoCommands::Describe(args) => describe_cmd(args, list).await,
-            DemoCommands::Install(args) => {
-                install_cmd(args, common_args, list, &transfer_client).await
-            }
+            DemoCommands::List(args) => list_cmd(args, cli, list).await,
+            DemoCommands::Describe(args) => describe_cmd(args, cli, list).await,
+            DemoCommands::Install(args) => install_cmd(args, cli, list, &transfer_client).await,
         }
     }
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument]
-async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, CmdError> {
+async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
 
     match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
+        OutputType::Plain | OutputType::Table => {
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
+            let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["#", "NAME", "STACK", "DESCRIPTION"])
-                .load_preset(UTF8_FULL);
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
                 let row = Row::from(vec![
@@ -195,16 +189,33 @@ async fn list_cmd(args: &DemoListArgs, list: DemoList) -> Result<String, CmdErro
                 table.add_row(row);
             }
 
-            Ok(table.to_string())
+            let mut result = cli.result();
+
+            result
+                .with_command_hint(
+                    "stackablectl demo describe [OPTIONS] <DEMO>",
+                    "display further information for the specified demo",
+                )
+                .with_command_hint(
+                    "stackablectl demo install [OPTIONS] <DEMO>",
+                    "install a demo",
+                )
+                .with_output(table.to_string());
+
+            Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&list.inner()).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&list.inner()).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(SerializeYamlOutputSnafu),
     }
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 #[instrument]
-async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String, CmdError> {
+async fn describe_cmd(
+    args: &DemoDescribeArgs,
+    cli: &Cli,
+    list: demo::List,
+) -> Result<String, CmdError> {
     info!("Describing demo {}", args.demo_name);
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
@@ -212,11 +223,16 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
     })?;
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Plain | OutputType::Table => {
+            let arrangement = match args.output_type {
+                OutputType::Plain => ContentArrangement::Disabled,
+                _ => ContentArrangement::Dynamic,
+            };
+
             let mut table = Table::new();
             table
+                .set_content_arrangement(arrangement)
                 .load_preset(NOTHING)
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .add_row(vec!["DEMO", &args.demo_name])
                 .add_row(vec!["DESCRIPTION", &demo.description])
                 .add_row_if(
@@ -228,10 +244,20 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 
             // TODO (Techassi): Add parameter output
 
-            Ok(table.to_string())
+            let mut result = cli.result();
+
+            result
+                .with_command_hint(
+                    format!("stackablectl demo install {}", args.demo_name),
+                    "install the demo",
+                )
+                .with_command_hint("stackablectl demo list", "list all available demos")
+                .with_output(table.to_string());
+
+            Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&demo).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&demo).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&demo).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&demo).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -239,29 +265,30 @@ async fn describe_cmd(args: &DemoDescribeArgs, list: DemoList) -> Result<String,
 #[instrument(skip(list))]
 async fn install_cmd(
     args: &DemoInstallArgs,
-    common_args: &Cli,
-    list: DemoList,
-    transfer_client: &FileTransferClient,
+    cli: &Cli,
+    list: demo::List,
+    transfer_client: &Client,
 ) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
+
+    // Init result output and progress output
+    let mut output = cli.result();
 
     let demo_spec = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = common_args.get_stack_files().context(PathOrUrlParseSnafu)?;
-    let stack_list = StackList::build(&files, transfer_client)
+    let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+    let stack_list = stack::List::build(&files, transfer_client)
         .await
-        .context(ListSnafu)?;
+        .context(BuildListSnafu)?;
 
-    let files = common_args
-        .get_release_files()
-        .context(PathOrUrlParseSnafu)?;
+    let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
-    let release_list = ReleaseList::build(&files, transfer_client)
+    let release_list = release::List::build(&files, transfer_client)
         .await
-        .context(ListSnafu)?;
+        .context(BuildListSnafu)?;
 
     // Install local cluster if needed
     args.local_cluster
@@ -284,14 +311,14 @@ async fn install_cmd(
     if !args.skip_release {
         namespace::create_if_needed(operator_namespace.clone())
             .await
-            .context(NamespaceSnafu {
+            .context(NamespaceCreateSnafu {
                 namespace: operator_namespace.clone(),
             })?;
     }
 
     namespace::create_if_needed(product_namespace.clone())
         .await
-        .context(NamespaceSnafu {
+        .context(NamespaceCreateSnafu {
             namespace: product_namespace.clone(),
         })?;
 
@@ -307,18 +334,19 @@ async fn install_cmd(
             args.skip_release,
         )
         .await
-        .context(DemoSnafu)?;
+        .context(DemoInstallSnafu)?;
 
-    let output = format!(
-        "Installed demo {}\n\n\
-        Use \"stackablectl operator installed{}\" to display the installed operators\n\
-        Use \"stackablectl stacklet list{}\" to display the installed stacklets",
-        args.demo_name,
+    let operator_cmd = format!(
+        "stackablectl operator installed{}",
         if args.namespaces.operator_namespace.is_some() {
             format!(" --operator-namespace {}", operator_namespace)
         } else {
             "".into()
-        },
+        }
+    );
+
+    let stacklet_cmd = format!(
+        "stackablectl stacklet list{}",
         if args.namespaces.product_namespace.is_some() {
             format!(" --product-namespace {}", product_namespace)
         } else {
@@ -326,5 +354,10 @@ async fn install_cmd(
         }
     );
 
-    Ok(output)
+    output
+        .with_command_hint(operator_cmd, "display the installed operators")
+        .with_command_hint(stacklet_cmd, "display the installed stacklets")
+        .with_output(format!("Installed demo '{}'", args.demo_name));
+
+    Ok(output.render())
 }

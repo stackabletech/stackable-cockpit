@@ -7,15 +7,17 @@ mod resource_request;
 
 pub use resource_request::*;
 
+type Result<T, E = Error> = std::result::Result<T, E>;
+
 #[derive(Debug, Snafu)]
-pub enum ClusterError {
-    #[snafu(display("failed to parse node cpu"))]
-    ParseNodeCpu {
+pub enum Error {
+    #[snafu(display("failed to parse node cpu quantity"))]
+    ParseNodeCpuQuantity {
         source: stackable_operator::error::Error,
     },
 
-    #[snafu(display("failed to parse node memory"))]
-    ParseNodeMemory {
+    #[snafu(display("failed to parse node memory quantity"))]
+    ParseNodeMemoryQuantity {
         source: stackable_operator::error::Error,
     },
 }
@@ -44,7 +46,7 @@ pub struct ClusterInfo {
 }
 
 impl ClusterInfo {
-    pub fn from_nodes(nodes: ObjectList<Node>) -> Result<Self, ClusterError> {
+    pub fn from_nodes(nodes: ObjectList<Node>) -> Result<Self> {
         // FIXME (Techassi): Also retrieve number of control plane nodes
         let node_count = nodes.items.len();
 
@@ -66,12 +68,12 @@ impl ClusterInfo {
 
         for mut node in untainted_allocatable {
             if let Some(q) = node.remove("cpu") {
-                let cpu = CpuQuantity::try_from(q).context(ParseNodeCpuSnafu)?;
+                let cpu = CpuQuantity::try_from(q).context(ParseNodeCpuQuantitySnafu)?;
                 untainted_allocatable_cpu += cpu;
             }
 
             if let Some(q) = node.remove("memory") {
-                let memory = MemoryQuantity::try_from(q).context(ParseNodeMemorySnafu)?;
+                let memory = MemoryQuantity::try_from(q).context(ParseNodeMemoryQuantitySnafu)?;
                 untainted_allocatable_memory += memory;
             }
         }

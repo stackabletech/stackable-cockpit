@@ -3,23 +3,19 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
 };
-use nu_ansi_term::Color::{Green, Red};
 use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use stackable_cockpit::{
     constants::DEFAULT_PRODUCT_NAMESPACE,
-    platform::stacklet::{get_credentials_for_product, list_stacklets, StackletError},
+    platform::stacklet::{self, get_credentials_for_product, list_stacklets},
     utils::k8s::DisplayCondition,
 };
 
 use crate::{
     args::CommonNamespaceArgs,
     cli::{Cli, OutputType},
-    utils::use_colored_output,
 };
-
-const CREDENTIALS_HINT: &str = "Use \"stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>\" to display credentials for deployed stacklets.";
 
 #[derive(Debug, Args)]
 pub struct StackletArgs {
@@ -60,11 +56,6 @@ a different namespace for credential lookup.")]
 
 #[derive(Debug, Args)]
 pub struct StackletListArgs {
-    /// Controls if the output will use color. This only applies to the output
-    /// type 'plain'.
-    #[arg(short = 'c', long = "color")]
-    use_color: bool,
-
     #[arg(short, long = "output", value_enum, default_value_t)]
     output_type: OutputType,
 
@@ -75,29 +66,29 @@ pub struct StackletListArgs {
 #[derive(Debug, Snafu)]
 pub enum CmdError {
     #[snafu(display("failed to list stacklets"))]
-    StackletListError { source: StackletError },
+    StackletList { source: stacklet::Error },
 
     #[snafu(display("failed to retrieve credentials for stacklet"))]
-    StackletCredentialsError { source: StackletError },
+    StackletCredentials { source: stacklet::Error },
 
-    #[snafu(display("unable to format yaml output"))]
-    YamlOutputFormatError { source: serde_yaml::Error },
+    #[snafu(display("failed to serialize YAML output"))]
+    SerializeYamlOutput { source: serde_yaml::Error },
 
-    #[snafu(display("unable to format json output"))]
-    JsonOutputFormatError { source: serde_json::Error },
+    #[snafu(display("failed to serialize JSON output"))]
+    SerializeJsonOutput { source: serde_json::Error },
 }
 
 impl StackletArgs {
-    pub async fn run(&self, common_args: &Cli) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
         match &self.subcommand {
-            StackletCommands::List(args) => list_cmd(args, common_args).await,
+            StackletCommands::List(args) => list_cmd(args, cli).await,
             StackletCommands::Credentials(args) => credentials_cmd(args).await,
         }
     }
 }
 
 #[instrument]
-async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, CmdError> {
+async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
 
     // If the user wants to list stacklets from all namespaces, we use `None`.
@@ -108,14 +99,28 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
         .context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
-        return Ok("No stacklets".into());
+        let mut result = cli.result();
+
+        result
+            .with_command_hint(
+                "stackablectl stack install <STACK_NAME>",
+                "install a complete stack",
+            )
+            .with_command_hint(
+                "stackablectl demo install <DEMO_NAME>",
+                "install an end-to-end demo",
+            )
+            .with_output("No stacklets found");
+
+        return Ok(result.render());
     }
 
     match args.output_type {
-        OutputType::Plain => {
-            // Determine if colored output will be enabled based on the provided
-            // flag and the terminal support.
-            let use_color = use_colored_output(args.use_color);
+        OutputType::Plain | OutputType::Table => {
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
             // The main table displays all installed (and discovered) stacklets
             // and their condition.
@@ -128,28 +133,31 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                     "ENDPOINTS",
                     "CONDITIONS",
                 ])
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(UTF8_FULL);
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             let mut error_list = Vec::new();
             let mut error_index = 1;
 
-            let max_endpoint_name_length = stacklets
-                .iter()
-                .flat_map(|s| &s.endpoints)
-                .map(|(endpoint_name, _)| endpoint_name.len())
-                .max()
-                .unwrap_or_default();
+            let max_endpoint_name_length = match args.output_type {
+                OutputType::Plain => 0,
+                _ => stacklets
+                    .iter()
+                    .flat_map(|s| &s.endpoints)
+                    .map(|(endpoint_name, _)| endpoint_name.len())
+                    .max()
+                    .unwrap_or_default(),
+            };
 
             for stacklet in stacklets {
                 let ConditionOutput { summary, errors } =
-                    render_conditions(stacklet.conditions, &mut error_index, use_color);
+                    render_conditions(stacklet.conditions, &mut error_index);
 
                 let endpoints = stacklet
                     .endpoints
                     .iter()
                     .map(|(name, url)| {
-                        format!("{name:width$}{url}", width = max_endpoint_name_length + 1)
+                        format!("{name:width$} {url}", width = max_endpoint_name_length + 1)
                     })
                     .collect::<Vec<_>>()
                     .join("\n");
@@ -167,18 +175,26 @@ async fn list_cmd(args: &StackletListArgs, common_args: &Cli) -> Result<String, 
                 }
             }
 
-            // Only output the error list if there are errors to report.
-            Ok(format!(
-                "{table}{errors}\n\n{CREDENTIALS_HINT}",
-                errors = if !error_list.is_empty() {
-                    format!("\n\n{}", error_list.join("\n"))
-                } else {
-                    "".into()
-                }
-            ))
+            let mut result = cli.result();
+
+            result
+                .with_command_hint(
+                    "stackablectl stacklet credentials [OPTIONS] <PRODUCT_NAME> <STACKLET_NAME>",
+                    "display credentials for deployed stacklets",
+                )
+                .with_output(format!(
+                    "{table}{errors}",
+                    errors = if !error_list.is_empty() {
+                        format!("\n\n{}", error_list.join("\n"))
+                    } else {
+                        "".into()
+                    }
+                ));
+
+            Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&stacklets).context(JsonOutputFormatSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(YamlOutputFormatSnafu),
+        OutputType::Json => serde_json::to_string(&stacklets).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&stacklets).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -226,22 +242,14 @@ pub struct ConditionOutput {
 fn render_conditions(
     product_conditions: Vec<DisplayCondition>,
     error_index: &mut usize,
-    use_color: bool,
 ) -> ConditionOutput {
     let mut conditions = Vec::new();
     let mut errors = Vec::new();
 
     for cond in product_conditions {
-        conditions.push(color_condition(
-            &cond.condition,
-            cond.is_good,
-            *error_index,
-            use_color,
-        ));
+        conditions.push(color_condition(&cond.condition, cond.is_good, *error_index));
 
-        if let Some(error) =
-            render_condition_error(cond.message, cond.is_good, *error_index, use_color)
-        {
+        if let Some(error) = render_condition_error(cond.message, cond.is_good, *error_index) {
             errors.push(error);
             *error_index += 1;
         };
@@ -259,37 +267,27 @@ fn render_condition_error(
     message: Option<String>,
     is_good: Option<bool>,
     error_index: usize,
-    use_color: bool,
 ) -> Option<String> {
     if !is_good.unwrap_or(true) {
         let message = message.unwrap_or("-".into());
-        let mut error = format!("[{error_index}]: {message}");
-
-        if use_color {
-            error = Red.paint(error).to_string()
-        }
-
-        return Some(error);
+        return Some(format!("[{}]: {}", error_index, message));
     }
 
     None
 }
 
-/// Colors a single condition (green or red) and additionally adds an error
-/// index to the output.
-fn color_condition(
-    condition: &str,
-    is_good: Option<bool>,
-    error_index: usize,
-    use_color: bool,
-) -> String {
-    match (is_good, use_color) {
-        (Some(true), true) => Green.paint(condition).to_string(),
-        (Some(false), true) => Red
-            .paint(format!("{condition}: See [{error_index}]"))
-            .to_string(),
-        (Some(false), false) => format!("{condition}: See [{error_index}]"),
-        _ => condition.to_owned(),
+// TODO (Techassi): Add back color support
+/// Adds an error index to the output.
+fn color_condition(condition: &str, is_good: Option<bool>, error_index: usize) -> String {
+    match is_good {
+        Some(is_good) => {
+            if is_good {
+                condition.to_owned()
+            } else {
+                format!("{}: See [{}]", condition, error_index)
+            }
+        }
+        None => condition.to_owned(),
     }
 }
 

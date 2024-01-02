@@ -58,7 +58,7 @@ export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
     /** @description This struct describes a demo with the v2 spec */
-    DemoSpecV2: {
+    DemoSpec: {
       /** @description A short description of the demo */
       description: string;
       /** @description An optional link to a documentation page */
@@ -92,7 +92,10 @@ export interface components {
       name: string;
       namespace: string;
     };
-    /** @description Parameter descibes a common parameter format. This format is used in demo and stack definitions */
+    /**
+     * @description Parameter descibes a common parameter format. This format is used in demo
+     * and stack definitions.
+     */
     Parameter: {
       /** @description Parameter default value */
       default: string;
@@ -101,12 +104,15 @@ export interface components {
       /** @description Parameter name */
       name: string;
     };
+    ProductSpec: {
+      operatorVersion: string;
+    };
     ReleaseSpec: {
       /** @description A short description of this release */
       description: string;
       /** @description List of products and their version in this release */
       products: {
-        [key: string]: components["schemas"]["ProductSpec"];
+        [key: string]: components["schemas"]["product.ProductSpec"];
       };
       /** @description Date this released was released */
       releaseDate: string;
@@ -128,7 +134,7 @@ export interface components {
     SessionToken: string;
     Stacklet: {
       /** @description Multiple cluster conditions. */
-      conditions: components["schemas"]["DisplayCondition"][];
+      conditions: components["schemas"]["k8s.DisplayCondition"][];
       /**
        * @description Endpoint addresses the product is reachable at.
        * The key is the service name (e.g. `web-ui`), the value is the URL.

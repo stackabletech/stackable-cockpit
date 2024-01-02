@@ -14,7 +14,7 @@ fine, but you can also look at the chapter xref:customization/add-release.adoc[]
 == 1. Create a stacks.yaml
 
 For a custom stack you need to create a `mycorp-stacks.yaml` containing stacks according to the format defined by
-https://github.com/stackabletech/stackablectl/blob/main/stacks/stacks-v1.yaml[the Stackable provided stacks].
+https://github.com/stackabletech/demos/blob/main/stacks/stacks-v2.yaml[the Stackable provided stacks].
 
 As of writing a `stacks.yaml` file could look as follows:
 

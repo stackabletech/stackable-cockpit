@@ -1,5 +1,5 @@
 use axum::{extract::Path, routing::get, Json, Router};
-use stackable_cockpit::platform::stack::StackSpecV2;
+use stackable_cockpit::platform::stack::StackSpec;
 
 /// Creates the stack sub-router.
 pub fn router() -> Router {
@@ -9,11 +9,11 @@ pub fn router() -> Router {
 }
 
 /// Retrieves all stacks.
-pub async fn get_stacks() -> Json<Vec<StackSpecV2>> {
+pub async fn get_stacks() -> Json<Vec<StackSpec>> {
     todo!()
 }
 
 /// Retrieves one stack identified by `stack_name`.
-pub async fn get_stack(Path(_stack_name): Path<String>) -> Json<StackSpecV2> {
+pub async fn get_stack(Path(_stack_name): Path<String>) -> Json<StackSpec> {
     todo!()
 }

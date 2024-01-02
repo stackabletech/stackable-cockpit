@@ -3,16 +3,16 @@ use snafu::{ensure, ResultExt, Snafu};
 
 use stackable_cockpit::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
-    engine::{KindCluster, KindClusterError, MinikubeCluster, MinikubeClusterError},
+    engine::{kind, minikube},
 };
 
 #[derive(Debug, Snafu)]
 pub enum CommonClusterArgsError {
-    #[snafu(display("failed to create kind cluster"))]
-    KindClusterError { source: KindClusterError },
+    #[snafu(display("failed to create Kind cluster"))]
+    KindClusterCreate { source: kind::Error },
 
-    #[snafu(display("minikube cluster error"))]
-    MinikubeClusterError { source: MinikubeClusterError },
+    #[snafu(display("failed to create Minikube cluster"))]
+    MinikubeClusterCreate { source: minikube::Error },
 
     #[snafu(display(
         "invalid total node count - at least two nodes in total are needed to run a local cluster"
@@ -87,20 +87,20 @@ impl CommonClusterArgs {
                 match cluster_type {
                     ClusterType::Kind => {
                         let kind_cluster =
-                            KindCluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
+                            kind::Cluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
 
                         kind_cluster
                             .create_if_not_exists()
                             .await
-                            .context(KindClusterSnafu)
+                            .context(KindClusterCreateSnafu)
                     }
                     ClusterType::Minikube => {
-                        let minikube_cluster = MinikubeCluster::new(self.cluster_nodes, name);
+                        let minikube_cluster = minikube::Cluster::new(self.cluster_nodes, name);
 
                         minikube_cluster
                             .create_if_not_exists()
                             .await
-                            .context(MinikubeClusterSnafu)
+                            .context(MinikubeClusterCreateSnafu)
                     }
                 }
             }
