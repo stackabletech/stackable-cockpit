@@ -4,12 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [23.11.3] - 2024-01-03
+
 ### Fixed
 
 - Fix `stackablectl release uninstall` command. It now deletes the operators included in the selected release correctly
   ([#174]).
 
 [#174]: https://github.com/stackabletech/stackable-cockpit/pull/174
+
+### CI
+
+- Fix GitHub workflow syntax ([#175]).
+
+[#175]: https://github.com/stackabletech/stackable-cockpit/pull/175
 
 ## [23.11.2] - 2024-01-02
 
