@@ -145,7 +145,7 @@ impl ReleaseArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip(cli, release_list))]
 async fn list_cmd(
     args: &ReleaseListArgs,
     cli: &Cli,
@@ -199,7 +199,7 @@ async fn list_cmd(
     }
 }
 
-#[instrument]
+#[instrument(skip(cli, release_list))]
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     cli: &Cli,
@@ -260,14 +260,12 @@ async fn describe_cmd(
     }
 }
 
-#[instrument]
+#[instrument(skip(cli, release_list))]
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
     release_list: release::List,
 ) -> Result<String, CmdError> {
-    info!("Installing release");
-
     match release_list.get(&args.release) {
         Some(release) => {
             let mut output = cli.result();
@@ -306,13 +304,12 @@ async fn install_cmd(
     }
 }
 
+#[instrument(skip(cli, release_list))]
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     cli: &Cli,
     release_list: release::List,
 ) -> Result<String, CmdError> {
-    info!("Installing release");
-
     match release_list.get(&args.release) {
         Some(release) => {
             release

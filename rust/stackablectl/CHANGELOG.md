@@ -4,13 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `stackablectl release uninstall` command. It now deletes the operators included in the selected release correctly
+  ([#173]).
+
+[#173]: https://github.com/stackabletech/stackable-cockpit/pull/173
+
 ## [23.11.2] - 2024-01-02
 
 ### Changed
 
-- Bumped Rust version from `1.74.0` to `1.75.0` ([#172]).
-- Bumped Rust and Go dependencies ([#135], [#162], [#167], [#168], [#170]).
-- Renamed old output style `plain` to `table`. The new output option `plain` will output a reduced view (which removes
+- Bump Rust version from `1.74.0` to `1.75.0` ([#172]).
+- Bump Rust and Go dependencies ([#135], [#162], [#167], [#168], [#170]).
+- Rename old output style `plain` to `table`. The new output option `plain` will output a reduced view (which removes
   borders from tables for example) ([#142], [#163]).
 
 [#135]: https://github.com/stackabletech/stackable-cockpit/pull/135
@@ -36,6 +43,6 @@ First official release of the `stackablectl` rewrite.
 
 ### Changed
 
-- Bumped Rust version from `1.73.0` to `1.74.0` ([#151]).
+- Bump Rust version from `1.73.0` to `1.74.0` ([#151]).
 
 [#151]: https://github.com/stackabletech/stackable-cockpit/pull/151
