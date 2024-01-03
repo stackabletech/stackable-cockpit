@@ -192,7 +192,7 @@ pub async fn get_endpoint_urls_for_loadbalancer(
         .as_ref()
         .and_then(|s| s.load_balancer.as_ref())
         .and_then(|l| l.ingress.as_ref())
-        .and_then(|l| l.get(0));
+        .and_then(|l| l.first());
 
     if let Some(lb_host) = lb_host {
         let lb_host = lb_host.hostname.as_ref().or(lb_host.ip.as_ref());
