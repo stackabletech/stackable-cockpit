@@ -55,7 +55,7 @@ impl ReleaseSpec {
         info!("Installing release");
 
         for (product_name, product) in self.filter_products(include_products, exclude_products) {
-            info!("Installing {}-operator", product_name);
+            info!("Installing {product_name}-operator");
 
             // Create operator spec
             let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
@@ -73,7 +73,7 @@ impl ReleaseSpec {
         info!("Uninstalling release");
 
         for (product_name, product_spec) in &self.products {
-            info!("Uninstalling {}-operator", product_name);
+            info!("Uninstalling {product_name}-operator");
 
             // Create operator spec
             let operator = OperatorSpec::new(product_name, Some(product_spec.version.clone()))
