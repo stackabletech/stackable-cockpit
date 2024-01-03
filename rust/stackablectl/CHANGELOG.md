@@ -7,9 +7,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - Fix `stackablectl release uninstall` command. It now deletes the operators included in the selected release correctly
-  ([#173]).
+  ([#174]).
 
-[#173]: https://github.com/stackabletech/stackable-cockpit/pull/173
+[#174]: https://github.com/stackabletech/stackable-cockpit/pull/174
 
 ## [23.11.2] - 2024-01-02
 
