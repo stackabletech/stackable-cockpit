@@ -282,7 +282,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     info!("Installing operator(s)");
 
     args.local_cluster
-        .install_if_needed(None)
+        .install_if_needed()
         .await
         .context(CommonClusterArgsSnafu)?;
 

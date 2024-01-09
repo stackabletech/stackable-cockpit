@@ -5,7 +5,6 @@ use tokio::{io::AsyncWriteExt, process::Command};
 use tracing::{debug, info, instrument};
 
 use crate::{
-    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     engine::{
         docker::{self, check_if_docker_is_running},
         kind::config::Config,
@@ -56,11 +55,11 @@ impl Cluster {
     /// system, but instead will return a data structure representing the
     /// cluster. To actually create the cluster, the `create` method must be
     /// called.
-    pub fn new(node_count: usize, cp_node_count: usize, name: Option<String>) -> Self {
+    pub fn new(node_count: usize, cp_node_count: usize, name: String) -> Self {
         Self {
-            name: name.unwrap_or(DEFAULT_LOCAL_CLUSTER_NAME.into()),
             cp_node_count,
             node_count,
+            name,
         }
     }
 

@@ -3,7 +3,6 @@ use tokio::process::Command;
 use tracing::{debug, info, instrument};
 
 use crate::{
-    constants::DEFAULT_LOCAL_CLUSTER_NAME,
     engine::docker::{self, check_if_docker_is_running},
     utils::check::binaries_present_with_name,
 };
@@ -37,11 +36,8 @@ pub struct Cluster {
 impl Cluster {
     /// Create a new kind cluster. This will NOT yet create the cluster on the system, but instead will return a data
     /// structure representing the cluster. To actually create the cluster, the `create` method must be called.
-    pub fn new(node_count: usize, name: Option<String>) -> Self {
-        Self {
-            name: name.unwrap_or(DEFAULT_LOCAL_CLUSTER_NAME.into()),
-            node_count,
-        }
+    pub fn new(node_count: usize, name: String) -> Self {
+        Self { node_count, name }
     }
 
     /// Create a new local cluster by calling the Minikube binary
