@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix `--cluster-name` not taking effect. The local test clusters always used the default cluster name ([#181]).
+
+[#181]: https://github.com/stackabletech/stackable-cockpit/pull/181
+
 ## [23.11.3] - 2024-01-03
 
 ### Fixed
