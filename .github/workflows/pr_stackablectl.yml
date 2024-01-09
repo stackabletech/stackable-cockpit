@@ -14,7 +14,7 @@ on:
       - "extra/**"
 
 env:
-  RUST_VERSION: 1.74.0
+  RUST_VERSION: 1.75.0
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -67,13 +67,13 @@ jobs:
         run: cargo build --target ${{ matrix.target }} -p stackablectl
 
       - name: Ensure shell completions up-to-date
-        if: matrix.os = 'x86_64-unknown-linux-gnu'
+        if: matrix.os == 'x86_64-unknown-linux-gnu'
         run: |
           cargo xtask gen-comp
           git diff --exit-code
 
       - name: Ensure man page is up-to-date
-        if: matrix.os = 'x86_64-unknown-linux-gnu'
+        if: matrix.os == 'x86_64-unknown-linux-gnu'
         run: |
           cargo xtask gen-man
           git diff --exit-code

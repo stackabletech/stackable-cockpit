@@ -1,7 +1,7 @@
 = Installation
 :page-aliases: stable@stackablectl::installation.adoc
 
-:latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-23.11.1
+:latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-23.11.3
 :fish-comp-loations: https://fishshell.com/docs/current/completions.html#where-to-put-completions
 
 == Using Pre-Compiled Binaries
@@ -17,9 +17,9 @@ rename the file to `stackablectl`. You can also use the following command:
 
 [source,console]
 ----
-wget -O stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.1/stackablectl-x86_64-unknown-linux-gnu
+wget -O stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.3/stackablectl-x86_64-unknown-linux-gnu
 # or
-curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.1/stackablectl-x86_64-unknown-linux-gnu
+curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.3/stackablectl-x86_64-unknown-linux-gnu
 ----
 
 Mark the binary as executable:
@@ -39,9 +39,9 @@ then rename the file to `stackablectl`. You can also use the following command:
 
 [source,console]
 ----
-wget -O stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.1/stackablectl-x86_64-apple-darwin
+wget -O stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.3/stackablectl-x86_64-apple-darwin
 # or
-wget -O stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.1/stackablectl-aarch64-apple-darwin
+wget -O stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-23.11.3/stackablectl-aarch64-apple-darwin
 ----
 
 Mark the binary as executable:

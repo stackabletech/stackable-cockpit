@@ -186,10 +186,12 @@ pub struct ChartVersion<'a> {
     pub chart_version: Option<&'a str>,
 }
 
-/// Installs a Helm release
+/// Installs a Helm release from a repo.
+///
+/// This function expects the fully qualified Helm release name. In case of our
+/// operators this is: `<PRODUCT_NAME>-operator`.
 #[instrument]
 pub fn install_release_from_repo(
-    operator_name: &str,
     release_name: &str,
     ChartVersion {
         repo_name,
@@ -258,6 +260,10 @@ pub fn install_release_from_repo(
     Ok(InstallReleaseStatus::Installed(release_name.to_string()))
 }
 
+/// Installs a Helm release.
+///
+/// This function expects the fully qualified Helm release name. In case of our
+/// operators this is: `<PRODUCT_NAME>-operator`.
 fn install_release(
     release_name: &str,
     chart_name: &str,
@@ -289,7 +295,10 @@ fn install_release(
     Ok(())
 }
 
-/// Uninstall a Helm release
+/// Uninstall a Helm release.
+///
+/// This function expects the fully qualified Helm release name. In case of our
+/// operators this is: `<PRODUCT_NAME>-operator`.
 #[instrument]
 pub fn uninstall_release(
     release_name: &str,

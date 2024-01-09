@@ -287,7 +287,6 @@ impl StackSpec {
                     // Install the Helm chart using the Helm wrapper
                     helm::install_release_from_repo(
                         &helm_chart.release_name,
-                        &helm_chart.release_name,
                         helm::ChartVersion {
                             repo_name: &helm_chart.repo.name,
                             chart_name: &helm_chart.name,
