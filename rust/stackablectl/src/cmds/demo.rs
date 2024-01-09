@@ -292,7 +292,7 @@ async fn install_cmd(
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None)
+        .install_if_needed()
         .await
         .context(CommonClusterArgsSnafu)?;
 

@@ -76,18 +76,18 @@ impl CommonClusterArgs {
     /// skips creation of the local cluster. If a cluster needs to be created,
     /// the function first validates cluster node counts. If this validation
     /// fails, an error is returned.
-    pub async fn install_if_needed(
-        &self,
-        name: Option<String>,
-    ) -> Result<(), CommonClusterArgsError> {
+    pub async fn install_if_needed(&self) -> Result<(), CommonClusterArgsError> {
         match &self.cluster_type {
             Some(cluster_type) => {
                 self.validate()?;
 
                 match cluster_type {
                     ClusterType::Kind => {
-                        let kind_cluster =
-                            kind::Cluster::new(self.cluster_nodes, self.cluster_cp_nodes, name);
+                        let kind_cluster = kind::Cluster::new(
+                            self.cluster_nodes,
+                            self.cluster_cp_nodes,
+                            self.cluster_name.clone(),
+                        );
 
                         kind_cluster
                             .create_if_not_exists()
@@ -95,7 +95,8 @@ impl CommonClusterArgs {
                             .context(KindClusterCreateSnafu)
                     }
                     ClusterType::Minikube => {
-                        let minikube_cluster = minikube::Cluster::new(self.cluster_nodes, name);
+                        let minikube_cluster =
+                            minikube::Cluster::new(self.cluster_nodes, self.cluster_name.clone());
 
                         minikube_cluster
                             .create_if_not_exists()
