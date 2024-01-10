@@ -9,7 +9,10 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{namespace, release, stack},
+    platform::{
+        namespace, release,
+        stack::{self, StackInstallParameters},
+    },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, Client},
 };
@@ -289,44 +292,19 @@ async fn install_cmd(
                 .await
                 .context(CommonClusterArgsSnafu)?;
 
-            // Check perquisites
+            let install_parameters = StackInstallParameters {
+                operator_namespace: operator_namespace.clone(),
+                product_namespace: product_namespace.clone(),
+                stack_name: args.stack_name.clone(),
+                skip_release: args.skip_release,
+                demo_name: None,
+            };
+
+            // TODO (Techassi): Add error variant, remove unused ones
             stack_spec
-                .check_prerequisites(&product_namespace)
+                .install(release_list, install_parameters, transfer_client)
                 .await
-                .context(StackInstallSnafu)?;
-
-            // Install release if not opted out
-            if !args.skip_release {
-                namespace::create_if_needed(operator_namespace.clone())
-                    .await
-                    .context(NamespaceCreateSnafu {
-                        namespace: operator_namespace.clone(),
-                    })?;
-
-                stack_spec
-                    .install_release(release_list, &operator_namespace, &product_namespace)
-                    .await
-                    .context(StackInstallSnafu)?;
-            } else {
-                info!("Skipping release installation during stack installation process");
-            }
-
-            // Create product namespace if needed
-            namespace::create_if_needed(product_namespace.clone())
-                .await
-                .context(NamespaceCreateSnafu {
-                    namespace: product_namespace.clone(),
-                })?;
-
-            // Install stack
-            stack_spec
-                .install_stack_manifests(
-                    &args.stack_parameters,
-                    &product_namespace,
-                    transfer_client,
-                )
-                .await
-                .context(StackInstallSnafu)?;
+                .unwrap();
 
             let operator_cmd = format!(
                 "stackablectl operator installed{}",

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kvp::Labels;
 use tracing::{debug, info, instrument, log::warn};
 
 #[cfg(feature = "openapi")]
@@ -13,7 +14,8 @@ use crate::{
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoParameter,
-        release,
+        namespace, release,
+        stack::StackInstallParameters,
     },
     utils::{
         k8s,
@@ -93,10 +95,16 @@ pub enum Error {
 
     /// This error indicates that the stack doesn't support being installed in
     /// the provided namespace.
-    #[snafu(display("cannot install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    #[snafu(display("unable install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,
+    },
+
+    #[snafu(display("failed to create namespace {namespace:?}"))]
+    CreateNamespace {
+        source: namespace::Error,
+        namespace: String,
     },
 }
 
@@ -172,6 +180,48 @@ impl StackSpec {
                 }
             }
         }
+
+        Ok(())
+    }
+
+    // TODO (Techassi): Can we get rid of the release list and just use the release spec instead
+    pub async fn install(
+        &self,
+        release_list: release::List,
+        install_parameters: StackInstallParameters,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        // First, we check if the prerequisites are met
+        self.check_prerequisites(&install_parameters.product_namespace)
+            .await?;
+
+        // Second, we install the release if not opted out
+        if !install_parameters.skip_release {
+            namespace::create_if_needed(install_parameters.operator_namespace.clone())
+                .await
+                .context(CreateNamespaceSnafu {
+                    namespace: install_parameters.operator_namespace.clone(),
+                })?;
+
+            self.install_release(
+                release_list,
+                &install_parameters.operator_namespace,
+                &install_parameters.product_namespace,
+            )
+            .await?;
+        }
+
+        // Next, create the product namespace if needed
+        namespace::create_if_needed(install_parameters.product_namespace.clone())
+            .await
+            .context(CreateNamespaceSnafu {
+                namespace: install_parameters.product_namespace.clone(),
+            })?;
+
+        // Finally install the stack manifests
+        // TODO (Techassi): Pass the correct parameters
+        self.install_stack_manifests(&[], &install_parameters.product_namespace, transfer_client)
+            .await?;
 
         Ok(())
     }
@@ -318,8 +368,11 @@ impl StackSpec {
 
                     let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
 
+                    // TODO (Techassi): Introduce StackInstallParameters which
+                    // contain ALL required information to install a stack, for
+                    // example also if it is installed as part of a demo
                     kube_client
-                        .deploy_manifests(&manifests, product_namespace)
+                        .deploy_manifests(&manifests, product_namespace, Labels::new())
                         .await
                         .context(ManifestDeploySnafu)?
                 }

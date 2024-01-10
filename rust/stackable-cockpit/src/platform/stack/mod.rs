@@ -1,7 +1,10 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
+mod params;
 mod spec;
+
+pub use params::*;
 pub use spec::*;
 
 use crate::common::list::SpecIter;
