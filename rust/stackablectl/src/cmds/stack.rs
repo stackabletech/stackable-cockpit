@@ -134,7 +134,7 @@ impl StackArgs {
 
         let transfer_client = Client::new_with(cache);
         let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
-        let stack_list = stack::List::build(&files, &transfer_client)
+        let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
 
@@ -149,7 +149,11 @@ impl StackArgs {
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<String, CmdError> {
+fn list_cmd(
+    args: &StackListArgs,
+    cli: &Cli,
+    stack_list: stack::StackList,
+) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -198,7 +202,7 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,
-    stack_list: stack::List,
+    stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
@@ -260,13 +264,13 @@ fn describe_cmd(
 async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
-    stack_list: stack::List,
+    stack_list: stack::StackList,
     transfer_client: &Client,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-    let release_list = release::List::build(&files, transfer_client)
+    let release_list = release::ReleaseList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
 

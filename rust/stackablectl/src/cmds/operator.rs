@@ -26,6 +26,10 @@ use crate::{
     utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
+const INSTALL_AFTER_HELP_TEXT: &str = "Examples:
+
+Use \"stackablectl operator install <OPERATOR> -c <OPTION>\" to create a local cluster";
+
 #[derive(Debug, Args)]
 pub struct OperatorArgs {
     #[command(subcommand)]
@@ -43,7 +47,7 @@ pub enum OperatorCommands {
     Describe(OperatorDescribeArgs),
 
     /// Install one or more operators
-    #[command(aliases(["i", "in"]))]
+    #[command(aliases(["i", "in"]), after_help = INSTALL_AFTER_HELP_TEXT)]
     Install(OperatorInstallArgs),
 
     /// Uninstall one or more operators

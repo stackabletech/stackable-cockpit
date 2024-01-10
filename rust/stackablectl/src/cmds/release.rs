@@ -128,7 +128,7 @@ impl ReleaseArgs {
 
         let transfer_client = Client::new_with(cache);
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-        let release_list = release::List::build(&files, &transfer_client)
+        let release_list = release::ReleaseList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
 
@@ -149,7 +149,7 @@ impl ReleaseArgs {
 async fn list_cmd(
     args: &ReleaseListArgs,
     cli: &Cli,
-    release_list: release::List,
+    release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
 
@@ -203,7 +203,7 @@ async fn list_cmd(
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     cli: &Cli,
-    release_list: release::List,
+    release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Describing release");
 
@@ -264,7 +264,7 @@ async fn describe_cmd(
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
-    release_list: release::List,
+    release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     match release_list.get(&args.release) {
         Some(release) => {
@@ -308,7 +308,7 @@ async fn install_cmd(
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     cli: &Cli,
-    release_list: release::List,
+    release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     match release_list.get(&args.release) {
         Some(release) => {

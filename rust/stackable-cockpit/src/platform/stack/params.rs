@@ -1,3 +1,4 @@
+#[derive(Debug)]
 pub struct StackInstallParameters {
     pub demo_name: Option<String>,
     pub stack_name: String,

@@ -23,4 +23,4 @@ impl SpecIter<StackSpec> for StacksV2 {
     }
 }
 
-pub type List = crate::common::list::List<StacksV2, StackSpec>;
+pub type StackList = crate::common::list::List<StacksV2, StackSpec>;

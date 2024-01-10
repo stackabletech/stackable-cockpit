@@ -1,6 +1,7 @@
 pub mod cluster;
 pub mod credentials;
 pub mod demo;
+pub mod manifests;
 pub mod namespace;
 pub mod operator;
 pub mod product;

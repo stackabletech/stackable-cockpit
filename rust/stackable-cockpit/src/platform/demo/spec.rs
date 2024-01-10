@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, instrument, warn};
+use tracing::{debug, info, instrument, warn};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -9,11 +9,14 @@ use crate::{
     common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
-        release::List,
-        stack,
+        manifests::InstallManifestsExt,
+        release::ReleaseList,
+        stack::{self, StackInstallParameters, StackList},
     },
-    utils::params::{Parameter, RawParameter, RawParameterParseError},
-    xfer::Client,
+    utils::params::{
+        IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+    },
+    xfer::{self, Client},
 };
 
 pub type RawDemoParameterParseError = RawParameterParseError;
@@ -45,7 +48,14 @@ pub enum Error {
         requested: String,
         supported: Vec<String>,
     },
+
+    /// This error indicates that parsing a string into stack / demo parameters
+    /// failed.
+    #[snafu(display("failed to parse demo / stack parameters"))]
+    ParameterParse { source: IntoParametersError },
 }
+
+impl InstallManifestsExt for DemoSpec {}
 
 /// This struct describes a demo with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -124,8 +134,8 @@ impl DemoSpec {
     #[allow(clippy::too_many_arguments)]
     pub async fn install(
         &self,
-        stack_list: stack::List,
-        release_list: List,
+        stack_list: StackList,
+        release_list: ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
         stack_parameters: &[String],
@@ -138,40 +148,57 @@ impl DemoSpec {
             name: self.stack.clone(),
         })?;
 
-        // Check stack prerequisites
-        stack_spec
-            .check_prerequisites(product_namespace)
-            .await
-            .context(StackPrerequisitesSnafu)?;
+        // Check stack prerequisites stack_spec .check_prerequisites(product_namespace) .await .context(StackPrerequisitesSnafu)?;
 
         // Check demo prerequisites
         self.check_prerequisites(product_namespace).await?;
 
-        // Install release if not opted out
-        if !skip_release {
-            stack_spec
-                .install_release(release_list, operator_namespace, product_namespace)
-                .await
-                .context(StackInstallReleaseSnafu)?;
-        }
+        let install_parameters = StackInstallParameters {
+            operator_namespace: operator_namespace.to_owned(),
+            product_namespace: product_namespace.to_owned(),
+            stack_name: self.stack.clone(),
+            demo_name: None,
+            skip_release,
+        };
 
-        // Install stack
         stack_spec
-            .install_stack_manifests(stack_parameters, product_namespace, transfer_client)
+            .install(release_list, install_parameters, transfer_client)
             .await
-            .context(InstallStackManifestsSnafu)?;
+            .unwrap();
 
         // Install demo manifests
-        stack_spec
-            .install_demo_manifests(
-                &self.manifests,
-                &self.parameters,
-                demo_parameters,
-                product_namespace,
-                transfer_client,
-            )
+        self.prepare_manifests(
+            &self.manifests,
+            &self.parameters,
+            demo_parameters,
+            product_namespace,
+            transfer_client,
+        )
+        .await?;
+
+        Ok(())
+    }
+
+    #[instrument(skip_all)]
+    async fn prepare_manifests(
+        &self,
+        manifests: &Vec<ManifestSpec>,
+        valid_demo_parameters: &[DemoParameter],
+        demo_parameters: &[String],
+        product_namespace: &str,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        info!("Installing demo manifests");
+
+        let parameters = demo_parameters
+            .to_owned()
+            .into_params(valid_demo_parameters)
+            .context(ParameterParseSnafu)?;
+
+        // TODO (Techassi): Remove unwrap
+        Self::install_manifests(manifests, &parameters, product_namespace, transfer_client)
             .await
-            .context(InstallDemoManifestsSnafu)?;
+            .unwrap();
 
         Ok(())
     }

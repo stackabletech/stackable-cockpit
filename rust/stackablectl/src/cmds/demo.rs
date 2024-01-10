@@ -280,13 +280,13 @@ async fn install_cmd(
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
-    let stack_list = stack::List::build(&files, transfer_client)
+    let stack_list = stack::StackList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
 
-    let release_list = release::List::build(&files, transfer_client)
+    let release_list = release::ReleaseList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
 
