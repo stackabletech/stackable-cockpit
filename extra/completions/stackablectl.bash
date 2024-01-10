@@ -962,11 +962,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -1204,11 +1204,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -1762,11 +1762,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -2012,11 +2012,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --operator-namespace)
@@ -2086,11 +2086,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -2276,11 +2276,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -2528,11 +2528,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -2718,11 +2718,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -2960,11 +2960,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -3210,11 +3210,11 @@ _stackablectl() {
             fi
             case "${prev}" in
                 --output)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 -o)
-                    COMPREPLY=($(compgen -W "plain json yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
                 --operator-namespace)

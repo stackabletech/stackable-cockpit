@@ -175,13 +175,17 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
     let versions_list = build_versions_list(&helm_index_files)?;
 
     match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
+        OutputType::Plain | OutputType::Table => {
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
+            let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["#", "OPERATOR", "STABLE VERSIONS"])
-                .load_preset(UTF8_FULL);
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (index, (operator_name, versions)) in versions_list.iter().enumerate() {
                 let versions_string = match versions.0.get(HELM_REPO_NAME_STABLE) {
@@ -226,7 +230,12 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     let versions_list = build_versions_list_for_operator(&args.operator_name, &helm_index_files)?;
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Plain | OutputType::Table => {
+            let arrangement = match args.output_type {
+                OutputType::Plain => ContentArrangement::Disabled,
+                _ => ContentArrangement::Dynamic,
+            };
+
             let stable_versions_string = match versions_list.0.get(HELM_REPO_NAME_STABLE) {
                 Some(v) => v.join(", "),
                 None => "".into(),
@@ -244,7 +253,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
             let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
+                .set_content_arrangement(arrangement)
                 .load_preset(NOTHING)
                 .add_row(vec!["OPERATOR", &args.operator_name.to_string()])
                 .add_row(vec!["STABLE VERSIONS", stable_versions_string.as_str()])
@@ -273,7 +282,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     info!("Installing operator(s)");
 
     args.local_cluster
-        .install_if_needed(None)
+        .install_if_needed()
         .await
         .context(CommonClusterArgsSnafu)?;
 
@@ -359,23 +368,28 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
         .collect();
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Plain | OutputType::Table => {
             if installed.is_empty() {
                 return Ok("No installed operators".into());
             }
 
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
+
             let mut table = Table::new();
 
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
-                .load_preset(UTF8_FULL)
                 .set_header(vec![
                     "OPERATOR",
                     "VERSION",
                     "NAMESPACE",
                     "STATUS",
                     "LAST UPDATED",
-                ]);
+                ])
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (release_name, release) in installed {
                 table.add_row(vec![

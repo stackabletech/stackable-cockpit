@@ -150,13 +150,17 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<
     info!("Listing stacks");
 
     match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
+        OutputType::Plain | OutputType::Table => {
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
+            let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["#", "STACK", "RELEASE", "DESCRIPTION"])
-                .load_preset(UTF8_FULL);
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
                 table.add_row(vec![
@@ -197,14 +201,19 @@ fn describe_cmd(
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
-            OutputType::Plain => {
+            OutputType::Plain | OutputType::Table => {
+                let arrangement = match args.output_type {
+                    OutputType::Plain => ContentArrangement::Disabled,
+                    _ => ContentArrangement::Dynamic,
+                };
+
                 let mut table = Table::new();
 
                 let mut parameter_table = Table::new();
 
                 parameter_table
                     .set_header(vec!["NAME", "DESCRIPTION", "DEFAULT VALUE"])
-                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_content_arrangement(arrangement.clone())
                     .load_preset(NOTHING);
 
                 for parameter in &stack.parameters {
@@ -216,7 +225,7 @@ fn describe_cmd(
                 }
 
                 table
-                    .set_content_arrangement(ContentArrangement::Dynamic)
+                    .set_content_arrangement(arrangement)
                     .load_preset(NOTHING)
                     .add_row(vec!["STACK", args.stack_name.as_str()])
                     .add_row(vec!["DESCRIPTION", stack.description.as_str()])
@@ -276,7 +285,7 @@ async fn install_cmd(
 
             // Install local cluster if needed
             args.local_cluster
-                .install_if_needed(None)
+                .install_if_needed()
                 .await
                 .context(CommonClusterArgsSnafu)?;
 

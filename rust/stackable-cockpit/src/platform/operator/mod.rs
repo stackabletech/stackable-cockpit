@@ -185,7 +185,6 @@ impl OperatorSpec {
 
         // Install using Helm
         helm::install_release_from_repo(
-            &self.name,
             &helm_name,
             helm::ChartVersion {
                 chart_version: version.as_deref(),

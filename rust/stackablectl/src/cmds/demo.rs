@@ -167,13 +167,17 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
     info!("Listing demos");
 
     match args.output_type {
-        OutputType::Plain => {
-            let mut table = Table::new();
+        OutputType::Plain | OutputType::Table => {
+            let (arrangement, preset) = match args.output_type {
+                OutputType::Plain => (ContentArrangement::Disabled, NOTHING),
+                _ => (ContentArrangement::Dynamic, UTF8_FULL),
+            };
 
+            let mut table = Table::new();
             table
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .set_header(vec!["#", "NAME", "STACK", "DESCRIPTION"])
-                .load_preset(UTF8_FULL);
+                .set_content_arrangement(arrangement)
+                .load_preset(preset);
 
             for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
                 let row = Row::from(vec![
@@ -219,11 +223,16 @@ async fn describe_cmd(
     })?;
 
     match args.output_type {
-        OutputType::Plain => {
+        OutputType::Plain | OutputType::Table => {
+            let arrangement = match args.output_type {
+                OutputType::Plain => ContentArrangement::Disabled,
+                _ => ContentArrangement::Dynamic,
+            };
+
             let mut table = Table::new();
             table
+                .set_content_arrangement(arrangement)
                 .load_preset(NOTHING)
-                .set_content_arrangement(ContentArrangement::Dynamic)
                 .add_row(vec!["DEMO", &args.demo_name])
                 .add_row(vec!["DESCRIPTION", &demo.description])
                 .add_row_if(
@@ -283,7 +292,7 @@ async fn install_cmd(
 
     // Install local cluster if needed
     args.local_cluster
-        .install_if_needed(None)
+        .install_if_needed()
         .await
         .context(CommonClusterArgsSnafu)?;
 

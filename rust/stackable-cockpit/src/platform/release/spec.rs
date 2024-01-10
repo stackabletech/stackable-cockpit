@@ -8,7 +8,10 @@ use utoipa::ToSchema;
 
 use crate::{
     helm,
-    platform::{operator, product},
+    platform::{
+        operator::{self, OperatorSpec},
+        product,
+    },
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -52,10 +55,10 @@ impl ReleaseSpec {
         info!("Installing release");
 
         for (product_name, product) in self.filter_products(include_products, exclude_products) {
-            info!("Installing product {}", product_name);
+            info!("Installing {product_name}-operator");
 
             // Create operator spec
-            let operator = operator::OperatorSpec::new(product_name, Some(product.version.clone()))
+            let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
                 .context(OperatorSpecParseSnafu)?;
 
             // Install operator
@@ -65,9 +68,20 @@ impl ReleaseSpec {
         Ok(())
     }
 
+    #[instrument(skip_all)]
     pub fn uninstall(&self, namespace: &str) -> Result<()> {
-        for (product_name, _) in &self.products {
-            helm::uninstall_release(product_name, namespace, true).context(HelmUninstallSnafu)?;
+        info!("Uninstalling release");
+
+        for (product_name, product_spec) in &self.products {
+            info!("Uninstalling {product_name}-operator");
+
+            // Create operator spec
+            let operator = OperatorSpec::new(product_name, Some(product_spec.version.clone()))
+                .context(OperatorSpecParseSnafu)?;
+
+            // Uninstall operator
+            helm::uninstall_release(&operator.helm_name(), namespace, true)
+                .context(HelmUninstallSnafu)?;
         }
 
         Ok(())
