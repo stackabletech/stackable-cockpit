@@ -8494,7 +8494,7 @@ rec {
       };
       "stackablectl" = rec {
         crateName = "stackablectl";
-        version = "23.11.0";
+        version = "23.11.3";
         edition = "2021";
         crateBin = [
           {
@@ -10197,10 +10197,10 @@ rec {
       };
       "unsafe-libyaml" = rec {
         crateName = "unsafe-libyaml";
-        version = "0.2.9";
+        version = "0.2.10";
         edition = "2021";
         crateBin = [];
-        sha256 = "1yjwnz124wp1fhj075rdqkz00n2gahzj9yi5ixnmiinkw79ng17j";
+        sha256 = "0jsyc1kqc536wpgx1js61lwj86crniqw16lyvh02va4m1f9r0k5b";
         authors = [
           "David Tolnay <dtolnay@gmail.com>"
         ];
@@ -12248,9 +12248,9 @@ rec {
       };
       "zerocopy" = rec {
         crateName = "zerocopy";
-        version = "0.7.25";
+        version = "0.7.31";
         edition = "2018";
-        sha256 = "0mv5w4fq1kcpw1ydcb5cvr8zdms5pqy0r60g04ayzpqfgjk6klwc";
+        sha256 = "0gcfyrmlrhmsz16qxjp2qzr6vixyaw1p04zl28f08lxkvfz62h0w";
         authors = [
           "Joshua Liebow-Feeser <joshlf@google.com>"
         ];
@@ -12284,9 +12284,9 @@ rec {
       };
       "zerocopy-derive" = rec {
         crateName = "zerocopy-derive";
-        version = "0.7.25";
+        version = "0.7.31";
         edition = "2018";
-        sha256 = "0svxr32pp4lav1vjar127g2r09gpiajxn0yv1k66r8hrlayl1wf2";
+        sha256 = "06k0zk4x4n9s1blgxmxqb1g81y8q334aayx61gyy6v9y1dajkhdk";
         procMacro = true;
         authors = [
           "Joshua Liebow-Feeser <joshlf@google.com>"
