@@ -94,7 +94,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
-    let stacklets = list_stacklets(args.namespaces.product_namespace.as_deref())
+    let stacklets = list_stacklets(Some(&args.namespaces.product_namespace))
         .await
         .context(StackletListSnafu)?;
 

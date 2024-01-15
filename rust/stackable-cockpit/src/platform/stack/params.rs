@@ -1,3 +1,5 @@
+use stackable_operator::kvp::Labels;
+
 #[derive(Debug)]
 pub struct StackInstallParameters {
     pub demo_name: Option<String>,
@@ -6,5 +8,7 @@ pub struct StackInstallParameters {
     pub operator_namespace: String,
     pub product_namespace: String,
 
+    pub parameters: Vec<String>,
     pub skip_release: bool,
+    pub labels: Labels,
 }

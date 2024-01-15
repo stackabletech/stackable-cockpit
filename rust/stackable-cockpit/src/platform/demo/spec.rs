@@ -9,6 +9,7 @@ use crate::{
     common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
+        demo::DemoInstallParameters,
         manifests::InstallManifestsExt,
         release::ReleaseList,
         stack::{self, StackInstallParameters, StackList},
@@ -131,50 +132,40 @@ impl DemoSpec {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub async fn install(
         &self,
         stack_list: StackList,
         release_list: ReleaseList,
-        operator_namespace: &str,
-        product_namespace: &str,
-        stack_parameters: &[String],
-        demo_parameters: &[String],
+        install_parameters: DemoInstallParameters,
         transfer_client: &Client,
-        skip_release: bool,
     ) -> Result<(), Error> {
         // Get the stack spec based on the name defined in the demo spec
-        let stack_spec = stack_list.get(&self.stack).context(NoSuchStackSnafu {
+        let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
             name: self.stack.clone(),
         })?;
 
-        // Check stack prerequisites stack_spec .check_prerequisites(product_namespace) .await .context(StackPrerequisitesSnafu)?;
-
         // Check demo prerequisites
-        self.check_prerequisites(product_namespace).await?;
+        self.check_prerequisites(&install_parameters.product_namespace)
+            .await?;
 
-        let install_parameters = StackInstallParameters {
-            operator_namespace: operator_namespace.to_owned(),
-            product_namespace: product_namespace.to_owned(),
+        let stack_install_parameters = StackInstallParameters {
+            operator_namespace: install_parameters.operator_namespace.clone(),
+            product_namespace: install_parameters.product_namespace.clone(),
+            parameters: install_parameters.stack_parameters.clone(),
+            labels: install_parameters.stack_labels.clone(),
+            skip_release: install_parameters.skip_release,
             stack_name: self.stack.clone(),
             demo_name: None,
-            skip_release,
         };
 
-        stack_spec
-            .install(release_list, install_parameters, transfer_client)
+        stack
+            .install(release_list, stack_install_parameters, transfer_client)
             .await
             .unwrap();
 
         // Install demo manifests
-        self.prepare_manifests(
-            &self.manifests,
-            &self.parameters,
-            demo_parameters,
-            product_namespace,
-            transfer_client,
-        )
-        .await?;
+        self.prepare_manifests(install_parameters, transfer_client)
+            .await?;
 
         Ok(())
     }
@@ -182,23 +173,27 @@ impl DemoSpec {
     #[instrument(skip_all)]
     async fn prepare_manifests(
         &self,
-        manifests: &Vec<ManifestSpec>,
-        valid_demo_parameters: &[DemoParameter],
-        demo_parameters: &[String],
-        product_namespace: &str,
+        install_params: DemoInstallParameters,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
 
-        let parameters = demo_parameters
+        let params = install_params
+            .parameters
             .to_owned()
-            .into_params(valid_demo_parameters)
+            .into_params(&self.parameters)
             .context(ParameterParseSnafu)?;
 
         // TODO (Techassi): Remove unwrap
-        Self::install_manifests(manifests, &parameters, product_namespace, transfer_client)
-            .await
-            .unwrap();
+        Self::install_manifests(
+            &self.manifests,
+            &params,
+            &install_params.product_namespace,
+            install_params.labels,
+            transfer_client,
+        )
+        .await
+        .unwrap();
 
         Ok(())
     }

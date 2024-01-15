@@ -4,6 +4,7 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::Labels;
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
@@ -274,18 +275,6 @@ async fn install_cmd(
         .await
         .context(BuildListSnafu)?;
 
-    let product_namespace = args
-        .namespaces
-        .product_namespace
-        .clone()
-        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
-
-    let operator_namespace = args
-        .namespaces
-        .operator_namespace
-        .clone()
-        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
-
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
             let mut output = cli.result();
@@ -296,12 +285,22 @@ async fn install_cmd(
                 .await
                 .context(CommonClusterArgsSnafu)?;
 
+            // TODO (Techassi): Remove unwrap
+            let labels = Labels::try_from([
+                ("stackable.tech/managed-by", "stackablectl"),
+                ("stackable.tech/stack", &args.stack_name),
+                ("stackable.tech/vendor", "Stackable"),
+            ])
+            .unwrap();
+
             let install_parameters = StackInstallParameters {
-                operator_namespace: operator_namespace.clone(),
-                product_namespace: product_namespace.clone(),
+                operator_namespace: args.namespaces.operator_namespace.clone(),
+                product_namespace: args.namespaces.product_namespace.clone(),
                 stack_name: args.stack_name.clone(),
+                parameters: args.parameters.clone(),
                 skip_release: args.skip_release,
                 demo_name: None,
+                labels,
             };
 
             // TODO (Techassi): Add error variant, remove unused ones
@@ -312,8 +311,11 @@ async fn install_cmd(
 
             let operator_cmd = format!(
                 "stackablectl operator installed{}",
-                if args.namespaces.operator_namespace.is_some() {
-                    format!(" --operator-namespace {}", operator_namespace)
+                if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+                    format!(
+                        " --operator-namespace {}",
+                        args.namespaces.operator_namespace
+                    )
                 } else {
                     "".into()
                 }
@@ -321,8 +323,8 @@ async fn install_cmd(
 
             let stacklet_cmd = format!(
                 "stackablectl stacklet list{}",
-                if args.namespaces.product_namespace.is_some() {
-                    format!(" --product-namespace {}", product_namespace)
+                if args.namespaces.product_namespace != DEFAULT_PRODUCT_NAMESPACE {
+                    format!(" --product-namespace {}", args.namespaces.product_namespace)
                 } else {
                     "".into()
                 }

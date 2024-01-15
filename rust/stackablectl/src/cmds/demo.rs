@@ -4,12 +4,16 @@ use comfy_table::{
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::Labels;
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{demo, namespace, release, stack},
+    platform::{
+        demo::{self, DemoInstallParameters},
+        namespace, release, stack,
+    },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, Client},
 };
@@ -274,7 +278,7 @@ async fn install_cmd(
     // Init result output and progress output
     let mut output = cli.result();
 
-    let demo_spec = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
+    let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
 
@@ -285,7 +289,6 @@ async fn install_cmd(
         .context(BuildListSnafu)?;
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-
     let release_list = release::ReleaseList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
@@ -296,50 +299,46 @@ async fn install_cmd(
         .await
         .context(CommonClusterArgsSnafu)?;
 
-    let operator_namespace = args
-        .namespaces
-        .operator_namespace
-        .clone()
-        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
+    // TODO (Techassi): Remove unwrap
+    let labels = Labels::try_from([
+        ("stackable.tech/managed-by", "stackablectl"),
+        ("stackable.tech/demo", &args.demo_name),
+        ("stackable.tech/vendor", "Stackable"),
+    ])
+    .unwrap();
 
-    let product_namespace = args
-        .namespaces
-        .product_namespace
-        .clone()
-        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+    // TODO (Techassi): Remove unwrap
+    let mut stack_labels = labels.clone();
+    stack_labels
+        .parse_insert(("stackable.tech/stack", &demo.stack))
+        .unwrap();
 
-    if !args.skip_release {
-        namespace::create_if_needed(operator_namespace.clone())
-            .await
-            .context(NamespaceCreateSnafu {
-                namespace: operator_namespace.clone(),
-            })?;
-    }
+    let install_parameters = DemoInstallParameters {
+        operator_namespace: args.namespaces.operator_namespace.clone(),
+        product_namespace: args.namespaces.product_namespace.clone(),
+        stack_parameters: args.stack_parameters.clone(),
+        parameters: args.parameters.clone(),
+        skip_release: args.skip_release,
+        stack_labels,
+        labels,
+    };
 
-    namespace::create_if_needed(product_namespace.clone())
-        .await
-        .context(NamespaceCreateSnafu {
-            namespace: product_namespace.clone(),
-        })?;
-
-    demo_spec
-        .install(
-            stack_list,
-            release_list,
-            &operator_namespace,
-            &product_namespace,
-            &args.stack_parameters,
-            &args.parameters,
-            transfer_client,
-            args.skip_release,
-        )
-        .await
-        .context(DemoInstallSnafu)?;
+    demo.install(
+        stack_list,
+        release_list,
+        install_parameters,
+        transfer_client,
+    )
+    .await
+    .context(DemoInstallSnafu)?;
 
     let operator_cmd = format!(
         "stackablectl operator installed{}",
-        if args.namespaces.operator_namespace.is_some() {
-            format!(" --operator-namespace {}", operator_namespace)
+        if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+            format!(
+                " --operator-namespace {}",
+                args.namespaces.operator_namespace
+            )
         } else {
             "".into()
         }
@@ -347,8 +346,8 @@ async fn install_cmd(
 
     let stacklet_cmd = format!(
         "stackablectl stacklet list{}",
-        if args.namespaces.product_namespace.is_some() {
-            format!(" --product-namespace {}", product_namespace)
+        if args.namespaces.product_namespace != DEFAULT_PRODUCT_NAMESPACE {
+            format!(" --product-namespace {}", args.namespaces.product_namespace)
         } else {
             "".into()
         }

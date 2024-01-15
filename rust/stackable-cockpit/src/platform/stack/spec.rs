@@ -172,7 +172,7 @@ impl StackSpec {
 
         // Finally install the stack manifests
         // TODO (Techassi): Pass the correct parameters
-        self.prepare_manifests(&[], &install_parameters.product_namespace, transfer_client)
+        self.prepare_manifests(install_parameters, transfer_client)
             .await?;
 
         Ok(())
@@ -205,13 +205,13 @@ impl StackSpec {
     #[instrument(skip_all)]
     pub async fn prepare_manifests(
         &self,
-        parameters: &[String],
-        product_namespace: &str,
+        install_params: StackInstallParameters,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
 
-        let parameters = parameters
+        let parameters = install_params
+            .parameters
             .to_owned()
             .into_params(&self.parameters)
             .context(ParameterParseSnafu)?;
@@ -220,7 +220,8 @@ impl StackSpec {
         Self::install_manifests(
             &self.manifests,
             &parameters,
-            product_namespace,
+            &install_params.product_namespace,
+            install_params.labels,
             transfer_client,
         )
         .await

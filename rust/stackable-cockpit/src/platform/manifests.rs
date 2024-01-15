@@ -63,10 +63,12 @@ pub enum Error {
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fecthing them from remote
     #[instrument(skip_all)]
+    #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
         product_namespace: &str,
+        labels: Labels,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
@@ -139,7 +141,7 @@ pub trait InstallManifestsExt {
                     // contain ALL required information to install a stack, for
                     // example also if it is installed as part of a demo
                     kube_client
-                        .deploy_manifests(&manifests, product_namespace, Labels::new())
+                        .deploy_manifests(&manifests, product_namespace, labels.clone())
                         .await
                         .context(ManifestDeploySnafu)?
                 }
