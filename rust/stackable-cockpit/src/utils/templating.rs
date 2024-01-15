@@ -27,7 +27,7 @@ pub fn render(content: &str, parameters: &HashMap<String, String>) -> Result<Str
     tera.render_str(content, &context)
 }
 
-/// Internal helper function to retrieve value of type [`T`] from the `map` by
+/// Internal helper function to retrieve value of type `T` from the `map` by
 /// `key`. If the `key` is not present in the `map`, it returns an error.
 fn get_from_map<T>(map: &HashMap<String, Value>, key: &str) -> tera::Result<T>
 where
