@@ -10,7 +10,7 @@ use crate::{
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         demo::DemoInstallParameters,
-        manifests::InstallManifestsExt,
+        manifests::{self, InstallManifestsExt},
         release::ReleaseList,
         stack::{self, StackInstallParameters, StackList},
     },
@@ -29,18 +29,6 @@ pub enum Error {
     #[snafu(display("no stack named '{name}'"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("failed to install stack because some prerequisites failed"))]
-    StackPrerequisites { source: stack::Error },
-
-    #[snafu(display("failed to install release associated with stack"))]
-    StackInstallRelease { source: stack::Error },
-
-    #[snafu(display("failed to install stack manifests"))]
-    InstallStackManifests { source: stack::Error },
-
-    #[snafu(display("failed to install demo manifests"))]
-    InstallDemoManifests { source: stack::Error },
-
     #[snafu(display("demo resource requests error"), context(false))]
     DemoResourceRequests { source: ResourceRequestsError },
 
@@ -50,10 +38,14 @@ pub enum Error {
         supported: Vec<String>,
     },
 
-    /// This error indicates that parsing a string into stack / demo parameters
-    /// failed.
     #[snafu(display("failed to parse demo / stack parameters"))]
-    ParameterParse { source: IntoParametersError },
+    ParseParameters { source: IntoParametersError },
+
+    #[snafu(display("failed to install stack"))]
+    InstallStack { source: stack::Error },
+
+    #[snafu(display("failed to install stack manifests"))]
+    InstallManifests { source: manifests::Error },
 }
 
 impl InstallManifestsExt for DemoSpec {}
@@ -161,13 +153,11 @@ impl DemoSpec {
         stack
             .install(release_list, stack_install_parameters, transfer_client)
             .await
-            .unwrap();
+            .context(InstallStackSnafu)?;
 
         // Install demo manifests
         self.prepare_manifests(install_parameters, transfer_client)
-            .await?;
-
-        Ok(())
+            .await
     }
 
     #[instrument(skip_all)]
@@ -182,9 +172,8 @@ impl DemoSpec {
             .parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterParseSnafu)?;
+            .context(ParseParametersSnafu)?;
 
-        // TODO (Techassi): Remove unwrap
         Self::install_manifests(
             &self.manifests,
             &params,
@@ -193,9 +182,7 @@ impl DemoSpec {
             transfer_client,
         )
         .await
-        .unwrap();
-
-        Ok(())
+        .context(InstallManifestsSnafu)
     }
 
     fn supports_namespace(&self, namespace: impl Into<String>) -> bool {

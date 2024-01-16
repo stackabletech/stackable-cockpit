@@ -4,7 +4,7 @@ use comfy_table::{
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
-use stackable_operator::kvp::Labels;
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
@@ -12,7 +12,7 @@ use stackable_cockpit::{
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
         demo::{self, DemoInstallParameters},
-        namespace, release, stack,
+        release, stack,
     },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, Client},
@@ -126,20 +126,20 @@ pub enum CmdError {
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
 
-    #[snafu(display("failed to install demo"))]
-    DemoInstall { source: demo::Error },
-
     #[snafu(display("path/url parse error"))]
     PathOrUrlParse { source: PathOrUrlParseError },
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgs { source: CommonClusterArgsError },
+    #[snafu(display("failed to install local cluster"))]
+    InstallCluster { source: CommonClusterArgsError },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceCreate {
-        source: namespace::Error,
-        namespace: String,
+    #[snafu(display("failed to install demo {demo_name:?}"))]
+    InstallDemo {
+        source: demo::Error,
+        demo_name: String,
     },
+
+    #[snafu(display("failed to build labels for demo resources"))]
+    BuildLabels { source: LabelError },
 }
 
 impl DemoArgs {
@@ -297,21 +297,21 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed()
         .await
-        .context(CommonClusterArgsSnafu)?;
+        .context(InstallClusterSnafu)?;
 
-    // TODO (Techassi): Remove unwrap
+    // Construct labels which get attached to all dynamic objects which
+    // are part of the demo and stack.
     let labels = Labels::try_from([
         ("stackable.tech/managed-by", "stackablectl"),
         ("stackable.tech/demo", &args.demo_name),
         ("stackable.tech/vendor", "Stackable"),
     ])
-    .unwrap();
+    .context(BuildLabelsSnafu)?;
 
-    // TODO (Techassi): Remove unwrap
     let mut stack_labels = labels.clone();
     stack_labels
         .parse_insert(("stackable.tech/stack", &demo.stack))
-        .unwrap();
+        .context(BuildLabelsSnafu)?;
 
     let install_parameters = DemoInstallParameters {
         operator_namespace: args.namespaces.operator_namespace.clone(),
@@ -330,7 +330,9 @@ async fn install_cmd(
         transfer_client,
     )
     .await
-    .context(DemoInstallSnafu)?;
+    .context(InstallDemoSnafu {
+        demo_name: args.demo_name.clone(),
+    })?;
 
     let operator_cmd = format!(
         "stackablectl operator installed{}",
