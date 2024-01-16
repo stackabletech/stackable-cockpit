@@ -21,7 +21,7 @@ use crate::{
 pub enum Error {
     /// This error indicates that parsing a string into a path or URL failed.
     #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
-    PathOrUrlParse {
+    ParsePathOrUrl {
         source: PathOrUrlParseError,
         path_or_url: String,
     },
@@ -33,7 +33,7 @@ pub enum Error {
     /// This error indicates that the Helm wrapper failed to add the Helm
     /// repository.
     #[snafu(display("failed to add Helm repository {repo_name}"))]
-    HelmAddRepository {
+    AddHelmRepository {
         source: helm::Error,
         repo_name: String,
     },
@@ -41,7 +41,7 @@ pub enum Error {
     /// This error indicates that the Hlm wrapper failed to install the Helm
     /// release.
     #[snafu(display("failed to install Helm release {release_name}"))]
-    HelmInstallRelease {
+    InstallHelmRelease {
         release_name: String,
         source: helm::Error,
     },
@@ -53,11 +53,11 @@ pub enum Error {
 
     /// This error indicates that the creation of a kube client failed.
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    CreateKubeClient { source: k8s::Error },
 
     /// This error indicates that the kube client failed to deloy manifests.
     #[snafu(display("failed to deploy manifests using the kube client"))]
-    ManifestDeploy { source: k8s::Error },
+    DeployManifest { source: k8s::Error },
 }
 
 pub trait InstallManifestsExt {
@@ -73,13 +73,15 @@ pub trait InstallManifestsExt {
     ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
 
+        let kube_client = k8s::Client::new().await.context(CreateKubeClientSnafu)?;
+
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
                     debug!("Installing manifest from Helm chart {}", helm_file);
 
                     // Read Helm chart YAML and apply templating
-                    let helm_file = helm_file.into_path_or_url().context(PathOrUrlParseSnafu {
+                    let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
                         path_or_url: helm_file.clone(),
                     })?;
 
@@ -94,7 +96,7 @@ pub trait InstallManifestsExt {
                     );
 
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
-                        HelmAddRepositorySnafu {
+                        AddHelmRepositorySnafu {
                             repo_name: helm_chart.repo.name.clone(),
                         },
                     )?;
@@ -115,7 +117,7 @@ pub trait InstallManifestsExt {
                         product_namespace,
                         true,
                     )
-                    .context(HelmInstallReleaseSnafu {
+                    .context(InstallHelmReleaseSnafu {
                         release_name: helm_chart.release_name,
                     })?;
                 }
@@ -126,7 +128,7 @@ pub trait InstallManifestsExt {
                     let path_or_url =
                         manifest_file
                             .into_path_or_url()
-                            .context(PathOrUrlParseSnafu {
+                            .context(ParsePathOrUrlSnafu {
                                 path_or_url: manifest_file.clone(),
                             })?;
 
@@ -135,15 +137,10 @@ pub trait InstallManifestsExt {
                         .await
                         .context(FileTransferSnafu)?;
 
-                    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
-
-                    // TODO (Techassi): Introduce StackInstallParameters which
-                    // contain ALL required information to install a stack, for
-                    // example also if it is installed as part of a demo
                     kube_client
                         .deploy_manifests(&manifests, product_namespace, labels.clone())
                         .await
-                        .context(ManifestDeploySnafu)?
+                        .context(DeployManifestSnafu)?
                 }
             }
         }
