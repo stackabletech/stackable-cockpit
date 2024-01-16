@@ -1,4 +1,4 @@
-use std::string::FromUtf8Error;
+use std::{collections::BTreeMap, string::FromUtf8Error};
 
 use k8s_openapi::api::{
     apps::v1::{Deployment, StatefulSet},
@@ -12,6 +12,7 @@ use kube::{
 };
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kvp::Labels;
 
 use crate::{
     platform::{cluster, credentials::Credentials},
@@ -87,9 +88,20 @@ impl Client {
     /// Deploys manifests defined the in raw `manifests` YAML string. This
     /// method will fail if it is unable to parse the manifests, unable to
     /// resolve GVKs or unable to patch the dynamic objects.
-    pub async fn deploy_manifests(&self, manifests: &str, namespace: &str) -> Result<()> {
+    pub async fn deploy_manifests(
+        &self,
+        manifests: &str,
+        namespace: &str,
+        labels: Labels,
+    ) -> Result<()> {
+        // TODO (Techassi): Impl IntoIterator for Labels
+        let labels: BTreeMap<String, String> = labels.into();
+
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
             let mut object = DynamicObject::deserialize(manifest).context(DeserializeYamlSnafu)?;
+
+            // Add our own labels to the object
+            object.labels_mut().extend(labels.clone());
 
             let object_type = object.types.as_ref().ok_or(
                 ObjectTypeSnafu {
@@ -102,7 +114,7 @@ impl Client {
             let (resource, capabilities) = self
                 .discovery
                 .resolve_gvk(&gvk)
-                .ok_or(DiscoveryResolveSnafu { gvk }.build())?;
+                .context(DiscoveryResolveSnafu { gvk })?;
 
             let api: Api<DynamicObject> = match capabilities.scope {
                 Scope::Cluster => {

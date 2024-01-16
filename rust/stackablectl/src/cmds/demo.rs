@@ -4,12 +4,16 @@ use comfy_table::{
     ContentArrangement, Row, Table,
 };
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{demo, namespace, release, stack},
+    platform::{
+        demo::{self, DemoInstallParameters},
+        release, stack,
+    },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, Client},
 };
@@ -122,20 +126,20 @@ pub enum CmdError {
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
 
-    #[snafu(display("failed to install demo"))]
-    DemoInstall { source: demo::Error },
-
     #[snafu(display("path/url parse error"))]
     PathOrUrlParse { source: PathOrUrlParseError },
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgs { source: CommonClusterArgsError },
+    #[snafu(display("failed to install local cluster"))]
+    InstallCluster { source: CommonClusterArgsError },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceCreate {
-        source: namespace::Error,
-        namespace: String,
+    #[snafu(display("failed to install demo {demo_name:?}"))]
+    InstallDemo {
+        source: demo::Error,
+        demo_name: String,
     },
+
+    #[snafu(display("failed to build labels for demo resources"))]
+    BuildLabels { source: LabelError },
 }
 
 impl DemoArgs {
@@ -274,19 +278,18 @@ async fn install_cmd(
     // Init result output and progress output
     let mut output = cli.result();
 
-    let demo_spec = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
+    let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
     let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
-    let stack_list = stack::List::build(&files, transfer_client)
+    let stack_list = stack::StackList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-
-    let release_list = release::List::build(&files, transfer_client)
+    let release_list = release::ReleaseList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
 
@@ -294,52 +297,50 @@ async fn install_cmd(
     args.local_cluster
         .install_if_needed()
         .await
-        .context(CommonClusterArgsSnafu)?;
+        .context(InstallClusterSnafu)?;
 
-    let operator_namespace = args
-        .namespaces
-        .operator_namespace
-        .clone()
-        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
+    // Construct labels which get attached to all dynamic objects which
+    // are part of the demo and stack.
+    let labels = Labels::try_from([
+        ("stackable.tech/managed-by", "stackablectl"),
+        ("stackable.tech/demo", &args.demo_name),
+        ("stackable.tech/vendor", "Stackable"),
+    ])
+    .context(BuildLabelsSnafu)?;
 
-    let product_namespace = args
-        .namespaces
-        .product_namespace
-        .clone()
-        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
+    let mut stack_labels = labels.clone();
+    stack_labels
+        .parse_insert(("stackable.tech/stack", &demo.stack))
+        .context(BuildLabelsSnafu)?;
 
-    if !args.skip_release {
-        namespace::create_if_needed(operator_namespace.clone())
-            .await
-            .context(NamespaceCreateSnafu {
-                namespace: operator_namespace.clone(),
-            })?;
-    }
+    let install_parameters = DemoInstallParameters {
+        operator_namespace: args.namespaces.operator_namespace.clone(),
+        product_namespace: args.namespaces.product_namespace.clone(),
+        stack_parameters: args.stack_parameters.clone(),
+        parameters: args.parameters.clone(),
+        skip_release: args.skip_release,
+        stack_labels,
+        labels,
+    };
 
-    namespace::create_if_needed(product_namespace.clone())
-        .await
-        .context(NamespaceCreateSnafu {
-            namespace: product_namespace.clone(),
-        })?;
-
-    demo_spec
-        .install(
-            stack_list,
-            release_list,
-            &operator_namespace,
-            &product_namespace,
-            &args.stack_parameters,
-            &args.parameters,
-            transfer_client,
-            args.skip_release,
-        )
-        .await
-        .context(DemoInstallSnafu)?;
+    demo.install(
+        stack_list,
+        release_list,
+        install_parameters,
+        transfer_client,
+    )
+    .await
+    .context(InstallDemoSnafu {
+        demo_name: args.demo_name.clone(),
+    })?;
 
     let operator_cmd = format!(
         "stackablectl operator installed{}",
-        if args.namespaces.operator_namespace.is_some() {
-            format!(" --operator-namespace {}", operator_namespace)
+        if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+            format!(
+                " --operator-namespace {}",
+                args.namespaces.operator_namespace
+            )
         } else {
             "".into()
         }
@@ -347,8 +348,8 @@ async fn install_cmd(
 
     let stacklet_cmd = format!(
         "stackablectl stacklet list{}",
-        if args.namespaces.product_namespace.is_some() {
-            format!(" --product-namespace {}", product_namespace)
+        if args.namespaces.product_namespace != DEFAULT_PRODUCT_NAMESPACE {
+            format!(" --product-namespace {}", args.namespaces.product_namespace)
         } else {
             "".into()
         }

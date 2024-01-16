@@ -1,7 +1,10 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
+mod params;
 mod spec;
+
+pub use params::*;
 pub use spec::*;
 
 use crate::common::list::SpecIter;
@@ -20,4 +23,4 @@ impl SpecIter<StackSpec> for StacksV2 {
     }
 }
 
-pub type List = crate::common::list::List<StacksV2, StackSpec>;
+pub type StackList = crate::common::list::List<StacksV2, StackSpec>;

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, instrument, warn};
+use tracing::{debug, info, instrument, warn};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -9,11 +9,15 @@ use crate::{
     common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
-        release::List,
-        stack,
+        demo::DemoInstallParameters,
+        manifests::{self, InstallManifestsExt},
+        release::ReleaseList,
+        stack::{self, StackInstallParameters, StackList},
     },
-    utils::params::{Parameter, RawParameter, RawParameterParseError},
-    xfer::Client,
+    utils::params::{
+        IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+    },
+    xfer::{self, Client},
 };
 
 pub type RawDemoParameterParseError = RawParameterParseError;
@@ -25,18 +29,6 @@ pub enum Error {
     #[snafu(display("no stack named '{name}'"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("failed to install stack because some prerequisites failed"))]
-    StackPrerequisites { source: stack::Error },
-
-    #[snafu(display("failed to install release associated with stack"))]
-    StackInstallRelease { source: stack::Error },
-
-    #[snafu(display("failed to install stack manifests"))]
-    InstallStackManifests { source: stack::Error },
-
-    #[snafu(display("failed to install demo manifests"))]
-    InstallDemoManifests { source: stack::Error },
-
     #[snafu(display("demo resource requests error"), context(false))]
     DemoResourceRequests { source: ResourceRequestsError },
 
@@ -45,7 +37,18 @@ pub enum Error {
         requested: String,
         supported: Vec<String>,
     },
+
+    #[snafu(display("failed to parse demo / stack parameters"))]
+    ParseParameters { source: IntoParametersError },
+
+    #[snafu(display("failed to install stack"))]
+    InstallStack { source: stack::Error },
+
+    #[snafu(display("failed to install stack manifests"))]
+    InstallManifests { source: manifests::Error },
 }
+
+impl InstallManifestsExt for DemoSpec {}
 
 /// This struct describes a demo with the v2 spec
 #[derive(Debug, Clone, Deserialize, Serialize)]
@@ -121,59 +124,65 @@ impl DemoSpec {
         Ok(())
     }
 
-    #[allow(clippy::too_many_arguments)]
     pub async fn install(
         &self,
-        stack_list: stack::List,
-        release_list: List,
-        operator_namespace: &str,
-        product_namespace: &str,
-        stack_parameters: &[String],
-        demo_parameters: &[String],
+        stack_list: StackList,
+        release_list: ReleaseList,
+        install_parameters: DemoInstallParameters,
         transfer_client: &Client,
-        skip_release: bool,
     ) -> Result<(), Error> {
         // Get the stack spec based on the name defined in the demo spec
-        let stack_spec = stack_list.get(&self.stack).context(NoSuchStackSnafu {
+        let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
             name: self.stack.clone(),
         })?;
 
-        // Check stack prerequisites
-        stack_spec
-            .check_prerequisites(product_namespace)
-            .await
-            .context(StackPrerequisitesSnafu)?;
-
         // Check demo prerequisites
-        self.check_prerequisites(product_namespace).await?;
+        self.check_prerequisites(&install_parameters.product_namespace)
+            .await?;
 
-        // Install release if not opted out
-        if !skip_release {
-            stack_spec
-                .install_release(release_list, operator_namespace, product_namespace)
-                .await
-                .context(StackInstallReleaseSnafu)?;
-        }
+        let stack_install_parameters = StackInstallParameters {
+            operator_namespace: install_parameters.operator_namespace.clone(),
+            product_namespace: install_parameters.product_namespace.clone(),
+            parameters: install_parameters.stack_parameters.clone(),
+            labels: install_parameters.stack_labels.clone(),
+            skip_release: install_parameters.skip_release,
+            stack_name: self.stack.clone(),
+            demo_name: None,
+        };
 
-        // Install stack
-        stack_spec
-            .install_stack_manifests(stack_parameters, product_namespace, transfer_client)
+        stack
+            .install(release_list, stack_install_parameters, transfer_client)
             .await
-            .context(InstallStackManifestsSnafu)?;
+            .context(InstallStackSnafu)?;
 
         // Install demo manifests
-        stack_spec
-            .install_demo_manifests(
-                &self.manifests,
-                &self.parameters,
-                demo_parameters,
-                product_namespace,
-                transfer_client,
-            )
+        self.prepare_manifests(install_parameters, transfer_client)
             .await
-            .context(InstallDemoManifestsSnafu)?;
+    }
 
-        Ok(())
+    #[instrument(skip_all)]
+    async fn prepare_manifests(
+        &self,
+        install_params: DemoInstallParameters,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        info!("Installing demo manifests");
+
+        let params = install_params
+            .parameters
+            .to_owned()
+            .into_params(&self.parameters)
+            .context(ParseParametersSnafu)?;
+
+        Self::install_manifests(
+            &self.manifests,
+            &params,
+            &install_params.product_namespace,
+            install_params.labels,
+            transfer_client,
+        )
+        .await
+        .context(InstallManifestsSnafu)
     }
 
     fn supports_namespace(&self, namespace: impl Into<String>) -> bool {
