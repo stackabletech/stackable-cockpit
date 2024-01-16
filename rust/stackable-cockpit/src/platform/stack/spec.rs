@@ -9,7 +9,7 @@ use crate::{
     common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
-        manifests::InstallManifestsExt,
+        manifests::{self, InstallManifestsExt},
         namespace, release,
         stack::StackInstallParameters,
     },
@@ -28,23 +28,23 @@ pub enum Error {
     /// This error indicates that parsing a string into stack / demo parameters
     /// failed.
     #[snafu(display("failed to parse demo / stack parameters"))]
-    ParameterParse { source: IntoParametersError },
+    ParseParameters { source: IntoParametersError },
 
     /// This error indicates that the requested release doesn't exist in the
     /// loaded list of releases.
-    #[snafu(display("no release named {name}"))]
+    #[snafu(display("no release named {name:?}"))]
     NoSuchRelease { name: String },
 
     /// This error indicates that the release failed to install.
     #[snafu(display("failed to install release"))]
-    ReleaseInstall { source: release::Error },
+    InstallRelease { source: release::Error },
 
     #[snafu(display("stack resource requests error"), context(false))]
     StackResourceRequests { source: ResourceRequestsError },
 
     /// This error indicates that the stack doesn't support being installed in
     /// the provided namespace.
-    #[snafu(display("unable install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    #[snafu(display("unable install stack in namespace {requested:?}, only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,
@@ -55,6 +55,9 @@ pub enum Error {
         source: namespace::Error,
         namespace: String,
     },
+
+    #[snafu(display("failed to install stack manifests"))]
+    InstallManifests { source: manifests::Error },
 }
 
 /// This struct describes a stack with the v2 spec
@@ -171,11 +174,8 @@ impl StackSpec {
             })?;
 
         // Finally install the stack manifests
-        // TODO (Techassi): Pass the correct parameters
         self.prepare_manifests(install_parameters, transfer_client)
-            .await?;
-
-        Ok(())
+            .await
     }
 
     #[instrument(skip(self, release_list))]
@@ -197,9 +197,7 @@ impl StackSpec {
         // Install the release
         release
             .install(&self.operators, &[], operator_namespace)
-            .context(ReleaseInstallSnafu)?;
-
-        Ok(())
+            .context(InstallReleaseSnafu)
     }
 
     #[instrument(skip_all)]
@@ -214,9 +212,8 @@ impl StackSpec {
             .parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterParseSnafu)?;
+            .context(ParseParametersSnafu)?;
 
-        // TODO (Techassi): Remove unwrap
         Self::install_manifests(
             &self.manifests,
             &parameters,
@@ -225,9 +222,7 @@ impl StackSpec {
             transfer_client,
         )
         .await
-        .unwrap();
-
-        Ok(())
+        .context(InstallManifestsSnafu)
     }
 
     fn supports_namespace(&self, namespace: impl Into<String>) -> bool {

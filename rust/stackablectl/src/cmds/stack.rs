@@ -4,14 +4,14 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
-use stackable_operator::kvp::Labels;
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
-        namespace, release,
+        release,
         stack::{self, StackInstallParameters},
     },
     utils::path::PathOrUrlParseError,
@@ -113,20 +113,20 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("failed to install stack"))]
-    StackInstall { source: stack::Error },
-
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgs { source: CommonClusterArgsError },
+    #[snafu(display("failed to install local cluster"))]
+    InstallCluster { source: CommonClusterArgsError },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceCreate {
-        source: namespace::Error,
-        namespace: String,
+    #[snafu(display("failed to install stack {stack_name:?}"))]
+    InstallStack {
+        source: stack::Error,
+        stack_name: String,
     },
+
+    #[snafu(display("failed to build labels for stack resources"))]
+    BuildLabels { source: LabelError },
 }
 
 impl StackArgs {
@@ -283,15 +283,16 @@ async fn install_cmd(
             args.local_cluster
                 .install_if_needed()
                 .await
-                .context(CommonClusterArgsSnafu)?;
+                .context(InstallClusterSnafu)?;
 
-            // TODO (Techassi): Remove unwrap
+            // Construct labels which get attached to all dynamic objects which
+            // are part of the stack.
             let labels = Labels::try_from([
                 ("stackable.tech/managed-by", "stackablectl"),
                 ("stackable.tech/stack", &args.stack_name),
                 ("stackable.tech/vendor", "Stackable"),
             ])
-            .unwrap();
+            .context(BuildLabelsSnafu)?;
 
             let install_parameters = StackInstallParameters {
                 operator_namespace: args.namespaces.operator_namespace.clone(),
@@ -303,11 +304,12 @@ async fn install_cmd(
                 labels,
             };
 
-            // TODO (Techassi): Add error variant, remove unused ones
             stack_spec
                 .install(release_list, install_parameters, transfer_client)
                 .await
-                .unwrap();
+                .context(InstallStackSnafu {
+                    stack_name: args.stack_name.clone(),
+                })?;
 
             let operator_cmd = format!(
                 "stackablectl operator installed{}",
