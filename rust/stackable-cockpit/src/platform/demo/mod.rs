@@ -3,8 +3,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::list::SpecIter;
 
+mod params;
 mod spec;
 
+pub use params::*;
 pub use spec::*;
 
 /// This struct describes a complete demos v2 file

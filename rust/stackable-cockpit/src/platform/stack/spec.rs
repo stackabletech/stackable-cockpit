@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, info, instrument, log::warn};
@@ -9,23 +7,16 @@ use utoipa::ToSchema;
 
 use crate::{
     common::manifest::ManifestSpec,
-    helm,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
-        demo::DemoParameter,
-        release,
+        manifests::{self, InstallManifestsExt},
+        namespace, release,
+        stack::StackInstallParameters,
     },
-    utils::{
-        k8s,
-        params::{
-            IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
-        },
-        path::{IntoPathOrUrl, PathOrUrlParseError},
+    utils::params::{
+        IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
     },
-    xfer::{
-        self,
-        processor::{Processor, Template, Yaml},
-    },
+    xfer,
 };
 
 pub type RawStackParameterParseError = RawParameterParseError;
@@ -37,67 +28,36 @@ pub enum Error {
     /// This error indicates that parsing a string into stack / demo parameters
     /// failed.
     #[snafu(display("failed to parse demo / stack parameters"))]
-    ParameterParse { source: IntoParametersError },
+    ParseParameters { source: IntoParametersError },
 
     /// This error indicates that the requested release doesn't exist in the
     /// loaded list of releases.
-    #[snafu(display("no release named {name}"))]
+    #[snafu(display("no release named {name:?}"))]
     NoSuchRelease { name: String },
 
     /// This error indicates that the release failed to install.
     #[snafu(display("failed to install release"))]
-    ReleaseInstall { source: release::Error },
-
-    /// This error indicates that the Helm wrapper failed to add the Helm
-    /// repository.
-    #[snafu(display("failed to add Helm repository {repo_name}"))]
-    HelmAddRepository {
-        source: helm::Error,
-        repo_name: String,
-    },
-
-    /// This error indicates that the Hlm wrapper failed to install the Helm
-    /// release.
-    #[snafu(display("failed to install Helm release {release_name}"))]
-    HelmInstallRelease {
-        release_name: String,
-        source: helm::Error,
-    },
-
-    /// This error indicates that the creation of a kube client failed.
-    #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
-
-    /// This error indicates that the kube client failed to deloy manifests.
-    #[snafu(display("failed to deploy manifests using the kube client"))]
-    ManifestDeploy { source: k8s::Error },
-
-    /// This error indicates that Helm chart options could not be serialized
-    /// into YAML.
-    #[snafu(display("failed to serialize Helm chart options"))]
-    SerializeOptions { source: serde_yaml::Error },
+    InstallRelease { source: release::Error },
 
     #[snafu(display("stack resource requests error"), context(false))]
     StackResourceRequests { source: ResourceRequestsError },
 
-    /// This error indicates that parsing a string into a path or URL failed.
-    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
-    PathOrUrlParse {
-        source: PathOrUrlParseError,
-        path_or_url: String,
-    },
-
-    /// This error indicates that receiving remote content failed.
-    #[snafu(display("failed to receive remote content"))]
-    FileTransfer { source: xfer::Error },
-
     /// This error indicates that the stack doesn't support being installed in
     /// the provided namespace.
-    #[snafu(display("cannot install stack in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    #[snafu(display("unable install stack in namespace {requested:?}, only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,
     },
+
+    #[snafu(display("failed to create namespace {namespace:?}"))]
+    CreateNamespace {
+        source: namespace::Error,
+        namespace: String,
+    },
+
+    #[snafu(display("failed to install stack manifests"))]
+    InstallManifests { source: manifests::Error },
 }
 
 /// This struct describes a stack with the v2 spec
@@ -136,6 +96,8 @@ pub struct StackSpec {
     #[serde(default)]
     pub parameters: Vec<StackParameter>,
 }
+
+impl InstallManifestsExt for StackSpec {}
 
 impl StackSpec {
     /// Checks if the prerequisites to run this stack are met. These checks
@@ -176,10 +138,50 @@ impl StackSpec {
         Ok(())
     }
 
+    // TODO (Techassi): Can we get rid of the release list and just use the release spec instead
+    #[instrument(skip(self, release_list, transfer_client))]
+    pub async fn install(
+        &self,
+        release_list: release::ReleaseList,
+        install_parameters: StackInstallParameters,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        // First, we check if the prerequisites are met
+        self.check_prerequisites(&install_parameters.product_namespace)
+            .await?;
+
+        // Second, we install the release if not opted out
+        if !install_parameters.skip_release {
+            namespace::create_if_needed(install_parameters.operator_namespace.clone())
+                .await
+                .context(CreateNamespaceSnafu {
+                    namespace: install_parameters.operator_namespace.clone(),
+                })?;
+
+            self.install_release(
+                release_list,
+                &install_parameters.operator_namespace,
+                &install_parameters.product_namespace,
+            )
+            .await?;
+        }
+
+        // Next, create the product namespace if needed
+        namespace::create_if_needed(install_parameters.product_namespace.clone())
+            .await
+            .context(CreateNamespaceSnafu {
+                namespace: install_parameters.product_namespace.clone(),
+            })?;
+
+        // Finally install the stack manifests
+        self.prepare_manifests(install_parameters, transfer_client)
+            .await
+    }
+
     #[instrument(skip(self, release_list))]
     pub async fn install_release(
         &self,
-        release_list: release::List,
+        release_list: release::ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
     ) -> Result<(), Error> {
@@ -195,138 +197,32 @@ impl StackSpec {
         // Install the release
         release
             .install(&self.operators, &[], operator_namespace)
-            .context(ReleaseInstallSnafu)?;
-
-        Ok(())
+            .context(InstallReleaseSnafu)
     }
 
     #[instrument(skip_all)]
-    pub async fn install_stack_manifests(
+    pub async fn prepare_manifests(
         &self,
-        parameters: &[String],
-        product_namespace: &str,
+        install_params: StackInstallParameters,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
 
-        let parameters = parameters
+        let parameters = install_params
+            .parameters
             .to_owned()
             .into_params(&self.parameters)
-            .context(ParameterParseSnafu)?;
+            .context(ParseParametersSnafu)?;
 
         Self::install_manifests(
             &self.manifests,
             &parameters,
-            product_namespace,
+            &install_params.product_namespace,
+            install_params.labels,
             transfer_client,
         )
-        .await?;
-        Ok(())
-    }
-
-    #[instrument(skip_all)]
-    pub async fn install_demo_manifests(
-        &self,
-        manifests: &Vec<ManifestSpec>,
-        valid_demo_parameters: &[DemoParameter],
-        demo_parameters: &[String],
-        product_namespace: &str,
-        transfer_client: &xfer::Client,
-    ) -> Result<(), Error> {
-        info!("Installing demo manifests");
-
-        let parameters = demo_parameters
-            .to_owned()
-            .into_params(valid_demo_parameters)
-            .context(ParameterParseSnafu)?;
-
-        Self::install_manifests(manifests, &parameters, product_namespace, transfer_client).await?;
-        Ok(())
-    }
-
-    /// Installs a list of templated manifests inside a namespace.
-    #[instrument(skip_all)]
-    async fn install_manifests(
-        manifests: &Vec<ManifestSpec>,
-        parameters: &HashMap<String, String>,
-        product_namespace: &str,
-        transfer_client: &xfer::Client,
-    ) -> Result<(), Error> {
-        debug!("Installing demo / stack manifests");
-
-        for manifest in manifests {
-            match manifest {
-                ManifestSpec::HelmChart(helm_file) => {
-                    debug!("Installing manifest from Helm chart {}", helm_file);
-
-                    // Read Helm chart YAML and apply templating
-                    let helm_file = helm_file.into_path_or_url().context(PathOrUrlParseSnafu {
-                        path_or_url: helm_file.clone(),
-                    })?;
-
-                    let helm_chart: helm::Chart = transfer_client
-                        .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
-                        .await
-                        .context(FileTransferSnafu)?;
-
-                    info!(
-                        "Installing Helm chart {} ({})",
-                        helm_chart.name, helm_chart.version
-                    );
-
-                    helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
-                        HelmAddRepositorySnafu {
-                            repo_name: helm_chart.repo.name.clone(),
-                        },
-                    )?;
-
-                    // Serialize chart options to string
-                    let values_yaml = serde_yaml::to_string(&helm_chart.options)
-                        .context(SerializeOptionsSnafu)?;
-
-                    // Install the Helm chart using the Helm wrapper
-                    helm::install_release_from_repo(
-                        &helm_chart.release_name,
-                        helm::ChartVersion {
-                            repo_name: &helm_chart.repo.name,
-                            chart_name: &helm_chart.name,
-                            chart_version: Some(&helm_chart.version),
-                        },
-                        Some(&values_yaml),
-                        product_namespace,
-                        true,
-                    )
-                    .context(HelmInstallReleaseSnafu {
-                        release_name: helm_chart.release_name,
-                    })?;
-                }
-                ManifestSpec::PlainYaml(manifest_file) => {
-                    debug!("Installing YAML manifest from {}", manifest_file);
-
-                    // Read YAML manifest and apply templating
-                    let path_or_url =
-                        manifest_file
-                            .into_path_or_url()
-                            .context(PathOrUrlParseSnafu {
-                                path_or_url: manifest_file.clone(),
-                            })?;
-
-                    let manifests = transfer_client
-                        .get(&path_or_url, &Template::new(parameters))
-                        .await
-                        .context(FileTransferSnafu)?;
-
-                    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
-
-                    kube_client
-                        .deploy_manifests(&manifests, product_namespace)
-                        .await
-                        .context(ManifestDeploySnafu)?
-                }
-            }
-        }
-
-        Ok(())
+        .await
+        .context(InstallManifestsSnafu)
     }
 
     fn supports_namespace(&self, namespace: impl Into<String>) -> bool {

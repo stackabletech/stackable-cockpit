@@ -20,7 +20,7 @@ impl SpecIter<ReleaseSpec> for Releases {
     }
 }
 
-pub type List = crate::common::list::List<Releases, ReleaseSpec>;
+pub type ReleaseList = crate::common::list::List<Releases, ReleaseSpec>;
 
 #[derive(Default)]
 pub struct Release {}

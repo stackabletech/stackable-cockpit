@@ -1,8 +1,20 @@
+# Rust
 /target
-.env
+
+# Frontend
 /node_modules
 htpasswd
-/result
 .yarn
+
+# Nix
+gomod2nix.toml
+Cargo.nix
+crate-hashes.json
+
+# Misc
+/demos
+/stacks
+/result
+.env
 .pnp
 .pnp.*

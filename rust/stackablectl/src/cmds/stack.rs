@@ -4,12 +4,16 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
-    platform::{namespace, release, stack},
+    platform::{
+        release,
+        stack::{self, StackInstallParameters},
+    },
     utils::path::PathOrUrlParseError,
     xfer::{cache::Cache, Client},
 };
@@ -109,20 +113,20 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("failed to install stack"))]
-    StackInstall { source: stack::Error },
-
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
 
-    #[snafu(display("cluster argument error"))]
-    CommonClusterArgs { source: CommonClusterArgsError },
+    #[snafu(display("failed to install local cluster"))]
+    InstallCluster { source: CommonClusterArgsError },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
-    NamespaceCreate {
-        source: namespace::Error,
-        namespace: String,
+    #[snafu(display("failed to install stack {stack_name:?}"))]
+    InstallStack {
+        source: stack::Error,
+        stack_name: String,
     },
+
+    #[snafu(display("failed to build labels for stack resources"))]
+    BuildLabels { source: LabelError },
 }
 
 impl StackArgs {
@@ -131,7 +135,7 @@ impl StackArgs {
 
         let transfer_client = Client::new_with(cache);
         let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
-        let stack_list = stack::List::build(&files, &transfer_client)
+        let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
 
@@ -146,7 +150,11 @@ impl StackArgs {
 }
 
 #[instrument]
-fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<String, CmdError> {
+fn list_cmd(
+    args: &StackListArgs,
+    cli: &Cli,
+    stack_list: stack::StackList,
+) -> Result<String, CmdError> {
     info!("Listing stacks");
 
     match args.output_type {
@@ -195,7 +203,7 @@ fn list_cmd(args: &StackListArgs, cli: &Cli, stack_list: stack::List) -> Result<
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,
-    stack_list: stack::List,
+    stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
     info!("Describing stack {}", args.stack_name);
 
@@ -257,27 +265,15 @@ fn describe_cmd(
 async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
-    stack_list: stack::List,
+    stack_list: stack::StackList,
     transfer_client: &Client,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-    let release_list = release::List::build(&files, transfer_client)
+    let release_list = release::ReleaseList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
-
-    let product_namespace = args
-        .namespaces
-        .product_namespace
-        .clone()
-        .unwrap_or(DEFAULT_PRODUCT_NAMESPACE.into());
-
-    let operator_namespace = args
-        .namespaces
-        .operator_namespace
-        .clone()
-        .unwrap_or(DEFAULT_OPERATOR_NAMESPACE.into());
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
@@ -287,51 +283,41 @@ async fn install_cmd(
             args.local_cluster
                 .install_if_needed()
                 .await
-                .context(CommonClusterArgsSnafu)?;
+                .context(InstallClusterSnafu)?;
 
-            // Check perquisites
+            // Construct labels which get attached to all dynamic objects which
+            // are part of the stack.
+            let labels = Labels::try_from([
+                ("stackable.tech/managed-by", "stackablectl"),
+                ("stackable.tech/stack", &args.stack_name),
+                ("stackable.tech/vendor", "Stackable"),
+            ])
+            .context(BuildLabelsSnafu)?;
+
+            let install_parameters = StackInstallParameters {
+                operator_namespace: args.namespaces.operator_namespace.clone(),
+                product_namespace: args.namespaces.product_namespace.clone(),
+                stack_name: args.stack_name.clone(),
+                parameters: args.parameters.clone(),
+                skip_release: args.skip_release,
+                demo_name: None,
+                labels,
+            };
+
             stack_spec
-                .check_prerequisites(&product_namespace)
+                .install(release_list, install_parameters, transfer_client)
                 .await
-                .context(StackInstallSnafu)?;
-
-            // Install release if not opted out
-            if !args.skip_release {
-                namespace::create_if_needed(operator_namespace.clone())
-                    .await
-                    .context(NamespaceCreateSnafu {
-                        namespace: operator_namespace.clone(),
-                    })?;
-
-                stack_spec
-                    .install_release(release_list, &operator_namespace, &product_namespace)
-                    .await
-                    .context(StackInstallSnafu)?;
-            } else {
-                info!("Skipping release installation during stack installation process");
-            }
-
-            // Create product namespace if needed
-            namespace::create_if_needed(product_namespace.clone())
-                .await
-                .context(NamespaceCreateSnafu {
-                    namespace: product_namespace.clone(),
+                .context(InstallStackSnafu {
+                    stack_name: args.stack_name.clone(),
                 })?;
-
-            // Install stack
-            stack_spec
-                .install_stack_manifests(
-                    &args.stack_parameters,
-                    &product_namespace,
-                    transfer_client,
-                )
-                .await
-                .context(StackInstallSnafu)?;
 
             let operator_cmd = format!(
                 "stackablectl operator installed{}",
-                if args.namespaces.operator_namespace.is_some() {
-                    format!(" --operator-namespace {}", operator_namespace)
+                if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+                    format!(
+                        " --operator-namespace {}",
+                        args.namespaces.operator_namespace
+                    )
                 } else {
                     "".into()
                 }
@@ -339,8 +325,8 @@ async fn install_cmd(
 
             let stacklet_cmd = format!(
                 "stackablectl stacklet list{}",
-                if args.namespaces.product_namespace.is_some() {
-                    format!(" --product-namespace {}", product_namespace)
+                if args.namespaces.product_namespace != DEFAULT_PRODUCT_NAMESPACE {
+                    format!(" --product-namespace {}", args.namespaces.product_namespace)
                 } else {
                     "".into()
                 }

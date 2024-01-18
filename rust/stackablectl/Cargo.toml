@@ -11,6 +11,7 @@ publish = false
 
 [dependencies]
 stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
+stackable-operator.workspace = true
 
 clap_complete.workspace = true
 clap.workspace = true
