@@ -19,9 +19,9 @@ use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
     cmds::{cache, completions, demo, operator, release, stack, stacklet},
     constants::{
-        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
-        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
-        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
+        DEMO_FILE_URL, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
+        RELEASE_FILE_URL, STACK_FILE_URL, USER_DIR_APPLICATION_NAME, USER_DIR_ORGANIZATION_NAME,
+        USER_DIR_QUALIFIER,
     },
     output::{ErrorContext, Output, ResultContext},
 };
@@ -90,7 +90,7 @@ impl Cli {
     /// the default demo file URL, [`REMOTE_DEMO_FILE`], files provided by the ENV variable [`ENV_KEY_DEMO_FILES`], and
     /// lastly, files provided by the CLI argument `--demo-file`.
     pub fn get_demo_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_DEMO_FILE, ENV_KEY_DEMO_FILES)?;
+        let mut files = get_files(DEMO_FILE_URL, ENV_KEY_DEMO_FILES)?;
 
         let arg_files = self.files.demo_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
@@ -107,7 +107,7 @@ impl Cli {
     /// the default stack file URL, [`REMOTE_STACK_FILE`], files provided by the ENV variable [`ENV_KEY_STACK_FILES`],
     /// and lastly, files provided by the CLI argument `--stack-file`.
     pub fn get_stack_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_STACK_FILE, ENV_KEY_STACK_FILES)?;
+        let mut files = get_files(STACK_FILE_URL, ENV_KEY_STACK_FILES)?;
 
         let arg_files = self.files.stack_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
@@ -119,7 +119,7 @@ impl Cli {
     /// combines the default demo file URL, [`REMOTE_RELEASE_FILE`], files provided by the ENV variable
     /// [`ENV_KEY_RELEASE_FILES`], and lastly, files provided by the CLI argument `--release-file`.
     pub fn get_release_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_RELEASE_FILE, ENV_KEY_RELEASE_FILES)?;
+        let mut files = get_files(RELEASE_FILE_URL, ENV_KEY_RELEASE_FILES)?;
 
         let arg_files = self.files.release_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
@@ -184,7 +184,7 @@ impl Cli {
         cache.auto_purge().await.unwrap();
 
         match &self.subcommand {
-            Commands::Operator(args) => args.run(self).await.context(OperatorSnafu),
+            Commands::Operator(args) => args.run(self, cache).await.context(OperatorSnafu),
             Commands::Release(args) => args.run(self, cache).await.context(ReleaseSnafu),
             Commands::Stack(args) => args.run(self, cache).await.context(StackSnafu),
             Commands::Stacklet(args) => args.run(self).await.context(StackletSnafu),

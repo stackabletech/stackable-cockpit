@@ -1,6 +1,7 @@
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::Labels;
 use tracing::{info, instrument};
 
 #[cfg(feature = "openapi")]
@@ -12,6 +13,7 @@ use crate::{
         operator::{self, OperatorSpec},
         product,
     },
+    xfer,
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -22,7 +24,7 @@ pub enum Error {
     OperatorSpecParse { source: operator::SpecParseError },
 
     #[snafu(display("failed to install release using Helm"))]
-    HelmInstall { source: helm::Error },
+    HelmInstall { source: operator::InstallError },
 
     #[snafu(display("failed to uninstall release using Helm"))]
     HelmUninstall { source: helm::Error },
@@ -46,11 +48,13 @@ pub struct ReleaseSpec {
 impl ReleaseSpec {
     /// Installs a release by installing individual operators.
     #[instrument(skip_all)]
-    pub fn install(
+    pub async fn install(
         &self,
         include_products: &[String],
         exclude_products: &[String],
         namespace: &str,
+        transfer_client: &xfer::Client,
+        labels: Labels,
     ) -> Result<()> {
         info!("Installing release");
 
@@ -62,7 +66,10 @@ impl ReleaseSpec {
                 .context(OperatorSpecParseSnafu)?;
 
             // Install operator
-            operator.install(namespace).context(HelmInstallSnafu)?
+            operator
+                .install(namespace, transfer_client, labels.clone())
+                .await
+                .context(HelmInstallSnafu)?
         }
 
         Ok(())

@@ -4,6 +4,7 @@ use comfy_table::{
     ContentArrangement, Table,
 };
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
@@ -120,6 +121,9 @@ pub enum CmdError {
         source: namespace::Error,
         namespace: String,
     },
+
+    #[snafu(display("failed to build labels for release resources"))]
+    BuildLabels { source: LabelError },
 }
 
 impl ReleaseArgs {
@@ -139,7 +143,9 @@ impl ReleaseArgs {
         match &self.subcommand {
             ReleaseCommands::List(args) => list_cmd(args, cli, release_list).await,
             ReleaseCommands::Describe(args) => describe_cmd(args, cli, release_list).await,
-            ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
+            ReleaseCommands::Install(args) => {
+                install_cmd(args, cli, release_list, &transfer_client).await
+            }
             ReleaseCommands::Uninstall(args) => uninstall_cmd(args, cli, release_list).await,
         }
     }
@@ -265,6 +271,7 @@ async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
+    transfer_client: &Client,
 ) -> Result<String, CmdError> {
     match release_list.get(&args.release) {
         Some(release) => {
@@ -283,12 +290,18 @@ async fn install_cmd(
                     namespace: args.operator_namespace.clone(),
                 })?;
 
+            let labels = Labels::try_from([("stackable.tech/vendor", "Stackable")])
+                .context(BuildLabelsSnafu)?;
+
             release
                 .install(
                     &args.included_products,
                     &args.excluded_products,
                     &args.operator_namespace,
+                    transfer_client,
+                    labels,
                 )
+                .await
                 .context(ReleaseInstallSnafu)?;
 
             output

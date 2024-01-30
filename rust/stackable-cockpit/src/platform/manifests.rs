@@ -20,11 +20,8 @@ use crate::{
 #[derive(Debug, Snafu)]
 pub enum Error {
     /// This error indicates that parsing a string into a path or URL failed.
-    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
-    ParsePathOrUrl {
-        source: PathOrUrlParseError,
-        path_or_url: String,
-    },
+    #[snafu(display("failed to parse path/url"))]
+    ParsePathOrUrl { source: PathOrUrlParseError },
 
     /// This error indicates that receiving remote content failed.
     #[snafu(display("failed to receive remote content"))]
@@ -81,9 +78,7 @@ pub trait InstallManifestsExt {
                     debug!("Installing manifest from Helm chart {}", helm_file);
 
                     // Read Helm chart YAML and apply templating
-                    let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
-                        path_or_url: helm_file.clone(),
-                    })?;
+                    let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu)?;
 
                     let helm_chart: helm::Chart = transfer_client
                         .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
@@ -125,12 +120,9 @@ pub trait InstallManifestsExt {
                     debug!("Installing YAML manifest from {}", manifest_file);
 
                     // Read YAML manifest and apply templating
-                    let path_or_url =
-                        manifest_file
-                            .into_path_or_url()
-                            .context(ParsePathOrUrlSnafu {
-                                path_or_url: manifest_file.clone(),
-                            })?;
+                    let path_or_url = manifest_file
+                        .into_path_or_url()
+                        .context(ParsePathOrUrlSnafu)?;
 
                     let manifests = transfer_client
                         .get(&path_or_url, &Template::new(parameters))

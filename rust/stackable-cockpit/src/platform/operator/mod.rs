@@ -1,13 +1,19 @@
-use std::{fmt::Display, str::FromStr};
+use std::{collections::BTreeMap, fmt::Display, str::FromStr};
 
 use semver::Version;
 use snafu::{ensure, ResultExt, Snafu};
+use stackable_operator::{helm::DynamicValues, kvp::Labels};
 use tracing::{info, instrument};
 
 use crate::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
-    utils::operator_chart_name,
+    utils::{
+        operator_chart_name,
+        path::{IntoPathOrUrl, PathOrUrlParseError},
+        url::operator_values_yaml_url,
+    },
+    xfer::{self, processor::Yaml},
 };
 
 pub const VALID_OPERATORS: &[&str] = &[
@@ -45,6 +51,18 @@ pub enum SpecParseError {
 
     #[snafu(display("invalid operator name: '{name}'"))]
     InvalidName { name: String },
+}
+
+#[derive(Debug, Snafu)]
+pub enum InstallError {
+    #[snafu(display("failed to deserialize Helm values file from {url:?}"))]
+    DeserializeHelmValues { source: xfer::Error, url: String },
+
+    #[snafu(display("failed to install Helm release"))]
+    InstallHelmRelease { source: helm::Error },
+
+    #[snafu(display("failed to parse path/url"))]
+    ParsePathOrUrl { source: PathOrUrlParseError },
 }
 
 /// OperatorSpec describes the format of an operator name with optional version
@@ -176,12 +194,33 @@ impl OperatorSpec {
 
     /// Installs the operator using Helm.
     #[instrument(skip_all)]
-    pub fn install(&self, namespace: &str) -> Result<(), helm::Error> {
+    pub async fn install(
+        &self,
+        namespace: &str,
+        transfer_client: &xfer::Client,
+        labels: Labels,
+    ) -> Result<(), InstallError> {
         info!("Installing operator {}", self);
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_repo = self.helm_repo_name();
         let helm_name = self.helm_name();
+
+        let values_yaml_url = operator_values_yaml_url(&self.name);
+        let path_or_url = values_yaml_url
+            .clone()
+            .into_path_or_url()
+            .context(ParsePathOrUrlSnafu)?;
+
+        let mut values: DynamicValues = transfer_client
+            .get(&path_or_url, &Yaml::new())
+            .await
+            .context(DeserializeHelmValuesSnafu {
+                url: values_yaml_url,
+            })?;
+
+        values.labels_mut().extend(BTreeMap::from(labels));
+        let values = serde_yaml::to_string(&values).unwrap();
 
         // Install using Helm
         helm::install_release_from_repo(
@@ -191,10 +230,11 @@ impl OperatorSpec {
                 chart_name: &helm_name,
                 repo_name: &helm_repo,
             },
-            None,
+            Some(&values),
             namespace,
             true,
-        )?;
+        )
+        .context(InstallHelmReleaseSnafu)?;
 
         Ok(())
     }

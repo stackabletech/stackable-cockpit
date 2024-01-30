@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kvp::Labels;
 use tracing::{debug, info, instrument, log::warn};
 
 #[cfg(feature = "openapi")]
@@ -162,6 +163,8 @@ impl StackSpec {
                 release_list,
                 &install_parameters.operator_namespace,
                 &install_parameters.product_namespace,
+                transfer_client,
+                install_parameters.labels.clone(),
             )
             .await?;
         }
@@ -184,6 +187,8 @@ impl StackSpec {
         release_list: release::ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
+        transfer_client: &xfer::Client,
+        labels: Labels,
     ) -> Result<(), Error> {
         info!("Trying to install release {}", self.release);
 
@@ -196,7 +201,14 @@ impl StackSpec {
 
         // Install the release
         release
-            .install(&self.operators, &[], operator_namespace)
+            .install(
+                &self.operators,
+                &[],
+                operator_namespace,
+                transfer_client,
+                labels,
+            )
+            .await
             .context(InstallReleaseSnafu)
     }
 

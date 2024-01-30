@@ -9,6 +9,7 @@ use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
@@ -18,6 +19,7 @@ use stackable_cockpit::{
     helm::{self, Release, Repository},
     platform::{namespace, operator},
     utils,
+    xfer::{cache::Cache, Client},
 };
 
 use crate::{
@@ -133,6 +135,9 @@ pub enum CmdError {
     #[snafu(display("Helm error"))]
     HelmError { source: helm::Error },
 
+    #[snafu(display("failed to install operator"))]
+    InstallOperator { source: operator::InstallError },
+
     #[snafu(display("cluster argument error"))]
     CommonClusterArgs { source: CommonClusterArgsError },
 
@@ -147,6 +152,9 @@ pub enum CmdError {
         source: namespace::Error,
         namespace: String,
     },
+
+    #[snafu(display("failed to build labels for operator resources"))]
+    BuildLabels { source: LabelError },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -156,11 +164,15 @@ pub enum CmdError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
+    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
+        debug!("Handle operator args");
+
+        let transfer_client = Client::new_with(cache);
+
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args, cli).await,
             OperatorCommands::Describe(args) => describe_cmd(args, cli).await,
-            OperatorCommands::Install(args) => install_cmd(args, cli).await,
+            OperatorCommands::Install(args) => install_cmd(args, cli, &transfer_client).await,
             OperatorCommands::Uninstall(args) => uninstall_cmd(args, cli),
             OperatorCommands::Installed(args) => installed_cmd(args, cli),
         }
@@ -282,7 +294,11 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 }
 
 #[instrument]
-async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
+async fn install_cmd(
+    args: &OperatorInstallArgs,
+    cli: &Cli,
+    transfer_client: &Client,
+) -> Result<String, CmdError> {
     info!("Installing operator(s)");
 
     args.local_cluster
@@ -296,10 +312,14 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             namespace: args.operator_namespace.clone(),
         })?;
 
+    let labels =
+        Labels::try_from([("stackable.tech/vendor", "Stackable")]).context(BuildLabelsSnafu)?;
+
     for operator in &args.operators {
         operator
-            .install(&args.operator_namespace)
-            .context(HelmSnafu)?;
+            .install(&args.operator_namespace, transfer_client, labels.clone())
+            .await
+            .context(InstallOperatorSnafu)?;
 
         println!("Installed {} operator", operator);
     }

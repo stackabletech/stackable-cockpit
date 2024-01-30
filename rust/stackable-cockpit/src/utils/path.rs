@@ -11,8 +11,8 @@ pub enum PathOrUrl {
 
 #[derive(Debug, Snafu)]
 pub enum PathOrUrlParseError {
-    #[snafu(display("failed to parse URL"))]
-    UrlParse { source: ParseError },
+    #[snafu(display("failed to parse url {url:?}"))]
+    UrlParse { source: ParseError, url: String },
 }
 
 pub trait IntoPathOrUrl: Sized {
@@ -89,7 +89,7 @@ impl FromStr for PathOrUrl {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("https://") || s.starts_with("http://") {
-            let url = Url::parse(s).context(UrlParseSnafu)?;
+            let url = Url::parse(s).context(UrlParseSnafu { url: s.to_string() })?;
             return Ok(Self::Url(url));
         }
 
