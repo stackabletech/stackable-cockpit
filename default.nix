@@ -38,7 +38,9 @@ rec {
           '';
       };
       helm-sys = attrs: {
-        GO_HELM_WRAPPER = goHelmWrapper + "/bin/go-helm-wrapper";
+        GO_HELM_WRAPPER = goHelmWrapper + "/bin";
+        LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
+        BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.glibc.dev}/include -I${pkgs.clang.cc.lib}/lib/clang/${pkgs.lib.versions.major (pkgs.lib.getVersion pkgs.clang.cc)}/include";
       };
     };
   };
@@ -129,6 +131,13 @@ rec {
     pwd = ./rust/helm-sys/go-helm-wrapper;
     modules = ./gomod2nix.toml;
     ldflags = "-buildmode c-archive";
+    allowGoReference = true;
+    postBuild =
+      ''
+        for pkg in $(getGoDirs ""); do
+          buildFlags="-buildmode c-archive -o $GOPATH/bin/libgo-helm-wrapper.a" buildGoDir build "$pkg"
+        done
+      '';
   };
 
   regenerateNixLockfiles = pkgs.writeScriptBin "regenerate-nix-lockfiles"

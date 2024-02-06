@@ -6,6 +6,8 @@ use std::{
 
 use snafu::{ResultExt, Snafu};
 
+const ENV_GO_HELM_WRAPPER: &str = "GO_HELM_WRAPPER";
+
 #[derive(Debug, Snafu)]
 enum Error {
     #[snafu(display("Failed to find env var"))]
@@ -21,27 +23,38 @@ enum Error {
 fn main() {
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
 
-    println!("cargo:rerun-if-changed=go-helm-wrapper/main.go");
+    println!("cargo:rerun-if-env-changed={ENV_GO_HELM_WRAPPER}");
+    let build_path = match env::var_os(ENV_GO_HELM_WRAPPER) {
+        Some(go_helm_wrapper) => {
+            // Reuse pre-built helm wrapper if possible
+            eprintln!("Reusing pre-built go-helm-wrapper ({go_helm_wrapper:?})");
+            PathBuf::from(go_helm_wrapper)
+        }
+        None => {
+            println!("cargo:rerun-if-changed=go-helm-wrapper/main.go");
 
-    let cc = cc::Build::new().try_get_compiler().unwrap();
-    let goarch = get_goarch().unwrap();
-    let goos = get_goos().unwrap();
+            let cc = cc::Build::new().try_get_compiler().unwrap();
+            let goarch = get_goarch().unwrap();
+            let goos = get_goos().unwrap();
 
-    let mut cmd = Command::new("go");
-    cmd.arg("build")
-        .args(["-buildmode", "c-archive"])
-        .arg("-o")
-        .arg(out_path.join("libgo-helm-wrapper.a"))
-        .arg("go-helm-wrapper/main.go")
-        .env("CGO_ENABLED", "1")
-        .env("GOARCH", goarch)
-        .env("GOOS", goos)
-        .env("CC", format!("'{}'", cc.path().display()));
+            let mut cmd = Command::new("go");
+            cmd.arg("build")
+                .args(["-buildmode", "c-archive"])
+                .arg("-o")
+                .arg(out_path.join("libgo-helm-wrapper.a"))
+                .arg("go-helm-wrapper/main.go")
+                .env("CGO_ENABLED", "1")
+                .env("GOARCH", goarch)
+                .env("GOOS", goos)
+                .env("CC", format!("'{}'", cc.path().display()));
 
-    cmd.status().expect("Failed to build go-helm-wrapper");
+            cmd.status().expect("Failed to build go-helm-wrapper");
+            out_path.clone()
+        }
+    };
 
     let bindings = bindgen::builder()
-        .header(out_path.join("libgo-helm-wrapper.h").to_str().unwrap())
+        .header(build_path.join("libgo-helm-wrapper.h").to_str().unwrap())
         .parse_callbacks(Box::new(bindgen::CargoCallbacks))
         .generate()
         .expect("Failed to generate Rust bindings from Go header file");
@@ -54,7 +67,7 @@ fn main() {
     println!("cargo:rustc-link-lib=static=go-helm-wrapper");
     println!(
         "cargo:rustc-link-search=native={}",
-        out_path.to_str().unwrap()
+        build_path.to_str().unwrap()
     );
 }
 
