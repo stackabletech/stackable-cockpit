@@ -4,11 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Operators are now installed in parallel when installing a release.
+
 ### Fixed
 
 - Fix `--cluster-name` not taking effect. The local test clusters always used the default cluster name ([#181]).
 
 [#181]: https://github.com/stackabletech/stackable-cockpit/pull/181
+[#202]: https://github.com/stackabletech/stackable-cockpit/pull/202
 
 ## [23.11.3] - 2024-01-03
 
