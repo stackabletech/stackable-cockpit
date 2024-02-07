@@ -197,6 +197,7 @@ impl StackSpec {
         // Install the release
         release
             .install(&self.operators, &[], operator_namespace)
+            .await
             .context(InstallReleaseSnafu)
     }
 

@@ -2626,6 +2626,7 @@ name = "stackable-cockpit"
 version = "0.0.0-dev"
 dependencies = [
  "bcrypt",
+ "futures",
  "helm-sys",
  "indexmap 2.1.0",
  "k8s-openapi",
