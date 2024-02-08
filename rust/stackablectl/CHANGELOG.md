@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Operators are now installed in parallel when installing a release.
+- Operators are now installed in parallel when installing a release ([#202]).
 
 ### Fixed
 
