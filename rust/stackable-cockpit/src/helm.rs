@@ -3,6 +3,7 @@ use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
+use tokio::task::block_in_place;
 use tracing::{debug, error, info, instrument};
 use url::Url;
 
@@ -202,62 +203,66 @@ pub fn install_release_from_repo(
     namespace: &str,
     suppress_output: bool,
 ) -> Result<InstallReleaseStatus, Error> {
-    debug!("Install Helm release from repo");
+    // Ideally, each Helm invocation would spawn_blocking instead in/around helm_sys,
+    // but that requires a larger refactoring
+    block_in_place(|| {
+        debug!("Install Helm release from repo");
 
-    if check_release_exists(release_name, namespace)? {
-        let release = get_release(release_name, namespace)?.ok_or(Error::InstallRelease {
-            source: InstallReleaseError::NoSuchRelease {
-                name: release_name.to_owned(),
-            },
-        })?;
+        if check_release_exists(release_name, namespace)? {
+            let release = get_release(release_name, namespace)?.ok_or(Error::InstallRelease {
+                source: InstallReleaseError::NoSuchRelease {
+                    name: release_name.to_owned(),
+                },
+            })?;
 
-        let current_version = release.version;
+            let current_version = release.version;
 
-        match chart_version {
-            Some(chart_version) => {
-                if chart_version == current_version {
-                    return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
-                        requested_version: chart_version.to_string(),
+            match chart_version {
+                Some(chart_version) => {
+                    if chart_version == current_version {
+                        return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
+                            requested_version: chart_version.to_string(),
+                            release_name: release_name.to_string(),
+                            current_version,
+                        });
+                    } else {
+                        return Err(Error::InstallRelease {
+                            source: InstallReleaseError::ReleaseAlreadyInstalled {
+                                requested_version: chart_version.into(),
+                                name: release_name.into(),
+                                current_version,
+                            },
+                        });
+                    }
+                }
+                None => {
+                    return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
                         release_name: release_name.to_string(),
                         current_version,
-                    });
-                } else {
-                    return Err(Error::InstallRelease {
-                        source: InstallReleaseError::ReleaseAlreadyInstalled {
-                            requested_version: chart_version.into(),
-                            name: release_name.into(),
-                            current_version,
-                        },
-                    });
+                    })
                 }
             }
-            None => {
-                return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
-                    release_name: release_name.to_string(),
-                    current_version,
-                })
-            }
         }
-    }
 
-    let full_chart_name = format!("{repo_name}/{chart_name}");
-    let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
+        let full_chart_name = format!("{repo_name}/{chart_name}");
+        let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
 
-    debug!(
-        "Installing Helm release {} ({}) from chart {}",
-        release_name, chart_version, full_chart_name
-    );
+        debug!(
+            "Installing Helm release {} ({}) from chart {}",
+            release_name, chart_version, full_chart_name
+        );
 
-    install_release(
-        release_name,
-        &full_chart_name,
-        chart_version,
-        values_yaml,
-        namespace,
-        suppress_output,
-    )?;
+        install_release(
+            release_name,
+            &full_chart_name,
+            chart_version,
+            values_yaml,
+            namespace,
+            suppress_output,
+        )?;
 
-    Ok(InstallReleaseStatus::Installed(release_name.to_string()))
+        Ok(InstallReleaseStatus::Installed(release_name.to_string()))
+    })
 }
 
 /// Installs a Helm release.

@@ -289,6 +289,7 @@ async fn install_cmd(
                     &args.excluded_products,
                     &args.operator_namespace,
                 )
+                .await
                 .context(ReleaseInstallSnafu)?;
 
             output

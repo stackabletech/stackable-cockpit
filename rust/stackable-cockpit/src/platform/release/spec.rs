@@ -1,6 +1,8 @@
+use futures::{StreamExt as _, TryStreamExt};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
+use tokio::task::JoinError;
 use tracing::{info, instrument};
 
 #[cfg(feature = "openapi")]
@@ -26,6 +28,9 @@ pub enum Error {
 
     #[snafu(display("failed to uninstall release using Helm"))]
     HelmUninstall { source: helm::Error },
+
+    #[snafu(display("failed to launch background task"))]
+    BackgroundTask { source: JoinError },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -46,7 +51,7 @@ pub struct ReleaseSpec {
 impl ReleaseSpec {
     /// Installs a release by installing individual operators.
     #[instrument(skip_all)]
-    pub fn install(
+    pub async fn install(
         &self,
         include_products: &[String],
         exclude_products: &[String],
@@ -54,18 +59,31 @@ impl ReleaseSpec {
     ) -> Result<()> {
         info!("Installing release");
 
-        for (product_name, product) in self.filter_products(include_products, exclude_products) {
-            info!("Installing {product_name}-operator");
+        let namespace = namespace.to_string();
+        futures::stream::iter(self.filter_products(include_products, exclude_products))
+            .map(|(product_name, product)| {
+                let namespace = namespace.clone();
+                // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
+                // get useful parallelism.
+                tokio::spawn(async move {
+                    info!("Installing {product_name}-operator");
 
-            // Create operator spec
-            let operator = OperatorSpec::new(product_name, Some(product.version.clone()))
-                .context(OperatorSpecParseSnafu)?;
+                    // Create operator spec
+                    let operator = OperatorSpec::new(&product_name, Some(product.version.clone()))
+                        .context(OperatorSpecParseSnafu)?;
 
-            // Install operator
-            operator.install(namespace).context(HelmInstallSnafu)?
-        }
+                    // Install operator
+                    operator.install(&namespace).context(HelmInstallSnafu)?;
 
-        Ok(())
+                    info!("Installed {product_name}-operator");
+
+                    Ok(())
+                })
+            })
+            .buffer_unordered(10)
+            .map(|res| res.context(BackgroundTaskSnafu)?)
+            .try_collect::<()>()
+            .await
     }
 
     #[instrument(skip_all)]
