@@ -443,6 +443,7 @@ complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from help; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "clean" -d 'Clean cached files'
 complete -c stackablectl -n "__fish_seen_subcommand_from cache; and __fish_seen_subcommand_from help; and not __fish_seen_subcommand_from list; and not __fish_seen_subcommand_from clean; and not __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_seen_subcommand_from debug" -s n -l namespace -r
+complete -c stackablectl -n "__fish_seen_subcommand_from debug" -s c -l container -r
 complete -c stackablectl -n "__fish_seen_subcommand_from debug" -l image -r
 complete -c stackablectl -n "__fish_seen_subcommand_from debug" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_seen_subcommand_from debug" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F

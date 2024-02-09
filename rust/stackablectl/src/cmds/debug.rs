@@ -11,7 +11,7 @@ use stackable_operator::{
     },
 };
 use termion::raw::IntoRawMode;
-use tracing::info;
+use tracing::{error, info};
 
 use crate::cli::Cli;
 
@@ -25,8 +25,12 @@ pub struct DebugArgs {
     #[clap(long, short)]
     namespace: String,
     pod: String,
+    #[clap(long, short)]
+    container: String,
     #[clap(long)]
     image: String,
+    #[clap(last = true)]
+    cmd: Option<Vec<String>>,
 }
 
 impl DebugArgs {
@@ -42,13 +46,29 @@ impl DebugArgs {
             container.name = debug_container_name,
             "Creating debug container"
         );
-        let pod = Pod {
+        let pod = pods.get(&self.pod).await.unwrap();
+        let template_container = pod
+            .spec
+            .as_ref()
+            .and_then(|spec| spec.containers.iter().find(|c| c.name == self.container))
+            .unwrap();
+        let pod_patch = Pod {
             spec: Some(PodSpec {
                 ephemeral_containers: Some(vec![EphemeralContainer {
                     name: debug_container_name.clone(),
                     image: Some(self.image.clone()),
                     tty: Some(true),
                     stdin: Some(true),
+
+                    command: self.cmd.clone(),
+                    args: self.cmd.is_some().then(Vec::new),
+
+                    // copy environment from template
+                    env: template_container.env.clone(),
+                    env_from: template_container.env_from.clone(),
+                    volume_mounts: template_container.volume_mounts.clone(),
+                    volume_devices: template_container.volume_devices.clone(),
+
                     ..Default::default()
                 }]),
                 ..Default::default()
@@ -58,7 +78,7 @@ impl DebugArgs {
         pods.patch_ephemeral_containers(
             &self.pod,
             &PatchParams::default(),
-            &kube::api::Patch::Strategic(pod),
+            &kube::api::Patch::Strategic(pod_patch),
         )
         .await
         .unwrap();
@@ -68,15 +88,31 @@ impl DebugArgs {
         );
         let ready_pod =
             kube::runtime::wait::await_condition(pods.clone(), &self.pod, |pod: Option<&Pod>| {
-                pod.and_then(debug_container_status_of_pod(&debug_container_name))
+                let container = pod.and_then(debug_container_status_of_pod(&debug_container_name));
+                container
                     .and_then(|c| Some(c.state.as_ref()?.waiting.is_none()))
                     .unwrap_or_default()
+                    || container
+                        .and_then(|c| c.last_state.as_ref()?.terminated.as_ref())
+                        .is_some()
             })
             .await
             .unwrap();
-        dbg!(ready_pod
+        let debug_container_status = dbg!(ready_pod
             .as_ref()
-            .and_then(debug_container_status_of_pod(&debug_container_name)));
+            .and_then(debug_container_status_of_pod(&debug_container_name)))
+        .unwrap();
+        if let Some(termination) = debug_container_status
+            .last_state
+            .as_ref()
+            .and_then(|state| state.terminated.as_ref())
+        {
+            error!(
+                error = termination.message,
+                exit_code = termination.exit_code,
+                "Debug container failed to start!"
+            );
+        }
         info!(
             container.name = debug_container_name,
             "Attaching to container"

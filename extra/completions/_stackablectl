@@ -1126,6 +1126,8 @@ esac
 _arguments "${_arguments_options[@]}" \
 '-n+[]:NAMESPACE: ' \
 '--namespace=[]:NAMESPACE: ' \
+'-c+[]:CONTAINER: ' \
+'--container=[]:CONTAINER: ' \
 '--image=[]:IMAGE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
@@ -1145,6 +1147,7 @@ _arguments "${_arguments_options[@]}" \
 '-V[Print version]' \
 '--version[Print version]' \
 ':pod:' \
+'*::cmd:' \
 && ret=0
 ;;
 (help)
