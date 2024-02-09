@@ -17,7 +17,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
-    cmds::{cache, completions, demo, operator, release, stack, stacklet},
+    cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
     constants::{
         ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
@@ -48,6 +48,9 @@ pub enum Error {
 
     #[snafu(display("cache command error"))]
     Cache { source: cache::CmdError },
+
+    #[snafu(display("debug command error"))]
+    Debug { source: debug::CmdError },
 
     #[snafu(display("helm error"))]
     Helm { source: helm::Error },
@@ -191,6 +194,7 @@ impl Cli {
             Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
             Commands::Completions(args) => args.run().context(CompletionsSnafu),
             Commands::Cache(args) => args.run(self, cache).await.context(CacheSnafu),
+            Commands::Debug(args) => args.run(self).await.context(DebugSnafu),
         }
     }
 
@@ -240,6 +244,8 @@ CRDs."
 
     /// Interact with locally cached files
     Cache(cache::CacheArgs),
+
+    Debug(debug::DebugArgs),
 }
 
 #[derive(Clone, Debug, Default, ValueEnum)]
