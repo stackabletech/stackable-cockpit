@@ -1,16 +1,16 @@
-use std::pin::pin;
-
 use clap::Args;
+use futures::{channel::mpsc::Sender, FutureExt, SinkExt, TryFutureExt};
 use rand::Rng;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::{
     k8s_openapi::api::core::v1::{ContainerStatus, EphemeralContainer, Pod, PodSpec},
     kube::{
         self,
-        api::{AttachParams, PatchParams},
+        api::{AttachParams, PatchParams, TerminalSize},
     },
 };
-use termion::raw::IntoRawMode;
+use termion::{raw::IntoRawMode, terminal_size};
+use tokio::signal::unix::SignalKind;
 use tracing::{error, info};
 
 use crate::cli::Cli;
@@ -98,10 +98,10 @@ impl DebugArgs {
             })
             .await
             .unwrap();
-        let debug_container_status = dbg!(ready_pod
+        let debug_container_status = ready_pod
             .as_ref()
-            .and_then(debug_container_status_of_pod(&debug_container_name)))
-        .unwrap();
+            .and_then(debug_container_status_of_pod(&debug_container_name))
+            .unwrap();
         if let Some(termination) = debug_container_status
             .last_state
             .as_ref()
@@ -127,23 +127,44 @@ impl DebugArgs {
         info!("Attached to container, if the shell line looks empty, press ENTER!");
         {
             let _raw = std::io::stdout().into_raw_mode().unwrap();
-            futures::future::select(
-                pin!(tokio::io::copy(
-                    &mut attachment.stdout().unwrap(),
-                    &mut tokio::io::stdout()
-                )),
-                pin!(tokio::io::copy(
-                    &mut tokio::io::stdin(),
-                    &mut attachment.stdin().unwrap()
-                )),
-            )
+            futures::future::select_all([
+                update_terminal_size(attachment.terminal_size().unwrap())
+                    .map(Ok)
+                    .boxed(),
+                tokio::io::copy(&mut attachment.stdout().unwrap(), &mut tokio::io::stdout())
+                    .map_ok(drop)
+                    .boxed(),
+                tokio::io::copy(&mut tokio::io::stdin(), &mut attachment.stdin().unwrap())
+                    .map_ok(drop)
+                    .boxed(),
+            ])
             .await
-            .factor_first()
             .0
             .unwrap();
         }
         // FIXME: Terminate the process to avoid Tokio hogging stdin forever
         std::process::exit(0);
+    }
+}
+
+async fn update_terminal_size(mut tx: Sender<TerminalSize>) {
+    let mut signal = tokio::signal::unix::signal(SignalKind::window_change()).unwrap();
+    {
+        let (width, height) = terminal_size().unwrap();
+        // Make TTY apps re-render by force-changing the terminal size
+        // Start by sending an invalid size so that it's a change no matter
+        // whether the size has actually changed.
+        tx.send(TerminalSize {
+            width: width - 1,
+            height,
+        })
+        .await
+        .unwrap();
+        tx.send(TerminalSize { width, height }).await.unwrap();
+    }
+    while let Some(()) = signal.recv().await {
+        let (width, height) = terminal_size().unwrap();
+        tx.send(TerminalSize { width, height }).await.unwrap();
     }
 }
 
