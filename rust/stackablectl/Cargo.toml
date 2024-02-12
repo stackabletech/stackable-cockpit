@@ -34,3 +34,4 @@ tracing-subscriber.workspace = true
 tracing.workspace = true
 futures.workspace = true
 termion = "3.0.0"
+libc = "0.2.153"

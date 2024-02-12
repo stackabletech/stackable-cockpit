@@ -1,3 +1,9 @@
+use std::{
+    io::{Read, Stdin},
+    os::fd::AsRawFd,
+    task::{ready, Poll},
+};
+
 use clap::Args;
 use futures::{channel::mpsc::Sender, FutureExt, SinkExt, TryFutureExt};
 use rand::Rng;
@@ -10,7 +16,10 @@ use stackable_operator::{
     },
 };
 use termion::{raw::IntoRawMode, terminal_size};
-use tokio::signal::unix::SignalKind;
+use tokio::{
+    io::{unix::AsyncFd, AsyncRead},
+    signal::unix::SignalKind,
+};
 use tracing::{error, info};
 
 use crate::cli::Cli;
@@ -134,7 +143,7 @@ impl DebugArgs {
                 tokio::io::copy(&mut attachment.stdout().unwrap(), &mut tokio::io::stdout())
                     .map_ok(drop)
                     .boxed(),
-                tokio::io::copy(&mut tokio::io::stdin(), &mut attachment.stdin().unwrap())
+                tokio::io::copy(&mut AsyncStdin::new(), &mut attachment.stdin().unwrap())
                     .map_ok(drop)
                     .boxed(),
             ])
@@ -142,8 +151,61 @@ impl DebugArgs {
             .0
             .unwrap();
         }
-        // FIXME: Terminate the process to avoid Tokio hogging stdin forever
-        std::process::exit(0);
+        Ok(String::new())
+    }
+}
+
+/// Does true non-blocking reads of stdin, so that we can cancel properly on shutdown.
+/// The compromise is that it does not handle having things piped into it very well, since their write sides
+/// will also be turned non-blocking.
+///
+/// Also, `AsyncStdin` will currently _not_ restore the mode of stdin when dropped.
+// FIXME: restore status
+struct AsyncStdin {
+    fd: AsyncFd<Stdin>,
+}
+
+impl AsyncStdin {
+    fn new() -> Self {
+        let stdin = std::io::stdin();
+        // Make stdin non-blocking
+        {
+            let old_flags = unsafe { libc::fcntl(stdin.as_raw_fd(), libc::F_GETFL) };
+            if old_flags == -1 {
+                panic!("{:?}", std::io::Error::last_os_error());
+            }
+            let status = unsafe {
+                libc::fcntl(
+                    stdin.as_raw_fd(),
+                    libc::F_SETFL,
+                    old_flags | libc::O_NONBLOCK,
+                )
+            };
+            if status == -1 {
+                panic!("{:?}", std::io::Error::last_os_error());
+            }
+        };
+        Self {
+            fd: AsyncFd::new(stdin).unwrap(),
+        }
+    }
+}
+
+impl AsyncRead for AsyncStdin {
+    fn poll_read(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> Poll<std::io::Result<()>> {
+        let mut ready = ready!(self.fd.poll_read_ready_mut(cx)?);
+        match ready.try_io(|r| {
+            let read = r.get_mut().read(buf.initialize_unfilled())?;
+            buf.advance(read);
+            Ok(())
+        }) {
+            Ok(res) => Poll::Ready(res),
+            Err(_would_block) => Poll::Pending,
+        }
     }
 }
 
