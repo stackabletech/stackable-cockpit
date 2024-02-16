@@ -32,7 +32,7 @@ pub enum CmdError {
 #[derive(Debug, Args)]
 pub struct DebugArgs {
     #[clap(long, short)]
-    namespace: String,
+    namespace: Option<String>,
     pod: String,
     #[clap(long, short)]
     container: String,
@@ -45,7 +45,10 @@ pub struct DebugArgs {
 impl DebugArgs {
     pub async fn run(&self, _cli: &Cli) -> Result<String, CmdError> {
         let kube = kube::Client::try_default().await.unwrap();
-        let pods = kube::Api::<Pod>::namespaced(kube, &self.namespace);
+        let pods = match &self.namespace {
+            Some(ns) => kube::Api::<Pod>::namespaced(kube, ns),
+            None => kube::Api::<Pod>::default_namespaced(kube),
+        };
         let mut rng = rand::thread_rng();
         let mut debug_container_name = "sble-debug-".to_string();
         for _ in 0..5 {
