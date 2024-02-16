@@ -200,14 +200,19 @@ impl AsyncRead for AsyncStdin {
         cx: &mut std::task::Context<'_>,
         buf: &mut tokio::io::ReadBuf<'_>,
     ) -> Poll<std::io::Result<()>> {
-        let mut ready = ready!(self.fd.poll_read_ready_mut(cx)?);
-        match ready.try_io(|r| {
-            let read = r.get_mut().read(buf.initialize_unfilled())?;
-            buf.advance(read);
-            Ok(())
-        }) {
-            Ok(res) => Poll::Ready(res),
-            Err(_would_block) => Poll::Pending,
+        loop {
+            let mut ready = ready!(self.fd.poll_read_ready_mut(cx)?);
+            break match ready.try_io(|r| {
+                let read = r.get_mut().read(buf.initialize_unfilled())?;
+                buf.advance(read);
+                Ok(())
+            }) {
+                Ok(res) => Poll::Ready(res),
+                Err(_would_block) => {
+                    // Try to poll again, so that we re-register the waker
+                    continue;
+                }
+            };
         }
     }
 }
