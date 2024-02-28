@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Added experimental `debug` command ([#204]).
+
 ### Changed
 
 - Operators are now installed in parallel when installing a release ([#202]).
@@ -14,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 [#181]: https://github.com/stackabletech/stackable-cockpit/pull/181
 [#202]: https://github.com/stackabletech/stackable-cockpit/pull/202
+[#204]: https://github.com/stackabletech/stackable-cockpit/pull/204
 
 ## [23.11.3] - 2024-01-03
 
