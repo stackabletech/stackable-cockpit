@@ -24,7 +24,7 @@ use tokio::{
     io::{unix::AsyncFd, AsyncRead},
     signal::unix::SignalKind,
 };
-use tracing::{error, info};
+use tracing::{error, info, info_span, warn, Instrument};
 
 use crate::cli::Cli;
 
@@ -119,109 +119,105 @@ impl DebugArgs {
             .unwrap_or_else(|| kube.default_namespace());
         let pods = kube::Api::<Pod>::namespaced(kube.clone(), namespace);
         let debug_container_name = generate_debug_container_name();
-        info!(
-            container.name = debug_container_name,
-            "Creating debug container"
-        );
-        let pod_ref = || ObjectRef::<Pod>::new(&self.pod).within(namespace);
-        let pod = pods
-            .get(&self.pod)
+        let span = info_span!("debug", container.debug.name = debug_container_name);
+        async {
+            info!("Creating debug container");
+            let pod_ref = || ObjectRef::<Pod>::new(&self.pod).within(namespace);
+            let pod = pods
+                .get(&self.pod)
+                .await
+                .with_context(|_| GetPodSnafu { pod: pod_ref() })?;
+            let template_container = pod
+                .spec
+                .as_ref()
+                .and_then(|spec| spec.containers.iter().find(|c| c.name == self.container))
+                .with_context(|| FindTemplateContainerSnafu {
+                    pod: pod_ref(),
+                    container: &self.container,
+                })?;
+            let pod_patch = Pod {
+                spec: Some(PodSpec {
+                    ephemeral_containers: Some(vec![EphemeralContainer {
+                        name: debug_container_name.clone(),
+                        image: Some(self.image.clone()),
+                        tty: Some(true),
+                        stdin: Some(true),
+
+                        command: self.cmd.clone(),
+                        args: self.cmd.is_some().then(Vec::new),
+
+                        // copy environment from template
+                        env: template_container.env.clone(),
+                        env_from: template_container.env_from.clone(),
+                        volume_mounts: template_container.volume_mounts.clone(),
+                        volume_devices: template_container.volume_devices.clone(),
+
+                        ..Default::default()
+                    }]),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            };
+            pods.patch_ephemeral_containers(
+                &self.pod,
+                &PatchParams::default(),
+                &kube::api::Patch::Strategic(pod_patch),
+            )
             .await
-            .with_context(|_| GetPodSnafu { pod: pod_ref() })?;
-        let template_container = pod
-            .spec
-            .as_ref()
-            .and_then(|spec| spec.containers.iter().find(|c| c.name == self.container))
-            .with_context(|| FindTemplateContainerSnafu {
+            .with_context(|_| CreateDebugContainerSnafu {
                 pod: pod_ref(),
                 container: &self.container,
             })?;
-        let pod_patch = Pod {
-            spec: Some(PodSpec {
-                ephemeral_containers: Some(vec![EphemeralContainer {
-                    name: debug_container_name.clone(),
-                    image: Some(self.image.clone()),
-                    tty: Some(true),
-                    stdin: Some(true),
-
-                    command: self.cmd.clone(),
-                    args: self.cmd.is_some().then(Vec::new),
-
-                    // copy environment from template
-                    env: template_container.env.clone(),
-                    env_from: template_container.env_from.clone(),
-                    volume_mounts: template_container.volume_mounts.clone(),
-                    volume_devices: template_container.volume_devices.clone(),
-
-                    ..Default::default()
-                }]),
-                ..Default::default()
-            }),
-            ..Default::default()
-        };
-        pods.patch_ephemeral_containers(
-            &self.pod,
-            &PatchParams::default(),
-            &kube::api::Patch::Strategic(pod_patch),
-        )
-        .await
-        .with_context(|_| CreateDebugContainerSnafu {
-            pod: pod_ref(),
-            container: &self.container,
-        })?;
-        info!(
-            container.name = debug_container_name,
-            "Waiting for container to start"
-        );
-        let ready_pod =
-            kube::runtime::wait::await_condition(pods.clone(), &self.pod, |pod: Option<&Pod>| {
-                let container = pod.and_then(debug_container_status_of_pod(&debug_container_name));
-                container
-                    .and_then(|c| Some(c.state.as_ref()?.waiting.is_none()))
-                    .unwrap_or_default()
-                    || container
-                        .and_then(|c| c.last_state.as_ref()?.terminated.as_ref())
-                        .is_some()
-            })
+            info!("Waiting for container to start");
+            let ready_pod = kube::runtime::wait::await_condition(
+                pods.clone(),
+                &self.pod,
+                |pod: Option<&Pod>| {
+                    let container =
+                        pod.and_then(debug_container_status_of_pod(&debug_container_name));
+                    container
+                        .and_then(|c| Some(c.state.as_ref()?.waiting.is_none()))
+                        .unwrap_or_default()
+                        || container
+                            .and_then(|c| c.last_state.as_ref()?.terminated.as_ref())
+                            .is_some()
+                },
+            )
             .await
             .with_context(|_| AwaitDebugContainerReadinessSnafu {
                 pod: pod_ref(),
                 container: &self.container,
             })?;
-        let debug_container_status = ready_pod
-            .as_ref()
-            .and_then(debug_container_status_of_pod(&debug_container_name))
-            .with_context(|| FindDebugContainerStatusSnafu {
-                pod: pod_ref(),
-                container: &self.container,
-            })?;
-        if let Some(termination) = debug_container_status
-            .last_state
-            .as_ref()
-            .and_then(|state| state.terminated.as_ref())
-        {
-            error!(
-                error = termination.message,
-                exit_code = termination.exit_code,
-                "Debug container failed to start!"
-            );
-        }
-        info!(
-            container.name = debug_container_name,
-            "Attaching to container"
-        );
-        let mut attachment = pods
-            .attach(
-                &self.pod,
-                &AttachParams::interactive_tty().container(debug_container_name),
-            )
-            .await
-            .with_context(|_| AttachContainerSnafu {
-                pod: pod_ref(),
-                container: &self.container,
-            })?;
-        info!("Attached to container, if the shell line looks empty, press ENTER!");
-        {
+            let debug_container_status = ready_pod
+                .as_ref()
+                .and_then(debug_container_status_of_pod(&debug_container_name))
+                .with_context(|| FindDebugContainerStatusSnafu {
+                    pod: pod_ref(),
+                    container: &self.container,
+                })?;
+            if let Some(termination) = debug_container_status
+                .last_state
+                .as_ref()
+                .and_then(|state| state.terminated.as_ref())
+            {
+                error!(
+                    error = termination.message,
+                    exit_code = termination.exit_code,
+                    "Debug container failed to start!"
+                );
+            }
+            info!("Attaching to container");
+            let mut attachment = pods
+                .attach(
+                    &self.pod,
+                    &AttachParams::interactive_tty().container(debug_container_name),
+                )
+                .await
+                .with_context(|_| AttachContainerSnafu {
+                    pod: pod_ref(),
+                    container: &self.container,
+                })?;
+            info!("Attached to container, if the shell line looks empty, press ENTER!");
             let _raw = std::io::stdout()
                 .into_raw_mode()
                 .context(SetRawTtyModeSnafu)?;
@@ -249,8 +245,10 @@ impl DebugArgs {
             ])
             .await
             .0?;
+            Ok(String::new())
         }
-        Ok(String::new())
+        .instrument(span)
+        .await
     }
 }
 
@@ -287,7 +285,7 @@ impl AsyncStdin {
                 return Err(std::io::Error::last_os_error()).context(AsyncifyStdinSnafu);
             }
             if old_flags & libc::O_NONBLOCK != 0 {
-                tracing::warn!("stdin is already non-blocking (did you try to create multiple AsyncStdin instances?)");
+                warn!("stdin is already non-blocking (did you try to create multiple AsyncStdin instances?)");
             }
             let status = unsafe {
                 libc::fcntl(
