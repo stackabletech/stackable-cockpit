@@ -260,20 +260,27 @@ fn generate_debug_container_name() -> String {
 /// The compromise is that it does not handle having things piped into it very well, since their write sides
 /// will also be turned non-blocking.
 ///
-/// Also, `AsyncStdin` will currently _not_ restore the mode of stdin when dropped.
-// FIXME: restore status
+/// Only a single instance of AsyncStdin should exist at any one time.
+///
+/// Also, `AsyncStdin` will restore the mode of stdin when dropped.
 struct AsyncStdin {
     fd: AsyncFd<Stdin>,
+    old_flags: i32,
 }
 
 impl AsyncStdin {
+    #[tracing::instrument]
     fn new() -> Result<Self> {
         let stdin = std::io::stdin();
         // Make stdin non-blocking
+        let old_flags;
         {
-            let old_flags = unsafe { libc::fcntl(stdin.as_raw_fd(), libc::F_GETFL) };
+            old_flags = unsafe { libc::fcntl(stdin.as_raw_fd(), libc::F_GETFL) };
             if old_flags == -1 {
                 return Err(std::io::Error::last_os_error()).context(AsyncifyStdinSnafu);
+            }
+            if old_flags & libc::O_NONBLOCK != 0 {
+                tracing::warn!("stdin is already non-blocking (did you try to create multiple AsyncStdin instances?)");
             }
             let status = unsafe {
                 libc::fcntl(
@@ -288,7 +295,20 @@ impl AsyncStdin {
         };
         Ok(Self {
             fd: AsyncFd::new(stdin).context(AsyncFdStdinSnafu)?,
+            old_flags,
         })
+    }
+}
+
+impl Drop for AsyncStdin {
+    fn drop(&mut self) {
+        let status = unsafe { libc::fcntl(self.fd.as_raw_fd(), libc::F_SETFL, self.old_flags) };
+        if status == -1 {
+            panic!(
+                "unable to revert stdin flags: {}",
+                std::io::Error::last_os_error()
+            );
+        }
     }
 }
 
