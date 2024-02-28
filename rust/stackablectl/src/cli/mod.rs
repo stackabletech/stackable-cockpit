@@ -194,7 +194,7 @@ impl Cli {
             Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
             Commands::Completions(args) => args.run().context(CompletionsSnafu),
             Commands::Cache(args) => args.run(self, cache).await.context(CacheSnafu),
-            Commands::Debug(args) => args.run(self).await.context(DebugSnafu),
+            Commands::ExperimentalDebug(args) => args.run(self).await.context(DebugSnafu),
         }
     }
 
@@ -245,7 +245,11 @@ CRDs."
     /// Interact with locally cached files
     Cache(cache::CacheArgs),
 
-    Debug(debug::DebugArgs),
+    /// EXPERIMENTAL: Launch a debug container for a Pod
+    #[command(long_about = "EXPERIMENTAL: Launch a debug container for a Pod.
+
+This container will have access to the same data volumes as the primary container.")]
+    ExperimentalDebug(debug::DebugArgs),
 }
 
 #[derive(Clone, Debug, Default, ValueEnum)]

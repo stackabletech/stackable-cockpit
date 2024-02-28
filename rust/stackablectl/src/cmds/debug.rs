@@ -90,13 +90,20 @@ type Result<T, E = CmdError> = std::result::Result<T, E>;
 
 #[derive(Debug, Args)]
 pub struct DebugArgs {
+    /// The namespace of the Pod being debugged
     #[clap(long, short)]
     namespace: Option<String>,
+    /// The Pod to debug
     pod: String,
+    /// The target container to debug
+    ///
+    /// Volumes and environment variables will be copied from this container.
     #[clap(long, short)]
     container: String,
+    /// The debug container image
     #[clap(long)]
     image: String,
+    /// The command to run in the debug container
     #[clap(last = true)]
     cmd: Option<Vec<String>>,
 }
