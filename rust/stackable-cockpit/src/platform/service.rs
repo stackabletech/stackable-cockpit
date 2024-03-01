@@ -45,15 +45,53 @@ pub async fn get_endpoints(
     object_name: &str,
     object_namespace: &str,
 ) -> Result<IndexMap<String, String>, Error> {
-    let service_list_params =
+    let mut endpoints = IndexMap::new();
+    let list_params =
         ListParams::from_product(product_name, Some(object_name), k8s::ProductLabel::Name);
 
-    let services = kube_client
-        .list_services(Some(object_namespace), &service_list_params)
+    let listeners = kube_client
+        .list_listeners(Some(object_namespace), &list_params)
         .await
         .context(KubeClientFetchSnafu)?;
 
-    let mut endpoints = IndexMap::new();
+    for listener in &listeners {
+        let Some(listener_status) = &listener.status else {
+            continue;
+        };
+        for address in listener_status.ingress_addresses.iter().flatten() {
+            for port in &address.ports {
+                // Listener name usually has pattern  listener-simple-hdfs-namenode-default-0 or
+                // simple-hdfs-datanode-default-0-listener, so we can strip everything before the first occurrence of
+                // the stacklet name (simple-hdfs in this case).
+                // This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far.
+                let listener_name = listener.name_any();
+                let Some((_, display_name)) = listener_name.split_once(object_name) else {
+                    continue;
+                };
+                let text = format!(
+                    "{display_name}-{port_name}",
+                    display_name = display_name.trim_start_matches('-'),
+                    port_name = port.0
+                );
+                let endpoint_url = endpoint_url(&address.address, *port.1, port.0);
+                endpoints.insert(text, endpoint_url);
+            }
+        }
+    }
+
+    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services fetching.
+    // Currently the Services created by listener-op are missing the recommended labels, so early exit in case we find
+    // Listeners is not required. However, once we add the recommended labels to the k8s Services, we would have
+    // duplicated entries (one from the Listener and one from the Service). Because of this we don't look at the
+    // Services in case we found Listeners!
+    if !listeners.items.is_empty() {
+        return Ok(endpoints);
+    }
+
+    let services = kube_client
+        .list_services(Some(object_namespace), &list_params)
+        .await
+        .context(KubeClientFetchSnafu)?;
 
     for service in services {
         match get_endpoint_urls(kube_client, &service, object_name).await {
@@ -268,7 +306,7 @@ async fn get_node_name_ip_mapping(
 }
 
 fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> String {
-    // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022/08/10
+    // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022-08-10
     // For Superset: https://github.com/stackabletech/superset-operator/issues/248
     // For Airflow: https://github.com/stackabletech/airflow-operator/issues/146
     // As we still support older operator versions we need to also include the "old" way of naming

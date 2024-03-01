@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Support listing endpoints of Listeners in `stackablectl stacklet list`.
+  Currently only HDFS is using listener-op, so we can only test that so far ([#XXX]).
+
 ### Changed
 
 - Operators are now installed in parallel when installing a release ([#202]).

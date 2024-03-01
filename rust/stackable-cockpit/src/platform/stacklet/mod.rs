@@ -126,7 +126,7 @@ async fn list_stackable_stacklets(
             Some(obj) => obj,
             None => {
                 info!(
-                    "Failed to list services because the gvk {product_gvk:?} can not be resolved"
+                    "Failed to list stacklets because the gvk {product_gvk:?} can not be resolved"
                 );
                 continue;
             }
