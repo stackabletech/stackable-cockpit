@@ -62,7 +62,7 @@ pub async fn get_endpoints(
             for port in &address.ports {
                 // Listener names usually have the pattern "listener-simple-hdfs-namenode-default-0" or
                 // "simple-hdfs-datanode-default-0-listener", so we can strip everything before the first occurrence of
-                // the stacklet name ("simple-hdfs" in this case).
+                // the stacklet name ("simple-hdfs" in this case). After that it actually get's pretty hard.
                 // This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
                 // so better to have support for that than nothing :)
                 let listener_name = listener.name_any();
