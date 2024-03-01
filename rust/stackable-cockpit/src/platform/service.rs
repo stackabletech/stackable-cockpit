@@ -60,10 +60,11 @@ pub async fn get_endpoints(
         };
         for address in listener_status.ingress_addresses.iter().flatten() {
             for port in &address.ports {
-                // Listener name usually has pattern  listener-simple-hdfs-namenode-default-0 or
-                // simple-hdfs-datanode-default-0-listener, so we can strip everything before the first occurrence of
-                // the stacklet name (simple-hdfs in this case).
-                // This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far.
+                // Listener names usually have the pattern "listener-simple-hdfs-namenode-default-0" or
+                // "simple-hdfs-datanode-default-0-listener", so we can strip everything before the first occurrence of
+                // the stacklet name ("simple-hdfs" in this case).
+                // This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
+                // so better to have support for that than nothing :)
                 let listener_name = listener.name_any();
                 let Some((_, display_name)) = listener_name.split_once(object_name) else {
                     continue;
@@ -79,11 +80,11 @@ pub async fn get_endpoints(
         }
     }
 
-    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services fetching.
-    // Currently the Services created by listener-op are missing the recommended labels, so early exit in case we find
-    // Listeners is not required. However, once we add the recommended labels to the k8s Services, we would have
-    // duplicated entries (one from the Listener and one from the Service). Because of this we don't look at the
-    // Services in case we found Listeners!
+    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services handling following.
+    // Currently the Services created by listener-op are missing the recommended labels, so this early exit in case we
+    // find Listeners is currently not required. However, once we add the recommended labels to the k8s Services, we
+    // would have duplicated entries (one from the Listener and one from the Service). Because of this we don't look at
+    // the Services in case we found Listeners!
     if !listeners.items.is_empty() {
         return Ok(endpoints);
     }
