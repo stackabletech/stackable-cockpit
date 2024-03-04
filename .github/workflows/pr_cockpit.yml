@@ -106,8 +106,12 @@ jobs:
       # Recreate charts and publish charts and docker image. The "-e" is needed as we want to override the
       # default value in the makefile if called from this action, but not otherwise (i.e. when called locally).
       # This is needed for the HELM_REPO variable.
+      - name: Build Docker Image and Helm Chart
+        run: make -e build
       - name: Publish Docker Image and Helm Chart
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: make -e publish
       - id: printtag
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         name: Output Image Name and Tag
         run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> "$GITHUB_OUTPUT"
