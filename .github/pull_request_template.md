@@ -33,4 +33,3 @@
 - [ ] Proper release label has been added
 ```
 
-Once the review is done, comment `bors r+` (or `bors merge`) to merge. [Further information](https://bors.tech/documentation/getting-started/#reviewing-pull-requests)
