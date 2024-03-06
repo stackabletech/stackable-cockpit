@@ -1,12 +1,18 @@
-# Stackable Cockpit
+<!-- markdownlint-disable MD041 MD033 -->
 
-⚠️ Notice: This repository and all its components are currently WIP. At this point in time, no stable version is
-released. Users of `stackablectl` should continue to use the current latest version. A switch can be made when the time
-is appropriate.
+<p align="center">
+  <img width="150" src="./.readme/static/borrowed/Icon_Stackable.svg" alt="Stackable Logo"/>
+</p>
 
-This repository contains the Stackable library `stackable-cockpit`, the Stackable CLI tool
-`stackablectl`, the Stackable server `stackable-cockpitd`, and the web-based admin user
-interface.
+<h1 align="center">Stackable Cockpit</h1>
+
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-green.svg)](https://docs.stackable.tech/home/stable/contributor/index.html)
+[![Apache License 2.0](https://img.shields.io/badge/license-Apache--2.0-green)](./LICENSE)
+
+[Stackable Data Platform](https://stackable.tech/) | [Platform Docs](https://docs.stackable.tech/) | [Discussions](https://github.com/orgs/stackabletech/discussions) | [Discord](https://discord.gg/7kZ3BNnCAF)
+
+This repository contains the Stackable library `stackable-cockpit`, the Stackable CLI tool `stackablectl`, the Stackable
+Cockpit server `stackable-cockpitd`, and the web-based admin user interface.
 
 ## Components
 
