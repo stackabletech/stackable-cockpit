@@ -80,7 +80,7 @@ pub async fn get_endpoints(
         }
     }
 
-    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services handling following.
+    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services handling below.
     // Currently the Services created by listener-op are missing the recommended labels, so this early exit in case we
     // find Listeners is currently not required. However, once we add the recommended labels to the k8s Services, we
     // would have duplicated entries (one from the Listener and one from the Service). Because of this we don't look at
