@@ -45,7 +45,6 @@ pub async fn get_endpoints(
     object_name: &str,
     object_namespace: &str,
 ) -> Result<IndexMap<String, String>, Error> {
-    let mut endpoints = IndexMap::new();
     let list_params =
         ListParams::from_product(product_name, Some(object_name), k8s::ProductLabel::Name);
 
@@ -54,6 +53,7 @@ pub async fn get_endpoints(
         .await
         .context(KubeClientFetchSnafu)?;
 
+    let mut endpoints = IndexMap::new();
     for listener in &listeners {
         let Some(listener_status) = &listener.status else {
             continue;
