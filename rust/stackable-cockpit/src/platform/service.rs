@@ -55,25 +55,17 @@ pub async fn get_endpoints(
 
     let mut endpoints = IndexMap::new();
     for listener in &listeners {
+        let Some(display_name) = display_name_for_listener_name(&listener.name_any(), object_name)
+        else {
+            continue;
+        };
         let Some(listener_status) = &listener.status else {
             continue;
         };
+
         for address in listener_status.ingress_addresses.iter().flatten() {
             for port in &address.ports {
-                // Listener names usually have the pattern "listener-simple-hdfs-namenode-default-0" or
-                // "simple-hdfs-datanode-default-0-listener", so we can strip everything before the first occurrence of
-                // the stacklet name ("simple-hdfs" in this case). After that it actually get's pretty hard.
-                // This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
-                // so better to have support for that than nothing :)
-                let listener_name = listener.name_any();
-                let Some((_, display_name)) = listener_name.split_once(object_name) else {
-                    continue;
-                };
-                let text = format!(
-                    "{display_name}-{port_name}",
-                    display_name = display_name.trim_start_matches('-'),
-                    port_name = port.0
-                );
+                let text = format!("{display_name}-{port_name}", port_name = port.0);
                 let endpoint_url = endpoint_url(&address.address, *port.1, port.0);
                 endpoints.insert(text, endpoint_url);
             }
@@ -322,5 +314,40 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
         format!("https://{endpoint_host}:{endpoint_port}")
     } else {
         format!("{endpoint_host}:{endpoint_port}")
+    }
+}
+
+/// Listener names usually have the pattern `listener-simple-hdfs-namenode-default-0` or
+/// `simple-hdfs-datanode-default-0-listener`, so we can strip everything before the first occurrence of
+/// the stacklet name (`simple-hdfs` in this case). After that it actually get's pretty hard.
+/// This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
+/// so better to have support for that than nothing :)
+fn display_name_for_listener_name(listener_name: &str, object_name: &str) -> Option<String> {
+    let Some((_, display_name)) = listener_name.split_once(object_name) else {
+        return None;
+    };
+    Some(display_name.trim_start_matches('-').to_owned())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    // These are all the listener names implemented so far (only HDFS is using listener-operator). In the future more
+    // test-case should be added.
+    #[case("listener-simple-hdfs-namenode-default-0", "simple-hdfs", Some("namenode-default-0".to_string()))]
+    #[case("listener-simple-hdfs-namenode-default-1", "simple-hdfs", Some("namenode-default-1".to_string()))]
+    // FIXME: Come up with a more clever strategy to remove the `-listener` suffix. I would prefer to wait until we
+    // actually have more products using listener-op to not accidentally strip to much.
+    #[case("simple-hdfs-datanode-default-0-listener", "simple-hdfs", Some("datanode-default-0-listener".to_string()))]
+    fn test_display_name_for_listener_name(
+        #[case] listener_name: &str,
+        #[case] object_name: &str,
+        #[case] expected: Option<String>,
+    ) {
+        let output = display_name_for_listener_name(listener_name, object_name);
+        assert_eq!(output, expected);
     }
 }
