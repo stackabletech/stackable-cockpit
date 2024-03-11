@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Support listing endpoints of Listeners in `stackablectl stacklet list` command.
+  Currently only HDFS is using listener-op, so we can only test that so far ([#213]).
+
 ### Changed
 
 - Operators are now installed in parallel when installing a release ([#202]).
@@ -14,6 +19,7 @@ All notable changes to this project will be documented in this file.
 
 [#181]: https://github.com/stackabletech/stackable-cockpit/pull/181
 [#202]: https://github.com/stackabletech/stackable-cockpit/pull/202
+[#213]: https://github.com/stackabletech/stackable-cockpit/pull/213
 
 ## [23.11.3] - 2024-01-03
 
