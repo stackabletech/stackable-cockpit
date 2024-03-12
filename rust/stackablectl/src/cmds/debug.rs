@@ -120,8 +120,10 @@ pub struct DebugArgs {
     container: String,
 
     /// The debug container image
+    ///
+    /// Defaults to the image of the target container if not specified.
     #[clap(long)]
-    image: String,
+    image: Option<String>,
 
     /// The command to run in the debug container
     #[clap(last = true)]
@@ -159,7 +161,10 @@ impl DebugArgs {
                 spec: Some(PodSpec {
                     ephemeral_containers: Some(vec![EphemeralContainer {
                         name: debug_container_name.clone(),
-                        image: Some(self.image.clone()),
+                        image: self
+                            .image
+                            .clone()
+                            .or_else(|| template_container.image.clone()),
                         tty: Some(true),
                         stdin: Some(true),
 
