@@ -32,57 +32,73 @@ use crate::cli::Cli;
 pub enum CmdError {
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: kube::Error },
+
     #[snafu(display("failed to get {pod}"))]
     GetPod {
         source: kube::Error,
         pod: ObjectRef<Pod>,
     },
+
     #[snafu(display("{pod} has no container {container:?}"))]
     FindTemplateContainer {
         pod: ObjectRef<Pod>,
         container: String,
     },
+
     #[snafu(display("failed to create ephemeral debug container {container:?} on {pod}"))]
     CreateDebugContainer {
         source: kube::Error,
         pod: ObjectRef<Pod>,
         container: String,
     },
+
     #[snafu(display("debug container {container:?} on {pod} never became ready"))]
     AwaitDebugContainerReadiness {
         source: kube::runtime::wait::Error,
         pod: ObjectRef<Pod>,
         container: String,
     },
+
     #[snafu(display("failed to get status of debug container {container:?} on {pod}"))]
     FindDebugContainerStatus {
         pod: ObjectRef<Pod>,
         container: String,
     },
+
     #[snafu(display("failed to attach to container {container:?} on {pod}"))]
     AttachContainer {
         source: kube::Error,
         pod: ObjectRef<Pod>,
         container: String,
     },
+
     #[snafu(display("failed to enable raw local TTY input"))]
     SetRawTtyMode { source: std::io::Error },
+
     #[snafu(display("failed to turn stdin async"))]
     AsyncifyStdin { source: std::io::Error },
+
     #[snafu(display("failed to initialize AsyncFd for stdin"))]
     AsyncFdStdin { source: std::io::Error },
+
     #[snafu(display("container has no terminal size channel"))]
     NoTerminalSizeChannel,
+
     #[snafu(display("failed to read terminal size"))]
     GetTerminalSize { source: std::io::Error },
+
     #[snafu(display("failed to update terminal size"))]
     UpdateTerminalSize { source: mpsc::SendError },
+
     #[snafu(display("container has no stdin channel"))]
     NoStdinChannel,
+
     #[snafu(display("container has no stdout channel"))]
     NoStdoutChannel,
+
     #[snafu(display("failed to forward stdin to container"))]
     ForwardStdin { source: std::io::Error },
+
     #[snafu(display("failed to forward stdout from container"))]
     ForwardStdout { source: std::io::Error },
 }
@@ -93,16 +109,20 @@ pub struct DebugArgs {
     /// The namespace of the Pod being debugged
     #[clap(long, short)]
     namespace: Option<String>,
+
     /// The Pod to debug
     pod: String,
+
     /// The target container to debug
     ///
     /// Volumes and environment variables will be copied from this container.
     #[clap(long, short)]
     container: String,
+
     /// The debug container image
     #[clap(long)]
     image: String,
+
     /// The command to run in the debug container
     #[clap(last = true)]
     cmd: Option<Vec<String>>,
