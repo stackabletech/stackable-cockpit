@@ -274,7 +274,7 @@ impl DebugArgs {
 
 fn generate_debug_container_name() -> String {
     let mut rng = rand::thread_rng();
-    let mut name = "sble-debug-".to_string();
+    let mut name = "stackablectl-debug-".to_string();
     for _ in 0..5 {
         name.push(rng.gen_range('a'..='z'));
     }
