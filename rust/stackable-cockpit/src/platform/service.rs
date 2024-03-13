@@ -53,37 +53,44 @@ pub async fn get_endpoints(
     let listeners = kube_client
         .list_listeners(Some(object_namespace), &list_params)
         .await;
+    let listeners = match listeners {
+        Ok(ok) => Ok(ok.items),
+        Err(k8s::Error::KubeClientFetch {
+            source: kube::Error::Api(err),
+        }) if err.code == 404 => {
+            // In case the listener-operator is not installed, this will return a 404. We should not fail, as this causes
+            // stackablectl to fail with ApiError 404 on clusters without listener-operator.
+            Ok(Vec::new())
+        }
+        Err(err) => Err(err),
+    }
+    .context(KubeClientFetchSnafu)?;
 
-    // In case the listener-operator is not installed, this will return a 404. We should not fail, as this causes
-    // stackablectl to fail with ApiError 404 on clusters without listener-operator.
-    if let Ok(listeners) = listeners {
-        for listener in &listeners {
-            let Some(display_name) =
-                display_name_for_listener_name(&listener.name_any(), object_name)
-            else {
-                continue;
-            };
-            let Some(listener_status) = &listener.status else {
-                continue;
-            };
+    for listener in &listeners {
+        let Some(display_name) = display_name_for_listener_name(&listener.name_any(), object_name)
+        else {
+            continue;
+        };
+        let Some(listener_status) = &listener.status else {
+            continue;
+        };
 
-            for address in listener_status.ingress_addresses.iter().flatten() {
-                for port in &address.ports {
-                    let text = format!("{display_name}-{port_name}", port_name = port.0);
-                    let endpoint_url = endpoint_url(&address.address, *port.1, port.0);
-                    endpoints.insert(text, endpoint_url);
-                }
+        for address in listener_status.ingress_addresses.iter().flatten() {
+            for port in &address.ports {
+                let text = format!("{display_name}-{port_name}", port_name = port.0);
+                let endpoint_url = endpoint_url(&address.address, *port.1, port.0);
+                endpoints.insert(text, endpoint_url);
             }
         }
+    }
 
-        // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services handling below.
-        // Currently the Services created by listener-op are missing the recommended labels, so this early exit in case we
-        // find Listeners is currently not required. However, once we add the recommended labels to the k8s Services, we
-        // would have duplicated entries (one from the Listener and one from the Service). Because of this we don't look at
-        // the Services in case we found Listeners!
-        if !listeners.items.is_empty() {
-            return Ok(endpoints);
-        }
+    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services handling below.
+    // Currently the Services created by listener-op are missing the recommended labels, so this early exit in case we
+    // find Listeners is currently not required. However, once we add the recommended labels to the k8s Services, we
+    // would have duplicated entries (one from the Listener and one from the Service). Because of this we don't look at
+    // the Services in case we found Listeners!
+    if !listeners.is_empty() {
+        return Ok(endpoints);
     }
 
     let services = kube_client
