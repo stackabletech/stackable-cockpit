@@ -12,7 +12,7 @@ use kube::{
 };
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use stackable_operator::kvp::Labels;
+use stackable_operator::{commons::listener::Listener, kvp::Labels};
 
 use crate::{
     platform::{cluster, credentials::Credentials},
@@ -188,7 +188,7 @@ impl Client {
         ))
     }
 
-    /// Lists [`Service`]s by matching labels. The services can be matched by
+    /// Lists [`Service`]s by matching labels. The Services can be matched by
     /// the product labels. [`ListParamsExt`] provides a utility function to
     /// create [`ListParams`] based on a product name and optional instance
     /// name.
@@ -208,6 +208,28 @@ impl Client {
             .context(KubeClientFetchSnafu)?;
 
         Ok(services)
+    }
+
+    /// Lists [`Listener`]s by matching labels. The Listeners can be matched by
+    /// the product labels. [`ListParamsExt`] provides a utility function to
+    /// create [`ListParams`] based on a product name and optional instance
+    /// name.
+    pub async fn list_listeners(
+        &self,
+        namespace: Option<&str>,
+        list_params: &ListParams,
+    ) -> ListResult<Listener> {
+        let listener_api: Api<Listener> = match namespace {
+            Some(namespace) => Api::namespaced(self.client.clone(), namespace),
+            None => Api::all(self.client.clone()),
+        };
+
+        let listeners = listener_api
+            .list(list_params)
+            .await
+            .context(KubeClientFetchSnafu)?;
+
+        Ok(listeners)
     }
 
     /// Retrieves user credentials consisting of username and password from a

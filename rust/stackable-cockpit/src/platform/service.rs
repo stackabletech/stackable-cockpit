@@ -45,15 +45,46 @@ pub async fn get_endpoints(
     object_name: &str,
     object_namespace: &str,
 ) -> Result<IndexMap<String, String>, Error> {
-    let service_list_params =
+    let list_params =
         ListParams::from_product(product_name, Some(object_name), k8s::ProductLabel::Name);
 
-    let services = kube_client
-        .list_services(Some(object_namespace), &service_list_params)
+    let listeners = kube_client
+        .list_listeners(Some(object_namespace), &list_params)
         .await
         .context(KubeClientFetchSnafu)?;
 
     let mut endpoints = IndexMap::new();
+    for listener in &listeners {
+        let Some(display_name) = display_name_for_listener_name(&listener.name_any(), object_name)
+        else {
+            continue;
+        };
+        let Some(listener_status) = &listener.status else {
+            continue;
+        };
+
+        for address in listener_status.ingress_addresses.iter().flatten() {
+            for port in &address.ports {
+                let text = format!("{display_name}-{port_name}", port_name = port.0);
+                let endpoint_url = endpoint_url(&address.address, *port.1, port.0);
+                endpoints.insert(text, endpoint_url);
+            }
+        }
+    }
+
+    // Ideally we use listener-operator everywhere, afterwards we can remove the whole k8s Services handling below.
+    // Currently the Services created by listener-op are missing the recommended labels, so this early exit in case we
+    // find Listeners is currently not required. However, once we add the recommended labels to the k8s Services, we
+    // would have duplicated entries (one from the Listener and one from the Service). Because of this we don't look at
+    // the Services in case we found Listeners!
+    if !listeners.items.is_empty() {
+        return Ok(endpoints);
+    }
+
+    let services = kube_client
+        .list_services(Some(object_namespace), &list_params)
+        .await
+        .context(KubeClientFetchSnafu)?;
 
     for service in services {
         match get_endpoint_urls(kube_client, &service, object_name).await {
@@ -268,7 +299,7 @@ async fn get_node_name_ip_mapping(
 }
 
 fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> String {
-    // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022/08/10
+    // TODO: Consolidate web-ui port names in operators based on decision in arch meeting from 2022-08-10
     // For Superset: https://github.com/stackabletech/superset-operator/issues/248
     // For Airflow: https://github.com/stackabletech/airflow-operator/issues/146
     // As we still support older operator versions we need to also include the "old" way of naming
@@ -283,5 +314,40 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
         format!("https://{endpoint_host}:{endpoint_port}")
     } else {
         format!("{endpoint_host}:{endpoint_port}")
+    }
+}
+
+/// Listener names usually have the pattern `listener-simple-hdfs-namenode-default-0` or
+/// `simple-hdfs-datanode-default-0-listener`, so we can strip everything before the first occurrence of
+/// the stacklet name (`simple-hdfs` in this case). After that it actually get's pretty hard.
+/// This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
+/// so better to have support for that than nothing :)
+fn display_name_for_listener_name(listener_name: &str, object_name: &str) -> Option<String> {
+    let Some((_, display_name)) = listener_name.split_once(object_name) else {
+        return None;
+    };
+    Some(display_name.trim_start_matches('-').to_owned())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    // These are all the listener names implemented so far (only HDFS is using listener-operator). In the future more
+    // test-case should be added.
+    #[case("listener-simple-hdfs-namenode-default-0", "simple-hdfs", Some("namenode-default-0".to_string()))]
+    #[case("listener-simple-hdfs-namenode-default-1", "simple-hdfs", Some("namenode-default-1".to_string()))]
+    // FIXME: Come up with a more clever strategy to remove the `-listener` suffix. I would prefer to wait until we
+    // actually have more products using listener-op to not accidentally strip to much.
+    #[case("simple-hdfs-datanode-default-0-listener", "simple-hdfs", Some("datanode-default-0-listener".to_string()))]
+    fn test_display_name_for_listener_name(
+        #[case] listener_name: &str,
+        #[case] object_name: &str,
+        #[case] expected: Option<String>,
+    ) {
+        let output = display_name_for_listener_name(listener_name, object_name);
+        assert_eq!(output, expected);
     }
 }
