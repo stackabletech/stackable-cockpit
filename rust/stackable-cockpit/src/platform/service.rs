@@ -50,8 +50,19 @@ pub async fn get_endpoints(
 
     let listeners = kube_client
         .list_listeners(Some(object_namespace), &list_params)
-        .await
-        .context(KubeClientFetchSnafu)?;
+        .await;
+    let listeners = match listeners {
+        Ok(ok) => Ok(ok.items),
+        Err(k8s::Error::KubeClientFetch {
+            source: kube::Error::Api(err),
+        }) if err.code == 404 => {
+            // In case the listener-operator is not installed, this will return a 404. We should not fail, as this causes
+            // stackablectl to fail with ApiError 404 on clusters without listener-operator.
+            Ok(Vec::new())
+        }
+        Err(err) => Err(err),
+    }
+    .context(KubeClientFetchSnafu)?;
 
     let mut endpoints = IndexMap::new();
     for listener in &listeners {
@@ -77,7 +88,7 @@ pub async fn get_endpoints(
     // find Listeners is currently not required. However, once we add the recommended labels to the k8s Services, we
     // would have duplicated entries (one from the Listener and one from the Service). Because of this we don't look at
     // the Services in case we found Listeners!
-    if !listeners.items.is_empty() {
+    if !listeners.is_empty() {
         return Ok(endpoints);
     }
 

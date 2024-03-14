@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Support listing endpoints of Listeners in `stackablectl stacklet list` command.
-  Currently only HDFS is using listener-op, so we can only test that so far ([#213]).
+  Currently only HDFS is using listener-op, so we can only test that so far ([#213], [#219]).
 
 ### Changed
 
