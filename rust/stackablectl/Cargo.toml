@@ -31,3 +31,6 @@ tera.workspace = true
 tokio.workspace = true
 tracing-subscriber.workspace = true
 tracing.workspace = true
+futures.workspace = true
+termion.workspace = true
+libc.workspace = true

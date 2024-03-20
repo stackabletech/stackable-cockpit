@@ -21,6 +21,9 @@ _stackablectl() {
             stackablectl,demo)
                 cmd="stackablectl__demo"
                 ;;
+            stackablectl,experimental-debug)
+                cmd="stackablectl__experimental__debug"
+                ;;
             stackablectl,help)
                 cmd="stackablectl__help"
                 ;;
@@ -110,6 +113,9 @@ _stackablectl() {
                 ;;
             stackablectl__help,demo)
                 cmd="stackablectl__help__demo"
+                ;;
+            stackablectl__help,experimental-debug)
+                cmd="stackablectl__help__experimental__debug"
                 ;;
             stackablectl__help,help)
                 cmd="stackablectl__help__help"
@@ -307,7 +313,7 @@ _stackablectl() {
 
     case "${cmd}" in
         stackablectl)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack stacklet demo completions cache help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack stacklet demo completions cache experimental-debug help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1262,8 +1268,86 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        stackablectl__experimental__debug)
+            opts="-n -c -l -d -s -r -h -V --namespace --container --image --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <POD> [CMD]..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --namespace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -n)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --container)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -c)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --image)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --log-level)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -l)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --demo-file)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -d)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --stack-file)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -s)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --release-file)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -r)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-stable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-test)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-dev)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         stackablectl__help)
-            opts="operator release stack stacklet demo completions cache help"
+            opts="operator release stack stacklet demo completions cache experimental-debug help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1419,6 +1503,20 @@ _stackablectl() {
         stackablectl__help__demo__list)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__help__experimental__debug)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
