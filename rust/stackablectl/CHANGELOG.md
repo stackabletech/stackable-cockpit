@@ -4,11 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-## [24.3.0] - 2024-03-20
+## [24.3.1] - 2024-03-21
 
 ### Added
 
 - Added experimental `debug` command ([#204]).
+
+[#204]: https://github.com/stackabletech/stackable-cockpit/pull/204
+
+## [24.3.0] - 2024-03-20
+
+### Added
+
 - Support listing endpoints of Listeners in `stackablectl stacklet list` command.
   Currently only HDFS is using listener-op, so we can only test that so far ([#213], [#219]).
 
@@ -22,7 +29,6 @@ All notable changes to this project will be documented in this file.
 
 [#181]: https://github.com/stackabletech/stackable-cockpit/pull/181
 [#202]: https://github.com/stackabletech/stackable-cockpit/pull/202
-[#204]: https://github.com/stackabletech/stackable-cockpit/pull/204
 [#213]: https://github.com/stackabletech/stackable-cockpit/pull/213
 
 ## [23.11.3] - 2024-01-03
