@@ -7,17 +7,6 @@ use clap::CommandFactory;
 use snafu::{ResultExt, Snafu};
 use stackablectl::cli::Cli;
 
-const COMMANDS: &[&str] = &[
-    "completions",
-    "stacklet",
-    "operator",
-    "release",
-    "stack",
-    "cache",
-    "demo",
-    ".",
-];
-
 const DOCS_BASE_PATH: &str = "docs/modules/stackablectl/partials/commands";
 
 #[derive(Debug, Snafu)]
@@ -44,20 +33,8 @@ pub fn generate() -> Result<(), GenDocsError> {
         )
         .context(TemplateSnafu)?;
 
-    for command_page_name in COMMANDS {
-        let usage_text = if command_page_name == &"." {
-            cli.render_long_help().to_string()
-        } else {
-            match cli.find_subcommand_mut(command_page_name) {
-                Some(cmd) => cmd.render_long_help().to_string(),
-                None => {
-                    return Err(NoSuchSubcommandSnafu {
-                        name: command_page_name.to_string(),
-                    }
-                    .build())
-                }
-            }
-        };
+    for cmd in cli.get_subcommands().chain([&cli]) {
+        let usage_text = cmd.clone().render_long_help().to_string();
 
         // Needed to remove trailing whitespaces in empty lines
         let usage_text: Vec<_> = usage_text.lines().map(|l| l.trim_end()).collect();
@@ -70,10 +47,10 @@ pub fn generate() -> Result<(), GenDocsError> {
             .join(DOCS_BASE_PATH)
             .join(format!(
                 "{}.adoc",
-                if command_page_name == &"." {
+                if cmd.get_name() == cli.get_name() {
                     "index"
                 } else {
-                    command_page_name
+                    cmd.get_name()
                 }
             ));
 
