@@ -28,7 +28,7 @@
     "prettier": "^2.8.8",
     "typescript": "^5.0.2",
     "unocss": "^0.51.8",
-    "vite": "^4.4.12",
+    "vite": "^4.5.3",
     "vite-plugin-solid": "^2.7.0",
     "vitest": "^0.31.1"
   },
