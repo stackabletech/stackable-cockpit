@@ -1,0 +1,11 @@
+= stackablectl experimental-debug
+
+IMPORTANT: `debug` is an experimental preview command, and may be changed or removed at any time.
+
+Launches and an ephemeral debug container in a Pod and then attaches to it.
+
+The container will have access to the same data volumes and environment variables as the selected target container.
+
+== General Usage
+
+include::management:stackablectl:partial$commands/experimental-debug.adoc[]

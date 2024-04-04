@@ -9,6 +9,8 @@
 *** xref:commands/release.adoc[release]
 *** xref:commands/stack.adoc[stack]
 *** xref:commands/stacklet.adoc[stacklets]
+*** Experimental
+**** xref:commands/debug.adoc[debug]
 ** xref:customization/index.adoc[]
 *** xref:customization/add-demo.adoc[]
 *** xref:customization/add-stack.adoc[]
