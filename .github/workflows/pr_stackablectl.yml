@@ -12,8 +12,6 @@ on:
       - "Cargo.lock"
       - "go.sum"
       - "extra/**"
-  # FIXME remove again
-  workflow_dispatch:
 
 env:
   RUST_VERSION: 1.75.0
@@ -36,9 +34,9 @@ jobs:
   build:
     name: Build stackablectl for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-    # needs:
-    #   - general-checks
-    #   - reviewdog-checks
+    needs:
+      - general-checks
+      - reviewdog-checks
     strategy:
       fail-fast: false
       matrix:
