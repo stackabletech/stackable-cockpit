@@ -55,7 +55,7 @@ fn main() {
 
     let bindings = bindgen::builder()
         .header(build_path.join("libgo-helm-wrapper.h").to_str().unwrap())
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()
         .expect("Failed to generate Rust bindings from Go header file");
 

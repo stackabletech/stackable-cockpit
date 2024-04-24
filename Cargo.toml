@@ -16,9 +16,10 @@ repository = "https://github.com/stackabletech/stackable-cockpit/"
 
 [workspace.dependencies]
 async-trait = "0.1"
-axum = { version = "0.6", features = ["http2", "headers"] }
+axum = { version = "0.7", features = ["http2"] }
+axum-extra = { version = "0.9", features = ["typed-header"] }
 bcrypt = "0.15"
-bindgen = "0.68.1"
+bindgen = "0.69.4"
 cc = "1.0.83"
 clap = { version = "4.2.1", features = ["derive", "env"] }
 clap_complete = "4.2"
@@ -27,10 +28,10 @@ directories = "5.0"
 dotenvy = "0.15"
 futures = "0.3"
 indexmap = { version = "2.0", features = ["serde"] }
-k8s-openapi = { version = "0.20", default-features = false, features = [
+k8s-openapi = { version = "0.21", default-features = false, features = [
   "v1_28",
 ] }
-kube = { version = "0.87", default-features = false, features = [
+kube = { version = "0.88.1", default-features = false, features = [
   "client",
   "rustls-tls",
   "ws",
@@ -42,17 +43,17 @@ phf = "0.11"
 phf_codegen = "0.11"
 rand = "0.8"
 regex = "1.9"
-reqwest = { version = "0.11", default-features = false, features = [
+reqwest = { version = "0.12", default-features = false, features = [
   "rustls-tls",
 ] }
-rstest = "0.18"
+rstest = "0.19"
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.9"
 sha2 = "0.10"
-snafu = { version = "0.7", features = ["futures"] }
-stackable-operator = { git = "https://github.com/stackabletech/operator-rs.git", tag = "0.64.0" }
+snafu = { version = "0.8", features = ["futures"] }
+stackable-operator = { git = "https://github.com/stackabletech/operator-rs.git", tag = "stackable-operator-0.66.0" }
 tera = "1.18"
 termion = "3.0.0"
 tokio = { version = "1.29.0", features = [
@@ -62,14 +63,14 @@ tokio = { version = "1.29.0", features = [
   "process",
   "io-std",
 ] }
-tower-http = "0.4"
+tower-http = { version = "0.5", features = ["validate-request"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 url = "2.3"
-utoipa = { version = "3.3", features = ["indexmap"] }
-utoipa-swagger-ui = { version = "3.1", features = ["axum"] }
+utoipa = { version = "4.2", features = ["indexmap"] }
+utoipa-swagger-ui = { version = "6.0", features = ["axum"] }
 uuid = { version = "1.4.0", features = ["v4"] }
-which = "4.4"
+which = "6.0"
 
 # [patch."https://github.com/stackabletech/operator-rs.git"]
 # stackable-operator = { git = "https://github.com/stackabletech//operator-rs.git", branch = "main" }

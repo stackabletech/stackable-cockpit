@@ -6,15 +6,15 @@ use std::{
 };
 
 use axum::{
-    body::BoxBody,
+    body::Body,
     extract::Extension,
-    headers::{
-        authorization::{Basic, Bearer},
-        HeaderMapExt,
-    },
     http::{HeaderMap, HeaderValue, StatusCode},
     response::IntoResponse,
     Json,
+};
+use axum_extra::headers::{
+    authorization::{Basic, Bearer},
+    Authorization, HeaderMapExt,
 };
 use serde::Serialize;
 use tower_http::validate_request::{ValidateRequest, ValidateRequestHeaderLayer};
@@ -67,7 +67,7 @@ impl Authenticator {
     }
 
     fn validate_login(&self, headers: &HeaderMap<HeaderValue>) -> Result<Username, &'static str> {
-        if let Some(session_token) = headers.typed_get::<axum::headers::Authorization<Bearer>>() {
+        if let Some(session_token) = headers.typed_get::<Authorization<Bearer>>() {
             if let Some(username) = self
                 .state
                 .sessions
@@ -79,8 +79,7 @@ impl Authenticator {
             } else {
                 Err("request authentication failed: invalid session token")
             }
-        } else if let Some(basic_creds) = headers.typed_get::<axum::headers::Authorization<Basic>>()
-        {
+        } else if let Some(basic_creds) = headers.typed_get::<Authorization<Basic>>() {
             let username = basic_creds.username();
             let password_hash = self.state.accounts.get(username);
             if password_hash
@@ -104,7 +103,7 @@ impl Authenticator {
 }
 
 impl<B> ValidateRequest<B> for Authenticator {
-    type ResponseBody = BoxBody;
+    type ResponseBody = Body;
 
     fn validate(
         &mut self,

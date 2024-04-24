@@ -18,6 +18,7 @@ stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
 stackable-cockpit-web = { path = "../../web", optional = true }
 
 axum.workspace = true
+axum-extra.workspace = true
 bcrypt.workspace = true
 clap.workspace = true
 futures.workspace = true
