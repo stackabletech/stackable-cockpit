@@ -19,10 +19,6 @@ jobs:
     env:
       RUSTC_BOOTSTRAP: 1
     steps:
-      - name: Install host dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install protobuf-compiler krb5-user libkrb5-dev libclang-dev liblzma-dev libssl-dev pkg-config
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
