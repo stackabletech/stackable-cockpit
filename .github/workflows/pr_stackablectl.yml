@@ -36,9 +36,9 @@ jobs:
   build:
     name: Build stackablectl for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
-    needs:
-      - general-checks
-      - reviewdog-checks
+    # needs:
+    #   - general-checks
+    #   - reviewdog-checks
     strategy:
       fail-fast: false
       matrix:
