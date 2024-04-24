@@ -12,9 +12,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Bump Rust and Node dependencies ([#CHANGEME]).
+- Bump Rust and Node dependencies ([#233]).
 
-[#CHANGEME]: https://github.com/stackabletech/stackable-cockpit/pull/CHANGEME
+[#233]: https://github.com/stackabletech/stackable-cockpit/pull/233
 
 ## [24.3.1] - 2024-03-21
 
