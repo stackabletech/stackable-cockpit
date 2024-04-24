@@ -60,7 +60,6 @@ async fn main() -> Result<(), Whatever> {
     let listen_addr = SocketAddr::new(cli.address, cli.port);
     info!(addr = %listen_addr, "Starting server");
 
-    // Needed in next axum version
     let tcp_listener = TcpListener::bind(listen_addr)
         .await
         .whatever_context("failed to bind to listen address")?;
