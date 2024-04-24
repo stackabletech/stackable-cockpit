@@ -1,3 +1,4 @@
+---
 self-hosted-runner:
   # BuildJet machines we are using
   labels:
