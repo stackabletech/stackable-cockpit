@@ -12,6 +12,8 @@ on:
       - "Cargo.lock"
       - "go.sum"
       - "extra/**"
+  # FIXME remove again
+  workflow_dispatch:
 
 env:
   RUST_VERSION: 1.75.0
