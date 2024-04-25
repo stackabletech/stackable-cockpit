@@ -12,7 +12,7 @@ use futures::{
 use rand::Rng;
 use snafu::{futures::TryFutureExt as _, OptionExt, ResultExt, Snafu};
 use stackable_operator::{
-    builder::SecurityContextBuilder,
+    builder::pod::security::SecurityContextBuilder,
     k8s_openapi::api::core::v1::{ContainerStatus, EphemeralContainer, Pod, PodSpec},
     kube::{
         self,

@@ -13,12 +13,12 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 pub enum Error {
     #[snafu(display("failed to parse node cpu quantity"))]
     ParseNodeCpuQuantity {
-        source: stackable_operator::error::Error,
+        source: stackable_operator::cpu::Error,
     },
 
     #[snafu(display("failed to parse node memory quantity"))]
     ParseNodeMemoryQuantity {
-        source: stackable_operator::error::Error,
+        source: stackable_operator::memory::Error,
     },
 }
 

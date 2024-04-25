@@ -51,12 +51,12 @@ pub enum ResourceRequestsError {
 
     #[snafu(display("failed to parse cpu resource requirements"))]
     ParseCpuResourceRequirements {
-        source: stackable_operator::error::Error,
+        source: stackable_operator::cpu::Error,
     },
 
     #[snafu(display("failed to parse memory resource requirements"))]
     ParseMemoryResourceRequirements {
-        source: stackable_operator::error::Error,
+        source: stackable_operator::memory::Error,
     },
 
     #[snafu(display("invalid resource requirements"))]
