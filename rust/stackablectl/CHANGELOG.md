@@ -8,12 +8,11 @@ All notable changes to this project will be documented in this file.
 
 - Add pre-built binary for `aarch64-unknown-linux-gnu` ([#232]).
 
-[#232]: https://github.com/stackabletech/stackable-cockpit/pull/232
-
 ### Changed
 
 - Bump Rust and Node dependencies ([#233]).
 
+[#232]: https://github.com/stackabletech/stackable-cockpit/pull/232
 [#233]: https://github.com/stackabletech/stackable-cockpit/pull/233
 
 ## [24.3.1] - 2024-03-21
