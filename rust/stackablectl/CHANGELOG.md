@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.3.2] - 2024-04-25
+
 ### Added
 
 - Add pre-built binary for `aarch64-unknown-linux-gnu` ([#232]).
