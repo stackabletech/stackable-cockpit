@@ -3,7 +3,7 @@ use std::net::SocketAddr;
 use axum::{
     response::Redirect,
     routing::{get, post},
-    Router, Server,
+    Router,
 };
 use clap::Parser;
 use futures::FutureExt;
@@ -12,6 +12,7 @@ use stackable_cockpitd::{
     api_doc, handlers,
     middleware::{self, authentication::Authenticator},
 };
+use tokio::net::TcpListener;
 use tracing::{info, metadata::LevelFilter};
 use tracing_subscriber::{fmt, EnvFilter};
 use utoipa_swagger_ui::SwaggerUi;
@@ -59,11 +60,11 @@ async fn main() -> Result<(), Whatever> {
     let listen_addr = SocketAddr::new(cli.address, cli.port);
     info!(addr = %listen_addr, "Starting server");
 
-    // Needed in next axum version
-    // let listener = TcpListener::bind("127.0.0.1:8000").await?;
+    let tcp_listener = TcpListener::bind(listen_addr)
+        .await
+        .whatever_context("failed to bind to listen address")?;
 
-    if let Err(err) = Server::bind(&listen_addr)
-        .serve(router.into_make_service())
+    if let Err(err) = axum::serve(tcp_listener, router)
         .with_graceful_shutdown(wait_for_shutdown_signal())
         .await
     {
