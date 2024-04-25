@@ -32,4 +32,3 @@
 - [ ] Feature Tracker has been updated
 - [ ] Proper release label has been added
 ```
-

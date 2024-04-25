@@ -76,7 +76,7 @@ clean: chart-clean
 regenerate-charts: chart-clean compile-chart
 
 regenerate-nix:
-	nix run -f . regenerateNixLockfiles 
+	nix run -f . regenerateNixLockfiles
 
 build: regenerate-charts regenerate-nix helm-package docker-build
 
