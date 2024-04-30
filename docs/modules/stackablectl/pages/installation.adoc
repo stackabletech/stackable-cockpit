@@ -10,54 +10,63 @@ Stackable provides pre-compiled binaries of stackablectl, which should work on m
 and Linux distributions like Ubuntu and Arch. You can also build the binary from source. More information about the
 manual building steps can be found in xref:#building-from-source[this] section.
 
-=== Linux
-
+[tabs]
+====
+Linux::
++
+--
 Download the `stackablectl-x86_64-unknown-linux-gnu` binary file from the link:{latest-release}[latest release], then
 rename the file to `stackablectl`. You can also use the following command:
 
 [source,console]
 ----
-curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-x86_64-unknown-linux-gnu
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-x86_64-unknown-linux-gnu
 # or
-curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-aarch64-unknown-linux-gnu
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-aarch64-unknown-linux-gnu
 ----
 
 Mark the binary as executable:
 
 [source,console]
 ----
-chmod +x stackablectl
+$ chmod +x stackablectl
 ----
 
 Then, make sure it is present in your `$PATH`, like `/usr/local/bin`.
+--
 
-=== macOS
-
+macOS::
++
+--
 Download the `stackablectl-x86_64-apple-darwin` binary file for Intel-based devices or the
 `stackablectl-aarch64-apple-darwin` binary file for ARM-based devices from the link:{latest-release}[latest release],
 then rename the file to `stackablectl`. You can also use the following command:
 
 [source,console]
 ----
-curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-x86_64-apple-darwin
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-x86_64-apple-darwin
 # or
-curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-aarch64-apple-darwin
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-aarch64-apple-darwin
 ----
 
 Mark the binary as executable:
 
 [source,console]
 ----
-chmod +x stackablectl
+$ chmod +x stackablectl
 ----
 
 If macOS denies the execution of `stackablectl` go to Settings -> Security & Privacy -> General. Here you will see a pop
 up asking if you want to allow access for `stackablectl`. You must allow access.
+--
 
-=== Windows
-
+Windows::
++
+--
 Currently, there are no pre-built binaries available for Windows. Please refer to xref:#building-from-source[this]
 section to learn how to build the binary from source.
+--
+====
 
 [#building-from-source]
 == Building from Source
@@ -73,7 +82,7 @@ binary using the following command:
 
 [source,console]
 ----
-cargo build -p stackablectl --release
+$ cargo build -p stackablectl --release
 ----
 
 After a successful build, the binary will be placed in `target/release/stackablectl`. Copy it to your systems path to
@@ -81,7 +90,7 @@ access it from anywhere if you like:
 
 [source,console]
 ----
-cp target/release/stackablectl /usr/local/bin
+$ cp target/release/stackablectl /usr/local/bin
 ----
 
 [#shell-comps]
@@ -91,36 +100,43 @@ We provide completions for `stackablectl` for major shells out there. Currently,
 repository provides pre-generated completion files. These can be downloaded and copied to the appropriate location on
 your system.
 
-=== ZSH
-
+[tabs]
+====
+ZSH::
++
+--
 Download the completions file and place it in `/usr/local/share/zsh/site-functions/` to load it automatically.
 
 [source,console]
 ----
-wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
-mv _stackablectl /usr/local/share/zsh/site-functions/
+$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
+$ mv _stackablectl /usr/local/share/zsh/site-functions/
 ----
+--
 
-=== Fish
-
+Fish::
++
+--
 Download the completions file and place it in any of the supported location listed {fish-comp-loations}[here].
 
 [source,console]
 ----
-wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
+$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
 ----
+--
 
-=== Bash
-
+Bash::
++
+--
 Download the completions file and place it in `/etc/bash_completion.d/` to load it automatically.
 
 [source,console]
 ----
-wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.bash
-mv stackablectl.bash /etc/bash_completion.d/
+$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.bash
+$ mv stackablectl.bash /etc/bash_completion.d/
 ----
+--
+====
 
-'''
-
-You can generate the completions on your own by using the `stackablectl completions` command. See
-xref:commands/completions.adoc[here] for more information.
+You can generate the completions on your own by using the `stackablectl completions` command.
+See xref:commands/completions.adoc[here] for more information.
