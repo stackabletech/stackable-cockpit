@@ -15,6 +15,7 @@ on:
 
 env:
   RUST_VERSION: 1.75.0
+  GO_VERSION: '^1.22.2'
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -62,7 +63,7 @@ jobs:
 
       - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
         with:
-          go-version: '^1.22.2'
+          go-version: ${{ env.GO_VERSION }}
 
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:

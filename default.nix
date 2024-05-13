@@ -42,6 +42,23 @@ rec {
         LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
         BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.glibc.dev}/include -I${pkgs.clang.cc.lib}/lib/clang/${pkgs.lib.versions.major (pkgs.lib.getVersion pkgs.clang.cc)}/include";
       };
+      utoipa-swagger-ui = attrs: rec {
+        # utoipa-swagger-ui tries to redownload swagger-ui, which is blocked by Nix's sandboxing
+        # so we download it instead, and put it where it expects to be cached
+        preConfigure =
+          let
+            swaggerUi = pkgs.fetchurl {
+              url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.3.zip";
+              hash = "sha256-zrb8feuuDzt/g6y7Tucfh+Y2BWZov0soyNPR5LBqKx4=";
+            };
+          in ''
+            mkdir -p target/build/utoipa-swagger-ui.out
+            ln -s "${swaggerUi}" target/build/utoipa-swagger-ui.out/swagger-ui.zip
+          '';
+        # Build script only supports fetching from HTTP, not file URLs
+        # Last path element decides the cache key, which we rely on above
+        SWAGGER_UI_DOWNLOAD_URL = "file:///invalid-path/swagger-ui.zip";
+      };
     };
   };
   build = cargo.workspaceMembers.stackable-cockpitd.build.override {
