@@ -45,21 +45,6 @@
   },
   "js2nix": {
     "overlay": {
-      "@babel/helper-create-class-features-plugin": {
-        "addDependencies": [
-          "@babel/core"
-        ]
-      },
-      "@babel/plugin-transform-typescript": {
-        "addDependencies": [
-          "@babel/core"
-        ]
-      },
-      "@babel/plugin-transform-modules-commonjs": {
-        "addDependencies": [
-          "@babel/core"
-        ]
-      },
       "vite-plugin-solid": {
         "addDependencies": [
           "vite"
