@@ -26,11 +26,11 @@
     "eslint-plugin-unicorn": "^47.0.0",
     "openapi-typescript": "^6.5.0",
     "prettier": "^2.8.8",
-    "typescript": "^5.0.2",
+    "typescript": "^5.0.4",
     "unocss": "^0.51.8",
-    "vite": "^4.4.12",
-    "vite-plugin-solid": "^2.7.0",
-    "vitest": "^0.31.1"
+    "vite": "^4.5.3",
+    "vite-plugin-solid": "^2.7.2",
+    "vitest": "^0.31.4"
   },
   "dependencies": {
     "@fluent/bundle": "^0.18.0",
