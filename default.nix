@@ -53,7 +53,7 @@ rec {
             };
           in ''
             mkdir -p target/build/utoipa-swagger-ui.out
-            ln -s ${swaggerUi} target/build/utoipa-swagger-ui.out/swagger-ui.zip
+            ln -s "${swaggerUi}" target/build/utoipa-swagger-ui.out/swagger-ui.zip
           '';
         # Build script only supports fetching from HTTP, not file URLs
         # Last path element decides the cache key, which we rely on above
