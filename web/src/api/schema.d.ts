@@ -11,17 +11,11 @@ type OneOf<T extends any[]> = T extends [infer Only] ? Only : T extends [infer A
 
 export interface paths {
   "/demos": {
-    /**
-     * Retrieves all demos.
-     * @description Retrieves all demos.
-     */
+    /** Retrieves all demos. */
     get: operations["get_demos"];
   };
   "/demos/{name}": {
-    /**
-     * Retrieves one demo identified by `name`.
-     * @description Retrieves one demo identified by `name`.
-     */
+    /** Retrieves one demo identified by `name`. */
     get: operations["get_demo"];
   };
   "/login": {
@@ -31,24 +25,15 @@ export interface paths {
     get: operations["ping"];
   };
   "/releases": {
-    /**
-     * Retrieves all releases.
-     * @description Retrieves all releases.
-     */
+    /** Retrieves all releases. */
     get: operations["get_releases"];
   };
   "/releases/{name}": {
-    /**
-     * Retrieves one release identified by `name`.
-     * @description Retrieves one release identified by `name`.
-     */
+    /** Retrieves one release identified by `name`. */
     get: operations["get_release"];
   };
   "/stacklets": {
-    /**
-     * Retrieves all stacklets.
-     * @description Retrieves all stacklets.
-     */
+    /** Retrieves all stacklets. */
     get: operations["get_stacklets"];
   };
 }
@@ -163,10 +148,7 @@ export type external = Record<string, never>;
 
 export interface operations {
 
-  /**
-   * Retrieves all demos.
-   * @description Retrieves all demos.
-   */
+  /** Retrieves all demos. */
   get_demos: {
     responses: {
       /** @description Retrieving a list of demos succeeded */
@@ -181,10 +163,7 @@ export interface operations {
       };
     };
   };
-  /**
-   * Retrieves one demo identified by `name`.
-   * @description Retrieves one demo identified by `name`.
-   */
+  /** Retrieves one demo identified by `name`. */
   get_demo: {
     responses: {
       /** @description Retrieving the demo with 'name' succeeded */
@@ -222,10 +201,7 @@ export interface operations {
       };
     };
   };
-  /**
-   * Retrieves all releases.
-   * @description Retrieves all releases.
-   */
+  /** Retrieves all releases. */
   get_releases: {
     responses: {
       /** @description Retrieving a list of releases succeeded */
@@ -240,18 +216,12 @@ export interface operations {
       };
     };
   };
-  /**
-   * Retrieves one release identified by `name`.
-   * @description Retrieves one release identified by `name`.
-   */
+  /** Retrieves one release identified by `name`. */
   get_release: {
     responses: {
     };
   };
-  /**
-   * Retrieves all stacklets.
-   * @description Retrieves all stacklets.
-   */
+  /** Retrieves all stacklets. */
   get_stacklets: {
     responses: {
       200: {
