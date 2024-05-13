@@ -5,6 +5,7 @@ on: workflow_call
 
 env:
   RUST_VERSION: 1.75.0
+  GO_VERSION: '^1.22.2'
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -26,6 +27,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
+
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
         with:
@@ -84,6 +89,10 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           components: clippy
 
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: clippy
@@ -123,6 +132,10 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           components: rustfmt
 
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:
           key: doc
@@ -145,6 +158,10 @@ jobs:
       - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
+
+      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
 
       - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
         with:

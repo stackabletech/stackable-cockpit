@@ -1,6 +1,6 @@
 module rust/stackable/go-helm-wrapper
 
-go 1.21
+go 1.22
 
 require (
 	github.com/mittwald/go-helm-client v0.12.9
