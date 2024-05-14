@@ -46,7 +46,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
-      - uses: reviewdog/action-markdownlint@97e3df02fe1573d505a7b268046a44fa5409cbc3 # tag=v0.9.0
+      - uses: reviewdog/action-markdownlint@5bc6ad5ba9e1250878f351bafcc7ac0a11dc050f # v0.18.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           markdownlint_flags: "-i README.md ."
