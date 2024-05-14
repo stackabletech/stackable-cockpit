@@ -26,7 +26,7 @@ jobs:
         with:
           version: 7.26.1
           run_install: true
-      - uses: reviewdog/action-eslint@94d539484aab48e9b2ffff6466d8866ee4e4b217 # tag=v1.18.2
+      - uses: reviewdog/action-eslint@423672b7acbb75ee34d3e37aff30949ddc8350e3 # v1.24.0
         with:
           workdir: web
           github_token: ${{ secrets.GITHUB_TOKEN }}
