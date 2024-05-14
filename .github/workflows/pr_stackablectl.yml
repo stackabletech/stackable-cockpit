@@ -65,7 +65,7 @@ jobs:
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+      - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2.7.3
         with:
           key: build-stackablectl-${{ matrix.target }}
 
