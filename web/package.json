@@ -30,7 +30,7 @@
     "unocss": "^0.51.8",
     "vite": "^4.5.3",
     "vite-plugin-solid": "^2.7.2",
-    "vitest": "^0.31.4"
+    "vitest": "^0.34.0"
   },
   "dependencies": {
     "@fluent/bundle": "^0.18.0",
