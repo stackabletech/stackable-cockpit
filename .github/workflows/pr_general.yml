@@ -106,7 +106,7 @@ jobs:
       - name: Run clippy action to produce annotations
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: giraffate/clippy-action@871cc4173f2594435c7ea6b0bce499cf6c2164a1
+        uses: giraffate/clippy-action@94e9bd8deab2618756ec5380f12eb35bcb0a88ca
         if: env.GITHUB_TOKEN != null
         with:
           clippy_flags: --all-targets -- -D warnings
