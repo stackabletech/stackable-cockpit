@@ -21,6 +21,18 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn --cwd web run build
 
+  eslint:
+    name: Run web linting via ESLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+        with:
+          node-version: 18
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn --cwd web run lint
+
   prettier:
     name: Validate web formatting
     runs-on: ubuntu-latest
@@ -37,4 +49,4 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
-            core.setFailed('web/ contains unformatted code, run `pnpm prettier . --write` and re-commit!')
+            core.setFailed('web/ contains unformatted code, run `yarn --cwd web run format --write` and re-commit!')
