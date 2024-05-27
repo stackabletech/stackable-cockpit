@@ -406,7 +406,6 @@ impl Client {
                 let new_discovery = Self::run_discovery(self.client.clone()).await?;
                 *old_discovery = new_discovery;
 
-                // discovery = discovery.run().await.context(GVKDiscoveryRunSnafu)?;
                 // Release the lock as quickly as possible
                 drop(old_discovery);
                 self.discovery.read().await.resolve_gvk(gvk)
