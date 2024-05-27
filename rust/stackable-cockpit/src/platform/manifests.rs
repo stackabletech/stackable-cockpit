@@ -8,7 +8,7 @@ use crate::{
     common::manifest::ManifestSpec,
     helm,
     utils::{
-        k8s,
+        k8s::{self, Client},
         path::{IntoPathOrUrl, PathOrUrlParseError},
     },
     xfer::{
@@ -61,7 +61,7 @@ pub enum Error {
 }
 
 pub trait InstallManifestsExt {
-    // TODO (Techassi): This step shouldn't care about templating the manifests nor fecthing them from remote
+    // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
     #[instrument(skip_all)]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
@@ -69,11 +69,10 @@ pub trait InstallManifestsExt {
         parameters: &HashMap<String, String>,
         product_namespace: &str,
         labels: Labels,
+        client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
-
-        let kube_client = k8s::Client::new().await.context(CreateKubeClientSnafu)?;
 
         for manifest in manifests {
             match manifest {
@@ -137,7 +136,7 @@ pub trait InstallManifestsExt {
                         .await
                         .context(FileTransferSnafu)?;
 
-                    kube_client
+                    client
                         .deploy_manifests(&manifests, product_namespace, labels.clone())
                         .await
                         .context(DeployManifestSnafu)?

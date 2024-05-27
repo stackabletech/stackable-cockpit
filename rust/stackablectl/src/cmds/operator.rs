@@ -17,7 +17,10 @@ use stackable_cockpit::{
     },
     helm::{self, Release, Repository},
     platform::{namespace, operator},
-    utils,
+    utils::{
+        self,
+        k8s::{self, Client},
+    },
 };
 
 use crate::{
@@ -141,6 +144,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
+
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
 
     #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceCreate {
@@ -290,7 +296,9 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
         .await
         .context(CommonClusterArgsSnafu)?;
 
-    namespace::create_if_needed(args.operator_namespace.clone())
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
+    namespace::create_if_needed(&client, args.operator_namespace.clone())
         .await
         .context(NamespaceCreateSnafu {
             namespace: args.operator_namespace.clone(),

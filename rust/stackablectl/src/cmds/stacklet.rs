@@ -9,7 +9,7 @@ use tracing::{info, instrument};
 use stackable_cockpit::{
     constants::DEFAULT_PRODUCT_NAMESPACE,
     platform::stacklet::{self, get_credentials_for_product, list_stacklets},
-    utils::k8s::DisplayCondition,
+    utils::k8s::{self, Client, DisplayCondition},
 };
 
 use crate::{
@@ -76,6 +76,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
+
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
 }
 
 impl StackletArgs {
@@ -91,10 +94,12 @@ impl StackletArgs {
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
 
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
-    let stacklets = list_stacklets(Some(&args.namespaces.product_namespace))
+    let stacklets = list_stacklets(&client, Some(&args.namespaces.product_namespace))
         .await
         .context(StackletListSnafu)?;
 
@@ -202,7 +207,10 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
 
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
     match get_credentials_for_product(
+        &client,
         &args.product_namespace,
         &args.stacklet_name,
         &args.product_name,

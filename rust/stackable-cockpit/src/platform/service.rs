@@ -13,7 +13,7 @@ use kube::{api::ListParams, ResourceExt};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, warn};
 
-use crate::utils::k8s::{self, ListParamsExt};
+use crate::utils::k8s::{self, Client, ListParamsExt};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -40,7 +40,7 @@ pub enum Error {
 }
 
 pub async fn get_endpoints(
-    kube_client: &k8s::Client,
+    client: &Client,
     product_name: &str,
     object_name: &str,
     object_namespace: &str,
@@ -48,7 +48,7 @@ pub async fn get_endpoints(
     let list_params =
         ListParams::from_product(product_name, Some(object_name), k8s::ProductLabel::Name);
 
-    let listeners = kube_client
+    let listeners = client
         .list_listeners(Some(object_namespace), &list_params)
         .await;
     let listeners = match listeners {
@@ -92,13 +92,13 @@ pub async fn get_endpoints(
         return Ok(endpoints);
     }
 
-    let services = kube_client
+    let services = client
         .list_services(Some(object_namespace), &list_params)
         .await
         .context(KubeClientFetchSnafu)?;
 
     for service in services {
-        match get_endpoint_urls(kube_client, &service, object_name).await {
+        match get_endpoint_urls(client, &service, object_name).await {
             Ok(urls) => endpoints.extend(urls),
             Err(err) => warn!(
                 "Failed to get endpoint_urls of service {service_name}: {err}",
@@ -111,7 +111,7 @@ pub async fn get_endpoints(
 }
 
 pub async fn get_endpoint_urls(
-    kube_client: &k8s::Client,
+    client: &Client,
     service: &Service,
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, Error> {
@@ -128,7 +128,7 @@ pub async fn get_endpoint_urls(
     let endpoints = match service_spec.type_.as_deref() {
         Some("NodePort") => {
             get_endpoint_urls_for_nodeport(
-                kube_client,
+                client,
                 &service_name,
                 service_spec,
                 &service_namespace,
@@ -152,13 +152,13 @@ pub async fn get_endpoint_urls(
 }
 
 pub async fn get_endpoint_urls_for_nodeport(
-    kube_client: &k8s::Client,
+    client: &Client,
     service_name: &str,
     service_spec: &ServiceSpec,
     service_namespace: &str,
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, Error> {
-    let endpoints = kube_client
+    let endpoints = client
         .get_endpoints(service_namespace, service_name)
         .await
         .context(KubeClientFetchSnafu)?;
@@ -191,7 +191,7 @@ pub async fn get_endpoint_urls_for_nodeport(
         }
     };
 
-    let node_ip = get_node_ip(kube_client, node_name).await?;
+    let node_ip = get_node_ip(client, node_name).await?;
 
     let mut endpoints = IndexMap::new();
     for service_port in service_spec.ports.iter().flatten() {
@@ -265,8 +265,8 @@ pub async fn get_endpoint_urls_for_loadbalancer(
     Ok(endpoints)
 }
 
-async fn get_node_ip(kube_client: &k8s::Client, node_name: &str) -> Result<String, Error> {
-    let node_name_ip_mapping = get_node_name_ip_mapping(kube_client).await?;
+async fn get_node_ip(client: &Client, node_name: &str) -> Result<String, Error> {
+    let node_name_ip_mapping = get_node_name_ip_mapping(client).await?;
 
     match node_name_ip_mapping.get(node_name) {
         Some(node_ip) => Ok(node_ip.to_string()),
@@ -276,13 +276,8 @@ async fn get_node_ip(kube_client: &k8s::Client, node_name: &str) -> Result<Strin
 
 // TODO(sbernauer): Add caching. Not going to do so now, as listener-op
 // will replace this code entirely anyway.
-async fn get_node_name_ip_mapping(
-    kube_client: &k8s::Client,
-) -> Result<HashMap<String, String>, Error> {
-    let nodes = kube_client
-        .list_nodes()
-        .await
-        .context(KubeClientFetchSnafu)?;
+async fn get_node_name_ip_mapping(client: &Client) -> Result<HashMap<String, String>, Error> {
+    let nodes = client.list_nodes().await.context(KubeClientFetchSnafu)?;
 
     let mut result = HashMap::new();
     for node in nodes {

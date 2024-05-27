@@ -14,10 +14,13 @@ use crate::{
         release::ReleaseList,
         stack::{self, StackInstallParameters, StackList},
     },
-    utils::params::{
-        IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+    utils::{
+        k8s::Client,
+        params::{
+            IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+        },
     },
-    xfer::{self, Client},
+    xfer,
 };
 
 pub type RawDemoParameterParseError = RawParameterParseError;
@@ -94,7 +97,11 @@ impl DemoSpec {
     /// - Does the demo support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this demo?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), Error> {
+    pub async fn check_prerequisites(
+        &self,
+        client: &Client,
+        product_namespace: &str,
+    ) -> Result<(), Error> {
         debug!("Checking prerequisites before installing demo");
 
         // Returns an error if the demo doesn't support to be installed in the
@@ -109,7 +116,10 @@ impl DemoSpec {
         // Checks if the available cluster resources are sufficient to deploy
         // the demo.
         if let Some(resource_requests) = &self.resource_requests {
-            if let Err(err) = resource_requests.validate_cluster_size("demo").await {
+            if let Err(err) = resource_requests
+                .validate_cluster_size(client, "demo")
+                .await
+            {
                 match err {
                     ResourceRequestsError::ValidationErrors { errors } => {
                         for error in errors {
@@ -129,7 +139,8 @@ impl DemoSpec {
         stack_list: StackList,
         release_list: ReleaseList,
         install_parameters: DemoInstallParameters,
-        transfer_client: &Client,
+        client: &Client,
+        transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         // Get the stack spec based on the name defined in the demo spec
         let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
@@ -137,7 +148,7 @@ impl DemoSpec {
         })?;
 
         // Check demo prerequisites
-        self.check_prerequisites(&install_parameters.product_namespace)
+        self.check_prerequisites(client, &install_parameters.product_namespace)
             .await?;
 
         let stack_install_parameters = StackInstallParameters {
@@ -151,12 +162,17 @@ impl DemoSpec {
         };
 
         stack
-            .install(release_list, stack_install_parameters, transfer_client)
+            .install(
+                release_list,
+                stack_install_parameters,
+                client,
+                transfer_client,
+            )
             .await
             .context(InstallStackSnafu)?;
 
         // Install demo manifests
-        self.prepare_manifests(install_parameters, transfer_client)
+        self.prepare_manifests(install_parameters, client, transfer_client)
             .await
     }
 
@@ -164,6 +180,7 @@ impl DemoSpec {
     async fn prepare_manifests(
         &self,
         install_params: DemoInstallParameters,
+        client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
@@ -179,6 +196,7 @@ impl DemoSpec {
             &params,
             &install_params.product_namespace,
             install_params.labels,
+            client,
             transfer_client,
         )
         .await

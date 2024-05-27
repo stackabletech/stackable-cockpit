@@ -91,12 +91,8 @@ impl ResourceRequests {
     /// Validates the struct [`ResourceRequests`] by comparing the required
     /// resources to the available ones in the current cluster. `object_name`
     /// should be `stack` or `demo`.
-    pub async fn validate_cluster_size(&self, object_name: &str) -> Result<()> {
-        let kube_client = Client::new().await.context(KubeClientCreateSnafu)?;
-        let cluster_info = kube_client
-            .get_cluster_info()
-            .await
-            .context(ClusterInfoSnafu)?;
+    pub async fn validate_cluster_size(&self, client: &Client, object_name: &str) -> Result<()> {
+        let cluster_info = client.get_cluster_info().await.context(ClusterInfoSnafu)?;
 
         let stack_cpu =
             CpuQuantity::try_from(&self.cpu).context(ParseCpuResourceRequirementsSnafu)?;

@@ -14,8 +14,11 @@ use stackable_cockpit::{
         release,
         stack::{self, StackInstallParameters},
     },
-    utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, Client},
+    utils::{
+        k8s::{self, Client},
+        path::PathOrUrlParseError,
+    },
+    xfer::{self, cache::Cache},
 };
 
 use crate::{
@@ -127,13 +130,16 @@ pub enum CmdError {
 
     #[snafu(display("failed to build labels for stack resources"))]
     BuildLabels { source: LabelError },
+
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
 }
 
 impl StackArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
-        let transfer_client = Client::new_with(cache);
+        let transfer_client = xfer::Client::new_with(cache);
         let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
         let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
@@ -266,7 +272,7 @@ async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
     stack_list: stack::StackList,
-    transfer_client: &Client,
+    transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!("Installing stack {}", args.stack_name);
 
@@ -284,6 +290,8 @@ async fn install_cmd(
                 .install_if_needed()
                 .await
                 .context(InstallClusterSnafu)?;
+
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
             // Construct labels which get attached to all dynamic objects which
             // are part of the stack.
@@ -305,7 +313,7 @@ async fn install_cmd(
             };
 
             stack_spec
-                .install(release_list, install_parameters, transfer_client)
+                .install(release_list, install_parameters, &client, transfer_client)
                 .await
                 .context(InstallStackSnafu {
                     stack_name: args.stack_name.clone(),
