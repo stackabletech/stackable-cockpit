@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, string::FromUtf8Error};
+use std::{collections::BTreeMap, string::FromUtf8Error, sync::RwLock};
 
 use k8s_openapi::api::{
     apps::v1::{Deployment, StatefulSet},
@@ -7,7 +7,7 @@ use k8s_openapi::api::{
 use kube::{
     api::{ListParams, Patch, PatchParams, PostParams},
     core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
-    discovery::Scope,
+    discovery::{ApiCapabilities, ApiResource, Scope},
     Api, Discovery, ResourceExt,
 };
 use serde::Deserialize;
@@ -39,11 +39,14 @@ pub enum Error {
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
 
+    #[snafu(display("failed to run GVK discovery"))]
+    GVKDiscoveryRun { source: kube::error::Error },
+
+    #[snafu(display("GVK {gvk:?} is not known"))]
+    GVKUnkown { gvk: GroupVersionKind },
+
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
     ObjectType { object: DynamicObject },
-
-    #[snafu(display("failed to deploy manifest because GVK {gvk:?} cannot be resolved"))]
-    DiscoveryResolve { gvk: GroupVersionKind },
 
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvert { source: FromUtf8Error },
@@ -66,7 +69,9 @@ pub enum Error {
 
 pub struct Client {
     client: kube::Client,
-    discovery: Discovery,
+
+    // Choosing an [`RwLock`] here, as their can be many reads in parallel, but running a discovery is very rare
+    discovery: RwLock<Discovery>,
 }
 
 impl Client {
@@ -77,10 +82,7 @@ impl Client {
             .await
             .context(KubeClientCreateSnafu)?;
 
-        let discovery = Discovery::new(client.clone())
-            .run()
-            .await
-            .context(KubeClientFetchSnafu)?;
+        let discovery = RwLock::new(Self::run_discovery(client.clone()).await?);
 
         Ok(Self { client, discovery })
     }
@@ -112,9 +114,9 @@ impl Client {
 
             let gvk = Self::gvk_of_typemeta(object_type);
             let (resource, capabilities) = self
-                .discovery
                 .resolve_gvk(&gvk)
-                .context(DiscoveryResolveSnafu { gvk })?;
+                .await?
+                .context(GVKUnkownSnafu { gvk })?;
 
             let api: Api<DynamicObject> = match capabilities.scope {
                 Scope::Cluster => {
@@ -147,9 +149,9 @@ impl Client {
         gvk: &GroupVersionKind,
         namespace: Option<&str>,
     ) -> Result<Option<ObjectList<DynamicObject>>, Error> {
-        let object_api_resource = match self.discovery.resolve_gvk(gvk) {
-            Some((object_api_resource, _)) => object_api_resource,
-            None => {
+        let object_api_resource = match self.resolve_gvk(gvk).await {
+            Ok(Some((object_api_resource, _))) => object_api_resource,
+            _ => {
                 return Ok(None);
             }
         };
@@ -175,9 +177,9 @@ impl Client {
         object_name: &str,
         gvk: &GroupVersionKind,
     ) -> Result<Option<DynamicObject>, Error> {
-        let object_api_resource = match self.discovery.resolve_gvk(gvk) {
-            Some((object_api_resource, _)) => object_api_resource,
-            None => {
+        let object_api_resource = match self.resolve_gvk(gvk).await {
+            Ok(Some((object_api_resource, _))) => object_api_resource,
+            _ => {
                 return Ok(None);
             }
         };
@@ -381,6 +383,43 @@ impl Client {
     pub async fn get_endpoints(&self, namespace: &str, name: &str) -> Result<Endpoints> {
         let endpoints_api: Api<Endpoints> = Api::namespaced(self.client.clone(), namespace);
         endpoints_api.get(name).await.context(KubeClientFetchSnafu)
+    }
+
+    /// Try to resolve the given [`GroupVersionKind`]. In case the resolution fails a discovery is run to pull in new
+    /// GVKs that are not present in the [`Discovery`] cache. Afterwards a normal resolution is issued.
+    async fn resolve_gvk(
+        &self,
+        gvk: &GroupVersionKind,
+    ) -> Result<Option<(ApiResource, ApiCapabilities)>> {
+        let resolved = self.discovery.read().unwrap().resolve_gvk(gvk);
+
+        Ok(match resolved {
+            Some(resolved) => Some(resolved),
+            None => {
+                tracing::warn!(?gvk, "Discovery did not include gvk, re-running discovery");
+
+                // We take the lock early here to avoid running multiple discoveries in parallel (as they are expensive)
+                let mut old_discovery = self.discovery.write().unwrap();
+
+                // We create a new Discovery object here, as [`Discovery::run`] consumes self
+                let new_discovery = Self::run_discovery(self.client.clone()).await?;
+                *old_discovery = new_discovery;
+
+                // discovery = discovery.run().await.context(GVKDiscoveryRunSnafu)?;
+                // Release the lock as quickly as possible
+                drop(old_discovery);
+                self.discovery.read().unwrap().resolve_gvk(gvk)
+            }
+        })
+    }
+
+    /// Creates a new [`Discovery`] object and immediatly runs a discovery.
+    async fn run_discovery(client: kube::client::Client) -> Result<Discovery> {
+        tracing::info!("Running discovery");
+        Discovery::new(client)
+            .run()
+            .await
+            .context(GVKDiscoveryRunSnafu)
     }
 
     /// Extracts the [`GroupVersionKind`] from [`TypeMeta`].

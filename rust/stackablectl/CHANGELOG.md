@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Re-run GVK discovery after resolution failure ([#XXX]).
+
 ## [24.3.3] - 2024-05-13
 
 - Bump Rust, Go and Node dependencies ([#238]).
