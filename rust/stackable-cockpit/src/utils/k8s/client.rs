@@ -14,6 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
+use tracing::info;
 
 use crate::{
     platform::{cluster, credentials::Credentials},
@@ -397,7 +398,7 @@ impl Client {
         Ok(match resolved {
             Some(resolved) => Some(resolved),
             None => {
-                tracing::warn!(?gvk, "Discovery did not include gvk, re-running discovery");
+                info!(?gvk, "discovery did not include gvk");
 
                 // We take the lock early here to avoid running multiple discoveries in parallel (as they are expensive)
                 let mut old_discovery = self.discovery.write().await;
