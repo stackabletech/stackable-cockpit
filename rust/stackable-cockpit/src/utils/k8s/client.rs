@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, string::FromUtf8Error, sync::RwLock};
+use std::{collections::BTreeMap, string::FromUtf8Error};
 
 use k8s_openapi::api::{
     apps::v1::{Deployment, StatefulSet},
@@ -13,6 +13,7 @@ use kube::{
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
+use tokio::sync::RwLock;
 
 use crate::{
     platform::{cluster, credentials::Credentials},
@@ -391,7 +392,7 @@ impl Client {
         &self,
         gvk: &GroupVersionKind,
     ) -> Result<Option<(ApiResource, ApiCapabilities)>> {
-        let resolved = self.discovery.read().unwrap().resolve_gvk(gvk);
+        let resolved = self.discovery.read().await.resolve_gvk(gvk);
 
         Ok(match resolved {
             Some(resolved) => Some(resolved),
@@ -399,7 +400,7 @@ impl Client {
                 tracing::warn!(?gvk, "Discovery did not include gvk, re-running discovery");
 
                 // We take the lock early here to avoid running multiple discoveries in parallel (as they are expensive)
-                let mut old_discovery = self.discovery.write().unwrap();
+                let mut old_discovery = self.discovery.write().await;
 
                 // We create a new Discovery object here, as [`Discovery::run`] consumes self
                 let new_discovery = Self::run_discovery(self.client.clone()).await?;
@@ -408,7 +409,7 @@ impl Client {
                 // discovery = discovery.run().await.context(GVKDiscoveryRunSnafu)?;
                 // Release the lock as quickly as possible
                 drop(old_discovery);
-                self.discovery.read().unwrap().resolve_gvk(gvk)
+                self.discovery.read().await.resolve_gvk(gvk)
             }
         })
     }
