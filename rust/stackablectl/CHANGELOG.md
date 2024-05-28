@@ -4,18 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.3.4] - 2024-05-28
+
 ### Fixed
 
 - Avoid unnecessary `k8s::Client` creations ([#295]).
 - Re-run GVK discovery after resolution failure ([#294]).
+
+[#294]: https://github.com/stackabletech/stackable-cockpit/pull/294
+[#295]: https://github.com/stackabletech/stackable-cockpit/pull/295
 
 ## [24.3.3] - 2024-05-13
 
 - Bump Rust, Go and Node dependencies ([#238]).
 
 [#238]: https://github.com/stackabletech/stackable-cockpit/pull/238
-[#294]: https://github.com/stackabletech/stackable-cockpit/pull/294
-[#295]: https://github.com/stackabletech/stackable-cockpit/pull/295
 
 ## [24.3.2] - 2024-04-25
 
