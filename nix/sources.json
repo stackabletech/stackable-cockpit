@@ -17,10 +17,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "gomod2nix",
-        "rev": "872b63ddd28f318489c929d25f1f0a3c6039c971",
-        "sha256": "1wh9rlhg2w42fsavh7wxvmw42l7m5wg290gnp571dq0qcr1z7kg1",
+        "rev": "4702caff8e201f4c98fe3583637a930d253447c8",
+        "sha256": "1s0ihw1888rxpx8f7f5agr1vkjafszpz5jna7smi6n03irfcscyf",
         "type": "tarball",
-        "url": "https://github.com/nix-community/gomod2nix/archive/872b63ddd28f318489c929d25f1f0a3c6039c971.tar.gz",
+        "url": "https://github.com/nix-community/gomod2nix/archive/4702caff8e201f4c98fe3583637a930d253447c8.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
         "version": "1.5.0"
     },
@@ -42,10 +42,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "af8b9db5c00f1a8e4b83578acc578ff7d823b786",
-        "sha256": "0kd64p8i1gmgdjfdag2fvj4gfcsk0wa3h7w7j5l6b2yxr9plnhpm",
+        "rev": "e2dd4e18cc1c7314e24154331bae07df76eb582f",
+        "sha256": "19zbxf7rb787jvyrfhl4z9sn3aisd6xvx6ikybbi75ym9sy39jds",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/af8b9db5c00f1a8e4b83578acc578ff7d823b786.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/e2dd4e18cc1c7314e24154331bae07df76eb582f.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }
