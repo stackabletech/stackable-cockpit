@@ -10,8 +10,11 @@ use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
     platform::{namespace, release},
-    utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, Client},
+    utils::{
+        k8s::{self, Client},
+        path::PathOrUrlParseError,
+    },
+    xfer::{self, cache::Cache},
 };
 
 use crate::{
@@ -115,6 +118,9 @@ pub enum CmdError {
     #[snafu(display("cluster argument error"))]
     CommonClusterArgs { source: CommonClusterArgsError },
 
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
+
     #[snafu(display("failed to create namespace '{namespace}'"))]
     NamespaceCreate {
         source: namespace::Error,
@@ -126,7 +132,7 @@ impl ReleaseArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle release args");
 
-        let transfer_client = Client::new_with(cache);
+        let transfer_client = xfer::Client::new_with(cache);
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
         let release_list = release::ReleaseList::build(&files, &transfer_client)
             .await
@@ -276,8 +282,10 @@ async fn install_cmd(
                 .await
                 .context(CommonClusterArgsSnafu)?;
 
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
             // Create operator namespace if needed
-            namespace::create_if_needed(args.operator_namespace.clone())
+            namespace::create_if_needed(&client, args.operator_namespace.clone())
                 .await
                 .context(NamespaceCreateSnafu {
                     namespace: args.operator_namespace.clone(),

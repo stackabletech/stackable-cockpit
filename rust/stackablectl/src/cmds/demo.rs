@@ -14,8 +14,11 @@ use stackable_cockpit::{
         demo::{self, DemoInstallParameters},
         release, stack,
     },
-    utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, Client},
+    utils::{
+        k8s::{self, Client},
+        path::PathOrUrlParseError,
+    },
+    xfer::{self, cache::Cache},
 };
 
 use crate::{
@@ -140,6 +143,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to build labels for demo resources"))]
     BuildLabels { source: LabelError },
+
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
 }
 
 impl DemoArgs {
@@ -147,7 +153,7 @@ impl DemoArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
 
-        let transfer_client = Client::new_with(cache);
+        let transfer_client = xfer::Client::new_with(cache);
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
@@ -266,12 +272,12 @@ async fn describe_cmd(
 }
 
 /// Install a specific demo
-#[instrument(skip(list))]
+#[instrument(skip(list, transfer_client))]
 async fn install_cmd(
     args: &DemoInstallArgs,
     cli: &Cli,
     list: demo::List,
-    transfer_client: &Client,
+    transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
 
@@ -298,6 +304,8 @@ async fn install_cmd(
         .install_if_needed()
         .await
         .context(InstallClusterSnafu)?;
+
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
     // Construct labels which get attached to all dynamic objects which
     // are part of the demo and stack.
@@ -327,6 +335,7 @@ async fn install_cmd(
         stack_list,
         release_list,
         install_parameters,
+        &client,
         transfer_client,
     )
     .await

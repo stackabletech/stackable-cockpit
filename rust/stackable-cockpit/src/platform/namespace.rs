@@ -1,6 +1,6 @@
-use snafu::{ResultExt, Snafu};
+use snafu::Snafu;
 
-use crate::utils::k8s;
+use crate::utils::k8s::{self, Client};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -13,9 +13,7 @@ pub enum Error {
 
 /// Creates a namespace with `name` if needed (not already present in the
 /// cluster).
-pub async fn create_if_needed(name: String) -> Result<(), Error> {
-    let client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
-
+pub async fn create_if_needed(client: &Client, name: String) -> Result<(), Error> {
     client
         .create_namespace_if_needed(name)
         .await

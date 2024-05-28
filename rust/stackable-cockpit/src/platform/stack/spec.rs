@@ -13,8 +13,11 @@ use crate::{
         namespace, release,
         stack::StackInstallParameters,
     },
-    utils::params::{
-        IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+    utils::{
+        k8s::Client,
+        params::{
+            IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+        },
     },
     xfer,
 };
@@ -106,7 +109,11 @@ impl StackSpec {
     /// - Does the stack support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this stack?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), Error> {
+    pub async fn check_prerequisites(
+        &self,
+        client: &Client,
+        product_namespace: &str,
+    ) -> Result<(), Error> {
         debug!("Checking prerequisites before installing stack");
 
         // Returns an error if the stack doesn't support to be installed in the
@@ -123,7 +130,10 @@ impl StackSpec {
         // Checks if the available cluster resources are sufficient to deploy
         // the demo.
         if let Some(resource_requests) = &self.resource_requests {
-            if let Err(err) = resource_requests.validate_cluster_size("stack").await {
+            if let Err(err) = resource_requests
+                .validate_cluster_size(client, "stack")
+                .await
+            {
                 match err {
                     ResourceRequestsError::ValidationErrors { errors } => {
                         for error in errors {
@@ -139,20 +149,21 @@ impl StackSpec {
     }
 
     // TODO (Techassi): Can we get rid of the release list and just use the release spec instead
-    #[instrument(skip(self, release_list, transfer_client))]
+    #[instrument(skip(self, release_list, client, transfer_client))]
     pub async fn install(
         &self,
         release_list: release::ReleaseList,
         install_parameters: StackInstallParameters,
+        client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         // First, we check if the prerequisites are met
-        self.check_prerequisites(&install_parameters.product_namespace)
+        self.check_prerequisites(client, &install_parameters.product_namespace)
             .await?;
 
         // Second, we install the release if not opted out
         if !install_parameters.skip_release {
-            namespace::create_if_needed(install_parameters.operator_namespace.clone())
+            namespace::create_if_needed(client, install_parameters.operator_namespace.clone())
                 .await
                 .context(CreateNamespaceSnafu {
                     namespace: install_parameters.operator_namespace.clone(),
@@ -167,14 +178,14 @@ impl StackSpec {
         }
 
         // Next, create the product namespace if needed
-        namespace::create_if_needed(install_parameters.product_namespace.clone())
+        namespace::create_if_needed(client, install_parameters.product_namespace.clone())
             .await
             .context(CreateNamespaceSnafu {
                 namespace: install_parameters.product_namespace.clone(),
             })?;
 
         // Finally install the stack manifests
-        self.prepare_manifests(install_parameters, transfer_client)
+        self.prepare_manifests(install_parameters, client, transfer_client)
             .await
     }
 
@@ -205,6 +216,7 @@ impl StackSpec {
     pub async fn prepare_manifests(
         &self,
         install_params: StackInstallParameters,
+        client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
@@ -220,6 +232,7 @@ impl StackSpec {
             &parameters,
             &install_params.product_namespace,
             install_params.labels,
+            client,
             transfer_client,
         )
         .await
