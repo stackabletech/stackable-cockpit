@@ -69,11 +69,11 @@ pub async fn list_stacklets(
     client: &Client,
     namespace: Option<&str>,
 ) -> Result<Vec<Stacklet>, Error> {
-    let mut stacklets = list_stackable_stacklets(&client, namespace).await?;
-    stacklets.extend(grafana::list(&client, namespace).await?);
-    stacklets.extend(minio::list(&client, namespace).await?);
-    stacklets.extend(opensearch::list(&client, namespace).await?);
-    stacklets.extend(prometheus::list(&client, namespace).await?);
+    let mut stacklets = list_stackable_stacklets(client, namespace).await?;
+    stacklets.extend(grafana::list(client, namespace).await?);
+    stacklets.extend(minio::list(client, namespace).await?);
+    stacklets.extend(opensearch::list(client, namespace).await?);
+    stacklets.extend(prometheus::list(client, namespace).await?);
 
     Ok(stacklets)
 }
@@ -99,7 +99,7 @@ pub async fn get_credentials_for_product(
         }
     };
 
-    let credentials = match credentials::get(&client, product_name, &product_cluster).await {
+    let credentials = match credentials::get(client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
         Err(credentials::Error::NoSecret) => None,
         Err(credentials::Error::KubeClientFetch { source }) => {
