@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Remove colons from error messages, because the snafu report removes all
+  content after the colon which results in loss of detail ([#300]).
+
+[#300]: https://github.com/stackabletech/stackable-cockpit/pull/300
+
 ## [24.3.4] - 2024-05-28
 
 ### Fixed
