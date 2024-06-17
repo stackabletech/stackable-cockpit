@@ -78,3 +78,10 @@ repos:
         entry: cargo xtask gen-docs
         stages: [commit, merge-commit, manual]
         pass_filenames: false
+      - id: gen-cargo-nix
+        name: gen-cargo-nix
+        files: ^Cargo\.lock|go\.mod$
+        language: system
+        entry: make regenerate-nix
+        stages: [commit, merge-commit, manual]
+        pass_filename: false
