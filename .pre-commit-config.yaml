@@ -50,30 +50,35 @@ repos:
     hooks:
       - id: gen-man
         name: gen-man
+        files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-man
         stages: [commit, merge-commit, manual]
         pass_filenames: false
       - id: gen-comp
         name: gen-comp
+        files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-comp
         stages: [commit, merge-commit, manual]
         pass_filenames: false
       - id: gen-openapi
         name: gen-openapi
+        files: ^web/
         language: system
         entry: cargo xtask gen-openapi
         stages: [commit, merge-commit, manual]
         pass_filenames: false
       - id: gen-ctl-readme
         name: gen-ctl-readme
+        files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-ctl-readme
         stages: [commit, merge-commit, manual]
         pass_filenames: false
       - id: gen-docs
         name: gen-docs
+        files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-docs
         stages: [commit, merge-commit, manual]
