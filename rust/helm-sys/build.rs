@@ -13,10 +13,10 @@ enum Error {
     #[snafu(display("Failed to find env var"))]
     EnvVarNotFound { source: VarError },
 
-    #[snafu(display("Unsupported GOARCH: {arch}"))]
+    #[snafu(display("Unsupported GOARCH ({arch})"))]
     UnsupportedGoArch { arch: String },
 
-    #[snafu(display("Unsupported GOOS: {os}"))]
+    #[snafu(display("Unsupported GOOS ({os})"))]
     UnsupportedGoOs { os: String },
 }
 

@@ -63,13 +63,13 @@ pub enum Error {
     #[snafu(display("failed to add Helm repo ({error})"))]
     AddRepo { error: String },
 
-    #[snafu(display("failed to list Helm releases: {error}"))]
+    #[snafu(display("failed to list Helm releases ({error})"))]
     ListReleases { error: String },
 
     #[snafu(display("failed to install Helm release"))]
     InstallRelease { source: InstallReleaseError },
 
-    #[snafu(display("failed to uninstall Helm release: {error}"))]
+    #[snafu(display("failed to uninstall Helm release ({error})"))]
     UninstallRelease { error: String },
 }
 
@@ -93,7 +93,7 @@ pub enum InstallReleaseError {
     /// This error indicates that there was an Helm error. The error it self
     /// is not typed, as the error is a plain string coming directly from the
     /// FFI bindings.
-    #[snafu(display("helm error: {error}"))]
+    #[snafu(display("helm FFI library call failed ({error})"))]
     HelmWrapper { error: String },
 }
 

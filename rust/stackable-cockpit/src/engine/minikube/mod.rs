@@ -17,7 +17,7 @@ pub enum Error {
         cluster_name: String,
     },
 
-    #[snafu(display("missing required binary: {binary}"))]
+    #[snafu(display("missing required binary {binary:?}"))]
     MissingBinary { binary: String },
 
     #[snafu(display("failed to execute Minikube command"))]

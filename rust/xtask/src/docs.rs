@@ -11,7 +11,7 @@ const DOCS_BASE_PATH: &str = "docs/modules/stackablectl/partials/commands";
 
 #[derive(Debug, Snafu)]
 pub enum GenDocsError {
-    #[snafu(display("No such subcommand: {name}"))]
+    #[snafu(display("subcommand {name:?} not found"))]
     NoSuchSubcommand { name: String },
 
     #[snafu(display("io error"))]
