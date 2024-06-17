@@ -43,7 +43,7 @@ pub enum SpecParseError {
     #[snafu(display("empty operator spec input"))]
     EmptyInput,
 
-    #[snafu(display("invalid operator name: '{name}'"))]
+    #[snafu(display("invalid operator name {name:?}"))]
     InvalidName { name: String },
 }
 

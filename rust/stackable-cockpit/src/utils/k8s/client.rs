@@ -50,6 +50,13 @@ pub enum Error {
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
     ObjectType { object: DynamicObject },
 
+    #[snafu(display("failed to deploy manifest because GVK {group}/{kind}@{version} cannot be resolved",
+        group = gvk.group,
+        version = gvk.version,
+        kind = gvk.kind
+    ))]
+    DiscoveryResolve { gvk: GroupVersionKind },
+
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvert { source: FromUtf8Error },
 

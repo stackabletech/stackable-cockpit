@@ -30,10 +30,10 @@ pub enum Error {
     #[snafu(display("failed to run kind command"))]
     CommandFailedToRun { source: std::io::Error },
 
-    #[snafu(display("kind command executed, but returned error: {error}"))]
+    #[snafu(display("failed to successfuly run kind command ({error})"))]
     CommandErroredOut { error: String },
 
-    #[snafu(display("missing required binary: {binary}"))]
+    #[snafu(display("missing required binary {binary:?}"))]
     MissingBinary { binary: String },
 
     #[snafu(display("failed to determine if Docker is running"))]
