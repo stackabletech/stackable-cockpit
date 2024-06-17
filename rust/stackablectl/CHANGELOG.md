@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.3.5] - 2024-06-17
+
 ### Fixed
 
 - Remove colons from error messages, because the snafu report removes all
