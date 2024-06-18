@@ -6,11 +6,6 @@
 htpasswd
 .yarn
 
-# Nix
-gomod2nix.toml
-Cargo.nix
-crate-hashes.json
-
 # Misc
 /demos
 /stacks
