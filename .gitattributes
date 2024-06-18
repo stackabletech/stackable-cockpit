@@ -6,3 +6,4 @@ Cargo.nix linguist-generated
 yarn.lock linguist-generated
 nix/** linguist-generated
 go.sum linguist-generated
+gomod2nix.toml linguist-generated
