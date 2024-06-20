@@ -59,16 +59,7 @@ where
         let mut index = 1;
 
         while let Some(source) = error.source() {
-            let source_string = source.to_string();
-
-            let cleaned = if let Some((cleaned, _)) = source_string.split_once(':') {
-                cleaned
-            } else {
-                &source_string
-            };
-
-            writeln!(report, " {}: {}", index, cleaned)?;
-
+            writeln!(report, " {}: {}", index, source)?;
             error = source;
             index += 1;
         }
