@@ -1,3 +1,9 @@
+//! This module contains helper structs and functions to render the CLI output
+//! based on templates. These templates allow dynamic composition of the output.
+//! The output offers sections for pre, post and command hints, as well as
+//! success and error output. The [`ErrorReport`] serves as an alternative to
+//! snafu's [`Report`](snafu::Report).
+
 use std::{
     fmt::Write,
     ops::{Deref, DerefMut},
