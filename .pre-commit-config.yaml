@@ -90,4 +90,4 @@ repos:
         language: system
         entry: make regenerate-nix
         stages: [commit, merge-commit, manual]
-        pass_filename: false
+        pass_filenames: false
