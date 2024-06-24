@@ -19,8 +19,11 @@ type Result<T, E = Error> = core::result::Result<T, E>;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("failed to read local file"))]
-    ReadLocalFile { source: std::io::Error },
+    #[snafu(display("failed to read from local file {file:?}"))]
+    ReadLocalFile {
+        source: std::io::Error,
+        file: PathBuf,
+    },
 
     #[snafu(display("failed to create cache from provided settings"))]
     CacheSettings { source: cache::Error },
@@ -82,7 +85,9 @@ impl Client {
     }
 
     async fn get_from_local_file(&self, path: &PathBuf) -> Result<String> {
-        fs::read_to_string(path).await.context(ReadLocalFileSnafu)
+        fs::read_to_string(path)
+            .await
+            .context(ReadLocalFileSnafu { file: path })
     }
 
     /// Internal method which either looks up the requested file in the cache
