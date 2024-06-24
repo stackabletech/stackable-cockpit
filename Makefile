@@ -75,6 +75,9 @@ clean: chart-clean
 
 regenerate-charts: chart-clean compile-chart
 
+# The explicit '--extra-experimental-features flakes' parameter was added,
+# because the command requires Flakes to be enabled, but most non-Nix users
+# don't enable them via the global nix rc file.
 regenerate-nix:
 	nix run --extra-experimental-features flakes -f . regenerateNixLockfiles
 
