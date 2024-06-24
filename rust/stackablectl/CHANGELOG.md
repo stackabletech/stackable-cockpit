@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.3.6] - 2024-06-24
+
+### Fixed
+
+- Remove error message trimming in error report ([#303]).
+
+[#303]: https://github.com/stackabletech/stackable-cockpit/pull/303
+
 ## [24.3.5] - 2024-06-17
 
 ### Fixed
