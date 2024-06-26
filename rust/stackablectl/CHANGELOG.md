@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- helm-sys: Double the helm timeout to 20m ([#306])
+
+[#306]: https://github.com/stackabletech/stackable-cockpit/pull/306
+
 ## [24.3.6] - 2024-06-24
 
 ### Fixed

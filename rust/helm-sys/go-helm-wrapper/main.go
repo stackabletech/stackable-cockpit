@@ -39,7 +39,7 @@ func main() {
 func go_install_helm_release(releaseName *C.char, chartName *C.char, chartVersion *C.char, valuesYaml *C.char, namespace *C.char, suppressOutput bool) *C.char {
 	helmClient := getHelmClient(namespace, suppressOutput)
 
-	timeout, _ := time.ParseDuration("10m")
+	timeout, _ := time.ParseDuration("20m")
 	chartSpec := gohelm.ChartSpec{
 		ReleaseName: C.GoString(releaseName),
 		ChartName:   C.GoString(chartName),
