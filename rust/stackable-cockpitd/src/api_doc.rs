@@ -57,7 +57,7 @@ pub fn openapi() -> utoipa::openapi::OpenApi {
 }
 
 /// Synthetic types that are used to generate type definitions for foreign types.
-mod synthetic_types {
+pub mod synthetic_types {
 
     use utoipa::ToSchema;
 

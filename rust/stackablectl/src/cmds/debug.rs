@@ -353,6 +353,7 @@ impl AsyncRead for AsyncStdin {
     ) -> Poll<std::io::Result<()>> {
         loop {
             let mut ready = ready!(self.fd.poll_read_ready_mut(cx)?);
+            #[allow(clippy::blocks_in_conditions)]
             break match ready.try_io(|r| {
                 let read = r.get_mut().read(buf.initialize_unfilled())?;
                 buf.advance(read);

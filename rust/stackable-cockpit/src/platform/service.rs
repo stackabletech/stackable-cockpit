@@ -329,9 +329,7 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
 /// This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
 /// so better to have support for that than nothing :)
 fn display_name_for_listener_name(listener_name: &str, object_name: &str) -> Option<String> {
-    let Some((_, display_name)) = listener_name.split_once(object_name) else {
-        return None;
-    };
+    let (_, display_name) = listener_name.split_once(object_name)?;
     Some(display_name.trim_start_matches('-').to_owned())
 }
 
