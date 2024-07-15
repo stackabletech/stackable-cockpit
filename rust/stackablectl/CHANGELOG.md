@@ -6,14 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- helm-sys: Bump Go dependencies ([#xxx]).
+- helm-sys: Bump Go dependencies ([#307]).
 
 ### Fixed
 
 - helm-sys: Double the helm timeout to 20m ([#306]).
 
 [#306]: https://github.com/stackabletech/stackable-cockpit/pull/306
-[#xxx]: https://github.com/stackabletech/stackable-cockpit/pull/xxx
+[#307]: https://github.com/stackabletech/stackable-cockpit/pull/307
 
 ## [24.3.6] - 2024-06-24
 
