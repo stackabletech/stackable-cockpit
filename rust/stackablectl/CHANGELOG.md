@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - helm-sys: Bump Go dependencies ([#307]).
+- Bump Rust dependencies ([#307]).
 
 ### Fixed
 
