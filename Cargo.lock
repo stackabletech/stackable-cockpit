@@ -3046,7 +3046,7 @@ dependencies = [
 
 [[package]]
 name = "stackablectl"
-version = "24.3.6"
+version = "24.7.0"
 dependencies = [
  "clap",
  "clap_complete",
