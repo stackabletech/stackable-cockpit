@@ -33,14 +33,21 @@ $ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/rel
 $ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-unknown-linux-gnu
 ----
 
-Mark the binary as executable:
+Install the binary into a directory in the `$PATH`, and make it executable:
+
+NOTE: If you have a directory in your `$HOME` for user binaries, you can remove `sudo`, and change the directory to that.
 
 [source,console]
 ----
-$ chmod +x stackablectl
+$ sudo install -m 755 -t /usr/local/bin stackablectl
 ----
 
-Then, make sure it is present in your `$PATH`, like `/usr/local/bin`.
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
 --
 
 macOS::
@@ -64,15 +71,27 @@ $ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/rel
 $ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-apple-darwin
 ----
 
-Mark the binary as executable:
+Install the binary into a directory in the `$PATH`, and make it executable:
+
+NOTE: If you have a directory in your `$HOME` for user binaries, you can remove `sudo`, and change the directory to that.
 
 [source,console]
 ----
-$ chmod +x stackablectl
+$ sudo install -m 755 -t /usr/local/bin stackablectl
 ----
 
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
+
+[TIP]
+====
 If macOS denies the execution of `stackablectl` go to Settings -> Security & Privacy -> General. Here you will see a pop
 up asking if you want to allow access for `stackablectl`. You must allow access.
+====
 --
 
 Windows::
@@ -106,6 +125,13 @@ access it from anywhere if you like:
 [source,console]
 ----
 $ cp target/release/stackablectl /usr/local/bin
+----
+
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
 ----
 
 [#shell-comps]
