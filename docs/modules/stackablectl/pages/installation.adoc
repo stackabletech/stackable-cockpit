@@ -88,10 +88,10 @@ $ stackablectl --version
 ----
 
 [TIP]
-====
+======
 If macOS denies the execution of `stackablectl` go to Settings -> Security & Privacy -> General. Here you will see a pop
 up asking if you want to allow access for `stackablectl`. You must allow access.
-====
+======
 --
 
 Windows::
