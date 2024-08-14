@@ -15,49 +15,83 @@ manual building steps can be found in xref:#building-from-source[this] section.
 Linux::
 +
 --
-Download the `stackablectl-x86_64-unknown-linux-gnu` binary file from the link:{latest-release}[latest release], then
-rename the file to `stackablectl`. You can also use the following command:
+Download the appropriate binary file for your architecture, `stackablectl-x86_64-unknown-linux-gnu` for Intel-based devices or
+`stackablectl-aarch64-unknown-linux-gnu` for ARM-based devices from the link:{latest-release}[latest release],
+then rename the file to `stackablectl`. You can also use the following command:
+
+*x86_64* (amd64):
 
 [source,console]
 ----
 $ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-x86_64-unknown-linux-gnu
-# or
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-unknown-linux-gnu
 ----
 
-Mark the binary as executable:
+**aarch64** (arm64):
 
 [source,console]
 ----
-$ chmod +x stackablectl
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-unknown-linux-gnu
 ----
 
-Then, make sure it is present in your `$PATH`, like `/usr/local/bin`.
+Install the binary into a directory in the `$PATH`, and make it executable:
+
+NOTE: If you have a directory in your `$HOME` for user binaries, you can remove `sudo`, and change the directory to that.
+
+[source,console]
+----
+$ sudo install -m 755 -t /usr/local/bin stackablectl
+----
+
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
 --
 
 macOS::
 +
 --
-Download the `stackablectl-x86_64-apple-darwin` binary file for Intel-based devices or the
-`stackablectl-aarch64-apple-darwin` binary file for ARM-based devices from the link:{latest-release}[latest release],
+Download the appropriate binary file for your architecture, `stackablectl-x86_64-apple-darwin` for Intel-based devices or
+`stackablectl-aarch64-apple-darwin` for ARM-based devices from the link:{latest-release}[latest release],
 then rename the file to `stackablectl`. You can also use the following command:
+
+*x86_64* (amd64):
 
 [source,console]
 ----
 $ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-x86_64-apple-darwin
-# or
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-apple-darwin
 ----
 
-Mark the binary as executable:
+**aarch64** (arm64):
 
 [source,console]
 ----
-$ chmod +x stackablectl
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-apple-darwin
 ----
 
+Install the binary into a directory in the `$PATH`, and make it executable:
+
+NOTE: If you have a directory in your `$HOME` for user binaries, you can remove `sudo`, and change the directory to that.
+
+[source,console]
+----
+$ sudo install -m 755 -t /usr/local/bin stackablectl
+----
+
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
+
+[TIP]
+====
 If macOS denies the execution of `stackablectl` go to Settings -> Security & Privacy -> General. Here you will see a pop
 up asking if you want to allow access for `stackablectl`. You must allow access.
+====
 --
 
 Windows::
@@ -91,6 +125,13 @@ access it from anywhere if you like:
 [source,console]
 ----
 $ cp target/release/stackablectl /usr/local/bin
+----
+
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
 ----
 
 [#shell-comps]
