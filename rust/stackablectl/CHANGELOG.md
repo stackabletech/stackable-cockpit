@@ -4,12 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.7.1] - 2024-08-15
+
 ### Changed
 
 - helm-sys: Bump Go dependencies to fix critical vulnerability in
   `github.com/docker/docker`, See [CVE-2024-41110] ([#313]).
 
+### Fixed
+
+- nix: Fix broken build ([#311], [#314]).
+
+[#311]: https://github.com/stackabletech/stackable-cockpit/pull/311
 [#313]: https://github.com/stackabletech/stackable-cockpit/pull/313
+[#314]: https://github.com/stackabletech/stackable-cockpit/pull/314
 [CVE-2024-41110]: https://github.com/advisories/GHSA-v23v-6jw2-98fq
 
 ## [24.7.0] - 2024-07-23
