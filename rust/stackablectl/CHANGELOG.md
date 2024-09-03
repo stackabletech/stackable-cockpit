@@ -7,10 +7,10 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Bump Rust dependencies to fix critical vulnerability in `quinn-proto`, see
-  [CVE-2024-45311] ([#xxx]).
-- Bump Rust toolchain version to 1.80.1 ([#xxx]).
+  [CVE-2024-45311] ([#318]).
+- Bump Rust toolchain version to 1.80.1 ([#318]).
 
-[#xxx]: https://github.com/stackabletech/stackable-cockpit/pull/xxx
+[#318]: https://github.com/stackabletech/stackable-cockpit/pull/318
 [CVE-2024-45311]: https://github.com/advisories/GHSA-vr26-jcq5-fjj8
 
 ## [24.7.1] - 2024-08-15
