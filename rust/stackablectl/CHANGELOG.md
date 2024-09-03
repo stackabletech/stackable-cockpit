@@ -4,12 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Changed
+
+- Bump Rust dependencies to fix critical vulnerability in `quinn-proto`, see
+  [CVE-2024-45311] ([#xxx]).
+- Bump Rust toolchain version to 1.80.1 ([#xxx]).
+
+[#xxx]: https://github.com/stackabletech/stackable-cockpit/pull/xxx
+[CVE-2024-45311]: https://github.com/advisories/GHSA-vr26-jcq5-fjj8
+
 ## [24.7.1] - 2024-08-15
 
 ### Changed
 
 - helm-sys: Bump Go dependencies to fix critical vulnerability in
-  `github.com/docker/docker`, See [CVE-2024-41110] ([#313]).
+  `github.com/docker/docker`, see [CVE-2024-41110] ([#313]).
 
 ### Fixed
 
