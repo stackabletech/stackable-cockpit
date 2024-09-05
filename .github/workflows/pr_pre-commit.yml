@@ -28,7 +28,7 @@ jobs:
         run: |
           set -xeuo pipefail
 
-          LOCATION="$HOME/.local/bin/hadolint"
+          LOCATION="$HOME/hadolint"
           SYSTEM=$(uname -s)
           ARCH=$(uname -m)
 
