@@ -22,6 +22,15 @@ jobs:
         with:
           toolchain: ${{ env.RUST_TOOLCHAIN_VERSION }}
           components: rustfmt,clippy
+      - name: Setup Hadolint
+        shell: bash
+        run: |
+          LOCATION="$HOME/.local/bin/hadolint"
+          SYSTEM=$(UNAME -s)
+          ARCH=$(uname -m)
+
+          curl -sL -o "${LOCATION}" "https://github.com/hadolint/hadolint/releases/download/v1.17.6/hadolint-$SYSTEM-$ARCH"
+          chmod 700 "${LOCATION}"
       - uses: pre-commit/action@2c7b3805fd2a0fd8c1884dcaebf91fc102a13ecd # v3.0.1
         with:
           extra_args: "--from-ref ${{ github.event.pull_request.base.sha }} --to-ref ${{ github.event.pull_request.head.sha }}"
