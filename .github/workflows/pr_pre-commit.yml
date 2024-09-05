@@ -26,7 +26,7 @@ jobs:
       - name: Setup Hadolint
         shell: bash
         run: |
-          set -euo pipefail
+          set -xeuo pipefail
 
           LOCATION="$HOME/.local/bin/hadolint"
           SYSTEM=$(uname -s)
