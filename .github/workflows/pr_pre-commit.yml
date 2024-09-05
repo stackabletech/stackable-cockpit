@@ -26,7 +26,7 @@ jobs:
         shell: bash
         run: |
           LOCATION="$HOME/.local/bin/hadolint"
-          SYSTEM=$(UNAME -s)
+          SYSTEM=$(uname -s)
           ARCH=$(uname -m)
 
           curl -sL -o "${LOCATION}" "https://github.com/hadolint/hadolint/releases/download/v1.17.6/hadolint-$SYSTEM-$ARCH"
