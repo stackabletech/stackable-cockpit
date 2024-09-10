@@ -5,8 +5,8 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
-	github.com/mittwald/go-helm-client v0.12.10
-	helm.sh/helm/v3 v3.15.3
+	github.com/mittwald/go-helm-client v0.12.13
+	helm.sh/helm/v3 v3.15.4
 	k8s.io/client-go v0.30.3
 )
 
