@@ -2942,16 +2942,16 @@ openapi-fetch@^0.2.0:
   resolved "https://registry.yarnpkg.com/openapi-fetch/-/openapi-fetch-0.2.1.tgz#a5865cd030620df9047c588554b1b670b0355757"
   integrity sha512-XrpiPz8fPUdYtgcXSU4u8jJ/At67PbFsj6XRZZbt6lMsrosKplWY7dUgnkstYaroschNz/NfYSPIiq0sOaY0nw==
 
-openapi-typescript@^6.5.0:
-  version "6.7.5"
-  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-6.7.5.tgz#3e7f0d080d540396ef8db3df4ed07e1a4a5bb1d8"
-  integrity sha512-ZD6dgSZi0u1QCP55g8/2yS5hNJfIpgqsSGHLxxdOjvY7eIrXzj271FJEQw33VwsZ6RCtO/NOuhxa7GBWmEudyA==
+openapi-typescript@^6.7.5:
+  version "6.7.6"
+  resolved "https://registry.yarnpkg.com/openapi-typescript/-/openapi-typescript-6.7.6.tgz#4f387199203bd7bfb94545cbc613751b52e3fa37"
+  integrity sha512-c/hfooPx+RBIOPM09GSxABOZhYPblDoyaGhqBkD/59vtpN21jEuWKDlM0KYTvqJVlSYjKs0tBcIdeXKChlSPtw==
   dependencies:
     ansi-colors "^4.1.3"
     fast-glob "^3.3.2"
     js-yaml "^4.1.0"
     supports-color "^9.4.0"
-    undici "^5.28.2"
+    undici "^5.28.4"
     yargs-parser "^21.1.1"
 
 optionator@^0.9.3:
@@ -3269,15 +3269,15 @@ semver@^7.3.2, semver@^7.3.7, semver@^7.3.8, semver@^7.5.3:
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.2.tgz#1e3b34759f896e8f14d6134732ce798aeb0c6e13"
   integrity sha512-FNAIBWCx9qcRhoHcgcJ0gvU7SN1lYU2ZXuSfl04bSC5OpvDHFyJCjdNHomPXxjQlCBU67YW64PzY7/VIEH7F2w==
 
-seroval-plugins@^1.0.3:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/seroval-plugins/-/seroval-plugins-1.0.5.tgz#eeded50d736d5e1dba142a72b0188df9f4e42b6d"
-  integrity sha512-8+pDC1vOedPXjKG7oz8o+iiHrtF2WswaMQJ7CKFpccvSYfrzmvKY9zOJWCg+881722wIHfwkdnRmiiDm9ym+zQ==
+seroval-plugins@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/seroval-plugins/-/seroval-plugins-1.1.1.tgz#1e0c175e13bb4c620d4ce5916fbbb63de70c31f9"
+  integrity sha512-qNSy1+nUj7hsCOon7AO4wdAIo9P0jrzAMp18XhiOzA6/uO5TKtP7ScozVJ8T293oRIvi5wyCHSM4TrJo/c/GJA==
 
-seroval@^1.0.4:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.0.5.tgz#d71ee540d936babaed92f56eda3e52d8e2a3deed"
-  integrity sha512-TM+Z11tHHvQVQKeNlOUonOWnsNM+2IBwZ4vwoi4j3zKzIpc5IDw8WPwCfcc8F17wy6cBcJGbZbFOR0UCuTZHQA==
+seroval@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.1.1.tgz#7630e0c17a3efa6be43f17ad6bcf9f966a61b443"
+  integrity sha512-rqEO6FZk8mv7Hyv4UCj3FD3b6Waqft605TLfsCe/BiaylRpyyMC0b+uA5TJKawX3KzMrdi3wsLbCaLplrQmBvQ==
 
 set-function-length@^1.2.1:
   version "1.2.2"
@@ -3355,13 +3355,13 @@ solid-headless@^0.13.1:
     solid-use "^0.6.2"
 
 solid-js@^1.7.4:
-  version "1.8.17"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.8.17.tgz#780ed6f0fd8633009d1b3c29d56bf6b6bb33bd50"
-  integrity sha512-E0FkUgv9sG/gEBWkHr/2XkBluHb1fkrHywUgA6o6XolPDCJ4g1HaLmQufcBBhiF36ee40q+HpG/vCZu7fLpI3Q==
+  version "1.8.22"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.8.22.tgz#6df23f8a172eb14395a2984261e5782397d0a74a"
+  integrity sha512-VBzN5j+9Y4rqIKEnK301aBk+S7fvFSTs9ljg+YEdFxjNjH0hkjXPiQRcws9tE5fUzMznSS6KToL5hwMfHDgpLA==
   dependencies:
     csstype "^3.1.0"
-    seroval "^1.0.4"
-    seroval-plugins "^1.0.3"
+    seroval "^1.1.0"
+    seroval-plugins "^1.1.0"
 
 solid-refresh@^0.6.3:
   version "0.6.3"
@@ -3685,7 +3685,7 @@ undici-types@~5.26.4:
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-5.26.5.tgz#bcd539893d00b56e964fd2657a4866b221a65617"
   integrity sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==
 
-undici@^5.28.2:
+undici@^5.28.4:
   version "5.28.4"
   resolved "https://registry.yarnpkg.com/undici/-/undici-5.28.4.tgz#6b280408edb6a1a604a9b20340f45b422e373068"
   integrity sha512-72RFADWFqKmUb2hmmvNODKL3p9hcB6Gt2DOQMis1SEBaV6a4MH8soBvzg+95CYhCKPFedut2JY9bMfrDl9D23g==

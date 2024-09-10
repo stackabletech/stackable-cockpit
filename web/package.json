@@ -24,7 +24,7 @@
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-solid": "^0.12.1",
     "eslint-plugin-unicorn": "^47.0.0",
-    "openapi-typescript": "^6.5.0",
+    "openapi-typescript": "^6.7.5",
     "prettier": "^2.8.8",
     "typescript": "^5.0.4",
     "unocss": "^0.51.8",
@@ -57,5 +57,5 @@
       }
     }
   },
-  "packageManager": "yarn@1.22.19"
+  "packageManager": "yarn@1.22.22"
 }
