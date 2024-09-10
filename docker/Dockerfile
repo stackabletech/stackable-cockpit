@@ -1,7 +1,7 @@
 # Using inlined version of ubi8-rust-builder, ends at ## END OF ubi8-rust-builder
 # Each modification (apart from removing ONBUILD clauses) should be preceded by a ## PATCH comment explaining the change
 #FROM docker.stackable.tech/stackable/ubi8-rust-builder AS builder
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.7@sha256:3e1adcc31c6073d010b8043b070bd089d7bf37ee2c397c110211a6273453433f AS builder
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.10@sha256:11bb492c19d974e6f67be661e76691e977184e98aff1cfad365363ae9055cff0 AS builder
 LABEL maintainer="Stackable GmbH"
 
 # https://github.com/hadolint/hadolint/wiki/DL4006
