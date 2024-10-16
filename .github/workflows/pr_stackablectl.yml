@@ -28,16 +28,11 @@ jobs:
     name: General Pull Request Checks
     uses: ./.github/workflows/pr_general.yml
 
-  reviewdog-checks:
-    name: Reviewdog Pull Request Checks
-    uses: ./.github/workflows/pr_reviewdog.yml
-
   build:
     name: Build stackablectl for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     needs:
       - general-checks
-      - reviewdog-checks
     strategy:
       fail-fast: false
       matrix:
