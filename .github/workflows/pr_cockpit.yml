@@ -76,6 +76,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      OCI_REGISTRY_SDP_PASSWORD: ${{ secrets.HARBOR_ROBOT_SDP_GITHUB_ACTION_BUILD_SECRET }}
+      OCI_REGISTRY_SDP_USERNAME: "robot$sdp+github-action-build"
+      OCI_REGISTRY_SDP_CHARTS_PASSWORD: ${{ secrets.HARBOR_ROBOT_SDP_CHARTS_GITHUB_ACTION_BUILD_SECRET }}
+      OCI_REGISTRY_SDP_CHARTS_USERNAME: "robot$sdp-charts+github-action-build"
     outputs:
       IMAGE_TAG: ${{ steps.printtag.outputs.IMAGE_TAG }}
     needs:
