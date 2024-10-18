@@ -1,13 +1,14 @@
 # Using inlined version of ubi8-rust-builder, ends at ## END OF ubi8-rust-builder
 # Each modification (apart from removing ONBUILD clauses) should be preceded by a ## PATCH comment explaining the change
 #FROM docker.stackable.tech/stackable/ubi8-rust-builder AS builder
-FROM registry.access.redhat.com/ubi8/ubi-minimal:8.7@sha256:3e1adcc31c6073d010b8043b070bd089d7bf37ee2c397c110211a6273453433f AS builder
+FROM registry.access.redhat.com/ubi8/ubi-minimal@sha256:987ae81ce046652ee4a2c3df54dad5e82faa1b078dab5d09f7cfaae11784ed30 AS builder
 LABEL maintainer="Stackable GmbH"
 
 # https://github.com/hadolint/hadolint/wiki/DL4006
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Update image and install everything needed for Rustup & Rust
+# hadolint ignore=DL3041
 RUN microdnf update --disablerepo=* --enablerepo=ubi-8-appstream-rpms --enablerepo=ubi-8-baseos-rpms -y \
   && rm -rf /var/cache/yum \
   && microdnf install --disablerepo=* --enablerepo=ubi-8-appstream-rpms --enablerepo=ubi-8-baseos-rpms curl findutils gcc gcc-c++ make cmake openssl-devel pkg-config systemd-devel unzip tar xz clang krb5-libs libkadm5 -y \
@@ -57,8 +58,8 @@ COPY docker/ubi8-rust-builder/copy_artifacts.sh /
 WORKDIR /src
 COPY . /src
 
-# hadolint ignore=SC1091
 ## PATCH: disabled cyclonedx, run yarn install, build stackable-cockpitd with ui feature enabled
+# hadolint ignore=SC1091
 RUN . "$HOME/.cargo/env" && yarn && cargo build --release --workspace --features stackable-cockpitd/ui
 # ONBUILD RUN . "$HOME/.cargo/env" && cargo auditable build --release --workspace && cargo cyclonedx --output-pattern package --all --output-cdx
 
@@ -79,6 +80,7 @@ RUN find /src/target/release \
 RUN echo "The following files will be copied to the runtime image: $(ls /app)"
 ## END OF ubi8-rust-builder
 
+# hadolint ignore=DL3006
 FROM registry.access.redhat.com/ubi8/ubi-minimal AS operator
 
 ARG VERSION
@@ -93,12 +95,14 @@ LABEL name="Stackable Cockpit" \
   description="Deploy and manage Stackable clusters."
 
 # Update image
+# hadolint ignore=DL3041
 RUN microdnf install -y yum \
   && yum -y update-minimal --security --sec-severity=Important --sec-severity=Critical \
   && yum clean all \
   && microdnf clean all
 
 # Install kerberos client libraries
+# hadolint ignore=DL3041
 RUN microdnf install -y krb5-libs libkadm5 && microdnf clean all
 
 #COPY LICENSE /licenses/LICENSE
