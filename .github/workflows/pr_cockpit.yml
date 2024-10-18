@@ -163,7 +163,7 @@ jobs:
           bin: cargo-set-version
       - name: Update version if PR
         if: ${{ github.event_name == 'pull_request' }}
-        run: cargo set-version --offline --workspace 0.0.0-pr${{ github.event.pull_request.number }}
+        run: cargo set-version --offline --package stackable-cockpit 0.0.0-pr${{ github.event.pull_request.number }}
       - name: Build manifest list
         run: |
           # Creating manifest list
