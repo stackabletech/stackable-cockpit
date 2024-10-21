@@ -70,10 +70,15 @@ jobs:
             core.setFailed('Committed Helm charts were not up to date, please regenerate and re-commit!')
 
   publish:
-    name: Publish Docker Image
+    name: Publish ${{ matrix.runner.arch }} Image
     permissions:
       id-token: write
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner.name }}
+    strategy:
+      matrix:
+        runner:
+          - {name: "ubuntu-latest", arch: "amd64"}
+          - {name: "ubicloud-standard-8-arm", arch: "arm64"}
     env:
       NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
       OCI_REGISTRY_SDP_PASSWORD: ${{ secrets.HARBOR_ROBOT_SDP_GITHUB_ACTION_BUILD_SECRET }}
@@ -128,3 +133,40 @@ jobs:
         if: ${{ !github.event.pull_request.head.repo.fork }}
         name: Output Image Name and Tag
         run: echo "IMAGE_TAG=$(make -e print-docker-tag)" >> "$GITHUB_OUTPUT"
+
+  create_manifest_list:
+    name: Build and publish manifest list
+    needs:
+      - publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    env:
+      NEXUS_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      OCI_REGISTRY_SDP_PASSWORD: ${{ secrets.HARBOR_ROBOT_SDP_GITHUB_ACTION_BUILD_SECRET }}
+      OCI_REGISTRY_SDP_USERNAME: "robot$sdp+github-action-build"
+      OCI_REGISTRY_SDP_CHARTS_PASSWORD: ${{ secrets.HARBOR_ROBOT_SDP_CHARTS_GITHUB_ACTION_BUILD_SECRET }}
+      OCI_REGISTRY_SDP_CHARTS_USERNAME: "robot$sdp-charts+github-action-build"
+    steps:
+      - name: Install cosign
+        uses: sigstore/cosign-installer@4959ce089c160fddf62f7b42464195ba1a56d382 # v3.6.0
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          submodules: recursive
+      # This step checks if the current run was triggered by a push to a pr (or a pr being created).
+      # If this is the case it changes the version of this project in all Cargo.toml files to include the suffix
+      # "-pr<prnumber>" so that the published artifacts can be linked to this PR.
+      - uses: stackabletech/cargo-install-action@main
+        with:
+          crate: cargo-edit
+          bin: cargo-set-version
+      - name: Update version if PR
+        if: ${{ github.event_name == 'pull_request' }}
+        run: cargo set-version --offline --package stackable-cockpit 0.0.0-pr${{ github.event.pull_request.number }}
+      - name: Build manifest list
+        run: |
+          # Creating manifest list
+          make -e docker-manifest-list-build
+          # Pushing and signing manifest list
+          make -e docker-manifest-list-publish
