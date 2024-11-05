@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- SOCKS5 and HTTP proxy support ([#328]).
+
 ### Changed
 
 - Bump Rust dependencies to fix critical vulnerability in `quinn-proto`, see
@@ -11,6 +15,7 @@ All notable changes to this project will be documented in this file.
 - Bump Rust toolchain version to 1.80.1 ([#318]).
 
 [#318]: https://github.com/stackabletech/stackable-cockpit/pull/318
+[#328]: https://github.com/stackabletech/stackable-cockpit/pull/328
 [CVE-2024-45311]: https://github.com/advisories/GHSA-vr26-jcq5-fjj8
 
 ## [24.7.1] - 2024-08-15
