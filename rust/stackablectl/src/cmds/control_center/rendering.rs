@@ -6,13 +6,12 @@ use ratatui::{
 };
 use stackable_cockpit::{platform::stacklet::Stacklet, utils::k8s::StackletConditionsExt};
 use tracing::instrument;
-use tui_logger::TuiWidgetState;
 
 use super::{logging::render_logging, state::Model};
 
 // const INFO_TEXT: [&str; 1] = ["(Esc or q) quit | (↑) move up | (↓) move down"];
 
-#[instrument]
+#[instrument(skip(model))]
 pub fn render(model: &mut Model, frame: &mut Frame) {
     let main_layout = Layout::vertical([
         Constraint::Fill(40),
@@ -24,7 +23,7 @@ pub fn render(model: &mut Model, frame: &mut Frame) {
 
     let table = get_table(&model.stacklets);
 
-    model.stacklets_table_state.select(Some(3)); // select the forth row (0-indexed)
+    model.stacklets_table_state.select(Some(2));
 
     frame.render_stateful_widget(table, main_layout[0], &mut model.stacklets_table_state);
     frame.render_widget(
@@ -32,7 +31,11 @@ pub fn render(model: &mut Model, frame: &mut Frame) {
             .block(Block::bordered().title("Stacklet details")),
         main_layout[1],
     );
-    render_logging(main_layout[2], &TuiWidgetState::new(), frame.buffer_mut());
+    render_logging(
+        main_layout[2],
+        &mut model.logging_widget_state,
+        frame.buffer_mut(),
+    );
 }
 
 fn get_table<'a>(stacklets: &Vec<Stacklet>) -> Table<'a> {

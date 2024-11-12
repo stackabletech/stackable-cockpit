@@ -23,8 +23,6 @@ pub fn render_logging(area: Rect, state: &TuiWidgetState, buf: &mut Buffer) {
         .output_timestamp(Some("%H:%M:%S".to_string()))
         .output_level(Some(TuiLoggerLevelOutput::Abbreviated))
         .output_target(true)
-        // .output_file(true)
-        // .output_line(true)
         .output_file(false)
         .output_line(false)
         .state(state)

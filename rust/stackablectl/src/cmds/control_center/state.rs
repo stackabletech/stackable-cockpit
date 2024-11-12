@@ -8,6 +8,7 @@ use stackable_cockpit::{
 };
 use tokio::{sync::mpsc::Sender, time::MissedTickBehavior};
 use tracing::instrument;
+use tui_logger::TuiWidgetState;
 
 use super::message::Message;
 
@@ -20,11 +21,12 @@ pub enum Error {
     StackletList { source: stacklet::Error },
 }
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub struct Model {
     pub running_state: RunningState,
     pub stacklets: Vec<Stacklet>,
     pub stacklets_table_state: TableState,
+    pub logging_widget_state: TuiWidgetState,
 }
 
 #[derive(Debug, Default, PartialEq)]
@@ -34,7 +36,7 @@ pub enum RunningState {
     Done,
 }
 
-#[instrument]
+#[instrument(skip(model))]
 pub fn update(model: &mut Model, message: Message) -> Option<Message> {
     match message {
         Message::StackletUpdate { stacklets } => model.stacklets = stacklets,
