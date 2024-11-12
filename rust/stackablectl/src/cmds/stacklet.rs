@@ -156,7 +156,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 
             for stacklet in stacklets {
                 let ConditionOutput { summary, errors } =
-                    render_conditions(stacklet.conditions, &mut error_index);
+                    render_conditions(stacklet.display_conditions, &mut error_index);
 
                 let endpoints = stacklet
                     .endpoints

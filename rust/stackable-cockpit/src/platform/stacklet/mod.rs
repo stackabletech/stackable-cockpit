@@ -40,7 +40,10 @@ pub struct Stacklet {
     pub endpoints: IndexMap<String, String>,
 
     /// Multiple cluster conditions.
-    pub conditions: Vec<k8s::DisplayCondition>,
+    pub conditions: Vec<ClusterCondition>,
+
+    /// Multiple cluster conditions meant for displaying in CLI.
+    pub display_conditions: Vec<k8s::DisplayCondition>,
 }
 
 #[derive(Debug, Snafu)]
@@ -155,9 +158,10 @@ async fn list_stackable_stacklets(
             stacklets.push(Stacklet {
                 namespace: Some(object_namespace),
                 product: product_name.to_string(),
-                conditions: conditions.plain(),
                 name: object_name,
                 endpoints,
+                conditions: conditions.clone(),
+                display_conditions: conditions.plain(),
             });
         }
     }

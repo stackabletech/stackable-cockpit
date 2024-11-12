@@ -17,7 +17,11 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
-    cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
+    cmds::{
+        cache, completions,
+        control_center::{self, ControlCenterArgs},
+        debug, demo, operator, release, stack, stacklet,
+    },
     constants::{
         ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
         REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
@@ -51,6 +55,9 @@ pub enum Error {
 
     #[snafu(display("debug command error"))]
     Debug { source: debug::CmdError },
+
+    #[snafu(display("control center command error"))]
+    ControlCenter { source: control_center::CmdError },
 
     #[snafu(display("helm error"))]
     Helm { source: helm::Error },
@@ -195,6 +202,12 @@ impl Cli {
             Commands::Completions(args) => args.run().context(CompletionsSnafu),
             Commands::Cache(args) => args.run(self, cache).await.context(CacheSnafu),
             Commands::ExperimentalDebug(args) => args.run(self).await.context(DebugSnafu),
+            Commands::ExperimentalControlCenter(args) => args
+                .run(self)
+                .await
+                .context(ControlCenterSnafu)
+                // It seems like we also need to return *some* string
+                .map(|()| String::new()),
         }
     }
 
@@ -250,6 +263,9 @@ CRDs."
 
 This container will have access to the same data volumes as the primary container.")]
     ExperimentalDebug(debug::DebugArgs),
+
+    /// EXPERIMENTAL: Control center with interactive UI
+    ExperimentalControlCenter(ControlCenterArgs),
 }
 
 #[derive(Clone, Debug, Default, ValueEnum)]

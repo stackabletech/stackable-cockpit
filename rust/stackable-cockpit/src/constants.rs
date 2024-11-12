@@ -24,17 +24,18 @@ pub const HELM_REPO_INDEX_FILE: &str = "index.yaml";
 
 pub const HELM_DEFAULT_CHART_VERSION: &str = ">0.0.0-0";
 
+// Sorted from top level to low level, internal service
 pub const PRODUCT_NAMES: &[&str] = &[
+    "spark-history-server",
+    "superset",
+    "nifi",
     "airflow",
+    "trino",
     "druid",
+    "kafka",
     "hbase",
     "hdfs",
     "hive",
-    "kafka",
-    "nifi",
-    "opa",
-    "spark-history-server",
-    "superset",
-    "trino",
     "zookeeper",
+    "opa",
 ];

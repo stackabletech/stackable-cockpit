@@ -1,5 +1,6 @@
 pub mod cache;
 pub mod completions;
+pub mod control_center;
 pub mod debug;
 pub mod demo;
 pub mod operator;

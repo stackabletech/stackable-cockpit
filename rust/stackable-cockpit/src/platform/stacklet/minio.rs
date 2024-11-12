@@ -32,9 +32,10 @@ pub(super) async fn list(client: &Client, namespace: Option<&str>) -> Result<Vec
         stacklets.push(Stacklet {
             product: "minio".to_string(),
             namespace: service.namespace(),
-            conditions: Vec::new(),
             name: service.name_any(),
             endpoints,
+            conditions: Vec::new(),
+            display_conditions: Vec::new(),
         })
     }
 

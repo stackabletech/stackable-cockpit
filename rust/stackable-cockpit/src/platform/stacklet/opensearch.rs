@@ -28,11 +28,12 @@ pub(super) async fn list(client: &Client, namespace: Option<&str>) -> Result<Vec
         // see https://github.com/stackabletech/stackablectl/blob/eda45945cfcf5c6581cf1b88c782d98fada8065f/src/services/opensearch.rs#L41
 
         stacklets.push(Stacklet {
-            conditions: Vec::new(),
             namespace: service.namespace(),
             product: "opensearch-dashboards".to_string(),
             name: service_name,
             endpoints,
+            conditions: Vec::new(),
+            display_conditions: Vec::new(),
         });
     }
 

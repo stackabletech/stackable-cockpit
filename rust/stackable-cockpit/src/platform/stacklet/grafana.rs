@@ -25,11 +25,12 @@ pub(super) async fn list(client: &Client, namespace: Option<&str>) -> Result<Vec
             .context(ServiceFetchSnafu)?;
 
         stacklets.push(Stacklet {
-            conditions: Vec::new(),
             namespace: service.namespace(),
             product: "grafana".to_string(),
             name: service_name,
             endpoints,
+            conditions: Vec::new(),
+            display_conditions: Vec::new(),
         })
     }
 

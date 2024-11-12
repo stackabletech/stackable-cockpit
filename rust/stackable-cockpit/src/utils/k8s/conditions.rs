@@ -3,7 +3,9 @@ use k8s_openapi::{
     apimachinery::pkg::apis::meta::v1::Condition,
 };
 use serde::Serialize;
-use stackable_operator::status::condition::ClusterCondition;
+use stackable_operator::status::condition::{
+    ClusterCondition, ClusterConditionStatus, ClusterConditionType,
+};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -102,5 +104,24 @@ impl ConditionExt for Condition {}
 impl ConditionExt for ClusterCondition {
     fn is_good(&self) -> Option<bool> {
         Some(self.is_good())
+    }
+}
+
+pub trait StackletConditionsExt {
+    fn is_stacklet_healthy(&self) -> bool;
+    fn is_reconciliation_paused(&self) -> bool;
+}
+
+impl StackletConditionsExt for Vec<ClusterCondition> {
+    fn is_stacklet_healthy(&self) -> bool {
+        self.iter().all(|condition| condition.is_good())
+    }
+
+    fn is_reconciliation_paused(&self) -> bool {
+        self.iter()
+            .find(|condition| condition.type_ == ClusterConditionType::ReconciliationPaused)
+            .map(|condition| condition.status == ClusterConditionStatus::True)
+            // Reconciliation is definitely not paused
+            .unwrap_or_default()
     }
 }
