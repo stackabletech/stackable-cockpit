@@ -20,9 +20,9 @@ pub fn render_stacklets(model: &mut Model, area: Rect, buf: &mut Buffer) {
 fn render_table(model: &mut Model, area: Rect, buf: &mut Buffer) {
     let mut rows = Vec::with_capacity(model.stacklets.len());
 
-    let healthy_style = Style::default().fg(Color::Indexed(153)).bg(Color::Black);
-    let unhealthy_style = Style::default().fg(Color::LightRed).bg(Color::Black);
-    let reconciliation_paused_style = Style::default().fg(Color::Gray).bg(Color::Black);
+    let healthy_style = Style::default().fg(Color::Indexed(153));
+    let unhealthy_style = Style::default().fg(Color::LightRed);
+    let reconciliation_paused_style = Style::default().fg(Color::Gray);
 
     if model.stacklets_table_state.selected().is_none() {
         model.stacklets_table_state.select(Some(0));
