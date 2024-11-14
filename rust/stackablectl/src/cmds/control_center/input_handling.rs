@@ -4,7 +4,7 @@ use ratatui::crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use snafu::{ResultExt, Snafu};
 use tokio::sync::mpsc::Sender;
 
-use super::{message::Message, state::Model};
+use super::state::{Message, Model};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -16,8 +16,7 @@ pub async fn handle_event(_: &Model, message_tx: Sender<Message>) -> Result<(), 
     if event::poll(Duration::from_millis(250)).context(ReadEventSnafu)? {
         if let Event::Key(key) = event::read().context(ReadEventSnafu)? {
             if key.kind == event::KeyEventKind::Press {
-                let maybe_message = handle_key(key);
-                if let Some(message) = maybe_message {
+                for message in handle_key(key) {
                     message_tx.send(message).await.unwrap();
                 }
             }
@@ -27,15 +26,33 @@ pub async fn handle_event(_: &Model, message_tx: Sender<Message>) -> Result<(), 
     Ok(())
 }
 
-pub fn handle_key(key: event::KeyEvent) -> Option<Message> {
-    let _shift_pressed = key.modifiers.contains(KeyModifiers::SHIFT);
+pub fn handle_key(key: event::KeyEvent) -> Vec<Message> {
+    let shift_pressed = key.modifiers.contains(KeyModifiers::SHIFT);
     let ctrl_pressed = key.modifiers.contains(KeyModifiers::CONTROL);
 
     match key.code {
-        KeyCode::Char('c') if ctrl_pressed => Some(Message::Quit),
-        KeyCode::Char('q') | KeyCode::Esc => Some(Message::Quit),
-        KeyCode::Char('j') | KeyCode::Down => todo!(),
-        KeyCode::Char('k') | KeyCode::Up => todo!(),
-        _ => None,
+        KeyCode::Char('c') if ctrl_pressed => vec![Message::Quit],
+        KeyCode::Char('q') /*| KeyCode::Esc*/ => vec![Message::Quit],
+        KeyCode::Char('k') | KeyCode::Up => vec![Message::StackletListUp { steps: 1 }],
+        KeyCode::Char('j') | KeyCode::Down => vec![Message::StackletListDown { steps: 1 }],
+        KeyCode::Home => vec![Message::StackletListStart],
+        KeyCode::End => vec![Message::StackletListEnd],
+        KeyCode::PageUp => {
+            // FIXME: Determine actual table height
+            let table_height = 10;
+            vec![Message::StackletListUp {
+                steps: table_height,
+            }]
+        }
+        KeyCode::PageDown => {
+            // FIXME: Determine actual table height
+            let table_height = 10;
+            vec![Message::StackletListDown {
+                steps: table_height,
+            }]
+        },
+        KeyCode::Tab if shift_pressed => vec![Message::PreviousTab],
+        KeyCode::Tab => vec![Message::NextTab],
+        _ => vec![],
     }
 }

@@ -29,6 +29,7 @@ serde_json.workspace = true
 serde_yaml.workspace = true
 serde.workspace = true
 snafu.workspace = true
+strum.workspace = true
 tera.workspace = true
 tokio.workspace = true
 tracing-subscriber.workspace = true

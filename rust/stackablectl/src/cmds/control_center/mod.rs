@@ -7,19 +7,16 @@ use crate::cli::Cli;
 use self::{
     input_handling::handle_event,
     logging::init_logging,
-    message::Message,
     rendering::render,
-    state::{update, update_stacklets_loop, Model, RunningState},
+    state::{update, update_stacklets_loop, Message, Model, RunningState},
 };
 
 mod input_handling;
 mod logging;
-mod message;
 mod rendering;
 mod state;
 
 #[derive(Debug, Snafu)]
-// #[snafu(module)]
 pub enum CmdError {
     #[snafu(display("failed to draw to terminal"))]
     DrawToTerminal { source: std::io::Error },

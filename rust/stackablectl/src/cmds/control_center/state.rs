@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{cmp::min, time::Duration};
 
 use ratatui::widgets::TableState;
 use snafu::{ResultExt, Snafu};
@@ -10,7 +10,7 @@ use tokio::{sync::mpsc::Sender, time::MissedTickBehavior};
 use tracing::instrument;
 use tui_logger::TuiWidgetState;
 
-use super::message::Message;
+use super::rendering::tabs::SelectedTab;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
@@ -24,6 +24,7 @@ pub enum Error {
 #[derive(Default)]
 pub struct Model {
     pub running_state: RunningState,
+    pub selected_tab: SelectedTab,
     pub stacklets: Vec<Stacklet>,
     pub stacklets_table_state: TableState,
     pub logging_widget_state: TuiWidgetState,
@@ -36,11 +37,63 @@ pub enum RunningState {
     Done,
 }
 
+#[derive(Debug)]
+pub enum Message {
+    Quit,
+    StackletListUp { steps: usize },
+    StackletListDown { steps: usize },
+    StackletListStart,
+    StackletListEnd,
+    StackletUpdate { stacklets: Vec<Stacklet> },
+    NextTab,
+    PreviousTab,
+}
+
 #[instrument(skip(model))]
 pub fn update(model: &mut Model, message: Message) -> Option<Message> {
     match message {
-        Message::StackletUpdate { stacklets } => model.stacklets = stacklets,
         Message::Quit => model.running_state = RunningState::Done,
+        Message::StackletUpdate { stacklets } => model.stacklets = stacklets,
+        Message::StackletListUp { steps } => {
+            let new_selected = match model.stacklets_table_state.selected() {
+                Some(index) => {
+                    if index == 0 {
+                        model.stacklets.len().saturating_sub(1)
+                    } else {
+                        index.saturating_sub(steps)
+                    }
+                }
+                None => 0,
+            };
+            model.stacklets_table_state.select(Some(new_selected));
+        }
+        Message::StackletListDown { steps } => {
+            let new_selected = match model.stacklets_table_state.selected() {
+                Some(index) => {
+                    if index >= model.stacklets.len().saturating_sub(1) {
+                        0
+                    } else {
+                        min(index + steps, model.stacklets.len().saturating_sub(1))
+                    }
+                }
+                None => 0,
+            };
+            model.stacklets_table_state.select(Some(new_selected));
+        }
+        Message::StackletListStart => {
+            model.stacklets_table_state.select(Some(0));
+        }
+        Message::StackletListEnd => {
+            model
+                .stacklets_table_state
+                .select(Some(model.stacklets.len().saturating_sub(1)));
+        }
+        Message::NextTab => {
+            model.selected_tab = model.selected_tab.next();
+        }
+        Message::PreviousTab => {
+            model.selected_tab = model.selected_tab.previous();
+        }
     };
 
     None
@@ -55,9 +108,9 @@ pub async fn update_stacklets_loop(message_tx: Sender<Message>) -> Result<(), Er
 
     loop {
         let stacklets = list_stacklets(&client, None /* We list them in all namespaces */)
-            // list_stackable_stacklets(&client, None /* We list them in all namespaces */)
             .await
             .context(StackletListSnafu)?;
+
         message_tx
             .send(Message::StackletUpdate { stacklets })
             .await

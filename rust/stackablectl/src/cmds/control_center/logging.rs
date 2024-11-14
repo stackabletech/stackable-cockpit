@@ -1,6 +1,8 @@
 use ratatui::prelude::*;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget, TuiWidgetState};
+use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget};
+
+use super::state::Model;
 
 pub fn init_logging() {
     tracing_subscriber::registry()
@@ -8,11 +10,10 @@ pub fn init_logging() {
         .init();
 
     tui_logger::init_logger(log::LevelFilter::Trace).unwrap();
-    tui_logger::set_default_level(log::LevelFilter::Info);
-    tracing::error!("Ich war hier");
+    tui_logger::set_default_level(log::LevelFilter::Trace);
 }
 
-pub fn render_logging(area: Rect, state: &TuiWidgetState, buf: &mut Buffer) {
+pub fn render_logs(model: &Model, area: Rect, buf: &mut Buffer) {
     TuiLoggerSmartWidget::default()
         .style_error(Style::default().fg(Color::Red))
         .style_debug(Style::default().fg(Color::Green))
@@ -25,6 +26,6 @@ pub fn render_logging(area: Rect, state: &TuiWidgetState, buf: &mut Buffer) {
         .output_target(true)
         .output_file(false)
         .output_line(false)
-        .state(state)
+        .state(&model.logging_widget_state)
         .render(area, buf);
 }
