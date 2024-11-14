@@ -3,7 +3,7 @@ use kube::{core::GroupVersionKind, ResourceExt};
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
-use tracing::info;
+use tracing::{debug, info};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -128,7 +128,7 @@ async fn list_stackable_stacklets(
         {
             Some(obj) => obj,
             None => {
-                info!(
+                debug!(
                     "Failed to list stacklets because the gvk {product_gvk:?} can not be resolved"
                 );
                 continue;

@@ -8,7 +8,7 @@ use stackable_cockpit::{
 };
 use tokio::{sync::mpsc::Sender, time::MissedTickBehavior};
 use tracing::instrument;
-use tui_logger::TuiWidgetState;
+use tui_logger::{TuiWidgetEvent, TuiWidgetState};
 
 use super::rendering::tabs::SelectedTab;
 
@@ -40,13 +40,21 @@ pub enum RunningState {
 #[derive(Debug)]
 pub enum Message {
     Quit,
-    StackletListUp { steps: usize },
-    StackletListDown { steps: usize },
+    StackletListUp {
+        steps: usize,
+    },
+    StackletListDown {
+        steps: usize,
+    },
     StackletListStart,
     StackletListEnd,
-    StackletUpdate { stacklets: Vec<Stacklet> },
+    StackletUpdate {
+        stacklets: Vec<Stacklet>,
+    },
     NextTab,
     PreviousTab,
+    #[allow(clippy::enum_variant_names)]
+    LoggingWidgetMessage(TuiWidgetEvent),
 }
 
 #[instrument(skip(model))]
@@ -94,6 +102,7 @@ pub fn update(model: &mut Model, message: Message) -> Option<Message> {
         Message::PreviousTab => {
             model.selected_tab = model.selected_tab.previous();
         }
+        Message::LoggingWidgetMessage(message) => model.logging_widget_state.transition(message),
     };
 
     None

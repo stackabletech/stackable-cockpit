@@ -14,7 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{debug, instrument};
 
 use crate::{
     platform::{cluster, credentials::Credentials},
@@ -396,6 +396,7 @@ impl Client {
 
     /// Try to resolve the given [`GroupVersionKind`]. In case the resolution fails a discovery is run to pull in new
     /// GVKs that are not present in the [`Discovery`] cache. Afterwards a normal resolution is issued.
+    #[instrument(skip(self))]
     async fn resolve_gvk(
         &self,
         gvk: &GroupVersionKind,
@@ -405,7 +406,7 @@ impl Client {
         Ok(match resolved {
             Some(resolved) => Some(resolved),
             None => {
-                info!(?gvk, "discovery did not include gvk");
+                debug!(?gvk, "discovery did not include gvk");
 
                 // We take the lock early here to avoid running multiple discoveries in parallel (as they are expensive)
                 let mut old_discovery = self.discovery.write().await;
@@ -424,7 +425,7 @@ impl Client {
     /// Creates a new [`Discovery`] object and immediatly runs a discovery.
     #[tracing::instrument(skip_all)]
     async fn run_discovery(client: kube::client::Client) -> Result<Discovery> {
-        info!("running discovery");
+        debug!("running discovery");
         Discovery::new(client)
             .run()
             .await

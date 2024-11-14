@@ -1,3 +1,4 @@
+use log::LevelFilter;
 use ratatui::prelude::*;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tui_logger::{TuiLoggerLevelOutput, TuiLoggerSmartWidget};
@@ -9,8 +10,10 @@ pub fn init_logging() {
         .with(tui_logger::tracing_subscriber_layer())
         .init();
 
-    tui_logger::init_logger(log::LevelFilter::Trace).unwrap();
-    tui_logger::set_default_level(log::LevelFilter::Trace);
+    // FIXME: Error handling
+    tui_logger::init_logger(LevelFilter::Debug).unwrap();
+    tui_logger::set_default_level(LevelFilter::Debug);
+    // tui_logger::set_level_for_target("tower::buffer::worker", LevelFilter::Warn);
 }
 
 pub fn render_logs(model: &Model, area: Rect, buf: &mut Buffer) {
