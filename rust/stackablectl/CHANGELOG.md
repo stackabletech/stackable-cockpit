@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file.
   [CVE-2024-45311] ([#318]).
 - Bump Rust toolchain version to 1.80.1 ([#318]).
 
+### Fixed
+
+- Sort operator versions by semver version instead of alphabetically ([#XXX]).
+
 [#318]: https://github.com/stackabletech/stackable-cockpit/pull/318
 [CVE-2024-45311]: https://github.com/advisories/GHSA-vr26-jcq5-fjj8
 
