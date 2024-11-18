@@ -12,9 +12,10 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Sort operator versions by semver version instead of alphabetically ([#XXX]).
+- Sort operator versions by semver version instead of alphabetically ([#336]).
 
 [#318]: https://github.com/stackabletech/stackable-cockpit/pull/318
+[#336]: https://github.com/stackabletech/stackable-cockpit/pull/336
 [CVE-2024-45311]: https://github.com/advisories/GHSA-vr26-jcq5-fjj8
 
 ## [24.7.1] - 2024-08-15
