@@ -130,7 +130,7 @@ pub enum CmdError {
     #[snafu(display("invalid repository name"))]
     InvalidRepoName { source: InvalidRepoNameError },
 
-    #[snafu(display("invalid helm chart version {version:?}"))]
+    #[snafu(display("invalid helm chart version {version:?} (need to be semver)"))]
     InvalidHelmChartVersion {
         source: semver::Error,
         version: String,
