@@ -58,7 +58,7 @@ repos:
         files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-man
-        stages: [commit, merge-commit, manual]
+        stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
 
       - id: gen-comp
@@ -66,7 +66,7 @@ repos:
         files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-comp
-        stages: [commit, merge-commit, manual]
+        stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
 
       - id: gen-openapi
@@ -74,7 +74,7 @@ repos:
         files: ^web/
         language: system
         entry: cargo xtask gen-openapi
-        stages: [commit, merge-commit, manual]
+        stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
 
       - id: gen-ctl-readme
@@ -82,7 +82,7 @@ repos:
         files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-ctl-readme
-        stages: [commit, merge-commit, manual]
+        stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
 
       - id: gen-docs
@@ -90,7 +90,7 @@ repos:
         files: ^rust/stackablectl/
         language: system
         entry: cargo xtask gen-docs
-        stages: [commit, merge-commit, manual]
+        stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
 
       - id: gen-cargo-nix
@@ -98,5 +98,5 @@ repos:
         files: ^Cargo\.lock|go\.mod$
         language: system
         entry: make regenerate-nix
-        stages: [commit, merge-commit, manual]
+        stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
