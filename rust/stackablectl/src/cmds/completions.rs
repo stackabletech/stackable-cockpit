@@ -1,7 +1,7 @@
 use clap::{Args, CommandFactory, Subcommand};
 use clap_complete::{
     generate, Generator,
-    Shell::{Bash, Fish, Zsh},
+    Shell::{Bash, Elvish, Fish, Zsh},
 };
 use clap_complete_nushell::Nushell;
 use snafu::{ResultExt, Snafu};
@@ -18,6 +18,9 @@ pub struct CompletionsArgs {
 pub enum CompletionCommands {
     /// Generate shell completions for Bash
     Bash,
+
+    /// Generate shell completions for Elvish
+    Elvish,
 
     /// Generate shell completions for Fish
     Fish,
@@ -40,6 +43,7 @@ impl CompletionsArgs {
         match &self.subcommand {
             CompletionCommands::Bash => generate_completions(Bash),
             CompletionCommands::Fish => generate_completions(Fish),
+            CompletionCommands::Elvish => generate_completions(Elvish),
             CompletionCommands::Nushell => generate_completions(Nushell),
             CompletionCommands::Zsh => generate_completions(Zsh),
         }

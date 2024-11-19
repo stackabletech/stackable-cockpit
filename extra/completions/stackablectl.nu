@@ -609,6 +609,21 @@ module completions {
     --version(-V)             # Print version
   ]
 
+  # Generate shell completions for Elvish
+  export extern "stackablectl completions elvish" [
+    --log-level(-l): string   # Log level this application uses
+    --no-cache                # Do not cache the remote (default) demo, stack and release files
+    --offline                 # Do not request any remote files via the network
+    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --helm-repo-stable: string # Provide a custom Helm stable repository URL
+    --helm-repo-test: string  # Provide a custom Helm test repository URL
+    --helm-repo-dev: string   # Provide a custom Helm dev repository URL
+    --help(-h)                # Print help (see more with '--help')
+    --version(-V)             # Print version
+  ]
+
   # Generate shell completions for Fish
   export extern "stackablectl completions fish" [
     --log-level(-l): string   # Log level this application uses
@@ -660,6 +675,10 @@ module completions {
 
   # Generate shell completions for Bash
   export extern "stackablectl completions help bash" [
+  ]
+
+  # Generate shell completions for Elvish
+  export extern "stackablectl completions help elvish" [
   ]
 
   # Generate shell completions for Fish
@@ -859,6 +878,10 @@ module completions {
 
   # Generate shell completions for Bash
   export extern "stackablectl help completions bash" [
+  ]
+
+  # Generate shell completions for Elvish
+  export extern "stackablectl help completions elvish" [
   ]
 
   # Generate shell completions for Fish

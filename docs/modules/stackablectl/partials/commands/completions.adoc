@@ -7,6 +7,7 @@ Usage: stackablectl completions [OPTIONS] <COMMAND>
 
 Commands:
   bash     Generate shell completions for Bash
+  elvish   Generate shell completions for Elvish
   fish     Generate shell completions for Fish
   nushell  Generate shell completions for Nushell
   zsh      Generate shell completions for ZSH
