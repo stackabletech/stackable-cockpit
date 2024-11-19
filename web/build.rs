@@ -16,18 +16,21 @@ fn main() {
     ] {
         println!("cargo:rerun-if-changed={tracked_file}");
     }
-    let vite_status = Command::new("yarn")
+
+    let mut vite_command = Command::new("yarn");
+    vite_command
         .arg("run")
         .arg("build")
         .arg("--outDir")
         .arg(&vite_out_dir)
         .arg("--base")
-        .arg("/ui/")
-        .status()
-        .unwrap();
-    if !vite_status.success() {
-        panic!("web-ui build failed: {vite_status}");
-    }
+        .arg("/ui/");
+    let vite_status = vite_command.status();
+    match vite_status {
+        Ok(vite_status) if vite_status.success() => {}
+        _ => panic!("web-ui build failed: command {vite_command:?} resulted in {vite_status:?}"),
+    };
+
     let mut asset_map = phf_codegen::Map::new();
     for asset_file in vite_out_dir.join("assets").read_dir().unwrap() {
         let asset_file = asset_file.unwrap();
