@@ -376,21 +376,22 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "describe" -d 'Print out detailed demo information'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "install" -d 'Install a specific demo'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -s l -l log-level -d 'Log level this application uses' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -l offline -d 'Do not request any remote files via the network'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -s h -l help -d 'Print help (see more with \'--help\')'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -f -a "bash" -d 'Generate shell completions for Bash'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -f -a "fish" -d 'Generate shell completions for Fish'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -f -a "zsh" -d 'Generate shell completions for ZSH'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish zsh help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -l offline -d 'Do not request any remote files via the network'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -f -a "bash" -d 'Generate shell completions for Bash'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -f -a "fish" -d 'Generate shell completions for Fish'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -f -a "nushell" -d 'Generate shell completions for Nushell'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -f -a "zsh" -d 'Generate shell completions for ZSH'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash fish nushell zsh help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
@@ -413,6 +414,17 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l offline -d 'Do not request any remote files via the network'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
@@ -426,6 +438,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from help" -f -a "bash" -d 'Generate shell completions for Bash'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from help" -f -a "fish" -d 'Generate shell completions for Fish'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from help" -f -a "nushell" -d 'Generate shell completions for Nushell'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from help" -f -a "zsh" -d 'Generate shell completions for ZSH'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s l -l log-level -d 'Log level this application uses' -r
@@ -510,6 +523,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from demo" -f -a "install" -d 'Install a specific demo'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "bash" -d 'Generate shell completions for Bash'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "fish" -d 'Generate shell completions for Fish'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "nushell" -d 'Generate shell completions for Nushell'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "zsh" -d 'Generate shell completions for ZSH'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from cache" -f -a "list" -d 'List cached files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from cache" -f -a "clean" -d 'Clean cached files'

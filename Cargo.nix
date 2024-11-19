@@ -1818,6 +1818,36 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" ];
       };
+      "clap_complete_nushell" = rec {
+        crateName = "clap_complete_nushell";
+        version = "4.5.4";
+        edition = "2021";
+        sha256 = "0xvnl61gnc3j76b9y50y35zvg7fls30i7lyb43fmsvncj3kh4n9i";
+        dependencies = [
+          {
+            name = "clap";
+            packageId = "clap";
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
+            name = "clap_complete";
+            packageId = "clap_complete";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "clap";
+            packageId = "clap";
+            usesDefaultFeatures = false;
+            features = [ "std" "help" ];
+          }
+        ];
+        features = {
+          "unstable-shell-tests" = [ "dep:completest" "dep:completest-nu" ];
+        };
+        resolvedDefaultFeatures = [ "default" ];
+      };
       "clap_derive" = rec {
         crateName = "clap_derive";
         version = "4.5.13";
@@ -9953,6 +9983,10 @@ rec {
             packageId = "clap_complete";
           }
           {
+            name = "clap_complete_nushell";
+            packageId = "clap_complete_nushell";
+          }
+          {
             name = "comfy-table";
             packageId = "comfy-table";
             features = [ "custom_styling" ];
@@ -14463,6 +14497,10 @@ rec {
           {
             name = "clap_complete";
             packageId = "clap_complete";
+          }
+          {
+            name = "clap_complete_nushell";
+            packageId = "clap_complete_nushell";
           }
           {
             name = "clap_mangen";
