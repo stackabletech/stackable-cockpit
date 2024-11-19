@@ -19,6 +19,11 @@ jobs:
       - uses: cachix/install-nix-action@08dcb3a5e62fa31e2da3d490afc4176ef55ecd72 #v30
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 18
+          cache: yarn
+      - run: yarn install --frozen-lockfile
       - uses: stackabletech/actions/run-pre-commit@9bd13255f286e4b7a654617268abe1b2f37c3e0a # v0.3.0
         with:
           rust: ${{ env.RUST_TOOLCHAIN_VERSION }}
