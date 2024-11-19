@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Shell completions for Nushell and Elvish ([#337]).
+
+[#337]: https://github.com/stackabletech/stackable-cockpit/pull/337
+
 ## [24.11.0] - 2024-11-18
 
 ### Changed
