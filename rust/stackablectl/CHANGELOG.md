@@ -7,11 +7,13 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add shell completions for Nushell and Elvish ([#337]).
+- SOCKS5 and HTTP proxy support ([#328]).
 
 ### Fixed
 
 - Sort operator versions by semver version instead of alphabetically ([#336]).
 
+[#328]: https://github.com/stackabletech/stackable-cockpit/pull/328
 [#336]: https://github.com/stackabletech/stackable-cockpit/pull/336
 [#337]: https://github.com/stackabletech/stackable-cockpit/pull/337
 
