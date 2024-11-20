@@ -25,6 +25,7 @@ fn main() {
         .arg(&vite_out_dir)
         .arg("--base")
         .arg("/ui/");
+
     let vite_status = vite_command.status();
     match vite_status {
         Ok(vite_status) if vite_status.success() => {}

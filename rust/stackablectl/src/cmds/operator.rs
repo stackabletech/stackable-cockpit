@@ -130,7 +130,7 @@ pub enum CmdError {
     #[snafu(display("invalid repository name"))]
     InvalidRepoName { source: InvalidRepoNameError },
 
-    #[snafu(display("invalid helm chart version {version:?} (need to be semver)"))]
+   #[snafu(display("invalid semantic helm chart version {version:?}"))]
     InvalidHelmChartVersion {
         source: semver::Error,
         version: String,
@@ -531,7 +531,7 @@ where
             let mut versions = entries
                 .iter()
                 .map(|entry| {
-                    Version::parse(&entry.version).context(InvalidHelmChartVersionSnafu {
+                    Version::parse(&entry.version).with_context(|_| InvalidHelmChartVersionSnafu {
                         version: entry.version.clone(),
                     })
                 })
