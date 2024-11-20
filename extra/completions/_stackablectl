@@ -939,7 +939,49 @@ _arguments "${_arguments_options[@]}" : \
 '--version[Print version]' \
 && ret=0
 ;;
+(elvish)
+_arguments "${_arguments_options[@]}" : \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
 (fish)
+_arguments "${_arguments_options[@]}" : \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'--offline[Do not request any remote files via the network]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+&& ret=0
+;;
+(nushell)
 _arguments "${_arguments_options[@]}" : \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
@@ -997,7 +1039,15 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(elvish)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (fish)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(nushell)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -1326,7 +1376,15 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(elvish)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
 (fish)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(nushell)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -1441,7 +1499,9 @@ _stackablectl__cache__list_commands() {
 _stackablectl__completions_commands() {
     local commands; commands=(
 'bash:Generate shell completions for Bash' \
+'elvish:Generate shell completions for Elvish' \
 'fish:Generate shell completions for Fish' \
+'nushell:Generate shell completions for Nushell' \
 'zsh:Generate shell completions for ZSH' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -1452,6 +1512,11 @@ _stackablectl__completions__bash_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl completions bash commands' commands "$@"
 }
+(( $+functions[_stackablectl__completions__elvish_commands] )) ||
+_stackablectl__completions__elvish_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl completions elvish commands' commands "$@"
+}
 (( $+functions[_stackablectl__completions__fish_commands] )) ||
 _stackablectl__completions__fish_commands() {
     local commands; commands=()
@@ -1461,7 +1526,9 @@ _stackablectl__completions__fish_commands() {
 _stackablectl__completions__help_commands() {
     local commands; commands=(
 'bash:Generate shell completions for Bash' \
+'elvish:Generate shell completions for Elvish' \
 'fish:Generate shell completions for Fish' \
+'nushell:Generate shell completions for Nushell' \
 'zsh:Generate shell completions for ZSH' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -1471,6 +1538,11 @@ _stackablectl__completions__help_commands() {
 _stackablectl__completions__help__bash_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl completions help bash commands' commands "$@"
+}
+(( $+functions[_stackablectl__completions__help__elvish_commands] )) ||
+_stackablectl__completions__help__elvish_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl completions help elvish commands' commands "$@"
 }
 (( $+functions[_stackablectl__completions__help__fish_commands] )) ||
 _stackablectl__completions__help__fish_commands() {
@@ -1482,10 +1554,20 @@ _stackablectl__completions__help__help_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl completions help help commands' commands "$@"
 }
+(( $+functions[_stackablectl__completions__help__nushell_commands] )) ||
+_stackablectl__completions__help__nushell_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl completions help nushell commands' commands "$@"
+}
 (( $+functions[_stackablectl__completions__help__zsh_commands] )) ||
 _stackablectl__completions__help__zsh_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl completions help zsh commands' commands "$@"
+}
+(( $+functions[_stackablectl__completions__nushell_commands] )) ||
+_stackablectl__completions__nushell_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl completions nushell commands' commands "$@"
 }
 (( $+functions[_stackablectl__completions__zsh_commands] )) ||
 _stackablectl__completions__zsh_commands() {
@@ -1589,7 +1671,9 @@ _stackablectl__help__cache__list_commands() {
 _stackablectl__help__completions_commands() {
     local commands; commands=(
 'bash:Generate shell completions for Bash' \
+'elvish:Generate shell completions for Elvish' \
 'fish:Generate shell completions for Fish' \
+'nushell:Generate shell completions for Nushell' \
 'zsh:Generate shell completions for ZSH' \
     )
     _describe -t commands 'stackablectl help completions commands' commands "$@"
@@ -1599,10 +1683,20 @@ _stackablectl__help__completions__bash_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl help completions bash commands' commands "$@"
 }
+(( $+functions[_stackablectl__help__completions__elvish_commands] )) ||
+_stackablectl__help__completions__elvish_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl help completions elvish commands' commands "$@"
+}
 (( $+functions[_stackablectl__help__completions__fish_commands] )) ||
 _stackablectl__help__completions__fish_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl help completions fish commands' commands "$@"
+}
+(( $+functions[_stackablectl__help__completions__nushell_commands] )) ||
+_stackablectl__help__completions__nushell_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl help completions nushell commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__completions__zsh_commands] )) ||
 _stackablectl__help__completions__zsh_commands() {

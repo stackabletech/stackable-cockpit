@@ -1,5 +1,9 @@
 use clap::{Args, CommandFactory, Subcommand};
-use clap_complete::{generate, Shell};
+use clap_complete::{
+    generate, Generator,
+    Shell::{Bash, Elvish, Fish, Zsh},
+};
+use clap_complete_nushell::Nushell;
 use snafu::{ResultExt, Snafu};
 
 use crate::cli::Cli;
@@ -15,8 +19,14 @@ pub enum CompletionCommands {
     /// Generate shell completions for Bash
     Bash,
 
+    /// Generate shell completions for Elvish
+    Elvish,
+
     /// Generate shell completions for Fish
     Fish,
+
+    /// Generate shell completions for Nushell
+    Nushell,
 
     /// Generate shell completions for ZSH
     Zsh,
@@ -31,14 +41,19 @@ pub enum CmdError {
 impl CompletionsArgs {
     pub fn run(&self) -> Result<String, CmdError> {
         match &self.subcommand {
-            CompletionCommands::Bash => generate_completions(Shell::Bash),
-            CompletionCommands::Fish => generate_completions(Shell::Fish),
-            CompletionCommands::Zsh => generate_completions(Shell::Zsh),
+            CompletionCommands::Bash => generate_completions(Bash),
+            CompletionCommands::Fish => generate_completions(Fish),
+            CompletionCommands::Elvish => generate_completions(Elvish),
+            CompletionCommands::Nushell => generate_completions(Nushell),
+            CompletionCommands::Zsh => generate_completions(Zsh),
         }
     }
 }
 
-fn generate_completions(shell: Shell) -> Result<String, CmdError> {
+fn generate_completions<G>(shell: G) -> Result<String, CmdError>
+where
+    G: Generator,
+{
     let mut cmd = Cli::command();
     let mut buf = Vec::new();
 
