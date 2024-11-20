@@ -522,6 +522,36 @@ rec {
         ];
 
       };
+      "async-socks5" = rec {
+        crateName = "async-socks5";
+        version = "0.6.0";
+        edition = "2021";
+        sha256 = "128w31m6nvrvgbaycz3838m8fqsn6lxjmr9fjz99csz18rw578ld";
+        libName = "async_socks5";
+        authors = [
+          "Arsenii Lyashenko <arsenylyashenko.3@gmail.com>"
+          "Temirkhan Myrzamadi <hirrolot@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "thiserror";
+            packageId = "thiserror";
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "net" "io-util" ];
+          }
+        ];
+        devDependencies = [
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "net" "io-util" "rt" "macros" ];
+          }
+        ];
+
+      };
       "async-stream" = rec {
         crateName = "async-stream";
         version = "0.3.5";
@@ -4243,6 +4273,68 @@ rec {
         };
         resolvedDefaultFeatures = [ "http1" "log" "logging" "native-tokio" "ring" "rustls-native-certs" "tls12" "webpki-roots" "webpki-tokio" ];
       };
+      "hyper-socks2" = rec {
+        crateName = "hyper-socks2";
+        version = "0.9.1";
+        edition = "2021";
+        sha256 = "1avx6crd1i86bcprqz26zrbsk8844s8jc1845ry7x3r09ihjghji";
+        libName = "hyper_socks2";
+        authors = [
+          "Arsenii Lyashenko <arsenylyashenko.3@gmail.com>"
+        ];
+        dependencies = [
+          {
+            name = "async-socks5";
+            packageId = "async-socks5";
+          }
+          {
+            name = "http";
+            packageId = "http";
+          }
+          {
+            name = "hyper";
+            packageId = "hyper";
+          }
+          {
+            name = "hyper-util";
+            packageId = "hyper-util";
+            features = [ "tokio" ];
+          }
+          {
+            name = "thiserror";
+            packageId = "thiserror";
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+          }
+          {
+            name = "tower-service";
+            packageId = "tower-service";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "hyper-util";
+            packageId = "hyper-util";
+            features = [ "http1" "client" "client-legacy" ];
+          }
+          {
+            name = "tokio";
+            packageId = "tokio";
+            features = [ "macros" ];
+          }
+        ];
+        features = {
+          "default" = [ "tls" ];
+          "hyper-rustls" = [ "dep:hyper-rustls" ];
+          "hyper-tls" = [ "dep:hyper-tls" ];
+          "rustls" = [ "hyper-rustls" "rusttls" "rustls-native-certs" ];
+          "rustls-native-certs" = [ "dep:rustls-native-certs" ];
+          "rusttls" = [ "dep:rusttls" ];
+          "tls" = [ "hyper-tls" ];
+        };
+      };
       "hyper-timeout" = rec {
         crateName = "hyper-timeout";
         version = "0.5.1";
@@ -4974,7 +5066,7 @@ rec {
           "unstable-runtime" = [ "kube-runtime/unstable-runtime" ];
           "ws" = [ "kube-client/ws" "kube-core/ws" ];
         };
-        resolvedDefaultFeatures = [ "client" "config" "derive" "jsonpatch" "kube-client" "kube-derive" "kube-runtime" "runtime" "rustls-tls" "ws" ];
+        resolvedDefaultFeatures = [ "client" "config" "derive" "http-proxy" "jsonpatch" "kube-client" "kube-derive" "kube-runtime" "runtime" "rustls-tls" "socks5" "ws" ];
       };
       "kube-client" = rec {
         crateName = "kube-client";
@@ -5053,6 +5145,12 @@ rec {
             optional = true;
             usesDefaultFeatures = false;
             features = [ "http1" "logging" "native-tokio" "ring" "tls12" ];
+          }
+          {
+            name = "hyper-socks2";
+            packageId = "hyper-socks2";
+            optional = true;
+            usesDefaultFeatures = false;
           }
           {
             name = "hyper-timeout";
@@ -5225,7 +5323,7 @@ rec {
           "tracing" = [ "dep:tracing" ];
           "ws" = [ "client" "tokio-tungstenite" "rand" "kube-core/ws" "tokio/macros" ];
         };
-        resolvedDefaultFeatures = [ "__non_core" "base64" "bytes" "chrono" "client" "config" "either" "futures" "home" "http-body" "http-body-util" "hyper" "hyper-rustls" "hyper-timeout" "hyper-util" "jsonpatch" "jsonpath-rust" "pem" "rand" "rustls" "rustls-pemfile" "rustls-tls" "serde_yaml" "tokio" "tokio-tungstenite" "tokio-util" "tower" "tower-http" "tracing" "ws" ];
+        resolvedDefaultFeatures = [ "__non_core" "base64" "bytes" "chrono" "client" "config" "either" "futures" "home" "http-body" "http-body-util" "http-proxy" "hyper" "hyper-http-proxy" "hyper-rustls" "hyper-socks2" "hyper-timeout" "hyper-util" "jsonpatch" "jsonpath-rust" "pem" "rand" "rustls" "rustls-pemfile" "rustls-tls" "serde_yaml" "socks5" "tokio" "tokio-tungstenite" "tokio-util" "tower" "tower-http" "tracing" "ws" ];
       };
       "kube-core" = rec {
         crateName = "kube-core";
@@ -9564,7 +9662,7 @@ rec {
             name = "kube";
             packageId = "kube";
             usesDefaultFeatures = false;
-            features = [ "client" "rustls-tls" "ws" ];
+            features = [ "client" "rustls-tls" "ws" "socks5" "http-proxy" ];
           }
           {
             name = "rand";
