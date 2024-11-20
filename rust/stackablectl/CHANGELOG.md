@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.11.1] - 2024-11-20
+
 ### Added
 
 - Add shell completions for Nushell and Elvish ([#337]).
