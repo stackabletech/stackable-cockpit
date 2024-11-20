@@ -6,7 +6,18 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Add shell completions for Nushell and Elvish ([#337]).
 - SOCKS5 and HTTP proxy support ([#328]).
+
+### Fixed
+
+- Sort operator versions by semver version instead of alphabetically ([#336]).
+
+[#328]: https://github.com/stackabletech/stackable-cockpit/pull/328
+[#336]: https://github.com/stackabletech/stackable-cockpit/pull/336
+[#337]: https://github.com/stackabletech/stackable-cockpit/pull/337
+
+## [24.11.0] - 2024-11-18
 
 ### Changed
 
@@ -15,7 +26,6 @@ All notable changes to this project will be documented in this file.
 - Bump Rust toolchain version to 1.80.1 ([#318]).
 
 [#318]: https://github.com/stackabletech/stackable-cockpit/pull/318
-[#328]: https://github.com/stackabletech/stackable-cockpit/pull/328
 [CVE-2024-45311]: https://github.com/advisories/GHSA-vr26-jcq5-fjj8
 
 ## [24.7.1] - 2024-08-15

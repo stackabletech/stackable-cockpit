@@ -1,7 +1,11 @@
 use std::fs;
 
 use clap::CommandFactory;
-use clap_complete::{generate as generate_comps, Shell};
+use clap_complete::{
+    generate as generate_comps,
+    Shell::{Bash, Elvish, Fish, Zsh},
+};
+use clap_complete_nushell::Nushell;
 use snafu::{ResultExt, Snafu};
 use stackablectl::cli::Cli;
 
@@ -19,15 +23,23 @@ pub fn generate() -> Result<(), GenCompError> {
 
     // Bash completions
     let mut f = fs::File::create("extra/completions/stackablectl.bash").context(IoSnafu)?;
-    generate_comps(Shell::Bash, &mut cmd, name.clone(), &mut f);
+    generate_comps(Bash, &mut cmd, name.clone(), &mut f);
+
+    // Elvish completions
+    let mut f = fs::File::create("extra/completions/stackablectl.elv").context(IoSnafu)?;
+    generate_comps(Elvish, &mut cmd, name.clone(), &mut f);
 
     // Fish completions
     let mut f = fs::File::create("extra/completions/stackablectl.fish").context(IoSnafu)?;
-    generate_comps(Shell::Fish, &mut cmd, name.clone(), &mut f);
+    generate_comps(Fish, &mut cmd, name.clone(), &mut f);
+
+    // Nushell completions
+    let mut f = fs::File::create("extra/completions/stackablectl.nu").context(IoSnafu)?;
+    generate_comps(Nushell, &mut cmd, name.clone(), &mut f);
 
     // ZSH completions
     let mut f = fs::File::create("extra/completions/_stackablectl").context(IoSnafu)?;
-    generate_comps(Shell::Zsh, &mut cmd, name, &mut f);
+    generate_comps(Zsh, &mut cmd, name, &mut f);
 
     Ok(())
 }

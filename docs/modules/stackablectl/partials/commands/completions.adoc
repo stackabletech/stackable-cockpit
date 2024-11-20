@@ -6,10 +6,12 @@ Generate shell completions for this tool
 Usage: stackablectl completions [OPTIONS] <COMMAND>
 
 Commands:
-  bash  Generate shell completions for Bash
-  fish  Generate shell completions for Fish
-  zsh   Generate shell completions for ZSH
-  help  Print this message or the help of the given subcommand(s)
+  bash     Generate shell completions for Bash
+  elvish   Generate shell completions for Elvish
+  fish     Generate shell completions for Fish
+  nushell  Generate shell completions for Nushell
+  zsh      Generate shell completions for ZSH
+  help     Print this message or the help of the given subcommand(s)
 
 Options:
   -l, --log-level <LOG_LEVEL>

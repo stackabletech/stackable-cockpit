@@ -2,7 +2,7 @@
 name = "stackablectl"
 description = "Command line tool to interact with the Stackable Data Platform"
 # See <project-root>/Cargo.toml
-version = "24.7.1"
+version = "24.11.0"
 authors.workspace = true
 license.workspace = true
 edition.workspace = true
@@ -14,6 +14,7 @@ stackable-cockpit = { path = "../stackable-cockpit", features = ["openapi"] }
 stackable-operator.workspace = true
 
 clap_complete.workspace = true
+clap_complete_nushell.workspace = true
 clap.workspace = true
 comfy-table.workspace = true
 directories.workspace = true

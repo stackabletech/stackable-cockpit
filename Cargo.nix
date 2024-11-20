@@ -1848,6 +1848,36 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" ];
       };
+      "clap_complete_nushell" = rec {
+        crateName = "clap_complete_nushell";
+        version = "4.5.4";
+        edition = "2021";
+        sha256 = "0xvnl61gnc3j76b9y50y35zvg7fls30i7lyb43fmsvncj3kh4n9i";
+        dependencies = [
+          {
+            name = "clap";
+            packageId = "clap";
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
+            name = "clap_complete";
+            packageId = "clap_complete";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "clap";
+            packageId = "clap";
+            usesDefaultFeatures = false;
+            features = [ "std" "help" ];
+          }
+        ];
+        features = {
+          "unstable-shell-tests" = [ "dep:completest" "dep:completest-nu" ];
+        };
+        resolvedDefaultFeatures = [ "default" ];
+      };
       "clap_derive" = rec {
         crateName = "clap_derive";
         version = "4.5.13";
@@ -10027,7 +10057,7 @@ rec {
       };
       "stackablectl" = rec {
         crateName = "stackablectl";
-        version = "24.7.1";
+        version = "24.11.0";
         edition = "2021";
         crateBin = [
           {
@@ -10049,6 +10079,10 @@ rec {
           {
             name = "clap_complete";
             packageId = "clap_complete";
+          }
+          {
+            name = "clap_complete_nushell";
+            packageId = "clap_complete_nushell";
           }
           {
             name = "comfy-table";
@@ -14563,6 +14597,10 @@ rec {
             packageId = "clap_complete";
           }
           {
+            name = "clap_complete_nushell";
+            packageId = "clap_complete_nushell";
+          }
+          {
             name = "clap_mangen";
             packageId = "clap_mangen";
           }
@@ -14868,52 +14906,41 @@ rec {
               testPostRun
             ]);
         in
-        pkgs.runCommand "run-tests-${testCrate.name}"
-          {
-            inherit testCrateFlags;
-            buildInputs = testInputs;
-          } ''
-          set -e
+        pkgs.stdenvNoCC.mkDerivation {
+          name = "run-tests-${testCrate.name}";
 
-          export RUST_BACKTRACE=1
+          inherit (crate) src;
 
-          # recreate a file hierarchy as when running tests with cargo
+          inherit testCrateFlags;
 
-          # the source for test data
-          # It's necessary to locate the source in $NIX_BUILD_TOP/source/
-          # instead of $NIX_BUILD_TOP/
-          # because we compiled those test binaries in the former and not the latter.
-          # So all paths will expect source tree to be there and not in the build top directly.
-          # For example: $NIX_BUILD_TOP := /build in general, if you ask yourself.
-          # NOTE: There could be edge cases if `crate.sourceRoot` does exist but
-          # it's very hard to reason about them.
-          # Open a bug if you run into this!
-          mkdir -p source/
-          cd source/
+          buildInputs = testInputs;
 
-          ${pkgs.buildPackages.xorg.lndir}/bin/lndir ${crate.src}
+          buildPhase = ''
+            set -e
+            export RUST_BACKTRACE=1
 
-          # build outputs
-          testRoot=target/debug
-          mkdir -p $testRoot
+            # build outputs
+            testRoot=target/debug
+            mkdir -p $testRoot
 
-          # executables of the crate
-          # we copy to prevent std::env::current_exe() to resolve to a store location
-          for i in ${crate}/bin/*; do
-            cp "$i" "$testRoot"
-          done
-          chmod +w -R .
+            # executables of the crate
+            # we copy to prevent std::env::current_exe() to resolve to a store location
+            for i in ${crate}/bin/*; do
+              cp "$i" "$testRoot"
+            done
+            chmod +w -R .
 
-          # test harness executables are suffixed with a hash, like cargo does
-          # this allows to prevent name collision with the main
-          # executables of the crate
-          hash=$(basename $out)
-          for file in ${drv}/tests/*; do
-            f=$testRoot/$(basename $file)-$hash
-            cp $file $f
-            ${testCommand}
-          done
-        '';
+            # test harness executables are suffixed with a hash, like cargo does
+            # this allows to prevent name collision with the main
+            # executables of the crate
+            hash=$(basename $out)
+            for file in ${drv}/tests/*; do
+              f=$testRoot/$(basename $file)-$hash
+              cp $file $f
+              ${testCommand}
+            done
+          '';
+        };
     in
     pkgs.runCommand "${crate.name}-linked"
       {
