@@ -130,6 +130,12 @@ pub enum CmdError {
     #[snafu(display("invalid repository name"))]
     InvalidRepoName { source: InvalidRepoNameError },
 
+    #[snafu(display("invalid semantic helm chart version {version:?}"))]
+    InvalidHelmChartVersion {
+        source: semver::Error,
+        version: String,
+    },
+
     #[snafu(display("unknown repository name '{name}'"))]
     UnknownRepoName { name: String },
 
@@ -524,16 +530,15 @@ where
         Some(entries) => {
             let mut versions = entries
                 .iter()
-                .map(|e| Version::parse(&e.version))
-                .map_while(|r| match r {
-                    Ok(v) => Some(v),
-                    Err(_) => None,
+                .map(|entry| {
+                    Version::parse(&entry.version).with_context(|_| InvalidHelmChartVersionSnafu {
+                        version: entry.version.clone(),
+                    })
                 })
-                .map(|v| v.to_string())
-                .collect::<Vec<String>>();
-
+                .collect::<Result<Vec<_>, _>>()?;
             versions.sort();
-            Ok(versions)
+
+            Ok(versions.iter().map(|version| version.to_string()).collect())
         }
         None => Ok(vec![]),
     }
