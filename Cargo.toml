@@ -23,6 +23,7 @@ bindgen = "0.70.1"
 cc = "1.0.83"
 clap = { version = "4.5", features = ["derive", "env"] }
 clap_complete = "4.5"
+clap_complete_nushell = "4.5"
 comfy-table = { version = "7.1", features = ["custom_styling"] }
 directories = "5.0"
 dotenvy = "0.15"

@@ -40,6 +40,7 @@ repos:
     hooks:
       - id: shellcheck
         args: ["--severity=info"]
+        exclude: '^extra/completions/'
 
   - repo: https://github.com/rhysd/actionlint
     rev: 62dc61a45fc95efe8c800af7a557ab0b9165d63b # 1.7.1
