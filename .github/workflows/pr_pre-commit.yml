@@ -27,4 +27,4 @@ jobs:
           rust: ${{ env.RUST_TOOLCHAIN_VERSION }}
           hadolint: ${{ env.HADOLINT_VERSION }}
           nix: ${{ env.NIX_VERSION }}
-          # nix-github-token: ${{ secrets.GITHUB_TOKEN }} Commented out for testing
+          nix-github-token: ${{ secrets.GITHUB_TOKEN }}
