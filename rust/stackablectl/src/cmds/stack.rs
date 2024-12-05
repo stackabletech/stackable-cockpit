@@ -140,7 +140,10 @@ impl StackArgs {
         debug!("Handle stack args");
 
         let transfer_client = xfer::Client::new_with(cache);
-        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+        let files = cli
+            .get_stack_files(&transfer_client)
+            .await
+            .context(PathOrUrlParseSnafu)?;
         let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;

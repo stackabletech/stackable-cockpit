@@ -133,10 +133,7 @@ impl ReleaseArgs {
         debug!("Handle release args");
 
         let transfer_client = xfer::Client::new_with(cache);
-        let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
-        let release_list = release::ReleaseList::build(&files, &transfer_client)
-            .await
-            .context(BuildListSnafu)?;
+        let release_list = get_release_list(cli, &transfer_client).await?;
 
         if release_list.inner().is_empty() {
             return Ok("No releases".into());

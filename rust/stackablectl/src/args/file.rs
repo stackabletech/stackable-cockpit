@@ -42,4 +42,14 @@ definition will be used.
 Use \"stackablectl [OPTIONS] <COMMAND> -r path/to/releases1.yaml -r path/to/releases2.yaml\"
 to provide multiple additional release files.")]
     pub release_files: Vec<String>,
+
+    /// Provide a release to use for demo and stack files.
+    #[arg(short = 'R', long = "release", value_name = "RELEASE", global = true)]
+    #[arg(long_help = "Provide which release to use for demo and stack files
+    
+    Which release to use for demo and stack files. The corresponding branch in the demos
+    repository is used to get files. If not specified the latest stable release is sued.
+    Use '--release dev' to use demo and stack files in main branch.
+")]
+    pub release: String,
 }

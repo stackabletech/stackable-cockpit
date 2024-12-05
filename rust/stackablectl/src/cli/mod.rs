@@ -6,9 +6,10 @@ use snafu::{ResultExt, Snafu};
 use tracing::{debug, instrument, Level};
 
 use stackable_cockpit::{
+    common::list,
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
-    platform::demo::List,
+    platform::{demo::List, release::ReleaseList},
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
@@ -17,11 +18,15 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
-    cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
+    cmds::{
+        cache, completions, debug, demo, operator,
+        release::{self},
+        stack, stacklet,
+    },
     constants::{
-        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
-        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
-        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_BASE_URL,
+        REMOTE_RELEASE_FILE, USER_DIR_APPLICATION_NAME, USER_DIR_ORGANIZATION_NAME,
+        USER_DIR_QUALIFIER,
     },
     output::{ErrorContext, Output, ResultContext},
 };
@@ -54,6 +59,20 @@ pub enum Error {
 
     #[snafu(display("helm error"))]
     Helm { source: helm::Error },
+
+    // #[snafu(display("failed to get branch from release"))]
+    // Branch,
+
+    // #[snafu(display("failed to get latest release"))]
+    // LatestRelease,
+    #[snafu(display("failed to parse path/url"))]
+    PathOrUrlParse { source: PathOrUrlParseError },
+
+    #[snafu(display("failed to build release list"))]
+    BuildList { source: list::Error },
+
+    #[snafu(display("release list is empty"))]
+    ReleaseListEmpty,
 }
 
 #[derive(Debug, Parser)]
@@ -92,8 +111,12 @@ impl Cli {
     /// Returns a list of demo files, consisting of entries which are either a path or URL. The list of files combines
     /// the default demo file URL, [`REMOTE_DEMO_FILE`], files provided by the ENV variable [`ENV_KEY_DEMO_FILES`], and
     /// lastly, files provided by the CLI argument `--demo-file`.
-    pub fn get_demo_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_DEMO_FILE, ENV_KEY_DEMO_FILES)?;
+    pub async fn get_demo_files(&self, transfer_client: &Client) -> Result<Vec<PathOrUrl>, Error> {
+        let branch = &self.get_branch(transfer_client).await?;
+        let mut files = get_files(
+            format!("{REMOTE_DEMO_BASE_URL}{branch}/demos/demos-v2.yaml").as_str(),
+            ENV_KEY_DEMO_FILES,
+        )?;
 
         let arg_files = self.files.demo_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
@@ -102,29 +125,70 @@ impl Cli {
     }
 
     pub async fn get_demo_list(&self, transfer_client: &Client) -> List {
-        let files = self.get_demo_files().unwrap();
+        let files = self.get_demo_files(transfer_client).await.unwrap();
         List::build(&files, transfer_client).await.unwrap()
     }
 
     /// Returns a list of stack files, consisting of entries which are either a path or URL. The list of files combines
     /// the default stack file URL, [`REMOTE_STACK_FILE`], files provided by the ENV variable [`ENV_KEY_STACK_FILES`],
     /// and lastly, files provided by the CLI argument `--stack-file`.
-    pub fn get_stack_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_STACK_FILE, ENV_KEY_STACK_FILES)?;
+    pub async fn get_stack_files(&self, transfer_client: &Client) -> Result<Vec<PathOrUrl>, Error> {
+        let branch = &self.get_branch(transfer_client).await?;
+        let mut files = get_files(
+            format!("{REMOTE_DEMO_BASE_URL}{branch}/stacks/stacks-v2.yaml").as_str(),
+            ENV_KEY_STACK_FILES,
+        )?;
 
-        let arg_files = self.files.stack_files.clone().into_paths_or_urls()?;
+        let arg_files = self
+            .files
+            .stack_files
+            .clone()
+            .into_paths_or_urls()
+            .context(PathOrUrlParseSnafu)?;
         files.extend(arg_files);
 
         Ok(files)
     }
 
+    /// Returns the branch in the demos repository that corresponds to the release provided by the CLI argument '--release'.
+    pub async fn get_branch(&self, transfer_client: &Client) -> Result<String, Error> {
+        let release = &self.files.release;
+        match release.as_str() {
+            "" => self.get_latest_release(transfer_client).await,
+            "dev" => Ok("main".to_string()),
+            _ => Ok(format!("release-{release}")),
+        }
+    }
+
+    async fn get_latest_release(&self, transfer_client: &Client) -> Result<String, Error> {
+        let release_list = self.get_release_list(&self, transfer_client).await?;
+
+        if let Some((release, _)) = release_list.inner().first() {
+            return Ok(release.to_string());
+        } else {
+            return ReleaseListEmptySnafu{}.fail();
+        }
+    }
+
+    async fn get_release_list(&self, cli: &Cli, transfer_client: &Client) -> Result<ReleaseList, Error> {
+        let files = cli.get_release_files()?;
+        ReleaseList::build(&files, &transfer_client)
+            .await
+            .context(BuildListSnafu)
+    }
+
     /// Returns a list of release files, consisting of entries which are either a path or URL. The list of files
     /// combines the default demo file URL, [`REMOTE_RELEASE_FILE`], files provided by the ENV variable
     /// [`ENV_KEY_RELEASE_FILES`], and lastly, files provided by the CLI argument `--release-file`.
-    pub fn get_release_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+    pub fn get_release_files(&self) -> Result<Vec<PathOrUrl>, Error> {
         let mut files = get_files(REMOTE_RELEASE_FILE, ENV_KEY_RELEASE_FILES)?;
 
-        let arg_files = self.files.release_files.clone().into_paths_or_urls()?;
+        let arg_files = self
+            .files
+            .release_files
+            .clone()
+            .into_paths_or_urls()
+            .context(PathOrUrlParseSnafu)?;
         files.extend(arg_files);
 
         Ok(files)
@@ -277,11 +341,15 @@ pub enum CacheSettingsError {
 
 /// Returns a list of paths or urls based on the default (remote) file and
 /// files provided via the env variable.
-fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-    let mut files: Vec<PathOrUrl> = vec![default_file.into_path_or_url()?];
+fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, Error> {
+    let mut files: Vec<PathOrUrl> = vec![default_file
+        .into_path_or_url()
+        .context(PathOrUrlParseSnafu)?];
 
     let env_files = match env::var(env_key) {
-        Ok(env_files) => env_files.parse_paths_or_urls()?,
+        Ok(env_files) => env_files
+            .parse_paths_or_urls()
+            .context(PathOrUrlParseSnafu)?,
         Err(_) => vec![],
     };
     files.extend(env_files);

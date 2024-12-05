@@ -23,7 +23,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
-    cli::{Cli, OutputType},
+    cli::{self, Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -130,7 +130,7 @@ pub enum CmdError {
     BuildList { source: list::Error },
 
     #[snafu(display("path/url parse error"))]
-    PathOrUrlParse { source: PathOrUrlParseError },
+    PathOrUrlParse { source: cli::Error },
 
     #[snafu(display("failed to install local cluster"))]
     InstallCluster { source: CommonClusterArgsError },
@@ -146,6 +146,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
+    
+    #[snafu(display("failed to get demo file(s)"))]
+    DemoFile { source: cli::Error}
 }
 
 impl DemoArgs {
@@ -157,7 +160,10 @@ impl DemoArgs {
 
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
+        let files = cli
+            .get_demo_files(&transfer_client)
+            .await
+            .context(PathOrUrlParseSnafu)?;
 
         let list = demo::List::build(&files, &transfer_client)
             .await
@@ -289,7 +295,10 @@ async fn install_cmd(
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+    let files = cli
+        .get_stack_files(transfer_client)
+        .await
+        .context(PathOrUrlParseSnafu)?;
     let stack_list = stack::StackList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
