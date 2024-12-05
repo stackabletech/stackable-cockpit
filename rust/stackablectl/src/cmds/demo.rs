@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Row, Table,
 };
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -30,6 +30,10 @@ use crate::{
 pub struct DemoArgs {
     #[command(subcommand)]
     subcommand: DemoCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -126,6 +130,12 @@ pub enum CmdError {
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
 
+    #[snafu(display("no release with name '{name}'"))]
+    NoSuchRelease { name: String },
+
+    #[snafu(display("empty release list"))]
+    EmptyReleaseList,
+
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
 
@@ -155,11 +165,31 @@ impl DemoArgs {
 
         let transfer_client = xfer::Client::new_with(cache);
 
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => format!("release-{release}"),
+            None => {
+                let release = release_list
+                    .inner()
+                    .first()
+                    .context(EmptyReleaseListSnafu)?
+                    .0;
+
+                format!("release-{release}")
+            }
+        };
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
+        let demo_files = cli
+            .get_demo_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
 
-        let list = demo::List::build(&files, &transfer_client)
+        let list = demo::List::build(&demo_files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
 

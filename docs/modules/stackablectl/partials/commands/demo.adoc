@@ -21,8 +21,8 @@ Options:
           Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
           '$HOME/.cache/stackablectl' when not explicitly set.
 
-      --offline
-          Do not request any remote files via the network
+      --release <RELEASE>
+          Target a specific Stackable release
 
   -h, --help
           Print help (see a summary with '-h')

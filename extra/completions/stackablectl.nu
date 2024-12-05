@@ -4,7 +4,6 @@ module completions {
   export extern stackablectl [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -19,7 +18,6 @@ module completions {
   export extern "stackablectl operator" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -39,7 +37,6 @@ module completions {
     --output(-o): string@"nu-complete stackablectl operator list output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -60,7 +57,6 @@ module completions {
     --output(-o): string@"nu-complete stackablectl operator describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -86,7 +82,6 @@ module completions {
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -104,7 +99,6 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -126,7 +120,6 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -169,7 +162,6 @@ module completions {
   export extern "stackablectl release" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -189,7 +181,6 @@ module completions {
     --output(-o): string@"nu-complete stackablectl release list output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -210,7 +201,6 @@ module completions {
     --output(-o): string@"nu-complete stackablectl release describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -238,7 +228,6 @@ module completions {
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -256,7 +245,6 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -295,7 +283,6 @@ module completions {
   export extern "stackablectl stack" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -315,7 +302,6 @@ module completions {
     --output(-o): string@"nu-complete stackablectl stack list output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -336,7 +322,6 @@ module completions {
     --output(-o): string@"nu-complete stackablectl stack describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -367,7 +352,6 @@ module completions {
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -402,7 +386,6 @@ module completions {
   export extern "stackablectl stacklet" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -421,7 +404,6 @@ module completions {
     --product-ns: string      # Namespace in the cluster used to deploy the products
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -445,7 +427,6 @@ module completions {
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -474,9 +455,9 @@ module completions {
 
   # Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
   export extern "stackablectl demo" [
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -494,9 +475,9 @@ module completions {
   # List available demos
   export extern "stackablectl demo list" [
     --output(-o): string@"nu-complete stackablectl demo list output_type"
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -515,9 +496,9 @@ module completions {
   export extern "stackablectl demo describe" [
     DEMO: string              # Demo to describe
     --output(-o): string@"nu-complete stackablectl demo describe output_type"
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -546,9 +527,9 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -583,7 +564,6 @@ module completions {
   export extern "stackablectl completions" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -598,7 +578,6 @@ module completions {
   export extern "stackablectl completions bash" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -613,7 +592,6 @@ module completions {
   export extern "stackablectl completions elvish" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -628,7 +606,6 @@ module completions {
   export extern "stackablectl completions fish" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -643,7 +620,6 @@ module completions {
   export extern "stackablectl completions nushell" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -658,7 +634,6 @@ module completions {
   export extern "stackablectl completions zsh" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -701,7 +676,6 @@ module completions {
   export extern "stackablectl cache" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -716,7 +690,6 @@ module completions {
   export extern "stackablectl cache list" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -733,7 +706,6 @@ module completions {
     --outdated                # Only remove outdated files in the cache
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
@@ -769,7 +741,6 @@ module completions {
     ...cmd: string            # The command to run in the debug container
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --offline                 # Do not request any remote files via the network
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
     --release-file(-r): string # Provide one or more additional (custom) release file(s)
