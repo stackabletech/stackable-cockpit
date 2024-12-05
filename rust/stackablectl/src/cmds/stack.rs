@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
 };
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -30,6 +30,10 @@ use crate::{
 pub struct StackArgs {
     #[command(subcommand)]
     subcommand: StackCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -116,6 +120,9 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
+    #[snafu(display("empty release list"))]
+    EmptyReleaseList,
+
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
 
@@ -140,7 +147,34 @@ impl StackArgs {
         debug!("Handle stack args");
 
         let transfer_client = xfer::Client::new_with(cache);
-        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => {
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
+            None => {
+                let release = release_list
+                    .inner()
+                    .first()
+                    .context(EmptyReleaseListSnafu)?
+                    .0;
+
+                format!("release-{release}")
+            }
+        };
+
+        let files = cli
+            .get_stack_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
         let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;

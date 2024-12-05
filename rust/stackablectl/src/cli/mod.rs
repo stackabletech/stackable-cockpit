@@ -19,8 +19,8 @@ use crate::{
     cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
     constants::{
         DEMOS_REPOSITORY_URL_BASE, ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES,
-        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
-        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
+        REMOTE_RELEASE_FILE, USER_DIR_APPLICATION_NAME, USER_DIR_ORGANIZATION_NAME,
+        USER_DIR_QUALIFIER,
     },
     output::{ErrorContext, Output, ResultContext},
 };
@@ -104,8 +104,13 @@ impl Cli {
     /// Returns a list of stack files, consisting of entries which are either a path or URL. The list of files combines
     /// the default stack file URL, [`REMOTE_STACK_FILE`], files provided by the ENV variable [`ENV_KEY_STACK_FILES`],
     /// and lastly, files provided by the CLI argument `--stack-file`.
-    pub fn get_stack_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_STACK_FILE, ENV_KEY_STACK_FILES)?;
+    pub fn get_stack_files(&self, branch: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let branch_url = format!(
+            "{base}/{branch}/stacks/stacks-v2.yaml",
+            base = DEMOS_REPOSITORY_URL_BASE
+        );
+
+        let mut files = get_files(&branch_url, ENV_KEY_STACK_FILES)?;
 
         let arg_files = self.files.stack_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);

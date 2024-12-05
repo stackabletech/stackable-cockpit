@@ -171,7 +171,13 @@ impl DemoArgs {
             .context(BuildListSnafu)?;
 
         let release_branch = match &self.release {
-            Some(release) => format!("release-{release}"),
+            Some(release) => {
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
             None => {
                 let release = release_list
                     .inner()
@@ -196,7 +202,9 @@ impl DemoArgs {
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, cli, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, cli, list).await,
-            DemoCommands::Install(args) => install_cmd(args, cli, list, &transfer_client).await,
+            DemoCommands::Install(args) => {
+                install_cmd(args, cli, list, &transfer_client, &release_branch).await
+            }
         }
     }
 }
@@ -308,6 +316,7 @@ async fn install_cmd(
     cli: &Cli,
     list: demo::List,
     transfer_client: &xfer::Client,
+    release_branch: &str,
 ) -> Result<String, CmdError> {
     info!("Installing demo {}", args.demo_name);
 
@@ -319,7 +328,9 @@ async fn install_cmd(
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+    let files = cli
+        .get_stack_files(release_branch)
+        .context(PathOrUrlParseSnafu)?;
     let stack_list = stack::StackList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
