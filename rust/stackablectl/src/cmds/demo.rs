@@ -173,6 +173,9 @@ impl DemoArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
+                if !release_list.contains(release) {
+                    return NoSuchReleaseSnafu { name: release }.fail();
+                }
                 if release == "dev" {
                     "main".to_string()
                 } else {

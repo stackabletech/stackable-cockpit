@@ -130,6 +130,11 @@ impl ReleaseSpec {
 }
 
 impl ReleaseList {
+    /// Checks if a value provided in the '--release' argument is in the release list
+    pub fn contains(&self, release: &str) -> bool {
+        self.inner().contains_key(release)
+    }
+
     /// Retrieves the latest release from the list and applies a sanity check to the release format.
     pub fn latest_release(&self) -> Result<String, Error> {
         let release = self.inner().first().context(EmptyReleaseListSnafu)?.0;

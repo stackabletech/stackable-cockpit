@@ -120,6 +120,9 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
+    #[snafu(display("no release with name '{name}'"))]
+    NoSuchRelease { name: String },
+
     #[snafu(display("failed to get latest release"))]
     LatestRelease { source: platform::release::Error },
 
@@ -155,6 +158,9 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
+                if !release_list.contains(release) {
+                    return NoSuchReleaseSnafu { name: release }.fail();
+                }
                 if release == "dev" {
                     "main".to_string()
                 } else {
