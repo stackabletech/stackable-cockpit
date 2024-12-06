@@ -9669,6 +9669,10 @@ rec {
             packageId = "rand";
           }
           {
+            name = "regex";
+            packageId = "regex";
+          }
+          {
             name = "reqwest";
             packageId = "reqwest";
             usesDefaultFeatures = false;

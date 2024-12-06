@@ -11,6 +11,7 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
+        self,
         demo::{self, DemoInstallParameters},
         release, stack,
     },
@@ -30,6 +31,10 @@ use crate::{
 pub struct DemoArgs {
     #[command(subcommand)]
     subcommand: DemoCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -126,6 +131,12 @@ pub enum CmdError {
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
 
+    #[snafu(display("no release with name '{name}'"))]
+    NoSuchRelease { name: String },
+
+    #[snafu(display("failed to get latest release"))]
+    LatestRelease { source: platform::release::Error },
+
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
 
@@ -155,18 +166,43 @@ impl DemoArgs {
 
         let transfer_client = xfer::Client::new_with(cache);
 
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => {
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
+            None => {
+                format!(
+                    "release-{release}",
+                    release = release_list.latest_release().context(LatestReleaseSnafu)?
+                )
+            }
+        };
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
+        let demo_files = cli
+            .get_demo_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
 
-        let list = demo::List::build(&files, &transfer_client)
+        let list = demo::List::build(&demo_files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, cli, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, cli, list).await,
-            DemoCommands::Install(args) => install_cmd(args, cli, list, &transfer_client).await,
+            DemoCommands::Install(args) => {
+                install_cmd(args, cli, list, &transfer_client, &release_branch).await
+            }
         }
     }
 }
@@ -278,8 +314,9 @@ async fn install_cmd(
     cli: &Cli,
     list: demo::List,
     transfer_client: &xfer::Client,
+    release_branch: &str,
 ) -> Result<String, CmdError> {
-    info!("Installing demo {}", args.demo_name);
+    info!(%release_branch, "Installing demo {}", args.demo_name);
 
     // Init result output and progress output
     let mut output = cli.result();
@@ -289,7 +326,9 @@ async fn install_cmd(
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+    let files = cli
+        .get_stack_files(release_branch)
+        .context(PathOrUrlParseSnafu)?;
     let stack_list = stack::StackList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;
