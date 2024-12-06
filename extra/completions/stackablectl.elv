@@ -325,6 +325,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;release;help;help'= {
         }
         &'stackablectl;stack'= {
+            cand --release 'Target a specific Stackable release'
             cand -l 'Log level this application uses'
             cand --log-level 'Log level this application uses'
             cand -d 'Provide one or more additional (custom) demo file(s)'
@@ -349,6 +350,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;stack;list'= {
             cand -o 'o'
             cand --output 'output'
+            cand --release 'Target a specific Stackable release'
             cand -l 'Log level this application uses'
             cand --log-level 'Log level this application uses'
             cand -d 'Provide one or more additional (custom) demo file(s)'
@@ -369,6 +371,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;stack;describe'= {
             cand -o 'o'
             cand --output 'output'
+            cand --release 'Target a specific Stackable release'
             cand -l 'Log level this application uses'
             cand --log-level 'Log level this application uses'
             cand -d 'Provide one or more additional (custom) demo file(s)'
@@ -399,6 +402,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand -n 'Namespace where the products (e.g. stacks or demos) are deployed'
             cand --product-namespace 'Namespace where the products (e.g. stacks or demos) are deployed'
             cand --product-ns 'Namespace where the products (e.g. stacks or demos) are deployed'
+            cand --release 'Target a specific Stackable release'
             cand -l 'Log level this application uses'
             cand --log-level 'Log level this application uses'
             cand -d 'Provide one or more additional (custom) demo file(s)'

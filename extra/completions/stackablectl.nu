@@ -281,6 +281,7 @@ module completions {
 
   # Interact with stacks, which are ready-to-use product combinations
   export extern "stackablectl stack" [
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -300,6 +301,7 @@ module completions {
   # List available stacks
   export extern "stackablectl stack list" [
     --output(-o): string@"nu-complete stackablectl stack list output_type"
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -320,6 +322,7 @@ module completions {
   export extern "stackablectl stack describe" [
     stack_name: string        # Name of the stack to describe
     --output(-o): string@"nu-complete stackablectl stack describe output_type"
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -350,6 +353,7 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)

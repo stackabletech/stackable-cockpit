@@ -436,6 +436,7 @@ esac
 ;;
 (stack)
 _arguments "${_arguments_options[@]}" : \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -472,6 +473,7 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -500,6 +502,7 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -535,6 +538,7 @@ minikube\:"Use a minikube cluster"))' \
 '-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \

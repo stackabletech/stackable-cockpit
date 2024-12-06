@@ -4673,12 +4673,16 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack)
-            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
+            opts="-l -d -s -r -h -V --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -4797,7 +4801,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-o -l -d -s -r -h -V --output --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4809,6 +4813,10 @@ _stackablectl() {
                     ;;
                 -o)
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -4999,7 +5007,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5050,6 +5058,10 @@ _stackablectl() {
                     return 0
                     ;;
                 -n)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --release)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -5171,7 +5183,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5183,6 +5195,10 @@ _stackablectl() {
                     ;;
                 -o)
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 --log-level)

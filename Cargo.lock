@@ -3036,6 +3036,7 @@ dependencies = [
  "k8s-openapi",
  "kube",
  "rand",
+ "regex",
  "reqwest",
  "rstest",
  "semver",

@@ -1,7 +1,8 @@
 use futures::{StreamExt as _, TryStreamExt};
 use indexmap::IndexMap;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use tokio::task::JoinError;
 use tracing::{info, instrument};
 
@@ -15,6 +16,8 @@ use crate::{
         product,
     },
 };
+
+use super::ReleaseList;
 
 type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -31,6 +34,12 @@ pub enum Error {
 
     #[snafu(display("failed to launch background task"))]
     BackgroundTask { source: JoinError },
+
+    #[snafu(display("release list is empty"))]
+    EmptyReleaseList,
+
+    #[snafu(display("latest release doesn't have expected format"))]
+    LatestReleaseFormat,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -117,5 +126,18 @@ impl ReleaseSpec {
             .filter(|(name, _)| !exclude_products.contains(name))
             .map(|(name, product)| (name.clone(), product.clone()))
             .collect()
+    }
+}
+
+impl ReleaseList {
+    /// Retrieves the latest release from the list and applies a sanity check to the release format.
+    pub fn latest_release(&self) -> Result<String, Error> {
+        let release = self.inner().first().context(EmptyReleaseListSnafu)?.0;
+        let sanity_check = Regex::new("^[0-9]{2}.[0-9]{1,2}$").unwrap();
+        if sanity_check.is_match(release) {
+            Ok(release.to_string())
+        } else {
+            LatestReleaseFormatSnafu {}.fail()
+        }
     }
 }

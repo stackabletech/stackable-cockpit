@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Row, Table,
 };
-use snafu::{OptionExt, ResultExt, Snafu};
+use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -11,6 +11,7 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
+        self,
         demo::{self, DemoInstallParameters},
         release, stack,
     },
@@ -133,8 +134,8 @@ pub enum CmdError {
     #[snafu(display("no release with name '{name}'"))]
     NoSuchRelease { name: String },
 
-    #[snafu(display("empty release list"))]
-    EmptyReleaseList,
+    #[snafu(display("failed to get latest release"))]
+    LatestRelease { source: platform::release::Error },
 
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
@@ -179,13 +180,10 @@ impl DemoArgs {
                 }
             }
             None => {
-                let release = release_list
-                    .inner()
-                    .first()
-                    .context(EmptyReleaseListSnafu)?
-                    .0;
-
-                format!("release-{release}")
+                format!(
+                    "release-{release}",
+                    release = release_list.latest_release().context(LatestReleaseSnafu)?
+                )
             }
         };
 
