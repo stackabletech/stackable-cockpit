@@ -318,7 +318,7 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
     release_branch: &str,
 ) -> Result<String, CmdError> {
-    info!("Installing demo {}", args.demo_name);
+    info!(%release_branch, "Installing demo {}", args.demo_name);
 
     // Init result output and progress output
     let mut output = cli.result();
