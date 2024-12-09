@@ -1,7 +1,7 @@
 = Installation
 :page-aliases: stable@stackablectl::installation.adoc
 
-:latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-24.7.0
+:latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-24.11.1
 :fish-comp-loations: https://fishshell.com/docs/current/completions.html#where-to-put-completions
 
 == Using Pre-Compiled Binaries
@@ -23,14 +23,14 @@ then rename the file to `stackablectl`. You can also use the following command:
 
 [source,console]
 ----
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-x86_64-unknown-linux-gnu
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.11.1/stackablectl-x86_64-unknown-linux-gnu
 ----
 
 **aarch64** (arm64):
 
 [source,console]
 ----
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-unknown-linux-gnu
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.11.1/stackablectl-aarch64-unknown-linux-gnu
 ----
 
 Install the binary into a directory in the `$PATH`, and make it executable:
@@ -61,14 +61,14 @@ then rename the file to `stackablectl`. You can also use the following command:
 
 [source,console]
 ----
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-x86_64-apple-darwin
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.11.1/stackablectl-x86_64-apple-darwin
 ----
 
 **aarch64** (arm64):
 
 [source,console]
 ----
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.7.0/stackablectl-aarch64-apple-darwin
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.11.1/stackablectl-aarch64-apple-darwin
 ----
 
 Install the binary into a directory in the `$PATH`, and make it executable:
