@@ -11,7 +11,7 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
-        release,
+        self, release,
         stack::{self, StackInstallParameters},
     },
     utils::{
@@ -30,6 +30,10 @@ use crate::{
 pub struct StackArgs {
     #[command(subcommand)]
     subcommand: StackCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -116,6 +120,12 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
+    #[snafu(display("no release with name '{name}'"))]
+    NoSuchRelease { name: String },
+
+    #[snafu(display("failed to get latest release"))]
+    LatestRelease { source: platform::release::Error },
+
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
 
@@ -140,7 +150,34 @@ impl StackArgs {
         debug!("Handle stack args");
 
         let transfer_client = xfer::Client::new_with(cache);
-        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => {
+                if !release_list.contains(release) {
+                    return NoSuchReleaseSnafu { name: release }.fail();
+                }
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
+            None => {
+                format!(
+                    "release-{release}",
+                    release = release_list.latest_release().context(LatestReleaseSnafu)?
+                )
+            }
+        };
+
+        let files = cli
+            .get_stack_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
         let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
