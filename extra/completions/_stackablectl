@@ -27,7 +27,6 @@ _stackablectl() {
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -55,7 +54,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -92,7 +90,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -121,7 +118,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -152,7 +148,6 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -176,7 +171,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -208,7 +202,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -273,7 +266,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -310,7 +302,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -339,7 +330,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -374,7 +364,6 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -398,7 +387,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -448,6 +436,7 @@ esac
 ;;
 (stack)
 _arguments "${_arguments_options[@]}" : \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -460,7 +449,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -485,6 +473,7 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -497,7 +486,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -514,6 +502,7 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -526,7 +515,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -550,6 +538,7 @@ minikube\:"Use a minikube cluster"))' \
 '-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -563,7 +552,6 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--skip-release[Skip the installation of the release during the stack install process]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -621,7 +609,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -653,7 +640,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -689,7 +675,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -730,6 +715,7 @@ esac
 ;;
 (demo)
 _arguments "${_arguments_options[@]}" : \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -742,7 +728,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -767,6 +752,7 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -779,7 +765,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -796,6 +781,7 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -808,7 +794,6 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -832,6 +817,7 @@ minikube\:"Use a minikube cluster"))' \
 '-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -845,7 +831,6 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--skip-release[Skip the installation of the release during the stack install process]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -903,7 +888,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -932,7 +916,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -953,7 +936,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -974,7 +956,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -995,7 +976,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -1016,7 +996,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -1081,7 +1060,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -1110,7 +1088,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -1133,7 +1110,6 @@ _arguments "${_arguments_options[@]}" : \
 '--old[Only remove outdated files in the cache]' \
 '--outdated[Only remove outdated files in the cache]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
@@ -1191,7 +1167,6 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
-'--offline[Do not request any remote files via the network]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
