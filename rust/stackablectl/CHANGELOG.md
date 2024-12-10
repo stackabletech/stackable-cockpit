@@ -21,6 +21,10 @@ All notable changes to this project will be documented in this file.
 [#337]: https://github.com/stackabletech/stackable-cockpit/pull/337
 [#340]: https://github.com/stackabletech/stackable-cockpit/pull/340
 
+### Removed
+
+- Remove argument `--offline` that was not implemented yet ([#340]).
+
 ## [24.11.0] - 2024-11-18
 
 ### Changed
