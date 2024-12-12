@@ -77,7 +77,7 @@ NOTE: If you have a directory in your `$HOME` for user binaries, you can remove 
 
 [source,console]
 ----
-$ sudo install -m 755 /usr/local/bin stackablectl
+$ sudo install -m 755 stackablectl /usr/local/bin
 ----
 
 Test that it works:
