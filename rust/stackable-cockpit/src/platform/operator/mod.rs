@@ -5,7 +5,9 @@ use snafu::{ensure, ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use crate::{
-    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    constants::{
+        HELM_OCI_REGISTRY, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    },
     helm,
     utils::operator_chart_name,
 };
@@ -176,20 +178,25 @@ impl OperatorSpec {
 
     /// Installs the operator using Helm.
     #[instrument(skip_all)]
-    pub fn install(&self, namespace: &str) -> Result<(), helm::Error> {
+    pub fn install(&self, namespace: &str, use_registry: bool) -> Result<(), helm::Error> {
         info!("Installing operator {}", self);
 
         let version = self.version.as_ref().map(|v| v.to_string());
-        let helm_repo = self.helm_repo_name();
         let helm_name = self.helm_name();
 
+        let chart_source = if use_registry {
+            HELM_OCI_REGISTRY.to_string()
+        } else {
+            self.helm_repo_name()
+        };
+
         // Install using Helm
-        helm::install_release_from_repo(
+        helm::install_release_from_repo_or_registry(
             &helm_name,
             helm::ChartVersion {
                 chart_version: version.as_deref(),
                 chart_name: &helm_name,
-                repo_name: &helm_repo,
+                chart_source: &chart_source,
             },
             None,
             namespace,

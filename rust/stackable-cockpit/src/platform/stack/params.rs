@@ -11,4 +11,5 @@ pub struct StackInstallParameters {
     pub parameters: Vec<String>,
     pub skip_release: bool,
     pub labels: Labels,
+    pub use_registry: bool,
 }

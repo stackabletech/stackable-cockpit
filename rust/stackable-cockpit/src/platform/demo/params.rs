@@ -10,4 +10,5 @@ pub struct DemoInstallParameters {
 
     pub stack_labels: Labels,
     pub labels: Labels,
+    pub use_registry: bool,
 }

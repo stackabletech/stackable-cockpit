@@ -102,6 +102,10 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
+
+    /// TODO
+    #[arg(long, long_help = "TODO")]
+    use_registry: bool,
 }
 
 #[derive(Debug, Args)]
@@ -312,7 +316,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 
     for operator in &args.operators {
         operator
-            .install(&args.operator_namespace)
+            .install(&args.operator_namespace, args.use_registry)
             .context(HelmSnafu)?;
 
         println!("Installed {} operator", operator);

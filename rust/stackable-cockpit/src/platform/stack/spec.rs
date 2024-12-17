@@ -173,6 +173,7 @@ impl StackSpec {
                 release_list,
                 &install_parameters.operator_namespace,
                 &install_parameters.product_namespace,
+                install_parameters.use_registry,
             )
             .await?;
         }
@@ -195,6 +196,7 @@ impl StackSpec {
         release_list: release::ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
+        use_registry: bool,
     ) -> Result<(), Error> {
         info!("Trying to install release {}", self.release);
 
@@ -207,7 +209,7 @@ impl StackSpec {
 
         // Install the release
         release
-            .install(&self.operators, &[], operator_namespace)
+            .install(&self.operators, &[], operator_namespace, use_registry)
             .await
             .context(InstallReleaseSnafu)
     }

@@ -107,6 +107,10 @@ to specify operator versions."
 
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
+
+    /// TODO
+    #[arg(long, long_help = "TODO")]
+    use_registry: bool,
 }
 
 #[derive(Debug, Args)]
@@ -329,6 +333,7 @@ async fn install_cmd(
         skip_release: args.skip_release,
         stack_labels,
         labels,
+        use_registry: args.use_registry,
     };
 
     demo.install(

@@ -182,20 +182,20 @@ impl Display for UninstallReleaseStatus {
 }
 
 pub struct ChartVersion<'a> {
-    pub repo_name: &'a str,
+    pub chart_source: &'a str,
     pub chart_name: &'a str,
     pub chart_version: Option<&'a str>,
 }
 
-/// Installs a Helm release from a repo.
+/// Installs a Helm release from a repo or registry.
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
 #[instrument]
-pub fn install_release_from_repo(
+pub fn install_release_from_repo_or_registry(
     release_name: &str,
     ChartVersion {
-        repo_name,
+        chart_source,
         chart_name,
         chart_version,
     }: ChartVersion,
@@ -244,7 +244,7 @@ pub fn install_release_from_repo(
             }
         }
 
-        let full_chart_name = format!("{repo_name}/{chart_name}");
+        let full_chart_name = format!("{chart_source}/{chart_name}");
         let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
 
         debug!(

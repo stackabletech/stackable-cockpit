@@ -56,6 +56,7 @@ impl ReleaseSpec {
         include_products: &[String],
         exclude_products: &[String],
         namespace: &str,
+        use_registry: bool,
     ) -> Result<()> {
         info!("Installing release");
 
@@ -73,7 +74,9 @@ impl ReleaseSpec {
                         .context(OperatorSpecParseSnafu)?;
 
                     // Install operator
-                    operator.install(&namespace).context(HelmInstallSnafu)?;
+                    operator
+                        .install(&namespace, use_registry)
+                        .context(HelmInstallSnafu)?;
 
                     info!("Installed {product_name}-operator");
 

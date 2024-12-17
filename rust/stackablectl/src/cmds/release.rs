@@ -82,6 +82,10 @@ pub struct ReleaseInstallArgs {
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
+
+    /// TODO
+    #[arg(long, long_help = "TODO")]
+    use_registry: bool,
 }
 
 #[derive(Debug, Args)]
@@ -296,6 +300,7 @@ async fn install_cmd(
                     &args.included_products,
                     &args.excluded_products,
                     &args.operator_namespace,
+                    args.use_registry,
                 )
                 .await
                 .context(ReleaseInstallSnafu)?;

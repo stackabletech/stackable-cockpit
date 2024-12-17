@@ -103,6 +103,10 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
+
+    /// TODO
+    #[arg(long, long_help = "TODO")]
+    use_registry: bool,
 }
 
 #[derive(Debug, Snafu)]
@@ -310,6 +314,7 @@ async fn install_cmd(
                 skip_release: args.skip_release,
                 demo_name: None,
                 labels,
+                use_registry: args.use_registry,
             };
 
             stack_spec
