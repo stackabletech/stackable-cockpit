@@ -108,8 +108,11 @@ to specify operator versions."
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
 
-    /// TODO
-    #[arg(long, long_help = "TODO")]
+    /// Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
+    #[arg(
+        long,
+        long_help = "Pull the charts from the OCI registry rather than the Nexus repositories."
+    )]
     use_registry: bool,
 }
 

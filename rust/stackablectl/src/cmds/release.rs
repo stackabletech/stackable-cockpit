@@ -83,8 +83,11 @@ pub struct ReleaseInstallArgs {
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
 
-    /// TODO
-    #[arg(long, long_help = "TODO")]
+    /// Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
+    #[arg(
+        long,
+        long_help = "Pull the charts from the OCI registry rather than the Nexus repositories."
+    )]
     use_registry: bool,
 }
 

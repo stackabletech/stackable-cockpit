@@ -84,6 +84,7 @@ module completions {
     --cluster-name: string    # Name of the local cluster
     --cluster-nodes: string   # Number of total nodes in the local cluster
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
+    --use-registry            # Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --offline                 # Do not request any remote files via the network
@@ -236,6 +237,7 @@ module completions {
     --cluster-name: string    # Name of the local cluster
     --cluster-nodes: string   # Number of total nodes in the local cluster
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
+    --use-registry            # Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --offline                 # Do not request any remote files via the network
@@ -365,6 +367,7 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --use-registry            # Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --offline                 # Do not request any remote files via the network
@@ -546,6 +549,7 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --use-registry            # Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --offline                 # Do not request any remote files via the network

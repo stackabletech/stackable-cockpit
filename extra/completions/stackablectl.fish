@@ -97,6 +97,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l use-registry -d 'Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -186,6 +187,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l use-registry -d 'Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -262,6 +264,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l skip-release -d 'Skip the installation of the release during the stack install process'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l use-registry -d 'Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -368,6 +371,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l skip-release -d 'Skip the installation of the release during the stack install process'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l use-registry -d 'Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l offline -d 'Do not request any remote files via the network'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
