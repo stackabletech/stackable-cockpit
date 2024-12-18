@@ -18,8 +18,8 @@ pub struct DemosV2 {
 }
 
 impl SpecIter<DemoSpec> for DemosV2 {
-    fn inner(&self) -> &IndexMap<String, DemoSpec> {
-        &self.demos
+    fn inner(self) -> IndexMap<String, DemoSpec> {
+        self.demos
     }
 }
 

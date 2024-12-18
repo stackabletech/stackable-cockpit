@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
 };
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, OptionExt as _, ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -30,6 +30,10 @@ use crate::{
 pub struct StackArgs {
     #[command(subcommand)]
     subcommand: StackCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -116,6 +120,12 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
+    #[snafu(display("no release '{release}'"))]
+    NoSuchRelease { release: String },
+
+    #[snafu(display("failed to get latest release"))]
+    LatestRelease,
+
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
 
@@ -140,7 +150,34 @@ impl StackArgs {
         debug!("Handle stack args");
 
         let transfer_client = xfer::Client::new_with(cache);
-        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => {
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
+
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
+            None => {
+                let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
+                format!("release-{release}", release = release_name,)
+            }
+        };
+
+        let files = cli
+            .get_stack_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
         let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
@@ -176,7 +213,7 @@ fn list_cmd(
                 .set_content_arrangement(arrangement)
                 .load_preset(preset);
 
-            for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
+            for (index, (stack_name, stack)) in stack_list.iter().enumerate() {
                 table.add_row(vec![
                     (index + 1).to_string(),
                     stack_name.clone(),
