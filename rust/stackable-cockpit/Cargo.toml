@@ -20,7 +20,6 @@ indexmap.workspace = true
 k8s-openapi.workspace = true
 kube.workspace = true
 rand.workspace = true
-regex.workspace = true
 reqwest.workspace = true
 semver.workspace = true
 serde_json.workspace = true
