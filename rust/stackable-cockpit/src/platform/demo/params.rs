@@ -1,5 +1,7 @@
 use stackable_operator::kvp::Labels;
 
+use crate::platform::operator::ChartSourceType;
+
 pub struct DemoInstallParameters {
     pub operator_namespace: String,
     pub product_namespace: String,
@@ -10,5 +12,5 @@ pub struct DemoInstallParameters {
 
     pub stack_labels: Labels,
     pub labels: Labels,
-    pub use_registry: bool,
+    pub chart_source: ChartSourceType,
 }

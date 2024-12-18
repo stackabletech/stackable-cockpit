@@ -10,7 +10,9 @@ use crate::{
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
         manifests::{self, InstallManifestsExt},
-        namespace, release,
+        namespace,
+        operator::ChartSourceType,
+        release,
         stack::StackInstallParameters,
     },
     utils::{
@@ -173,7 +175,7 @@ impl StackSpec {
                 release_list,
                 &install_parameters.operator_namespace,
                 &install_parameters.product_namespace,
-                install_parameters.use_registry,
+                &install_parameters.chart_source,
             )
             .await?;
         }
@@ -196,7 +198,7 @@ impl StackSpec {
         release_list: release::ReleaseList,
         operator_namespace: &str,
         product_namespace: &str,
-        use_registry: bool,
+        chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!("Trying to install release {}", self.release);
 
@@ -209,7 +211,7 @@ impl StackSpec {
 
         // Install the release
         release
-            .install(&self.operators, &[], operator_namespace, use_registry)
+            .install(&self.operators, &[], operator_namespace, chart_source)
             .await
             .context(InstallReleaseSnafu)
     }

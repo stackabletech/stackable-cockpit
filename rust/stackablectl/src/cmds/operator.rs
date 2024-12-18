@@ -16,7 +16,10 @@ use stackable_cockpit::{
         DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
     helm::{self, Release, Repository},
-    platform::{namespace, operator},
+    platform::{
+        namespace,
+        operator::{self, ChartSourceType},
+    },
     utils::{
         self,
         k8s::{self, Client},
@@ -25,7 +28,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
-    cli::{Cli, OutputType},
+    cli::{ChartSourceTypeArg, Cli, OutputType},
     utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
@@ -65,6 +68,13 @@ pub enum OperatorCommands {
 pub struct OperatorListArgs {
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
+
+    #[arg(
+        long,
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.",
+        value_enum, default_value_t = Default::default()
+    )]
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -75,6 +85,12 @@ pub struct OperatorDescribeArgs {
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
+
+    #[arg(
+        long,
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.", value_enum, default_value_t = Default::default()
+    )]
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -103,12 +119,12 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
 
-    /// Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     #[arg(
         long,
-        long_help = "Pull the charts from the OCI registry rather than the Nexus repositories."
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.",
+        value_enum, default_value_t = Default::default()
     )]
-    use_registry: bool,
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -319,7 +335,10 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 
     for operator in &args.operators {
         operator
-            .install(&args.operator_namespace, args.use_registry)
+            .install(
+                &args.operator_namespace,
+                &ChartSourceType::from(args.chart_source.clone()),
+            )
             .context(HelmSnafu)?;
 
         println!("Installed {} operator", operator);

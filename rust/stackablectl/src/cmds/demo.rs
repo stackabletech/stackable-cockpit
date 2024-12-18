@@ -12,6 +12,7 @@ use stackable_cockpit::{
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
         demo::{self, DemoInstallParameters},
+        operator::ChartSourceType,
         release, stack,
     },
     utils::{
@@ -23,7 +24,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
-    cli::{Cli, OutputType},
+    cli::{ChartSourceTypeArg, Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -108,12 +109,12 @@ to specify operator versions."
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
 
-    /// Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     #[arg(
         long,
-        long_help = "Pull the charts from the OCI registry rather than the Nexus repositories."
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.",
+        value_enum, default_value_t = Default::default()
     )]
-    use_registry: bool,
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -336,7 +337,7 @@ async fn install_cmd(
         skip_release: args.skip_release,
         stack_labels,
         labels,
-        use_registry: args.use_registry,
+        chart_source: ChartSourceType::from(args.chart_source.clone()),
     };
 
     demo.install(

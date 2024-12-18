@@ -2051,7 +2051,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --use-registry --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --chart-source --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2103,6 +2103,10 @@ _stackablectl() {
                     ;;
                 -n)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -3099,7 +3103,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATOR>"
+            opts="-o -l -d -s -r -h -V --output --chart-source --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATOR>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3111,6 +3115,10 @@ _stackablectl() {
                     ;;
                 -o)
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -3329,7 +3337,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__install)
-            opts="-c -l -d -s -r -h -V --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --use-registry --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
+            opts="-c -l -d -s -r -h -V --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --chart-source --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3361,6 +3369,10 @@ _stackablectl() {
                     ;;
                 --cluster-cp-nodes)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -3621,7 +3633,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --chart-source --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3633,6 +3645,10 @@ _stackablectl() {
                     ;;
                 -o)
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -4225,7 +4241,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__install)
-            opts="-i -e -c -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --use-registry --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-i -e -c -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --chart-source --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4273,6 +4289,10 @@ _stackablectl() {
                     ;;
                 --cluster-cp-nodes)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -4983,7 +5003,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --use-registry --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --chart-source --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5035,6 +5055,10 @@ _stackablectl() {
                     ;;
                 -n)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)

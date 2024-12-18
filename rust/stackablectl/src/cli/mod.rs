@@ -8,7 +8,7 @@ use tracing::{debug, instrument, Level};
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
-    platform::demo::List,
+    platform::{demo::List, operator::ChartSourceType},
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
@@ -287,4 +287,37 @@ fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, PathOr
     files.extend(env_files);
 
     Ok(files)
+}
+
+#[derive(Clone, Debug, Default, ValueEnum)]
+pub enum ChartSourceTypeArg {
+    /// OCI registry
+    #[default]
+    OCI,
+
+    /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
+    Repo,
+
+    /// Archive
+    Tgz,
+}
+
+impl From<ChartSourceTypeArg> for ChartSourceType {
+    fn from(cli_enum: ChartSourceTypeArg) -> Self {
+        match cli_enum {
+            ChartSourceTypeArg::OCI => ChartSourceType::OCI,
+            ChartSourceTypeArg::Repo => ChartSourceType::Repo,
+            ChartSourceTypeArg::Tgz => ChartSourceType::Tgz,
+        }
+    }
+}
+
+impl From<ChartSourceType> for ChartSourceTypeArg {
+    fn from(core_enum: ChartSourceType) -> Self {
+        match core_enum {
+            ChartSourceType::OCI => ChartSourceTypeArg::OCI,
+            ChartSourceType::Repo => ChartSourceTypeArg::Repo,
+            ChartSourceType::Tgz => ChartSourceTypeArg::Tgz,
+        }
+    }
 }

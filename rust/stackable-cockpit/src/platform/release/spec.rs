@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 use crate::{
     helm,
     platform::{
-        operator::{self, OperatorSpec},
+        operator::{self, ChartSourceType, OperatorSpec},
         product,
     },
 };
@@ -56,7 +56,7 @@ impl ReleaseSpec {
         include_products: &[String],
         exclude_products: &[String],
         namespace: &str,
-        use_registry: bool,
+        chart_source: &ChartSourceType,
     ) -> Result<()> {
         info!("Installing release");
 
@@ -64,6 +64,7 @@ impl ReleaseSpec {
         futures::stream::iter(self.filter_products(include_products, exclude_products))
             .map(|(product_name, product)| {
                 let namespace = namespace.clone();
+                let chart_source = chart_source.clone();
                 // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
                 // get useful parallelism.
                 tokio::spawn(async move {
@@ -75,7 +76,7 @@ impl ReleaseSpec {
 
                     // Install operator
                     operator
-                        .install(&namespace, use_registry)
+                        .install(&namespace, &chart_source)
                         .context(HelmInstallSnafu)?;
 
                     info!("Installed {product_name}-operator");

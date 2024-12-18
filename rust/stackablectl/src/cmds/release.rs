@@ -9,7 +9,7 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::{namespace, release},
+    platform::{namespace, operator::ChartSourceType, release},
     utils::{
         k8s::{self, Client},
         path::PathOrUrlParseError,
@@ -19,7 +19,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
-    cli::{Cli, OutputType},
+    cli::{ChartSourceTypeArg, Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -83,12 +83,12 @@ pub struct ReleaseInstallArgs {
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
 
-    /// Indicates whether charts should be pulled from the OCI registry rather than the Nexus repositories
     #[arg(
         long,
-        long_help = "Pull the charts from the OCI registry rather than the Nexus repositories."
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.",
+        value_enum, default_value_t = Default::default()
     )]
-    use_registry: bool,
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -303,7 +303,7 @@ async fn install_cmd(
                     &args.included_products,
                     &args.excluded_products,
                     &args.operator_namespace,
-                    args.use_registry,
+                    &ChartSourceType::from(args.chart_source.clone()),
                 )
                 .await
                 .context(ReleaseInstallSnafu)?;

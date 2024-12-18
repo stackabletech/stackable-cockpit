@@ -1,6 +1,7 @@
 use std::{fmt::Display, str::FromStr};
 
 use semver::Version;
+use serde::Serialize;
 use snafu::{ensure, ResultExt, Snafu};
 use tracing::{info, instrument};
 
@@ -178,16 +179,22 @@ impl OperatorSpec {
 
     /// Installs the operator using Helm.
     #[instrument(skip_all)]
-    pub fn install(&self, namespace: &str, use_registry: bool) -> Result<(), helm::Error> {
+    pub fn install(
+        &self,
+        namespace: &str,
+        chart_source: &ChartSourceType,
+    ) -> Result<(), helm::Error> {
         info!("Installing operator {}", self);
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();
 
-        let chart_source = if use_registry {
-            HELM_OCI_REGISTRY.to_string()
-        } else {
-            self.helm_repo_name()
+        // we can't resolve this any earlier as, for the repository case,
+        // this will be dependent on the operator version.
+        let chart_source = match chart_source {
+            ChartSourceType::OCI => HELM_OCI_REGISTRY.to_string(),
+            ChartSourceType::Repo => self.helm_repo_name(),
+            ChartSourceType::Tgz => "TODO".to_string(),
         };
 
         // Install using Helm
@@ -220,6 +227,19 @@ impl OperatorSpec {
             Err(err) => Err(err),
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ChartSourceType {
+    /// OCI registry
+    OCI,
+
+    /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
+    Repo,
+
+    /// Archive
+    Tgz,
 }
 
 #[cfg(test)]

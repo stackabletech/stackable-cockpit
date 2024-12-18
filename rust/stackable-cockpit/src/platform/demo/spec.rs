@@ -159,7 +159,7 @@ impl DemoSpec {
             skip_release: install_parameters.skip_release,
             stack_name: self.stack.clone(),
             demo_name: None,
-            use_registry: install_parameters.use_registry,
+            chart_source: install_parameters.chart_source.clone(),
         };
 
         stack
