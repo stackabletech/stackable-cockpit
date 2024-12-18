@@ -4,13 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add new argument `--release` that allows installing a specific version of a demo or stack ([#340]).
+
+### Removed
+
+- Remove argument `--offline` that was not implemented yet ([#340]).
+
+[#340]: https://github.com/stackabletech/stackable-cockpit/pull/340
+
 ## [24.11.1] - 2024-11-20
 
 ### Added
 
 - Add shell completions for Nushell and Elvish ([#337]).
 - SOCKS5 and HTTP proxy support ([#328]).
-- Add new argument `--release` that allows installing a specific version of a demo or stack ([#340]).
 
 ### Fixed
 
@@ -19,11 +28,6 @@ All notable changes to this project will be documented in this file.
 [#328]: https://github.com/stackabletech/stackable-cockpit/pull/328
 [#336]: https://github.com/stackabletech/stackable-cockpit/pull/336
 [#337]: https://github.com/stackabletech/stackable-cockpit/pull/337
-[#340]: https://github.com/stackabletech/stackable-cockpit/pull/340
-
-### Removed
-
-- Remove argument `--offline` that was not implemented yet ([#340]).
 
 ## [24.11.0] - 2024-11-18
 
