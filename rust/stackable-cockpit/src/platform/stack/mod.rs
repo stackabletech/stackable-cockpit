@@ -18,8 +18,8 @@ pub struct StacksV2 {
 }
 
 impl SpecIter<StackSpec> for StacksV2 {
-    fn inner(&self) -> &IndexMap<String, StackSpec> {
-        &self.stacks
+    fn inner(self) -> IndexMap<String, StackSpec> {
+        self.stacks
     }
 }
 

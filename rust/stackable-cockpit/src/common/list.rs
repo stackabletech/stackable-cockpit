@@ -1,4 +1,4 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops::Deref};
 
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -18,7 +18,7 @@ pub enum Error {
 }
 
 pub trait SpecIter<S> {
-    fn inner(&self) -> &IndexMap<String, S>;
+    fn inner(self) -> IndexMap<String, S>;
 }
 
 /// A [`List`] describes a list of specs. The list can contain any specs, for
@@ -54,7 +54,7 @@ where
                 .context(FileTransferSnafu)?;
 
             for (spec_name, spec) in specs.inner() {
-                map.insert(spec_name.clone(), spec.clone());
+                map.insert(spec_name, spec);
             }
         }
 
@@ -63,17 +63,16 @@ where
             inner: map,
         })
     }
+}
 
-    /// Returns a reference to the inner [`IndexMap`]
-    pub fn inner(&self) -> &IndexMap<String, S> {
+impl<L, S> Deref for List<L, S>
+where
+    L: for<'a> Deserialize<'a> + Serialize + SpecIter<S>,
+    S: for<'a> Deserialize<'a> + Serialize + Clone,
+{
+    type Target = IndexMap<String, S>;
+
+    fn deref(&self) -> &Self::Target {
         &self.inner
-    }
-
-    /// Returns an optional reference to a single spec of type `S` by `name`
-    pub fn get<T>(&self, name: T) -> Option<&S>
-    where
-        T: AsRef<str>,
-    {
-        self.inner.get(name.as_ref())
     }
 }

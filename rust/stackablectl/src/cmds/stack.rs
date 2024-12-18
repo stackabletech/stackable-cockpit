@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
 };
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, OptionExt as _, ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -11,7 +11,7 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
-        self, release,
+        release,
         stack::{self, StackInstallParameters},
     },
     utils::{
@@ -120,11 +120,11 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("no release with name '{name}'"))]
-    NoSuchRelease { name: String },
+    #[snafu(display("no release '{release}'"))]
+    NoSuchRelease { release: String },
 
     #[snafu(display("failed to get latest release"))]
-    LatestRelease { source: platform::release::Error },
+    LatestRelease,
 
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
@@ -158,9 +158,11 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                if !release_list.contains(release) {
-                    return NoSuchReleaseSnafu { name: release }.fail();
-                }
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
+
                 if release == "dev" {
                     "main".to_string()
                 } else {
@@ -168,10 +170,8 @@ impl StackArgs {
                 }
             }
             None => {
-                format!(
-                    "release-{release}",
-                    release = release_list.latest_release().context(LatestReleaseSnafu)?
-                )
+                let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
+                format!("release-{release}", release = release_name,)
             }
         };
 
@@ -213,7 +213,7 @@ fn list_cmd(
                 .set_content_arrangement(arrangement)
                 .load_preset(preset);
 
-            for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
+            for (index, (stack_name, stack)) in stack_list.iter().enumerate() {
                 table.add_row(vec![
                     (index + 1).to_string(),
                     stack_name.clone(),

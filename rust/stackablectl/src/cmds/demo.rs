@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Row, Table,
 };
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, OptionExt as _, ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -11,7 +11,6 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
-        self,
         demo::{self, DemoInstallParameters},
         release, stack,
     },
@@ -131,11 +130,11 @@ pub enum CmdError {
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("no release with name '{name}'"))]
-    NoSuchRelease { name: String },
+    #[snafu(display("no release '{release}'"))]
+    NoSuchRelease { release: String },
 
     #[snafu(display("failed to get latest release"))]
-    LatestRelease { source: platform::release::Error },
+    LatestRelease,
 
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
@@ -173,9 +172,11 @@ impl DemoArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                if !release_list.contains(release) {
-                    return NoSuchReleaseSnafu { name: release }.fail();
-                }
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
+
                 if release == "dev" {
                     "main".to_string()
                 } else {
@@ -183,10 +184,8 @@ impl DemoArgs {
                 }
             }
             None => {
-                format!(
-                    "release-{release}",
-                    release = release_list.latest_release().context(LatestReleaseSnafu)?
-                )
+                let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
+                format!("release-{release}", release = release_name,)
             }
         };
 
@@ -228,7 +227,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
                 .set_content_arrangement(arrangement)
                 .load_preset(preset);
 
-            for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
+            for (index, (demo_name, demo_spec)) in list.iter().enumerate() {
                 let row = Row::from(vec![
                     (index + 1).to_string(),
                     demo_name.clone(),
@@ -253,8 +252,8 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&list.inner()).context(SerializeJsonOutputSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(SerializeYamlOutputSnafu),
+        OutputType::Json => serde_json::to_string(&*list).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&*list).context(SerializeYamlOutputSnafu),
     }
 }
 
