@@ -3,7 +3,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Row, Table,
 };
-use snafu::{ResultExt, Snafu};
+use snafu::{ensure, OptionExt as _, ResultExt, Snafu};
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{debug, info, instrument};
 
@@ -31,6 +31,10 @@ use crate::{
 pub struct DemoArgs {
     #[command(subcommand)]
     subcommand: DemoCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -134,6 +138,12 @@ pub enum CmdError {
     #[snafu(display("no stack with name '{name}'"))]
     NoSuchStack { name: String },
 
+    #[snafu(display("no release '{release}'"))]
+    NoSuchRelease { release: String },
+
+    #[snafu(display("failed to get latest release"))]
+    LatestRelease,
+
     #[snafu(display("failed to build demo/stack/release list"))]
     BuildList { source: list::Error },
 
@@ -163,18 +173,46 @@ impl DemoArgs {
 
         let transfer_client = xfer::Client::new_with(cache);
 
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => {
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
+
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
+            None => {
+                let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
+                format!("release-{release}", release = release_name,)
+            }
+        };
+
         // Build demo list based on the (default) remote demo file, and additional files provided by the
         // STACKABLE_DEMO_FILES env variable or the --demo-files CLI argument.
-        let files = cli.get_demo_files().context(PathOrUrlParseSnafu)?;
+        let demo_files = cli
+            .get_demo_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
 
-        let list = demo::List::build(&files, &transfer_client)
+        let list = demo::List::build(&demo_files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
 
         match &self.subcommand {
             DemoCommands::List(args) => list_cmd(args, cli, list).await,
             DemoCommands::Describe(args) => describe_cmd(args, cli, list).await,
-            DemoCommands::Install(args) => install_cmd(args, cli, list, &transfer_client).await,
+            DemoCommands::Install(args) => {
+                install_cmd(args, cli, list, &transfer_client, &release_branch).await
+            }
         }
     }
 }
@@ -197,7 +235,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
                 .set_content_arrangement(arrangement)
                 .load_preset(preset);
 
-            for (index, (demo_name, demo_spec)) in list.inner().iter().enumerate() {
+            for (index, (demo_name, demo_spec)) in list.iter().enumerate() {
                 let row = Row::from(vec![
                     (index + 1).to_string(),
                     demo_name.clone(),
@@ -222,8 +260,8 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
 
             Ok(result.render())
         }
-        OutputType::Json => serde_json::to_string(&list.inner()).context(SerializeJsonOutputSnafu),
-        OutputType::Yaml => serde_yaml::to_string(&list.inner()).context(SerializeYamlOutputSnafu),
+        OutputType::Json => serde_json::to_string(&*list).context(SerializeJsonOutputSnafu),
+        OutputType::Yaml => serde_yaml::to_string(&*list).context(SerializeYamlOutputSnafu),
     }
 }
 
@@ -286,8 +324,9 @@ async fn install_cmd(
     cli: &Cli,
     list: demo::List,
     transfer_client: &xfer::Client,
+    release_branch: &str,
 ) -> Result<String, CmdError> {
-    info!("Installing demo {}", args.demo_name);
+    info!(%release_branch, "Installing demo {}", args.demo_name);
 
     // Init result output and progress output
     let mut output = cli.result();
@@ -297,7 +336,9 @@ async fn install_cmd(
     })?;
 
     // TODO (Techassi): Try to move all this boilerplate code to build the lists out of here
-    let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+    let files = cli
+        .get_stack_files(release_branch)
+        .context(PathOrUrlParseSnafu)?;
     let stack_list = stack::StackList::build(&files, transfer_client)
         .await
         .context(BuildListSnafu)?;

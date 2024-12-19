@@ -145,7 +145,7 @@ impl ReleaseArgs {
             .await
             .context(BuildListSnafu)?;
 
-        if release_list.inner().is_empty() {
+        if release_list.is_empty() {
             return Ok("No releases".into());
         }
 
@@ -168,7 +168,7 @@ async fn list_cmd(
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
-            if release_list.inner().is_empty() {
+            if release_list.is_empty() {
                 return Ok("No releases".into());
             }
 
@@ -183,7 +183,7 @@ async fn list_cmd(
                 .set_content_arrangement(arrangement)
                 .load_preset(preset);
 
-            for (index, (release_name, release_spec)) in release_list.inner().iter().enumerate() {
+            for (index, (release_name, release_spec)) in release_list.iter().enumerate() {
                 table.add_row(vec![
                     (index + 1).to_string(),
                     release_name.to_string(),
