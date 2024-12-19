@@ -298,11 +298,16 @@ pub enum ChartSourceTypeArg {
     #[default]
     OCI,
 
-    /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
+    /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific
     Repo,
 }
 
 impl From<ChartSourceTypeArg> for ChartSourceType {
+    /// Resolves the enum used by clap/arg-resolution to the core type used in
+    /// stackable-cockpit. For the (Nexus-)repo case this core type cannot be
+    /// decorated with meaningful information as that would be operator-specific
+    /// i.e. we cannot resolve *which* Nexus repo to use until we have inspected
+    /// the operator version. Hence just a simple mapping.
     fn from(cli_enum: ChartSourceTypeArg) -> Self {
         match cli_enum {
             ChartSourceTypeArg::OCI => ChartSourceType::OCI,
