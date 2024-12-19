@@ -11,6 +11,7 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
+        operator::ChartSourceType,
         release,
         stack::{self, StackInstallParameters},
     },
@@ -23,7 +24,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
-    cli::{Cli, OutputType},
+    cli::{ChartSourceTypeArg, Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -107,6 +108,13 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
+
+    #[arg(
+        long,
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
+        value_enum, default_value_t = Default::default()
+    )]
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Snafu)]
@@ -347,6 +355,7 @@ async fn install_cmd(
                 skip_release: args.skip_release,
                 demo_name: None,
                 labels,
+                chart_source: ChartSourceType::from(args.chart_source.clone()),
             };
 
             stack_spec
