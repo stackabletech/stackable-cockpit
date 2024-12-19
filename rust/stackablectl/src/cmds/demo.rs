@@ -293,7 +293,11 @@ async fn describe_cmd(
                 .add_row(vec!["DESCRIPTION", &demo.description])
                 .add_row_if(
                     |_, _| demo.documentation.is_some(),
-                    vec!["DOCUMENTATION", demo.documentation.as_ref().unwrap()],
+                    // The simple unwrap() may be called despite the condition, if add_row_if evaluates its arguments eagerly, so make sure to avoid a panic
+                    demo.documentation
+                        .as_ref()
+                        .map(|doc| vec!["DOCUMENTATION", doc])
+                        .unwrap_or_else(Vec::new),
                 )
                 .add_row(vec!["STACK", &demo.stack])
                 .add_row(vec!["LABELS", &demo.labels.join(", ")]);
