@@ -194,7 +194,6 @@ impl OperatorSpec {
         let chart_source = match chart_source {
             ChartSourceType::OCI => HELM_OCI_REGISTRY.to_string(),
             ChartSourceType::Repo => self.helm_repo_name(),
-            ChartSourceType::Tgz => "TODO".to_string(),
         };
 
         // Install using Helm
@@ -237,9 +236,6 @@ pub enum ChartSourceType {
 
     /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
     Repo,
-
-    /// Archive
-    Tgz,
 }
 
 #[cfg(test)]

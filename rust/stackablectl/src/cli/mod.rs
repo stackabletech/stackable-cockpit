@@ -300,9 +300,6 @@ pub enum ChartSourceTypeArg {
 
     /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
     Repo,
-
-    /// Archive
-    Tgz,
 }
 
 impl From<ChartSourceTypeArg> for ChartSourceType {
@@ -310,7 +307,6 @@ impl From<ChartSourceTypeArg> for ChartSourceType {
         match cli_enum {
             ChartSourceTypeArg::OCI => ChartSourceType::OCI,
             ChartSourceTypeArg::Repo => ChartSourceType::Repo,
-            ChartSourceTypeArg::Tgz => ChartSourceType::Tgz,
         }
     }
 }

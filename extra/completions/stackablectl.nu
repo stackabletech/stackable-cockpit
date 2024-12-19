@@ -33,7 +33,7 @@ module completions {
   }
 
   def "nu-complete stackablectl operator list chart_source" [] {
-    [ "oci" "repo" "tgz" ]
+    [ "oci" "repo" ]
   }
 
   # List available operators
@@ -57,7 +57,7 @@ module completions {
   }
 
   def "nu-complete stackablectl operator describe chart_source" [] {
-    [ "oci" "repo" "tgz" ]
+    [ "oci" "repo" ]
   }
 
   # Print out detailed operator information
@@ -82,7 +82,7 @@ module completions {
   }
 
   def "nu-complete stackablectl operator install chart_source" [] {
-    [ "oci" "repo" "tgz" ]
+    [ "oci" "repo" ]
   }
 
   # Install one or more operators
@@ -231,7 +231,7 @@ module completions {
   }
 
   def "nu-complete stackablectl release install chart_source" [] {
-    [ "oci" "repo" "tgz" ]
+    [ "oci" "repo" ]
   }
 
   # Install a specific release
@@ -360,7 +360,7 @@ module completions {
   }
 
   def "nu-complete stackablectl stack install chart_source" [] {
-    [ "oci" "repo" "tgz" ]
+    [ "oci" "repo" ]
   }
 
   # Install a specific stack
@@ -543,7 +543,7 @@ module completions {
   }
 
   def "nu-complete stackablectl demo install chart_source" [] {
-    [ "oci" "repo" "tgz" ]
+    [ "oci" "repo" ]
   }
 
   # Install a specific demo

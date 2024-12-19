@@ -71,7 +71,7 @@ pub struct OperatorListArgs {
 
     #[arg(
         long,
-        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.",
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
         value_enum, default_value_t = Default::default()
     )]
     chart_source: ChartSourceTypeArg,
@@ -88,7 +88,7 @@ pub struct OperatorDescribeArgs {
 
     #[arg(
         long,
-        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.", value_enum, default_value_t = Default::default()
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.", value_enum, default_value_t = Default::default()
     )]
     chart_source: ChartSourceTypeArg,
 }
@@ -121,7 +121,7 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
 
     #[arg(
         long,
-        long_help = "Source the charts from either a OCI registry or from Nexus repositories or from an archive.",
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
         value_enum, default_value_t = Default::default()
     )]
     chart_source: ChartSourceTypeArg,

@@ -62,7 +62,6 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    // TODO aken: do we support helm charts from registries?
     #[instrument(skip_all)]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
@@ -95,7 +94,7 @@ pub trait InstallManifestsExt {
                         helm_chart.name, helm_chart.version
                     );
 
-                    // TODO aken: assuming all manifest helm charts refer to repos not registries
+                    // Assumption: that all manifest helm charts refer to repos not registries
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
                         AddHelmRepositorySnafu {
                             repo_name: helm_chart.repo.name.clone(),

@@ -2114,7 +2114,7 @@ _stackablectl() {
                     return 0
                     ;;
                 --chart-source)
-                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 --release)
@@ -3134,7 +3134,7 @@ _stackablectl() {
                     return 0
                     ;;
                 --chart-source)
-                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -3388,7 +3388,7 @@ _stackablectl() {
                     return 0
                     ;;
                 --chart-source)
-                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -3664,7 +3664,7 @@ _stackablectl() {
                     return 0
                     ;;
                 --chart-source)
-                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -4308,7 +4308,7 @@ _stackablectl() {
                     return 0
                     ;;
                 --chart-source)
-                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 --log-level)
@@ -5082,7 +5082,7 @@ _stackablectl() {
                     return 0
                     ;;
                 --chart-source)
-                    COMPREPLY=($(compgen -W "oci repo tgz" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 --release)
