@@ -311,13 +311,3 @@ impl From<ChartSourceTypeArg> for ChartSourceType {
         }
     }
 }
-
-impl From<ChartSourceType> for ChartSourceTypeArg {
-    fn from(core_enum: ChartSourceType) -> Self {
-        match core_enum {
-            ChartSourceType::OCI => ChartSourceTypeArg::OCI,
-            ChartSourceType::Repo => ChartSourceTypeArg::Repo,
-            ChartSourceType::Tgz => ChartSourceTypeArg::Tgz,
-        }
-    }
-}
