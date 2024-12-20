@@ -7,12 +7,14 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add new argument `--release` that allows installing a specific version of a demo or stack ([#340]).
+- Add new argument `--chart-source` so that operator charts can be pulled either from an OCI registry (the default) or from a Nexus repository ([#344]).
 
 ### Removed
 
 - Remove argument `--offline` that was not implemented yet ([#340]).
 
 [#340]: https://github.com/stackabletech/stackable-cockpit/pull/340
+[#344]: https://github.com/stackabletech/stackable-cockpit/pull/344
 
 ## [24.11.1] - 2024-11-20
 

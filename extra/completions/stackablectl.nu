@@ -32,9 +32,14 @@ module completions {
     [ "plain" "table" "json" "yaml" ]
   }
 
+  def "nu-complete stackablectl operator list chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
   # List available operators
   export extern "stackablectl operator list" [
     --output(-o): string@"nu-complete stackablectl operator list output_type"
+    --chart-source: string@"nu-complete stackablectl operator list chart_source"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -51,10 +56,15 @@ module completions {
     [ "plain" "table" "json" "yaml" ]
   }
 
+  def "nu-complete stackablectl operator describe chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
   # Print out detailed operator information
   export extern "stackablectl operator describe" [
     OPERATOR: string          # Operator to describe
     --output(-o): string@"nu-complete stackablectl operator describe output_type"
+    --chart-source: string@"nu-complete stackablectl operator describe chart_source"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -71,6 +81,10 @@ module completions {
     [ "kind" "minikube" ]
   }
 
+  def "nu-complete stackablectl operator install chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
   # Install one or more operators
   export extern "stackablectl operator install" [
     ...OPERATORS: string      # Operator(s) to install
@@ -80,6 +94,7 @@ module completions {
     --cluster-name: string    # Name of the local cluster
     --cluster-nodes: string   # Number of total nodes in the local cluster
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
+    --chart-source: string@"nu-complete stackablectl operator install chart_source"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -215,6 +230,10 @@ module completions {
     [ "kind" "minikube" ]
   }
 
+  def "nu-complete stackablectl release install chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
   # Install a specific release
   export extern "stackablectl release install" [
     RELEASE: string           # Release to install
@@ -226,6 +245,7 @@ module completions {
     --cluster-name: string    # Name of the local cluster
     --cluster-nodes: string   # Number of total nodes in the local cluster
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
+    --chart-source: string@"nu-complete stackablectl release install chart_source"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -339,6 +359,10 @@ module completions {
     [ "kind" "minikube" ]
   }
 
+  def "nu-complete stackablectl stack install chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
   # Install a specific stack
   export extern "stackablectl stack install" [
     stack_name: string        # Name of the stack to describe
@@ -353,6 +377,7 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --chart-source: string@"nu-complete stackablectl stack install chart_source"
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -517,6 +542,10 @@ module completions {
     [ "kind" "minikube" ]
   }
 
+  def "nu-complete stackablectl demo install chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
   # Install a specific demo
   export extern "stackablectl demo install" [
     DEMO: string              # Demo to install
@@ -531,6 +560,7 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --chart-source: string@"nu-complete stackablectl demo install chart_source"
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
