@@ -1,3 +1,4 @@
+pub mod chartsource;
 pub mod check;
 pub mod k8s;
 pub mod params;
