@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.11.2] - 2025-01-15
+
 ### Added
 
 - Add new argument `--release` that allows installing a specific version of a demo or stack ([#340]).
