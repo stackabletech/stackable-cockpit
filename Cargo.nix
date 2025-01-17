@@ -8052,7 +8052,7 @@ rec {
           "stream" = [ "tokio/fs" "dep:tokio-util" "dep:wasm-streams" ];
           "zstd" = [ "dep:async-compression" "async-compression?/zstd" "dep:tokio-util" ];
         };
-        resolvedDefaultFeatures = [ "__rustls" "__rustls-ring" "__tls" "blocking" "rustls-tls" "rustls-tls-webpki-roots" ];
+        resolvedDefaultFeatures = [ "__rustls" "__rustls-ring" "__tls" "blocking" "json" "rustls-tls" "rustls-tls-webpki-roots" ];
       };
       "ring" = rec {
         crateName = "ring";
@@ -9672,7 +9672,7 @@ rec {
             name = "reqwest";
             packageId = "reqwest";
             usesDefaultFeatures = false;
-            features = [ "rustls-tls" ];
+            features = [ "json" "rustls-tls" ];
           }
           {
             name = "semver";
@@ -9721,6 +9721,10 @@ rec {
           {
             name = "url";
             packageId = "url";
+          }
+          {
+            name = "urlencoding";
+            packageId = "urlencoding";
           }
           {
             name = "utoipa";
@@ -10122,7 +10126,7 @@ rec {
             name = "reqwest";
             packageId = "reqwest";
             usesDefaultFeatures = false;
-            features = [ "rustls-tls" ];
+            features = [ "json" "rustls-tls" ];
           }
           {
             name = "semver";
@@ -10176,6 +10180,10 @@ rec {
           {
             name = "tracing-subscriber";
             packageId = "tracing-subscriber";
+          }
+          {
+            name = "urlencoding";
+            packageId = "urlencoding";
           }
         ];
 
@@ -12196,6 +12204,17 @@ rec {
           "serde" = [ "dep:serde" ];
         };
         resolvedDefaultFeatures = [ "default" "serde" ];
+      };
+      "urlencoding" = rec {
+        crateName = "urlencoding";
+        version = "2.1.3";
+        edition = "2021";
+        sha256 = "1nj99jp37k47n0hvaz5fvz7z6jd0sb4ppvfy3nphr1zbnyixpy6s";
+        authors = [
+          "Kornel <kornel@geekhood.net>"
+          "Bertram Truong <b@bertramtruong.com>"
+        ];
+
       };
       "utf-8" = rec {
         crateName = "utf-8";

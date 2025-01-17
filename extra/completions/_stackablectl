@@ -78,6 +78,8 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--chart-source=[]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"Nexus repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -106,6 +108,8 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
+'--chart-source=[]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"Nexus repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -136,6 +140,8 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
+'--chart-source=[]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"Nexus repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -352,6 +358,8 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
 '--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
+'--chart-source=[]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"Nexus repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -538,6 +546,8 @@ minikube\:"Use a minikube cluster"))' \
 '-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--chart-source=[]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"Nexus repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
@@ -817,6 +827,8 @@ minikube\:"Use a minikube cluster"))' \
 '-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
 '--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'--chart-source=[]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"Nexus repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \

@@ -15,17 +15,22 @@ use stackable_cockpit::{
     constants::{
         DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
     },
-    helm::{self, Release, Repository},
-    platform::{namespace, operator},
+    helm::{self, Release},
+    oci,
+    platform::{
+        namespace,
+        operator::{self, ChartSourceType},
+    },
     utils::{
         self,
+        chartsource::ChartSourceMetadata,
         k8s::{self, Client},
     },
 };
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
-    cli::{Cli, OutputType},
+    cli::{ChartSourceTypeArg, Cli, OutputType},
     utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
@@ -65,6 +70,13 @@ pub enum OperatorCommands {
 pub struct OperatorListArgs {
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
+
+    #[arg(
+        long,
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
+        value_enum, default_value_t = Default::default()
+    )]
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -75,6 +87,12 @@ pub struct OperatorDescribeArgs {
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
+
+    #[arg(
+        long,
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.", value_enum, default_value_t = Default::default()
+    )]
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -102,6 +120,13 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
+
+    #[arg(
+        long,
+        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
+        value_enum, default_value_t = Default::default()
+    )]
+    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -159,6 +184,9 @@ pub enum CmdError {
         source: namespace::Error,
         namespace: String,
     },
+
+    #[snafu(display("OCI error"))]
+    OciError { source: oci::Error },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -183,12 +211,13 @@ impl OperatorArgs {
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
 
-    // Build map which maps Helm repo name to Helm repo URL
-    let helm_index_files = build_helm_index_file_list().await?;
+    // Build map which maps artifacts to a chart source
+    let source_index_files =
+        build_source_index_file_list(&ChartSourceType::from(args.chart_source.clone())).await?;
 
     // Iterate over all valid operators and create a list of versions grouped
     // by stable, test and dev lines
-    let versions_list = build_versions_list(&helm_index_files)?;
+    let versions_list = build_versions_list(&source_index_files)?;
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -239,11 +268,12 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Describing operator {}", args.operator_name);
 
-    // Build map which maps Helm repo name to Helm repo URL
-    let helm_index_files = build_helm_index_file_list().await?;
+    // Build map which maps artifacts to a chart source
+    let source_index_files =
+        build_source_index_file_list(&ChartSourceType::from(args.chart_source.clone())).await?;
 
     // Create a list of versions for this operator
-    let versions_list = build_versions_list_for_operator(&args.operator_name, &helm_index_files)?;
+    let versions_list = build_versions_list_for_operator(&args.operator_name, &source_index_files)?;
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -312,7 +342,10 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 
     for operator in &args.operators {
         operator
-            .install(&args.operator_namespace)
+            .install(
+                &args.operator_namespace,
+                &ChartSourceType::from(args.chart_source.clone()),
+            )
             .context(HelmSnafu)?;
 
         println!("Installed {} operator", operator);
@@ -439,37 +472,50 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
     }
 }
 
-/// Builds a map which maps Helm repo name to Helm repo URL.
+/// Builds a map which maps artifact tags to a chart source.
 #[instrument]
-async fn build_helm_index_file_list<'a>() -> Result<HashMap<&'a str, Repository>, CmdError> {
-    debug!("Building Helm index file list");
+async fn build_source_index_file_list<'a>(
+    chart_source: &ChartSourceType,
+) -> Result<HashMap<&'a str, ChartSourceMetadata>, CmdError> {
+    debug!("Building source index file list");
 
-    let mut helm_index_files = HashMap::new();
+    let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
-    for helm_repo_name in [
-        HELM_REPO_NAME_STABLE,
-        HELM_REPO_NAME_TEST,
-        HELM_REPO_NAME_DEV,
-    ] {
-        let helm_repo_url =
-            helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu)?;
+    match chart_source {
+        ChartSourceType::OCI => {
+            source_index_files = oci::get_oci_index().await.context(OciSnafu)?;
 
-        helm_index_files.insert(
-            helm_repo_name,
-            helm::get_helm_index(helm_repo_url)
-                .await
-                .context(HelmSnafu)?,
-        );
-    }
+            debug!("OCI Repository entries: {:?}", source_index_files);
+        }
+        ChartSourceType::Repo => {
+            for helm_repo_name in [
+                HELM_REPO_NAME_STABLE,
+                HELM_REPO_NAME_TEST,
+                HELM_REPO_NAME_DEV,
+            ] {
+                let helm_repo_url =
+                    helm_repo_name_to_repo_url(helm_repo_name).context(InvalidRepoNameSnafu)?;
 
-    Ok(helm_index_files)
+                source_index_files.insert(
+                    helm_repo_name,
+                    helm::get_helm_index(helm_repo_url)
+                        .await
+                        .context(HelmSnafu)?,
+                );
+
+                debug!("Helm Repository entries: {:?}", source_index_files);
+            }
+        }
+    };
+
+    Ok(source_index_files)
 }
 
 /// Iterates over all valid operators and creates a list of versions grouped
 /// by stable, test and dev lines based on the list of Helm repo index files.
 #[instrument]
 fn build_versions_list(
-    helm_index_files: &HashMap<&str, Repository>,
+    helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
     debug!("Building versions list");
 
@@ -492,7 +538,7 @@ fn build_versions_list(
 #[instrument]
 fn build_versions_list_for_operator<T>(
     operator_name: T,
-    helm_index_files: &HashMap<&str, Repository>,
+    helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<OperatorVersionList, CmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
@@ -517,7 +563,7 @@ where
 #[instrument]
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
-    helm_repo: &Repository,
+    helm_repo: &ChartSourceMetadata,
 ) -> Result<Vec<String>, CmdError>
 where
     T: AsRef<str> + std::fmt::Debug,
