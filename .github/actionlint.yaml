@@ -1,6 +1,8 @@
 ---
 self-hosted-runner:
-  # BuildJet machines we are using
   labels:
+    # BuildJet machines we are using
     - buildjet-2vcpu-ubuntu-2204-arm
     - buildjet-4vcpu-ubuntu-2204-arm
+    # Hosted runners currently unknown to actionlint
+    - ubuntu-24.04-arm
