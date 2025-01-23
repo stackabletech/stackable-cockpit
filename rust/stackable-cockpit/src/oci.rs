@@ -95,22 +95,25 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
         let mut page = 1;
         let page_size = 20;
 
-        while let Ok(artifacts_page) = client
-            .get(format!(
+        loop {
+            let url = format!(
                 "{}/projects/{}/repositories/{}/artifacts?page_size={}&page={}",
                 base_url,
                 encode(project_name),
                 encode(repository_name),
                 page_size,
                 page
-            ))
-            .send()
-            .await
-            .context(GetArtifactsSnafu)?
-            .json::<Vec<Artifact>>()
-            .await
-            .context(ParseArtifactsSnafu)
-        {
+            );
+
+            let artifact_page = client
+                .get(url)
+                .send()
+                .await
+                .context(GetArtifactsSnafu)?
+                .json::<Vec<Artifact>>()
+                .await
+                .context(ParseArtifactsSnafu)?;
+            
             let count = artifacts_page.len();
             artifacts.extend(artifacts_page);
             if count < page_size {
