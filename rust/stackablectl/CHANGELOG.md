@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Add new argument `--release` that allows installing a specific version of a demo or stack ([#340]).
-- Add new argument `--chart-source` so that operator charts can be pulled either from an OCI registry (the default) or from a Nexus repository ([#344]).
+- Add new argument `--chart-source` so that operator charts can be pulled either from an OCI registry (the default) or from a index.yaml-based repository ([#344]).
 
 ### Removed
 

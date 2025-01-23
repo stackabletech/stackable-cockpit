@@ -560,7 +560,7 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
     --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
-    --chart-source: string@"nu-complete stackablectl demo install chart_source"
+    --chart-source: string@"nu-complete stackablectl demo install chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files

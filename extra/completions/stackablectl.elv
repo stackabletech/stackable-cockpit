@@ -596,7 +596,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand -n 'Namespace where the products (e.g. stacks or demos) are deployed'
             cand --product-namespace 'Namespace where the products (e.g. stacks or demos) are deployed'
             cand --product-ns 'Namespace where the products (e.g. stacks or demos) are deployed'
-            cand --chart-source 'chart-source'
+            cand --chart-source 'Source the charts from either a OCI registry or from index.yaml-based repositories'
             cand --release 'Target a specific Stackable release'
             cand -l 'Log level this application uses'
             cand --log-level 'Log level this application uses'

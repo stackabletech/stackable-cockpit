@@ -234,7 +234,7 @@ pub enum ChartSourceType {
     /// OCI registry
     OCI,
 
-    /// Nexus repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
+    /// index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
     Repo,
 }
 

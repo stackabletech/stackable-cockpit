@@ -111,7 +111,7 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[arg(
         long,
-        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
+        long_help = "Source the charts from either a OCI registry or from index.yaml-based repositories.",
         value_enum, default_value_t = Default::default()
     )]
     chart_source: ChartSourceTypeArg,
