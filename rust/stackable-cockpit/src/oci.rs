@@ -39,7 +39,7 @@ pub enum Error {
 }
 
 /// Identifies an operator-specific root folder in the repository e.g.
-/// ```
+/// ```text
 /// {
 ///   name: "sdp-charts/airflow-operator"
 /// }
@@ -50,7 +50,7 @@ struct OciRepository {
 }
 
 /// Identifies an image tag e.g.
-/// ```
+/// ```text
 /// {
 ///   name: "24.11.1-rc1"
 /// }
@@ -61,7 +61,7 @@ pub struct Tag {
 }
 
 /// Identifies an image artifact with its digest and tags e.g.
-/// ```
+/// ```text
 /// {
 ///   digest: "sha256:e80a4b1e004f90dee0321f817871c4a225369b89efdc17c319595263139364b5",
 ///   tags: [
