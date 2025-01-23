@@ -6,7 +6,10 @@ use tracing::debug;
 use urlencoding::encode;
 
 use crate::{
-    constants::{HELM_OCI_BASE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    constants::{
+        HELM_OCI_BASE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+        OCI_INDEX_PAGE_SIZE,
+    },
     utils::chartsource::{ChartSourceEntry, ChartSourceMetadata},
 };
 
@@ -28,16 +31,39 @@ pub enum Error {
     UnexpectedOciRepositoryName,
 }
 
+/// Identifies an operator-specific root folder in the repository e.g.
+/// ```
+/// {
+///   name: "sdp-charts/airflow-operator"
+/// }
+/// ```
 #[derive(Deserialize, Debug)]
-pub struct OciRepository {
+struct OciRepository {
     pub name: String,
 }
 
+/// Identifies an image tag e.g.
+/// ```
+/// {
+///   name: "24.11.1-rc1"
+/// }
+/// ```
 #[derive(Deserialize, Debug)]
 pub struct Tag {
     pub name: String,
 }
 
+/// Identifies an image artifact with its digest and tags e.g.
+/// ```
+/// {
+///   digest: "sha256:e80a4b1e004f90dee0321f817871c4a225369b89efdc17c319595263139364b5",
+///   tags: [
+///     {
+///       name: "0.0.0-pr569"
+///     }
+///   ])
+/// }
+/// ```
 #[derive(Deserialize, Debug)]
 pub struct Artifact {
     pub digest: String,
@@ -93,7 +119,6 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
 
         let mut artifacts = Vec::new();
         let mut page = 1;
-        let page_size = 20;
 
         loop {
             let url = format!(
@@ -101,11 +126,11 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
                 base_url,
                 encode(project_name),
                 encode(repository_name),
-                page_size,
+                OCI_INDEX_PAGE_SIZE,
                 page
             );
 
-            let artifact_page = client
+            let artifacts_page = client
                 .get(url)
                 .send()
                 .await
@@ -113,10 +138,10 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
                 .json::<Vec<Artifact>>()
                 .await
                 .context(ParseArtifactsSnafu)?;
-            
+
             let count = artifacts_page.len();
             artifacts.extend(artifacts_page);
-            if count < page_size {
+            if count < OCI_INDEX_PAGE_SIZE {
                 break;
             }
             page += 1;
@@ -136,6 +161,11 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
                     release_version.to_string(),
                     repository_name.to_string(),
                     release_artifact.name.to_string()
+                );
+
+                debug!(
+                    "Repo/Artifact/Tag: {:?} / {:?} / {:?}",
+                    repository, artifact, release_artifact
                 );
 
                 let entry = ChartSourceEntry {

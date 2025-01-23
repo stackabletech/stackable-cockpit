@@ -41,3 +41,5 @@ pub const PRODUCT_NAMES: &[&str] = &[
     "trino",
     "zookeeper",
 ];
+
+pub const OCI_INDEX_PAGE_SIZE: usize = 20;
