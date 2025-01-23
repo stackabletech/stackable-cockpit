@@ -113,10 +113,11 @@ to specify operator versions."
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
 
+    /// Source the charts from either a OCI registry or from index.yaml-based repositories.
     #[arg(
         long,
-        long_help = "Source the charts from either a OCI registry or from Nexus repositories.",
-        value_enum, default_value_t = Default::default()
+        value_enum,
+        default_value_t = Default::default()
     )]
     chart_source: ChartSourceTypeArg,
 }
