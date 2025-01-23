@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::debug;
+use url::Url;
 use urlencoding::encode;
 
 use crate::{
@@ -29,6 +30,12 @@ pub enum Error {
 
     #[snafu(display("unexpected OCI repository name"))]
     UnexpectedOciRepositoryName,
+
+    #[snafu(display("cannot resolve path segments"))]
+    GetPathSegments,
+
+    #[snafu(display("failed to parse URL"))]
+    UrlParse { source: url::ParseError },
 }
 
 /// Identifies an operator-specific root folder in the repository e.g.
@@ -68,6 +75,46 @@ pub struct Tag {
 pub struct Artifact {
     pub digest: String,
     pub tags: Option<Vec<Tag>>,
+}
+
+trait OciUrlExt {
+    fn oci_artifacts_page(
+        &self,
+        project_name: &str,
+        repository_name: &str,
+        page_size: usize,
+        page: usize,
+    ) -> Result<Url, Error>;
+}
+
+impl OciUrlExt for Url {
+    fn oci_artifacts_page(
+        &self,
+        project_name: &str,
+        repository_name: &str,
+        page_size: usize,
+        page: usize,
+    ) -> Result<Url, Error> {
+        let encoded_project = encode(project_name);
+        let encoded_repo = encode(repository_name);
+
+        let mut url = self.clone();
+        url.path_segments_mut()
+            .map_err(|_| Error::GetPathSegments)?
+            .extend(&[
+                "projects",
+                &encoded_project,
+                "repositories",
+                &encoded_repo,
+                "artifacts",
+            ]);
+
+        url.query_pairs_mut()
+            .append_pair("page_size", &page_size.to_string())
+            .append_pair("page", &page.to_string());
+
+        Ok(url)
+    }
 }
 
 pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>, Error> {
@@ -121,15 +168,9 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
         let mut page = 1;
 
         loop {
-            let url = format!(
-                "{}/projects/{}/repositories/{}/artifacts?page_size={}&page={}",
-                base_url,
-                encode(project_name),
-                encode(repository_name),
-                OCI_INDEX_PAGE_SIZE,
-                page
-            );
-
+            let root = Url::parse(base_url.as_str()).context(UrlParseSnafu)?;
+            let url =
+                root.oci_artifacts_page(project_name, repository_name, OCI_INDEX_PAGE_SIZE, page)?;
             let artifacts_page = client
                 .get(url)
                 .send()
@@ -138,7 +179,6 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
                 .json::<Vec<Artifact>>()
                 .await
                 .context(ParseArtifactsSnafu)?;
-
             let count = artifacts_page.len();
             artifacts.extend(artifacts_page);
             if count < OCI_INDEX_PAGE_SIZE {
