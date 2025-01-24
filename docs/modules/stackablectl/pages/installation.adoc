@@ -3,21 +3,21 @@
 
 :latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-24.11.1
 :fish-comp-loations: https://fishshell.com/docs/current/completions.html#where-to-put-completions
+:nushell-comp-locations: https://www.nushell.sh/book/custom_commands.html#persisting
 
 == Using Pre-Compiled Binaries
 
-Stackable provides pre-compiled binaries of stackablectl, which should work on most environments such as Windows, macOS,
-and Linux distributions like Ubuntu and Arch. You can also build the binary from source. More information about the
-manual building steps can be found in xref:#building-from-source[this] section.
+Stackable provides pre-compiled binaries of stackablectl, which should work on most environments such as Windows, macOS, and Linux distributions like Ubuntu and Arch.
+You can also build the binary from source.
+More information about the manual building steps can be found in xref:#building-from-source[this] section.
 
 [tabs]
 ====
 Linux::
 +
 --
-Download the appropriate binary file for your architecture, `stackablectl-x86_64-unknown-linux-gnu` for Intel-based devices or
-`stackablectl-aarch64-unknown-linux-gnu` for ARM-based devices from the link:{latest-release}[latest release],
-then rename the file to `stackablectl`. You can also use the following command:
+Download the appropriate binary file for your architecture from the link:{latest-release}[latest release], then rename the file to `stackablectl`.
+You can also use the following command:
 
 *x86_64* (amd64):
 
@@ -53,9 +53,8 @@ $ stackablectl --version
 macOS::
 +
 --
-Download the appropriate binary file for your architecture, `stackablectl-x86_64-apple-darwin` for Intel-based devices or
-`stackablectl-aarch64-apple-darwin` for ARM-based devices from the link:{latest-release}[latest release],
-then rename the file to `stackablectl`. You can also use the following command:
+Download the appropriate binary file for your architecture from the link:{latest-release}[latest release], then rename the file to `stackablectl`.
+You can also use the following command:
 
 *x86_64* (amd64):
 
@@ -137,9 +136,9 @@ $ stackablectl --version
 [#shell-comps]
 == Shell Completions
 
-We provide completions for `stackablectl` for major shells out there. Currently, ZSH, Fish and Bash are supported. The
-repository provides pre-generated completion files. These can be downloaded and copied to the appropriate location on
-your system.
+We provide completions for `stackablectl` for major shells out there. Currently, ZSH, Fish, Bash, Nushell, and Elvish are supported.
+The repository provides pre-generated completion files.
+These can be downloaded and copied to the appropriate location on your system.
 
 [tabs]
 ====
@@ -150,7 +149,7 @@ Download the completions file and place it in `/usr/local/share/zsh/site-functio
 
 [source,console]
 ----
-$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
 $ mv _stackablectl /usr/local/share/zsh/site-functions/
 ----
 --
@@ -162,7 +161,7 @@ Download the completions file and place it in any of the supported location list
 
 [source,console]
 ----
-$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
 ----
 --
 
@@ -173,8 +172,28 @@ Download the completions file and place it in `/etc/bash_completion.d/` to load 
 
 [source,console]
 ----
-$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.bash
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.bash
 $ mv stackablectl.bash /etc/bash_completion.d/
+----
+--
+
+Nushell::
++
+--
+Download the completions file at a location where it is loaded for all Nushell sessions, see {nushell-comp-locations}[here].
+
+[source,console]
+----
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.nu
+----
+--
+
+Elvish::
++
+--
+[source,console]
+----
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.elv
 ----
 --
 ====
