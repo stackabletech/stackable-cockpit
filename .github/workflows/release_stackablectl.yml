@@ -27,7 +27,7 @@ jobs:
             os: ubuntu-20.04 # We don't use ubuntu-latest because we want to build against an old glibc version. (18.04 has glibc 2.27, 20.04 has glibc 2.31, 22.04 has glibc 2.35)
             file-suffix: ""
           - target: aarch64-unknown-linux-gnu
-            os: buildjet-4vcpu-ubuntu-2204-arm # The ARM runners only support Ubuntu 22.04, so we can't pick 20.04
+            os: ubuntu-22.04-arm # 2025-01: The ARM runners only support Ubuntu 22.04 or 24.04, so we can't pick 20.04:
             file-suffix: ""
           - target: x86_64-apple-darwin
             os: macos-latest
