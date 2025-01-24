@@ -43,7 +43,7 @@ repos:
         exclude: '^extra/completions/'
 
   - repo: https://github.com/rhysd/actionlint
-    rev: 62dc61a45fc95efe8c800af7a557ab0b9165d63b # 1.7.1
+    rev: 03d0035246f3e81f36aed592ffb4bebf33a03106 # 1.7.7
     hooks:
       - id: actionlint
 
