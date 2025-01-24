@@ -292,6 +292,10 @@ fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, PathOr
     Ok(files)
 }
 
+/// Enum used for resolving the argument for chart source type. This will be
+/// mapped to ChartSourceType (see below): the reason why we don't have one
+/// enum is to avoid having to add clap dependencies to stackable-cockpit
+/// for the ValueEnum macro.
 #[derive(Clone, Debug, Default, ValueEnum)]
 pub enum ChartSourceTypeArg {
     /// OCI registry
