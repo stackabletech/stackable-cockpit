@@ -30,7 +30,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
-    cli::{ChartSourceTypeArg, Cli, OutputType},
+    cli::{Cli, OutputType},
     utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
 };
 
@@ -70,13 +70,6 @@ pub enum OperatorCommands {
 pub struct OperatorListArgs {
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
-
-    #[arg(
-        long,
-        long_help = "Source the charts from either a OCI registry or from index.yaml-based repositories.",
-        value_enum, default_value_t = Default::default()
-    )]
-    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -87,12 +80,6 @@ pub struct OperatorDescribeArgs {
 
     #[arg(short, long = "output", value_enum, default_value_t = Default::default())]
     output_type: OutputType,
-
-    #[arg(
-        long,
-        long_help = "Source the charts from either a OCI registry or from index.yaml-based repositories.", value_enum, default_value_t = Default::default()
-    )]
-    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -120,13 +107,6 @@ Use \"stackablectl operator describe <OPERATOR>\" to get available versions for 
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
-
-    #[arg(
-        long,
-        long_help = "Source the charts from either a OCI registry or from index.yaml-based repositories.",
-        value_enum, default_value_t = Default::default()
-    )]
-    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -213,7 +193,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
-        build_source_index_file_list(&ChartSourceType::from(args.chart_source.clone())).await?;
+        build_source_index_file_list(&ChartSourceType::from(cli.chart_type())).await?;
 
     // Iterate over all valid operators and create a list of versions grouped
     // by stable, test and dev lines
@@ -270,7 +250,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
-        build_source_index_file_list(&ChartSourceType::from(args.chart_source.clone())).await?;
+        build_source_index_file_list(&ChartSourceType::from(cli.chart_type())).await?;
 
     // Create a list of versions for this operator
     let versions_list = build_versions_list_for_operator(&args.operator_name, &source_index_files)?;
@@ -344,7 +324,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
         operator
             .install(
                 &args.operator_namespace,
-                &ChartSourceType::from(args.chart_source.clone()),
+                &ChartSourceType::from(cli.chart_type()),
             )
             .context(HelmSnafu)?;
 

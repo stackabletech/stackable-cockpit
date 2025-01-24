@@ -209,6 +209,10 @@ impl Cli {
     pub fn error(&self) -> Output<ErrorContext> {
         Output::new(ErrorContext::default(), true).expect("Failed to create output renderer")
     }
+
+    pub fn chart_type(&self) -> ChartSourceTypeArg {
+        self.repos.chart_source.clone()
+    }
 }
 
 #[derive(Debug, Subcommand)]

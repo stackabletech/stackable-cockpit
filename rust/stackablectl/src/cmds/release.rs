@@ -19,7 +19,7 @@ use stackable_cockpit::{
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
-    cli::{ChartSourceTypeArg, Cli, OutputType},
+    cli::{Cli, OutputType},
 };
 
 #[derive(Debug, Args)]
@@ -82,13 +82,6 @@ pub struct ReleaseInstallArgs {
 
     #[command(flatten)]
     local_cluster: CommonClusterArgs,
-
-    #[arg(
-        long,
-        long_help = "Source the charts from either a OCI registry or from index.yaml-based repositories.",
-        value_enum, default_value_t = Default::default()
-    )]
-    chart_source: ChartSourceTypeArg,
 }
 
 #[derive(Debug, Args)]
@@ -303,7 +296,7 @@ async fn install_cmd(
                     &args.included_products,
                     &args.excluded_products,
                     &args.operator_namespace,
-                    &ChartSourceType::from(args.chart_source.clone()),
+                    &ChartSourceType::from(cli.chart_type()),
                 )
                 .await
                 .context(ReleaseInstallSnafu)?;
