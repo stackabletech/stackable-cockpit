@@ -91,7 +91,7 @@ impl<T> Yaml<T> {
 #[derive(Debug)]
 pub struct Template<'a>(&'a HashMap<String, String>);
 
-impl<'a> Processor for Template<'a> {
+impl Processor for Template<'_> {
     type Input = String;
     type Output = String;
 

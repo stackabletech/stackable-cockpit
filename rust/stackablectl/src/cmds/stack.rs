@@ -11,6 +11,7 @@ use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
+        operator::ChartSourceType,
         release,
         stack::{self, StackInstallParameters},
     },
@@ -347,6 +348,7 @@ async fn install_cmd(
                 skip_release: args.skip_release,
                 demo_name: None,
                 labels,
+                chart_source: ChartSourceType::from(cli.chart_type()),
             };
 
             stack_spec

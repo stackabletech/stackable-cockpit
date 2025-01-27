@@ -9,7 +9,7 @@ use tracing::{debug, info, instrument};
 use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::{namespace, release},
+    platform::{namespace, operator::ChartSourceType, release},
     utils::{
         k8s::{self, Client},
         path::PathOrUrlParseError,
@@ -296,6 +296,7 @@ async fn install_cmd(
                     &args.included_products,
                     &args.excluded_products,
                     &args.operator_namespace,
+                    &ChartSourceType::from(cli.chart_type()),
                 )
                 .await
                 .context(ReleaseInstallSnafu)?;

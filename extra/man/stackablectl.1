@@ -4,7 +4,7 @@
 .SH NAME
 stackablectl \- Command line tool to interact with the Stackable Data Platform
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-\-chart\-source\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 Command line tool to interact with the Stackable Data Platform
 .SH OPTIONS
@@ -60,6 +60,19 @@ Provide a custom Helm test repository URL
 .TP
 \fB\-\-helm\-repo\-dev\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-dev/]
 Provide a custom Helm dev repository URL
+.TP
+\fB\-\-chart\-source\fR=\fICHART_SOURCE\fR [default: oci]
+Source the charts from either a OCI registry or from index.yaml\-based repositories.
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+oci: OCI registry
+.IP \(bu 2
+repo: index.yaml\-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator\-specific
+.RE
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Print help (see a summary with \*(Aq\-h\*(Aq)

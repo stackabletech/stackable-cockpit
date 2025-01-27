@@ -81,4 +81,13 @@ Helm repository options:
           Provide a custom Helm dev repository URL
 
           [default: https://repo.stackable.tech/repository/helm-dev/]
+
+      --chart-source <CHART_SOURCE>
+          Source the charts from either a OCI registry or from index.yaml-based repositories.
+
+          [default: oci]
+
+          Possible values:
+          - oci:  OCI registry
+          - repo: index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific
 ----

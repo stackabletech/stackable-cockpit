@@ -12,6 +12,7 @@ use stackable_cockpit::{
     constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
     platform::{
         demo::{self, DemoInstallParameters},
+        operator::ChartSourceType,
         release, stack,
     },
     utils::{
@@ -285,7 +286,11 @@ async fn describe_cmd(
                 .add_row(vec!["DESCRIPTION", &demo.description])
                 .add_row_if(
                     |_, _| demo.documentation.is_some(),
-                    vec!["DOCUMENTATION", demo.documentation.as_ref().unwrap()],
+                    // The simple unwrap() may be called despite the condition, if add_row_if evaluates its arguments eagerly, so make sure to avoid a panic
+                    demo.documentation
+                        .as_ref()
+                        .map(|doc| vec!["DOCUMENTATION", doc])
+                        .unwrap_or_else(Vec::new),
                 )
                 .add_row(vec!["STACK", &demo.stack])
                 .add_row(vec!["LABELS", &demo.labels.join(", ")]);
@@ -370,6 +375,7 @@ async fn install_cmd(
         skip_release: args.skip_release,
         stack_labels,
         labels,
+        chart_source: ChartSourceType::from(cli.chart_type()),
     };
 
     demo.install(

@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use std::fmt::Display;
 
 use serde::{Deserialize, Serialize};
@@ -7,7 +6,10 @@ use tokio::task::block_in_place;
 use tracing::{debug, error, info, instrument};
 use url::Url;
 
-use crate::constants::{HELM_DEFAULT_CHART_VERSION, HELM_REPO_INDEX_FILE};
+use crate::{
+    constants::{HELM_DEFAULT_CHART_VERSION, HELM_REPO_INDEX_FILE},
+    utils::chartsource::ChartSourceMetadata,
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -33,17 +35,6 @@ pub struct Chart {
 pub struct ChartRepo {
     pub name: String,
     pub url: String,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct Repository {
-    pub entries: HashMap<String, Vec<RepositoryEntry>>,
-}
-
-#[derive(Clone, Debug, Deserialize)]
-pub struct RepositoryEntry {
-    pub name: String,
-    pub version: String,
 }
 
 #[derive(Debug, Snafu)]
@@ -182,20 +173,20 @@ impl Display for UninstallReleaseStatus {
 }
 
 pub struct ChartVersion<'a> {
-    pub repo_name: &'a str,
+    pub chart_source: &'a str,
     pub chart_name: &'a str,
     pub chart_version: Option<&'a str>,
 }
 
-/// Installs a Helm release from a repo.
+/// Installs a Helm release from a repo or registry.
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
 #[instrument]
-pub fn install_release_from_repo(
+pub fn install_release_from_repo_or_registry(
     release_name: &str,
     ChartVersion {
-        repo_name,
+        chart_source,
         chart_name,
         chart_version,
     }: ChartVersion,
@@ -244,7 +235,7 @@ pub fn install_release_from_repo(
             }
         }
 
-        let full_chart_name = format!("{repo_name}/{chart_name}");
+        let full_chart_name = format!("{chart_source}/{chart_name}");
         let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
 
         debug!(
@@ -398,7 +389,7 @@ pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), Error
 
 /// Retrieves the Helm index file from the repository URL.
 #[instrument]
-pub async fn get_helm_index<T>(repo_url: T) -> Result<Repository, Error>
+pub async fn get_helm_index<T>(repo_url: T) -> Result<ChartSourceMetadata, Error>
 where
     T: AsRef<str> + std::fmt::Debug,
 {

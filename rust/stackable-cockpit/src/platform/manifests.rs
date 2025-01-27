@@ -94,6 +94,7 @@ pub trait InstallManifestsExt {
                         helm_chart.name, helm_chart.version
                     );
 
+                    // Assumption: that all manifest helm charts refer to repos not registries
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
                         AddHelmRepositorySnafu {
                             repo_name: helm_chart.repo.name.clone(),
@@ -105,10 +106,10 @@ pub trait InstallManifestsExt {
                         .context(SerializeOptionsSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
-                    helm::install_release_from_repo(
+                    helm::install_release_from_repo_or_registry(
                         &helm_chart.release_name,
                         helm::ChartVersion {
-                            repo_name: &helm_chart.repo.name,
+                            chart_source: &helm_chart.repo.name,
                             chart_name: &helm_chart.name,
                             chart_version: Some(&helm_chart.version),
                         },

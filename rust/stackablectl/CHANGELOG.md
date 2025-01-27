@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add new argument `--chart-source` so that operator charts can be pulled either from an OCI registry (the default) or from a index.yaml-based repository ([#344]).
+
+[#344]: https://github.com/stackabletech/stackable-cockpit/pull/344
+
 ## [24.11.2] - 2025-01-15
 
 ### Added

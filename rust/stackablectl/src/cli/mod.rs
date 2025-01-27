@@ -8,6 +8,7 @@ use tracing::{debug, instrument, Level};
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
+    platform::operator::ChartSourceType,
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
@@ -208,6 +209,10 @@ impl Cli {
     pub fn error(&self) -> Output<ErrorContext> {
         Output::new(ErrorContext::default(), true).expect("Failed to create output renderer")
     }
+
+    pub fn chart_type(&self) -> ChartSourceTypeArg {
+        self.repos.chart_source.clone()
+    }
 }
 
 #[derive(Debug, Subcommand)]
@@ -289,4 +294,32 @@ fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, PathOr
     files.extend(env_files);
 
     Ok(files)
+}
+
+/// Enum used for resolving the argument for chart source type. This will be
+/// mapped to ChartSourceType (see below): the reason why we don't have one
+/// enum is to avoid having to add clap dependencies to stackable-cockpit
+/// for the ValueEnum macro.
+#[derive(Clone, Debug, Default, ValueEnum)]
+pub enum ChartSourceTypeArg {
+    /// OCI registry
+    #[default]
+    OCI,
+
+    /// index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific
+    Repo,
+}
+
+impl From<ChartSourceTypeArg> for ChartSourceType {
+    /// Resolves the enum used by clap/arg-resolution to the core type used in
+    /// stackable-cockpit. For the (index.yaml-based) repo case this core type cannot be
+    /// decorated with meaningful information as that would be operator-specific
+    /// i.e. we cannot resolve *which* (index.yaml-based) repo to use until we have inspected
+    /// the operator version. Hence just a simple mapping.
+    fn from(cli_enum: ChartSourceTypeArg) -> Self {
+        match cli_enum {
+            ChartSourceTypeArg::OCI => ChartSourceType::OCI,
+            ChartSourceTypeArg::Repo => ChartSourceType::Repo,
+        }
+    }
 }
