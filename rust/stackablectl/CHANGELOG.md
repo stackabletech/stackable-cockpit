@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [24.11.3] - 2025-01-27
+
 ### Added
 
 - Add new argument `--chart-source` so that operator charts can be pulled either from an OCI registry (the default) or from a index.yaml-based repository ([#344]).
