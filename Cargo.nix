@@ -7886,6 +7886,12 @@ rec {
             features = [ "std" "tls12" ];
           }
           {
+            name = "rustls-native-certs";
+            packageId = "rustls-native-certs";
+            optional = true;
+            target = { target, features }: (!("wasm32" == target."arch" or null));
+          }
+          {
             name = "rustls-pemfile";
             packageId = "rustls-pemfile";
             optional = true;
@@ -8052,7 +8058,7 @@ rec {
           "stream" = [ "tokio/fs" "dep:tokio-util" "dep:wasm-streams" ];
           "zstd" = [ "dep:async-compression" "async-compression?/zstd" "dep:tokio-util" ];
         };
-        resolvedDefaultFeatures = [ "__rustls" "__rustls-ring" "__tls" "blocking" "json" "rustls-tls" "rustls-tls-webpki-roots" ];
+        resolvedDefaultFeatures = [ "__rustls" "__rustls-ring" "__tls" "blocking" "json" "rustls-tls" "rustls-tls-native-roots" "rustls-tls-webpki-roots" ];
       };
       "ring" = rec {
         crateName = "ring";
@@ -9672,7 +9678,7 @@ rec {
             name = "reqwest";
             packageId = "reqwest";
             usesDefaultFeatures = false;
-            features = [ "json" "rustls-tls" ];
+            features = [ "json" "rustls-tls-native-roots" ];
           }
           {
             name = "semver";
@@ -10126,7 +10132,7 @@ rec {
             name = "reqwest";
             packageId = "reqwest";
             usesDefaultFeatures = false;
-            features = [ "json" "rustls-tls" ];
+            features = [ "json" "rustls-tls-native-roots" ];
           }
           {
             name = "semver";
