@@ -3135,7 +3135,7 @@ dependencies = [
 
 [[package]]
 name = "stackablectl"
-version = "24.11.3"
+version = "24.11.4-native-certs"
 dependencies = [
  "clap",
  "clap_complete",
