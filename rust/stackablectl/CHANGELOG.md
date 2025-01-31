@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixes
+
+- Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#xxx]).
+
+[#xxx]: https://github.com/stackabletech/stackable-cockpit/pull/xxx
+
 ## [24.11.3] - 2025-01-27
 
 ### Added
