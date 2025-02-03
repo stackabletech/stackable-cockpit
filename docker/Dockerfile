@@ -1,6 +1,6 @@
 # Using inlined version of ubi8-rust-builder, ends at ## END OF ubi8-rust-builder
 # Each modification (apart from removing ONBUILD clauses) should be preceded by a ## PATCH comment explaining the change
-#FROM docker.stackable.tech/stackable/ubi8-rust-builder AS builder
+#FROM oci.stackable.tech/sdp/ubi8-rust-builder AS builder
 FROM registry.access.redhat.com/ubi8/ubi-minimal@sha256:987ae81ce046652ee4a2c3df54dad5e82faa1b078dab5d09f7cfaae11784ed30 AS builder
 LABEL maintainer="Stackable GmbH"
 
