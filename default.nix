@@ -33,7 +33,7 @@
     };
   }
 , meta ? pkgs.lib.importJSON ./nix/meta.json
-, dockerName ? "docker.stackable.tech/sandbox/${meta.operator.name}"
+, dockerName ? "oci.stackable.tech/sandbox/${meta.operator.name}"
 , dockerTag ? null
 , web ? js2nix.buildEnv {
     # js2nix doesn't import peer dependencies, so we use overlays to patch them in explicitly
