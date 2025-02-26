@@ -74,6 +74,11 @@ pub trait InstallManifestsExt {
     ) -> Result<(), Error> {
         debug!("Installing demo / stack manifests");
 
+        let mut parameters = parameters.clone();
+        // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
+        // fqdn service names [which contain the namespace].
+        parameters.insert("NAMESPACE".to_owned(), product_namespace.to_owned());
+
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
@@ -85,7 +90,7 @@ pub trait InstallManifestsExt {
                     })?;
 
                     let helm_chart: helm::Chart = transfer_client
-                        .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
+                        .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
                         .await
                         .context(FileTransferSnafu)?;
 
@@ -133,7 +138,7 @@ pub trait InstallManifestsExt {
                             })?;
 
                     let manifests = transfer_client
-                        .get(&path_or_url, &Template::new(parameters))
+                        .get(&path_or_url, &Template::new(&parameters))
                         .await
                         .context(FileTransferSnafu)?;
 

@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Pass the namespace as argument `NAMESPACE` to templates files.
+  This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the fqdn of services.
+
 ### Fixes
 
 - Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#351]).
