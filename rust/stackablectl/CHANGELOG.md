@@ -6,8 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- Pass the namespace as argument `NAMESPACE` to templated manifests.
-  This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the fqdn of services ([#355]).
+- Pass the product namespace as a templating variable `NAMESPACE` to manifests.
+  This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the FQDN of services ([#355]).
 
 ### Fixes
 
