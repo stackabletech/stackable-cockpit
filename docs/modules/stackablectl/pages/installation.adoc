@@ -101,7 +101,9 @@ Windows was impossible due to upstream bugs.
 While it may have become possible since then, it'll still provide significant challenges due to high technical complexity
 related to FFI, cgo and Windows-specific issues.
 
-If you do want to attempt it, please refer to xref:#building-from-source[this] section - and if you are successful, by
+For Windows users, WSL will probably be the option for using `stackablectl`.
+
+If you do want to attempt compiling for Windows, please refer to xref:#building-from-source[this] section - and if you are successful, by
 all means, give us a shout and we will reward you handsomely!!
 --
 ====
