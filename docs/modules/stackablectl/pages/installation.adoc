@@ -96,8 +96,13 @@ up asking if you want to allow access for `stackablectl`. You must allow access.
 Windows::
 +
 --
-Currently, there are no pre-built binaries available for Windows. Please refer to xref:#building-from-source[this]
-section to learn how to build the binary from source.
+Currently, there are no pre-built binaries available for Windows. At the time of writing this compiling `stackablectl` on
+Windows was impossible due to upstream bugs.
+While it may have become possible since then, it'll still provide significant challenges due to high technical complexity
+related to FFI, cgo and Windows-specific issues.
+
+If you do want to attempt it, please refer to xref:#building-from-source[this] section - and if you are successful, by
+all means, give us a shout and we will reward you handsomely!!
 --
 ====
 
