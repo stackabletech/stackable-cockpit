@@ -4,11 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Pass the product namespace as a templating variable `NAMESPACE` to manifests.
+  This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the FQDN of services ([#355]).
+
 ### Fixes
 
 - Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#351]).
 
 [#351]: https://github.com/stackabletech/stackable-cockpit/pull/351
+[#355]: https://github.com/stackabletech/stackable-cockpit/pull/355
 
 ## [24.11.3] - 2025-01-27
 
