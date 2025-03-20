@@ -468,6 +468,19 @@ async fn build_source_index_file_list<'a>(
             source_index_files = oci::get_oci_index().await.context(OciSnafu)?;
 
             debug!(count = source_index_files.len(), "OCI Repository entries");
+
+            // TODO (@NickLarsenNZ): Look into why this is so deeply nested with duplicate data.
+            // source_index_files
+            //     .iter()
+            //     .for_each(|(&repo_name, chart_source_metadata)| {
+            //         let x = chart_source_metadata.entries.len();
+            //         tracing::trace!(repo_name, x, "thing");
+            //         let _ = &chart_source_metadata
+            //             .entries
+            //             .iter()
+            //             // y (below) is a Vec
+            //             .for_each(|(x, y)| tracing::error!(x, "blah {:?}", y));
+            //     });
         }
         ChartSourceType::Repo => {
             for helm_repo_name in [
