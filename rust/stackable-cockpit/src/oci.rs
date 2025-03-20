@@ -135,12 +135,12 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
             },
         );
     }
-    let base_url = format!("https://{}/api/v2.0", HELM_OCI_BASE);
+    let base_url = format!("https://{HELM_OCI_BASE}/api/v2.0");
 
     // fetch all operators
     let url = format!(
-        "{}/repositories?page_size={}&q=name=~sdp-charts/",
-        base_url, 100
+        "{base_url}/repositories?page_size={page_size}&q=name=~sdp-charts/",
+        page_size = 100
     );
 
     // reuse connections

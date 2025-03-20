@@ -467,7 +467,7 @@ async fn build_source_index_file_list<'a>(
         ChartSourceType::OCI => {
             source_index_files = oci::get_oci_index().await.context(OciSnafu)?;
 
-            debug!("OCI Repository entries: {:?}", source_index_files);
+            debug!(count = source_index_files.len(), "OCI Repository entries");
         }
         ChartSourceType::Repo => {
             for helm_repo_name in [
