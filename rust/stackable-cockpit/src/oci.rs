@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::debug;
+use tracing::{debug, instrument};
 use url::Url;
 use urlencoding::encode;
 
@@ -117,6 +117,8 @@ impl OciUrlExt for Url {
     }
 }
 
+// TODO (@NickLarsenNZ): Look into why a HashMap is used here when the key is inside each entry in the value
+#[instrument]
 pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>, Error> {
     let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
@@ -153,7 +155,10 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
         .await
         .context(ParseRepositoriesSnafu)?;
 
-    debug!("OCI repos {:?}", repositories);
+    debug!(
+        count = repositories.len(),
+        "Received response for OCI repositories"
+    );
 
     for repository in &repositories {
         // fetch all artifacts pro operator
@@ -162,7 +167,7 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
             .split_once('/')
             .context(UnexpectedOciRepositoryNameSnafu)?;
 
-        debug!("OCI repo parts {} and {}", project_name, repository_name);
+        tracing::trace!(project_name, repository_name, "OCI repository parts");
 
         let mut artifacts = Vec::new();
         let mut page = 1;
@@ -196,17 +201,7 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
                     .replace("-arm64", "")
                     .replace("-amd64", "");
 
-                debug!(
-                    "OCI resolved artifact {}, {}, {}",
-                    release_version.to_string(),
-                    repository_name.to_string(),
-                    release_artifact.name.to_string()
-                );
-
-                debug!(
-                    "Repo/Artifact/Tag: {:?} / {:?} / {:?}",
-                    repository, artifact, release_artifact
-                );
+                tracing::trace!(repository_name, release_version, "OCI resolved artifact");
 
                 let entry = ChartSourceEntry {
                     name: repository_name.to_string(),

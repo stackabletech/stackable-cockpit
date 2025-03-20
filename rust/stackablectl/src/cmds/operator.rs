@@ -539,13 +539,13 @@ where
 }
 
 /// Builds a list of operator versions based on the provided Helm repo.
-#[instrument]
+#[instrument(skip_all, fields(%operator_name))]
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
     helm_repo: &ChartSourceMetadata,
 ) -> Result<Vec<String>, CmdError>
 where
-    T: AsRef<str> + std::fmt::Debug,
+    T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Listing operator versions from repo");
 
