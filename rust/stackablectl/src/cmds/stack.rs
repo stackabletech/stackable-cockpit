@@ -193,7 +193,7 @@ impl StackArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn list_cmd(
     args: &StackListArgs,
     cli: &Cli,
@@ -243,7 +243,7 @@ fn list_cmd(
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,

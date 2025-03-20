@@ -135,9 +135,8 @@ impl Cli {
 
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
-    #[instrument]
     pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
-        debug!("Add Helm repos");
+        tracing::info!("Add Helm repos");
 
         // Stable repository
         helm::add_repo(HELM_REPO_NAME_STABLE, &self.repos.helm_repo_stable)?;
@@ -151,7 +150,6 @@ impl Cli {
         Ok(())
     }
 
-    #[instrument]
     pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
             Ok(Settings::disabled())
@@ -167,7 +165,7 @@ impl Cli {
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn run(&self) -> Result<String, Error> {
         // FIXME (Techassi): There might be a better way to handle this with
         // the match later in this function.

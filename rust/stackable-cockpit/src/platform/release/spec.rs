@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{info, instrument};
+use tracing::{info, instrument, Instrument, Span};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -50,7 +50,7 @@ pub struct ReleaseSpec {
 
 impl ReleaseSpec {
     /// Installs a release by installing individual operators.
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(%namespace, product.included = tracing::field::Empty, product.excluded = tracing::field::Empty))]
     pub async fn install(
         &self,
         include_products: &[String],
@@ -59,6 +59,13 @@ impl ReleaseSpec {
         chart_source: &ChartSourceType,
     ) -> Result<()> {
         info!("Installing release");
+
+        include_products.iter().for_each(|product| {
+            Span::current().record("product.included", product);
+        });
+        exclude_products.iter().for_each(|product| {
+            Span::current().record("product.excluded", product);
+        });
 
         let namespace = namespace.to_string();
         futures::stream::iter(self.filter_products(include_products, exclude_products))

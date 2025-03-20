@@ -187,7 +187,7 @@ impl OperatorArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
 
@@ -244,7 +244,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Describing operator {}", args.operator_name);
 
@@ -303,7 +303,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
 
@@ -351,7 +351,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     Ok(result.render())
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
 
@@ -381,7 +381,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
     Ok(result.render())
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing installed operators");
 
@@ -493,7 +493,7 @@ async fn build_source_index_file_list<'a>(
 
 /// Iterates over all valid operators and creates a list of versions grouped
 /// by stable, test and dev lines based on the list of Helm repo index files.
-#[instrument]
+#[instrument(skip_all)]
 fn build_versions_list(
     helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
@@ -515,13 +515,13 @@ fn build_versions_list(
 
 /// Builds a list of versions for one operator (by name) which is grouped by
 /// stable, test and dev lines based on the list of Helm repo index files.
-#[instrument]
+#[instrument(skip_all, fields(%operator_name))]
 fn build_versions_list_for_operator<T>(
     operator_name: T,
     helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<OperatorVersionList, CmdError>
 where
-    T: AsRef<str> + std::fmt::Debug,
+    T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!(
         "Build versions list for operator {}",

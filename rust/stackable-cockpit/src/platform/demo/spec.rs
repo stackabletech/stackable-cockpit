@@ -134,6 +134,11 @@ impl DemoSpec {
         Ok(())
     }
 
+    #[instrument(skip_all, fields(
+        stack_name = %self.stack,
+        operator_namespace = %install_parameters.operator_namespace,
+        product_namespace = %install_parameters.product_namespace,
+    ))]
     pub async fn install(
         &self,
         stack_list: StackList,
@@ -177,7 +182,11 @@ impl DemoSpec {
             .await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(
+        stack_name = %self.stack,
+        operator_namespace = %install_params.operator_namespace,
+        product_namespace = %install_params.product_namespace,
+    ))]
     async fn prepare_manifests(
         &self,
         install_params: DemoInstallParameters,

@@ -9,7 +9,7 @@ pub fn binary_present<T: AsRef<OsStr>>(name: T) -> bool {
 }
 
 /// Returns if ALL binaries in the list are present in the $PATH.
-#[instrument]
+#[instrument(skip_all)]
 pub fn binaries_present(names: &[&str]) -> bool {
     debug!("Checking if required binaries are present on the system");
 
@@ -24,7 +24,7 @@ pub fn binaries_present(names: &[&str]) -> bool {
 
 /// Returns [`None`] if all binaries in the list are present in the $PATH and
 /// if not, returns [`Some`] containing the name of the missing binary.
-#[instrument]
+#[instrument(skip_all)]
 pub fn binaries_present_with_name(names: &[&str]) -> Option<String> {
     debug!("Checking if required binaries are present on the system");
 
