@@ -191,7 +191,7 @@ impl OperatorSpec {
         namespace: &str,
         chart_source: &ChartSourceType,
     ) -> Result<(), helm::Error> {
-        info!("Installing operator {}", self);
+        info!(operator = %self, "Installing operator");
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();

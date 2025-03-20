@@ -70,26 +70,34 @@ impl ReleaseSpec {
         let namespace = namespace.to_string();
         futures::stream::iter(self.filter_products(include_products, exclude_products))
             .map(|(product_name, product)| {
+                let task_span =
+                    tracing::debug_span!("install_operator", product_name = tracing::field::Empty);
+
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
                 // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
                 // get useful parallelism.
-                tokio::spawn(async move {
-                    info!("Installing {product_name}-operator");
+                tokio::spawn(
+                    async move {
+                        Span::current().record("product_name", &product_name);
+                        info!("Installing {product_name}-operator");
 
-                    // Create operator spec
-                    let operator = OperatorSpec::new(&product_name, Some(product.version.clone()))
-                        .context(OperatorSpecParseSnafu)?;
+                        // Create operator spec
+                        let operator =
+                            OperatorSpec::new(&product_name, Some(product.version.clone()))
+                                .context(OperatorSpecParseSnafu)?;
 
-                    // Install operator
-                    operator
-                        .install(&namespace, &chart_source)
-                        .context(HelmInstallSnafu)?;
+                        // Install operator
+                        operator
+                            .install(&namespace, &chart_source)
+                            .context(HelmInstallSnafu)?;
 
-                    info!("Installed {product_name}-operator");
+                        info!("Installed {product_name}-operator");
 
-                    Ok(())
-                })
+                        Ok(())
+                    }
+                    .instrument(task_span),
+                )
             })
             .buffer_unordered(10)
             .map(|res| res.context(BackgroundTaskSnafu)?)

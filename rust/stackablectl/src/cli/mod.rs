@@ -152,6 +152,7 @@ impl Cli {
 
     pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
+            tracing::debug!("Cache disabled");
             Ok(Settings::disabled())
         } else {
             let project_dir = ProjectDirs::from(
@@ -161,7 +162,12 @@ impl Cli {
             )
             .ok_or(CacheSettingsError::UserDir)?;
 
-            Ok(Settings::disk(project_dir.cache_dir()))
+            let cache_dir = project_dir.cache_dir();
+            tracing::debug!(
+                cache_dir = %cache_dir.to_string_lossy(),
+                "Setting cache directory"
+            );
+            Ok(Settings::disk(cache_dir))
         }
     }
 

@@ -246,7 +246,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 
 #[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
-    debug!("Describing operator {}", args.operator_name);
+    debug!(operator_name = %args.operator_name, "Describing operator");
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -328,6 +328,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             )
             .context(HelmSnafu)?;
 
+        // TODO (@NickLarsenNZ): Send this to the progress handler instead of using println
+        // info!(%operator, "Installed operator");
         println!("Installed {} operator", operator);
     }
 
@@ -383,7 +385,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 
 #[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
-    debug!("Listing installed operators");
+    info!("Listing installed operators");
 
     type ReleaseList = IndexMap<String, Release>;
 
@@ -523,10 +525,7 @@ fn build_versions_list_for_operator<T>(
 where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
-    debug!(
-        "Build versions list for operator {}",
-        operator_name.as_ref()
-    );
+    debug!("Build versions list for operator");
 
     let mut versions_list = OperatorVersionList(HashMap::new());
     let operator_name = operator_name.as_ref();

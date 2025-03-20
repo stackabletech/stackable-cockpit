@@ -265,7 +265,7 @@ async fn describe_cmd(
     cli: &Cli,
     list: demo::List,
 ) -> Result<String, CmdError> {
-    info!("Describing demo {}", args.demo_name);
+    info!(demo_name = %args.demo_name, "Describing demo");
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
@@ -327,7 +327,7 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
     release_branch: &str,
 ) -> Result<String, CmdError> {
-    info!(%release_branch, "Installing demo {}", args.demo_name);
+    info!(demo_name = %args.demo_name, "Installing demo");
 
     // Init result output and progress output
     let mut output = cli.result();

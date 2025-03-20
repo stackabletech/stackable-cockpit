@@ -206,7 +206,7 @@ impl StackSpec {
         _product_namespace: &str, // TODO (@NickLarsenNZ): remove this field
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
-        info!("Trying to install release {}", self.release);
+        info!(self.release, "Trying to install release");
 
         // Get the release by name
         let release = release_list
