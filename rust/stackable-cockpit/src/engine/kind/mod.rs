@@ -64,7 +64,7 @@ impl Cluster {
     }
 
     /// Create a new local cluster by calling the kind binary.
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn create(&self) -> Result<()> {
         info!("Creating local cluster using kind");
 
@@ -109,7 +109,7 @@ impl Cluster {
     }
 
     /// Creates a kind cluster if it doesn't exist already.
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn create_if_not_exists(&self) -> Result<()> {
         info!("Creating cluster if it doesn't exist using kind");
 
@@ -131,7 +131,7 @@ impl Cluster {
     }
 
     /// Check if a kind cluster with the provided name already exists.
-    #[instrument]
+    #[instrument(skip_all)]
     async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool> {
         debug!("Checking if kind cluster exists");
 

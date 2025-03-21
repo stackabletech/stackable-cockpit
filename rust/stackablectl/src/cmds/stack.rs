@@ -193,7 +193,7 @@ impl StackArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn list_cmd(
     args: &StackListArgs,
     cli: &Cli,
@@ -243,13 +243,13 @@ fn list_cmd(
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
-    info!("Describing stack {}", args.stack_name);
+    info!(stack_name = %args.stack_name, "Describing stack");
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -312,7 +312,7 @@ async fn install_cmd(
     stack_list: stack::StackList,
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
-    info!("Installing stack {}", args.stack_name);
+    info!(stack_name = %args.stack_name, "Installing stack");
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)

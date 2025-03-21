@@ -19,7 +19,7 @@ pub enum Error {
 }
 
 /// Checks if Docker is running on the system
-#[instrument]
+#[instrument(skip_all)]
 pub async fn check_if_docker_is_running() -> Result<()> {
     debug!("Checking if Docker is running");
 

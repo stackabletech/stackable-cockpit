@@ -151,7 +151,13 @@ impl StackSpec {
     }
 
     // TODO (Techassi): Can we get rid of the release list and just use the release spec instead
-    #[instrument(skip(self, release_list, client, transfer_client))]
+    #[instrument(skip_all, fields(
+        stack_name = %install_parameters.stack_name,
+        // NOTE (@NickLarsenNZ): Option doesn't impl Display, so we need to call
+        // display for the inner type if it exists. Otherwise we gte the Debug
+        // impl for the whole Option.
+        demo_name = install_parameters.demo_name.as_ref().map(tracing::field::display),
+    ))]
     pub async fn install(
         &self,
         release_list: release::ReleaseList,
@@ -192,15 +198,15 @@ impl StackSpec {
             .await
     }
 
-    #[instrument(skip(self, release_list))]
+    #[instrument(skip_all, fields(release = %self.release, %operator_namespace))]
     pub async fn install_release(
         &self,
         release_list: release::ReleaseList,
         operator_namespace: &str,
-        product_namespace: &str,
+        _product_namespace: &str, // TODO (@NickLarsenNZ): remove this field
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
-        info!("Trying to install release {}", self.release);
+        info!(self.release, "Trying to install release");
 
         // Get the release by name
         let release = release_list

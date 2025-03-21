@@ -8,9 +8,11 @@ All notable changes to this project will be documented in this file.
 
 - Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#351]).
 - Use `heritage` label when looking up the `minio-console` stacklet ([#364]).
+- Improve tracing and log output ([#365]).
 
 [#351]: https://github.com/stackabletech/stackable-cockpit/pull/351
 [#364]: https://github.com/stackabletech/stackable-cockpit/pull/364
+[#365]: https://github.com/stackabletech/stackable-cockpit/pull/365
 
 ## [24.11.3] - 2025-01-27
 

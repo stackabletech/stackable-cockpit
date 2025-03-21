@@ -182,7 +182,7 @@ pub struct ChartVersion<'a> {
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
-#[instrument]
+#[instrument(skip(values_yaml), fields(with_values = values_yaml.is_some()))]
 pub fn install_release_from_repo_or_registry(
     release_name: &str,
     ChartVersion {
@@ -239,8 +239,8 @@ pub fn install_release_from_repo_or_registry(
         let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
 
         debug!(
-            "Installing Helm release {} ({}) from chart {}",
-            release_name, chart_version, full_chart_name
+            release_name,
+            chart_version, full_chart_name, "Installing Helm release"
         );
 
         install_release(
@@ -260,6 +260,7 @@ pub fn install_release_from_repo_or_registry(
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
+#[instrument(fields(with_values = values_yaml.is_some()))]
 fn install_release(
     release_name: &str,
     chart_name: &str,
@@ -388,10 +389,10 @@ pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), Error
 }
 
 /// Retrieves the Helm index file from the repository URL.
-#[instrument]
+#[instrument(skip_all, fields(%repo_url))]
 pub async fn get_helm_index<T>(repo_url: T) -> Result<ChartSourceMetadata, Error>
 where
-    T: AsRef<str> + std::fmt::Debug,
+    T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Get Helm repo index file");
 

@@ -211,7 +211,7 @@ async fn describe_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    info!("Describing release");
+    info!(release = %args.release, "Describing release");
 
     let release = release_list.get(&args.release);
 
@@ -272,6 +272,7 @@ async fn install_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
+    info!(release = %args.release, "Installing release");
     match release_list.get(&args.release) {
         Some(release) => {
             let mut output = cli.result();
