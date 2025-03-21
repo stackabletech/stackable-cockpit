@@ -518,7 +518,13 @@ fn build_versions_list(
 
     for operator in operator::VALID_OPERATORS {
         for (helm_repo_name, helm_repo_index_file) in helm_index_files {
-            let versions = list_operator_versions_from_repo(operator, helm_repo_index_file)?;
+            let span = tracing::info_span!(
+                "build_versions_list_iter",
+                helm.repository.name = %helm_repo_name,
+                operator_name = %operator,
+            );
+            let versions =
+                span.in_scope(|| list_operator_versions_from_repo(operator, helm_repo_index_file))?;
             let entry = versions_list.entry(operator.to_string());
             let entry = entry.or_insert(OperatorVersionList(HashMap::new()));
             entry.0.insert(helm_repo_name.to_string(), versions);
@@ -560,15 +566,16 @@ fn list_operator_versions_from_repo<T>(
 where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
-    debug!("Listing operator versions from repo");
+    debug!("Listing operator versions from repository");
 
-    let operator_name = utils::operator_chart_name(operator_name.as_ref());
+    let chart_name = utils::operator_chart_name(operator_name.as_ref());
 
-    match helm_repo.entries.get(&operator_name) {
+    match helm_repo.entries.get(&chart_name) {
         Some(entries) => {
             let mut versions = entries
                 .iter()
                 .map(|entry| {
+                    tracing::trace!(helm.chart.name = %chart_name, helm.chart.version = %entry.version, "Found operator chart version");
                     Version::parse(&entry.version).with_context(|_| InvalidHelmChartVersionSnafu {
                         version: entry.version.clone(),
                     })
