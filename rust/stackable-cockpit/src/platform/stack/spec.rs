@@ -156,7 +156,7 @@ impl StackSpec {
         // NOTE (@NickLarsenNZ): Option doesn't impl Display, so we need to call
         // display for the inner type if it exists. Otherwise we gte the Debug
         // impl for the whole Option.
-        demo_name = install_parameters.demo_name.as_ref().map(|v| tracing::field::display(v)),
+        demo_name = install_parameters.demo_name.as_ref().map(tracing::field::display),
     ))]
     pub async fn install(
         &self,
