@@ -162,6 +162,7 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
 
     for repository in &repositories {
         // fetch all artifacts pro operator
+        // NOTE (@NickLarsenNZ): I think repository_name should be helm_chart_name.
         let (project_name, repository_name) = repository
             .name
             .split_once('/')
