@@ -2937,10 +2937,17 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-openapi-fetch@^0.2.0:
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/openapi-fetch/-/openapi-fetch-0.2.1.tgz#a5865cd030620df9047c588554b1b670b0355757"
-  integrity sha512-XrpiPz8fPUdYtgcXSU4u8jJ/At67PbFsj6XRZZbt6lMsrosKplWY7dUgnkstYaroschNz/NfYSPIiq0sOaY0nw==
+openapi-fetch@^0.13.0:
+  version "0.13.5"
+  resolved "https://registry.yarnpkg.com/openapi-fetch/-/openapi-fetch-0.13.5.tgz#805606860d85b8ba8c2e7cb36ea30b473d8065d9"
+  integrity sha512-AQK8T9GSKFREFlN1DBXTYsLjs7YV2tZcJ7zUWxbjMoQmj8dDSFRrzhLCbHPZWA1TMV3vACqfCxLEZcwf2wxV6Q==
+  dependencies:
+    openapi-typescript-helpers "^0.0.15"
+
+openapi-typescript-helpers@^0.0.15:
+  version "0.0.15"
+  resolved "https://registry.yarnpkg.com/openapi-typescript-helpers/-/openapi-typescript-helpers-0.0.15.tgz#96ffa762a5e01ef66a661b163d5f1109ed1967ed"
+  integrity sha512-opyTPaunsklCBpTK8JGef6mfPhLSnyy5a0IN9vKtx3+4aExf+KxEqYwIy3hqkedXIB97u357uLMJsOnm3GVjsw==
 
 openapi-typescript@^6.5.0:
   version "6.7.5"
