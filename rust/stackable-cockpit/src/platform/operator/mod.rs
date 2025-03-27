@@ -178,13 +178,20 @@ impl OperatorSpec {
     }
 
     /// Installs the operator using Helm.
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(
+        %namespace,
+        name = %self.name,
+        // NOTE (@NickLarsenNZ): Option doesn't impl Display, so we need to call
+        // display for the inner type if it exists. Otherwise we gte the Debug
+        // impl for the whole Option.
+        version = self.version.as_ref().map(tracing::field::display),
+    ))]
     pub fn install(
         &self,
         namespace: &str,
         chart_source: &ChartSourceType,
     ) -> Result<(), helm::Error> {
-        info!("Installing operator {}", self);
+        info!(operator = %self, "Installing operator");
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();
@@ -213,10 +220,10 @@ impl OperatorSpec {
     }
 
     /// Uninstalls the operator using Helm.
-    #[instrument]
+    #[instrument(skip_all, fields(%namespace))]
     pub fn uninstall<T>(&self, namespace: T) -> Result<(), helm::Error>
     where
-        T: AsRef<str> + std::fmt::Debug,
+        T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
     {
         match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {

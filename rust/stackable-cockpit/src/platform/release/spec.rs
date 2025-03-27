@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{info, instrument};
+use tracing::{info, instrument, Instrument, Span};
 
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -50,7 +50,11 @@ pub struct ReleaseSpec {
 
 impl ReleaseSpec {
     /// Installs a release by installing individual operators.
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(
+        %namespace,
+        product.included = tracing::field::Empty,
+        product.excluded = tracing::field::Empty,
+    ))]
     pub async fn install(
         &self,
         include_products: &[String],
@@ -60,29 +64,44 @@ impl ReleaseSpec {
     ) -> Result<()> {
         info!("Installing release");
 
+        include_products.iter().for_each(|product| {
+            Span::current().record("product.included", product);
+        });
+        exclude_products.iter().for_each(|product| {
+            Span::current().record("product.excluded", product);
+        });
+
         let namespace = namespace.to_string();
         futures::stream::iter(self.filter_products(include_products, exclude_products))
             .map(|(product_name, product)| {
+                let task_span =
+                    tracing::debug_span!("install_operator", product_name = tracing::field::Empty);
+
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
                 // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
                 // get useful parallelism.
-                tokio::spawn(async move {
-                    info!("Installing {product_name}-operator");
+                tokio::spawn(
+                    async move {
+                        Span::current().record("product_name", &product_name);
+                        info!("Installing {product_name}-operator");
 
-                    // Create operator spec
-                    let operator = OperatorSpec::new(&product_name, Some(product.version.clone()))
-                        .context(OperatorSpecParseSnafu)?;
+                        // Create operator spec
+                        let operator =
+                            OperatorSpec::new(&product_name, Some(product.version.clone()))
+                                .context(OperatorSpecParseSnafu)?;
 
-                    // Install operator
-                    operator
-                        .install(&namespace, &chart_source)
-                        .context(HelmInstallSnafu)?;
+                        // Install operator
+                        operator
+                            .install(&namespace, &chart_source)
+                            .context(HelmInstallSnafu)?;
 
-                    info!("Installed {product_name}-operator");
+                        info!("Installed {product_name}-operator");
 
-                    Ok(())
-                })
+                        Ok(())
+                    }
+                    .instrument(task_span),
+                )
             })
             .buffer_unordered(10)
             .map(|res| res.context(BackgroundTaskSnafu)?)

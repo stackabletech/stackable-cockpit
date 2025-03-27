@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::debug;
+use tracing::{debug, instrument};
 use url::Url;
 use urlencoding::encode;
 
@@ -117,6 +117,8 @@ impl OciUrlExt for Url {
     }
 }
 
+// TODO (@NickLarsenNZ): Look into why a HashMap is used here when the key is inside each entry in the value
+#[instrument]
 pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>, Error> {
     let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
@@ -133,12 +135,12 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
             },
         );
     }
-    let base_url = format!("https://{}/api/v2.0", HELM_OCI_BASE);
+    let base_url = format!("https://{HELM_OCI_BASE}/api/v2.0");
 
     // fetch all operators
     let url = format!(
-        "{}/repositories?page_size={}&q=name=~sdp-charts/",
-        base_url, 100
+        "{base_url}/repositories?page_size={page_size}&q=name=~sdp-charts/",
+        page_size = 100
     );
 
     // reuse connections
@@ -153,16 +155,20 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
         .await
         .context(ParseRepositoriesSnafu)?;
 
-    debug!("OCI repos {:?}", repositories);
+    debug!(
+        count = repositories.len(),
+        "Received response for OCI repositories"
+    );
 
     for repository in &repositories {
         // fetch all artifacts pro operator
+        // NOTE (@NickLarsenNZ): I think repository_name should be helm_chart_name.
         let (project_name, repository_name) = repository
             .name
             .split_once('/')
             .context(UnexpectedOciRepositoryNameSnafu)?;
 
-        debug!("OCI repo parts {} and {}", project_name, repository_name);
+        tracing::trace!(project_name, repository_name, "OCI repository parts");
 
         let mut artifacts = Vec::new();
         let mut page = 1;
@@ -196,17 +202,7 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
                     .replace("-arm64", "")
                     .replace("-amd64", "");
 
-                debug!(
-                    "OCI resolved artifact {}, {}, {}",
-                    release_version.to_string(),
-                    repository_name.to_string(),
-                    release_artifact.name.to_string()
-                );
-
-                debug!(
-                    "Repo/Artifact/Tag: {:?} / {:?} / {:?}",
-                    repository, artifact, release_artifact
-                );
+                tracing::trace!(repository_name, release_version, "OCI resolved artifact");
 
                 let entry = ChartSourceEntry {
                     name: repository_name.to_string(),
