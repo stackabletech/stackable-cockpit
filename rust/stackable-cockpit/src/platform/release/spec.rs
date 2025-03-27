@@ -50,7 +50,11 @@ pub struct ReleaseSpec {
 
 impl ReleaseSpec {
     /// Installs a release by installing individual operators.
-    #[instrument(skip_all, fields(%namespace, product.included = tracing::field::Empty, product.excluded = tracing::field::Empty))]
+    #[instrument(skip_all, fields(
+        %namespace,
+        product.included = tracing::field::Empty,
+        product.excluded = tracing::field::Empty,
+    ))]
     pub async fn install(
         &self,
         include_products: &[String],
