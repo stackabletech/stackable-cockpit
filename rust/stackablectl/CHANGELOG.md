@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [25.3.0] - 2025-03-27
+
 ### Fixes
 
 - Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#351]).
