@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Prefix `ui-http` Port endpoints with `http://`, as e.g. used by hbase-operator ([#XXX]).
+- Prefix `ui-http` port endpoints with `http://`, as e.g. used by hbase-operator ([#XXX]).
 
 ## [25.3.0] - 2025-03-27
 
