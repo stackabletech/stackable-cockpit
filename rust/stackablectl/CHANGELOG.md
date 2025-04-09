@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Prefix `ui-http` Port endpoints with `http://`, as e.g. used by hbase-operator ([#XXX]).
+
 ## [25.3.0] - 2025-03-27
 
-### Fixes
+### Fixed
 
 - Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#351]).
 - Use `heritage` label when looking up the `minio-console` stacklet ([#364]).
