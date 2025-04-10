@@ -4,7 +4,6 @@ use k8s_openapi::{
 };
 use serde::Serialize;
 use stackable_operator::status::condition::ClusterCondition;
-
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 

@@ -74,7 +74,9 @@ pub enum InstallReleaseError {
     /// This error indicates that the Helm release is already installed at a
     /// different version than requested. Installation is skipped. Existing
     /// releases should be uninstalled with 'stackablectl op un \<NAME\>'.
-    #[snafu(display("release {name} ({current_version}) already installed, skipping requested version {requested_version}"))]
+    #[snafu(display(
+        "release {name} ({current_version}) already installed, skipping requested version {requested_version}"
+    ))]
     ReleaseAlreadyInstalled {
         name: String,
         current_version: String,
@@ -130,8 +132,7 @@ impl Display for InstallReleaseStatus {
                 write!(
                     f,
                     "The release {} ({}) is already installed and no specific version was requested, skipping.",
-                    release_name,
-                    current_version
+                    release_name, current_version
                 )
             }
             InstallReleaseStatus::Installed(release_name) => {
@@ -230,7 +231,7 @@ pub fn install_release_from_repo_or_registry(
                     return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
                         release_name: release_name.to_string(),
                         current_version,
-                    })
+                    });
                 }
             }
         }

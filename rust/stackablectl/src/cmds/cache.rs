@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use clap::{Args, Subcommand};
-use comfy_table::{presets::UTF8_FULL, ColumnConstraint, Table, Width};
+use comfy_table::{ColumnConstraint, Table, Width, presets::UTF8_FULL};
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
 use tracing::{info, instrument};

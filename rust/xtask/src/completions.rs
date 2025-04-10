@@ -2,8 +2,8 @@ use std::fs;
 
 use clap::CommandFactory;
 use clap_complete::{
-    generate as generate_comps,
     Shell::{Bash, Elvish, Fish, Zsh},
+    generate as generate_comps,
 };
 use clap_complete_nushell::Nushell;
 use snafu::{ResultExt, Snafu};

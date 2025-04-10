@@ -3,7 +3,7 @@ use std::{
     process::{Command, Stdio},
 };
 
-use snafu::{ensure, ResultExt, Snafu};
+use snafu::{ResultExt, Snafu, ensure};
 use stackable_cockpitd::api_doc::openapi;
 
 #[derive(Debug, Snafu)]
@@ -35,12 +35,9 @@ pub fn generate() -> Result<(), GenOpenapiError> {
         .write_all(openapi_json.as_bytes())
         .context(WriteOpenapiSchemaSnafu)?;
     let status = codegen.wait().context(ImportOpenapiSchemaRunSnafu)?;
-    ensure!(
-        status.success(),
-        ImportOpenapiSchemaSnafu {
-            error_code: status.code()
-        }
-    );
+    ensure!(status.success(), ImportOpenapiSchemaSnafu {
+        error_code: status.code()
+    });
 
     Ok(())
 }
