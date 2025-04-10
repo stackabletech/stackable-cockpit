@@ -3,8 +3,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{info, instrument, Instrument, Span};
-
+use tracing::{Instrument, Span, info, instrument};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 

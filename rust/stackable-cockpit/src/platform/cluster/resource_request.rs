@@ -1,12 +1,11 @@
 use std::fmt::Display;
 
-#[cfg(feature = "openapi")]
-use utoipa::ToSchema;
-
 use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
+#[cfg(feature = "openapi")]
+use utoipa::ToSchema;
 
 use crate::utils::k8s::{Client, Error};
 

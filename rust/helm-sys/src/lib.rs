@@ -5,7 +5,7 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-use std::ffi::{c_char, CStr, CString};
+use std::ffi::{CStr, CString, c_char};
 
 pub const HELM_ERROR_PREFIX: &str = "ERROR:";
 

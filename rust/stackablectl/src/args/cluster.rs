@@ -1,6 +1,5 @@
 use clap::{Args, ValueEnum};
-use snafu::{ensure, ResultExt, Snafu};
-
+use snafu::{ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     constants::DEFAULT_LOCAL_CLUSTER_NAME,
     engine::{kind, minikube},

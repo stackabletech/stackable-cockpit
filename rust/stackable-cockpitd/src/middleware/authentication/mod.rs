@@ -6,15 +6,15 @@ use std::{
 };
 
 use axum::{
+    Json,
     body::Body,
     extract::Extension,
     http::{HeaderMap, HeaderValue, StatusCode},
     response::IntoResponse,
-    Json,
 };
 use axum_extra::headers::{
-    authorization::{Basic, Bearer},
     Authorization, HeaderMapExt,
+    authorization::{Basic, Bearer},
 };
 use serde::Serialize;
 use tower_http::validate_request::{ValidateRequest, ValidateRequestHeaderLayer};
@@ -93,7 +93,9 @@ impl Authenticator {
                 Err("request authentication failed: invalid username or password")
             }
         } else {
-            Err("request authentication failed: no valid authentication method presented (expected authorization: basic or bearer)")
+            Err(
+                "request authentication failed: no valid authentication method presented (expected authorization: basic or bearer)",
+            )
         }
     }
 

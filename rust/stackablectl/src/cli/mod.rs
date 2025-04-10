@@ -3,8 +3,6 @@ use std::env;
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
 use snafu::{ResultExt, Snafu};
-use tracing::{instrument, Level};
-
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
@@ -14,6 +12,7 @@ use stackable_cockpit::{
     },
     xfer::cache::Settings,
 };
+use tracing::{Level, instrument};
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},

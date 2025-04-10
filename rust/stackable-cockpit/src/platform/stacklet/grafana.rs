@@ -1,4 +1,4 @@
-use kube::{api::ListParams, ResourceExt};
+use kube::{ResourceExt, api::ListParams};
 use snafu::ResultExt;
 
 use crate::{

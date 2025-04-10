@@ -1,10 +1,9 @@
 use indexmap::IndexMap;
-use kube::{core::GroupVersionKind, ResourceExt};
+use kube::{ResourceExt, core::GroupVersionKind};
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
 use tracing::info;
-
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -103,7 +102,7 @@ pub async fn get_credentials_for_product(
         Ok(credentials) => credentials,
         Err(credentials::Error::NoSecret) => None,
         Err(credentials::Error::KubeClientFetch { source }) => {
-            return Err(Error::KubeClientFetch { source })
+            return Err(Error::KubeClientFetch { source });
         }
     };
 
@@ -171,14 +170,11 @@ fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, G
     for product_name in product_names {
         // Why? Just why? Can we please make this consistent?
         if *product_name == "spark-history-server" {
-            map.insert(
-                *product_name,
-                GroupVersionKind {
-                    group: "spark.stackable.tech".into(),
-                    version: "v1alpha1".into(),
-                    kind: "SparkHistoryServer".into(),
-                },
-            );
+            map.insert(*product_name, GroupVersionKind {
+                group: "spark.stackable.tech".into(),
+                version: "v1alpha1".into(),
+                kind: "SparkHistoryServer".into(),
+            });
             continue;
         }
 

@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 use indexmap::IndexMap;
 use k8s_openapi::api::core::v1::{Service, ServiceSpec};
-use kube::{api::ListParams, ResourceExt};
+use kube::{ResourceExt, api::ListParams};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, warn};
 
@@ -168,25 +168,36 @@ pub async fn get_endpoint_urls_for_nodeport(
             Some(addresses) if !addresses.is_empty() => match &addresses[0].node_name {
                 Some(node_name) => node_name,
                 None => {
-                    warn!("Could not determine the node the endpoint {service_name} is running on because the address of the subset didn't had a node name");
+                    warn!(
+                        "Could not determine the node the endpoint {service_name} is running on because the address of the subset didn't had a node name"
+                    );
                     return Ok(IndexMap::new());
                 }
             },
             Some(_) => {
-                warn!("Could not determine the node the endpoint {service_name} is running on because the subset had no addresses");
+                warn!(
+                    "Could not determine the node the endpoint {service_name} is running on because the subset had no addresses"
+                );
                 return Ok(IndexMap::new());
             }
             None => {
-                warn!("Could not determine the node the endpoint {service_name} is running on because subset had no addresses. Is the service {service_name} up and running?");
+                warn!(
+                    "Could not determine the node the endpoint {service_name} is running on because subset had no addresses. Is the service {service_name} up and running?"
+                );
                 return Ok(IndexMap::new());
             }
         },
         Some(subsets) => {
-            warn!("Could not determine the node the endpoint {service_name} is running on because endpoints consists of {num_subsets} subsets", num_subsets=subsets.len());
+            warn!(
+                "Could not determine the node the endpoint {service_name} is running on because endpoints consists of {num_subsets} subsets",
+                num_subsets = subsets.len()
+            );
             return Ok(IndexMap::new());
         }
         None => {
-            warn!("Could not determine the node the endpoint {service_name} is running on because the endpoint has no subset. Is the service {service_name} up and running?");
+            warn!(
+                "Could not determine the node the endpoint {service_name} is running on because the endpoint has no subset. Is the service {service_name} up and running?"
+            );
             return Ok(IndexMap::new());
         }
     };
@@ -336,8 +347,9 @@ fn display_name_for_listener_name(listener_name: &str, object_name: &str) -> Opt
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rstest::rstest;
+
+    use super::*;
 
     #[rstest]
     // These are all the listener names implemented so far (only HDFS is using listener-operator). In the future more

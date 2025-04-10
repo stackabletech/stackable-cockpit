@@ -1,6 +1,6 @@
 use std::process::Stdio;
 
-use snafu::{ensure, OptionExt, ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu, ensure};
 use tokio::{io::AsyncWriteExt, process::Command};
 use tracing::{debug, info, instrument};
 
@@ -141,12 +141,9 @@ impl Cluster {
             .await
             .context(CommandFailedToRunSnafu)?;
 
-        ensure!(
-            output.status.success(),
-            CommandErroredOutSnafu {
-                error: String::from_utf8_lossy(&output.stderr)
-            }
-        );
+        ensure!(output.status.success(), CommandErroredOutSnafu {
+            error: String::from_utf8_lossy(&output.stderr)
+        });
 
         let output = String::from_utf8_lossy(&output.stdout);
         Ok(output.lines().any(|name| name == cluster_name))

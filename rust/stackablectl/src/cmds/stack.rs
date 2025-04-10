@@ -1,12 +1,9 @@
 use clap::{Args, Subcommand};
 use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
+    presets::{NOTHING, UTF8_FULL},
 };
-use snafu::{ensure, OptionExt as _, ResultExt, Snafu};
-use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{debug, info, instrument};
-
+use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE},
@@ -21,6 +18,8 @@ use stackable_cockpit::{
     },
     xfer::{self, cache::Cache},
 };
+use stackable_operator::kvp::{LabelError, Labels};
+use tracing::{debug, info, instrument};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -159,10 +158,9 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(
-                    release_list.contains_key(release),
-                    NoSuchReleaseSnafu { release }
-                );
+                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
+                    release
+                });
 
                 if release == "dev" {
                     "main".to_string()

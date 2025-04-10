@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, info, instrument, warn};
-
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
