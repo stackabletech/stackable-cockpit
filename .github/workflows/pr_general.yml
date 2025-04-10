@@ -42,7 +42,7 @@ jobs:
         with:
           key: udeps
           cache-all-crates: "true"
-      - run: cargo install --locked cargo-udeps@0.1.50
+      - run: cargo install --locked cargo-udeps@0.1.55
       - run: cargo udeps --workspace
 
   run_cargodeny:
