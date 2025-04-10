@@ -311,6 +311,7 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
     // As we still support older operator versions we need to also include the "old" way of naming
     if port_name == "http"
         || port_name.starts_with("http-")
+        || port_name == "ui-http"
         || port_name == "ui"
         || port_name == "airflow"
         || port_name == "superset"

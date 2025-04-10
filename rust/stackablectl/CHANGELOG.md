@@ -4,9 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Prefix `ui-http` port endpoints with `http://`, as e.g. used by hbase-operator ([#368]).
+
 ## [25.3.0] - 2025-03-27
 
-### Fixes
+### Fixed
 
 - Use `rustls-native-certs` so that `stackablectl` can be used in environments with internal PKI ([#351]).
 - Use `heritage` label when looking up the `minio-console` stacklet ([#364]).
@@ -15,6 +19,7 @@ All notable changes to this project will be documented in this file.
 [#351]: https://github.com/stackabletech/stackable-cockpit/pull/351
 [#364]: https://github.com/stackabletech/stackable-cockpit/pull/364
 [#365]: https://github.com/stackabletech/stackable-cockpit/pull/365
+[#368]: https://github.com/stackabletech/stackable-cockpit/pull/368
 
 ## [24.11.3] - 2025-01-27
 
