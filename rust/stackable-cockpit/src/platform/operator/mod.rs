@@ -2,7 +2,7 @@ use std::{fmt::Display, str::FromStr};
 
 use semver::Version;
 use serde::Serialize;
-use snafu::{ensure, ResultExt, Snafu};
+use snafu::{ResultExt, Snafu, ensure};
 use tracing::{info, instrument};
 
 use crate::{
@@ -61,15 +61,10 @@ pub struct OperatorSpec {
 
 impl Display for OperatorSpec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}{}",
-            self.name,
-            match &self.version {
-                Some(v) => format!("={v}"),
-                None => "".into(),
-            }
-        )
+        write!(f, "{}{}", self.name, match &self.version {
+            Some(v) => format!("={v}"),
+            None => "".into(),
+        })
     }
 }
 
@@ -91,10 +86,9 @@ impl FromStr for OperatorSpec {
         ensure!(len <= 2, InvalidEqualSignCountSnafu);
 
         // Check if the provided operator name is in the list of valid operators
-        ensure!(
-            VALID_OPERATORS.contains(&parts[0]),
-            InvalidNameSnafu { name: parts[0] }
-        );
+        ensure!(VALID_OPERATORS.contains(&parts[0]), InvalidNameSnafu {
+            name: parts[0]
+        });
 
         // If there is only one part, the input didn't include
         // the optional version identifier

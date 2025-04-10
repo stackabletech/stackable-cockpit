@@ -5,10 +5,10 @@ use k8s_openapi::api::{
     core::v1::{Endpoints, Namespace, Node, Secret, Service},
 };
 use kube::{
+    Api, Discovery, ResourceExt,
     api::{ListParams, Patch, PatchParams, PostParams},
     core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
     discovery::{ApiCapabilities, ApiResource, Scope},
-    Api, Discovery, ResourceExt,
 };
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
@@ -16,13 +16,12 @@ use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
 use tracing::info;
 
+#[cfg(doc)]
+use crate::utils::k8s::ListParamsExt;
 use crate::{
     platform::{cluster, credentials::Credentials},
     utils::k8s::ByteStringExt,
 };
-
-#[cfg(doc)]
-use crate::utils::k8s::ListParamsExt;
 
 pub type ListResult<T, E = Error> = Result<ObjectList<T>, E>;
 pub type Result<T, E = Error> = std::result::Result<T, E>;
@@ -355,16 +354,13 @@ impl Client {
     pub async fn create_namespace(&self, name: String) -> Result<()> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
         namespace_api
-            .create(
-                &PostParams::default(),
-                &Namespace {
-                    metadata: ObjectMeta {
-                        name: Some(name),
-                        ..Default::default()
-                    },
+            .create(&PostParams::default(), &Namespace {
+                metadata: ObjectMeta {
+                    name: Some(name),
                     ..Default::default()
                 },
-            )
+                ..Default::default()
+            })
             .await
             .context(KubeClientPatchSnafu)?;
 

@@ -1,9 +1,8 @@
 use clap::Parser;
 use dotenvy::dotenv;
+use stackablectl::cli::{Cli, Error};
 use tracing::metadata::LevelFilter;
 use tracing_subscriber::fmt;
-
-use stackablectl::cli::{Cli, Error};
 
 #[snafu::report]
 #[tokio::main]

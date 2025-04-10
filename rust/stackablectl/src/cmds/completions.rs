@@ -1,7 +1,8 @@
 use clap::{Args, CommandFactory, Subcommand};
 use clap_complete::{
-    generate, Generator,
+    Generator,
     Shell::{Bash, Elvish, Fish, Zsh},
+    generate,
 };
 use clap_complete_nushell::Nushell;
 use snafu::{ResultExt, Snafu};

@@ -1,7 +1,6 @@
-use axum::{routing::get, Json, Router};
-use stackable_cockpit::{platform, utils::k8s::Client};
-
+use axum::{Json, Router, routing::get};
 pub use stackable_cockpit::platform::stacklet::Stacklet;
+use stackable_cockpit::{platform, utils::k8s::Client};
 
 /// Creates the stack sub-router.
 pub fn router() -> Router {

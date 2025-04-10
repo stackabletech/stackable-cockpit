@@ -1,7 +1,7 @@
+use std::ffi::OsStr;
+
 use tracing::{debug, instrument};
 use which::which;
-
-use std::ffi::OsStr;
 
 /// Returns if the binary with `name` is present in the $PATH.
 pub fn binary_present<T: AsRef<OsStr>>(name: T) -> bool {

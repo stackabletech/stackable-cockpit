@@ -2,15 +2,13 @@ use std::collections::HashMap;
 
 use clap::{Args, Subcommand};
 use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
+    presets::{NOTHING, UTF8_FULL},
 };
 use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
-use tracing::{debug, info, instrument};
-
 use stackable_cockpit::{
     constants::{
         DEFAULT_OPERATOR_NAMESPACE, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
@@ -27,11 +25,12 @@ use stackable_cockpit::{
         k8s::{self, Client},
     },
 };
+use tracing::{debug, info, instrument};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
     cli::{Cli, OutputType},
-    utils::{helm_repo_name_to_repo_url, InvalidRepoNameError},
+    utils::{InvalidRepoNameError, helm_repo_name_to_repo_url},
 };
 
 const INSTALL_AFTER_HELP_TEXT: &str = "Examples:
