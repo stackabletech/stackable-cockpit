@@ -104,7 +104,7 @@ impl DemoSpec {
         // requested namespace
         if !self.supports_namespace(namespace) {
             return Err(Error::UnsupportedNamespace {
-                requested: namespace.to_string(),
+                requested: namespace.to_owned(),
                 supported: self.supported_namespaces.clone(),
             });
         }

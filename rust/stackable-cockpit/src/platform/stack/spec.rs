@@ -121,7 +121,7 @@ impl StackSpec {
         if !self.supports_namespace(namespace) {
             return Err(Error::UnsupportedNamespace {
                 supported: self.supported_namespaces.clone(),
-                requested: namespace.to_string(),
+                requested: namespace.to_owned(),
             });
         }
 
