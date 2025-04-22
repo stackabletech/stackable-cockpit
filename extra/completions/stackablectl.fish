@@ -256,7 +256,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l cluster-cp-nodes -d 'Number of control plane nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s n -l product-namespace -l product-ns -d 'Namespace where the products (e.g. stacks or demos) are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s n -l namespace -l product-ns -d 'Namespace where the stacks or demos are deployed' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l release -d 'Target a specific Stackable release' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
@@ -302,7 +302,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "{plain\t'Print output formatted as plain text',table\t'Print output formatted as a table',json\t'Print output formatted as JSON',yaml\t'Print output formatted as YAML'}"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s n -l product-namespace -l product-ns -d 'Namespace where the products (e.g. stacks or demos) are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s n -l namespace -l product-ns -d 'Namespace where the stacks or demos are deployed' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
@@ -366,7 +366,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l cluster-nodes -d 'Number of total nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l cluster-cp-nodes -d 'Number of control plane nodes in the local cluster' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s n -l product-namespace -l product-ns -d 'Namespace where the products (e.g. stacks or demos) are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s n -l namespace -l product-ns -d 'Namespace where the stacks or demos are deployed' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l release -d 'Target a specific Stackable release' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F

@@ -137,7 +137,7 @@ impl DemoSpec {
     #[instrument(skip_all, fields(
         stack_name = %self.stack,
         operator_namespace = %install_parameters.operator_namespace,
-        product_namespace = %install_parameters.product_namespace,
+        demo_namespace = %install_parameters.demo_namespace,
     ))]
     pub async fn install(
         &self,
@@ -153,12 +153,12 @@ impl DemoSpec {
         })?;
 
         // Check demo prerequisites
-        self.check_prerequisites(client, &install_parameters.product_namespace)
+        self.check_prerequisites(client, &install_parameters.demo_namespace)
             .await?;
 
         let stack_install_parameters = StackInstallParameters {
             operator_namespace: install_parameters.operator_namespace.clone(),
-            product_namespace: install_parameters.product_namespace.clone(),
+            stack_namespace: install_parameters.demo_namespace.clone(),
             parameters: install_parameters.stack_parameters.clone(),
             labels: install_parameters.stack_labels.clone(),
             skip_release: install_parameters.skip_release,
@@ -185,7 +185,7 @@ impl DemoSpec {
     #[instrument(skip_all, fields(
         stack_name = %self.stack,
         operator_namespace = %install_params.operator_namespace,
-        product_namespace = %install_params.product_namespace,
+        demo_namespace = %install_params.demo_namespace,
     ))]
     async fn prepare_manifests(
         &self,
@@ -204,7 +204,7 @@ impl DemoSpec {
         Self::install_manifests(
             &self.manifests,
             &params,
-            &install_params.product_namespace,
+            &install_params.demo_namespace,
             install_params.labels,
             client,
             transfer_client,

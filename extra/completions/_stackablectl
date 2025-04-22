@@ -565,9 +565,9 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
 '--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
 '--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
 '--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
@@ -696,9 +696,9 @@ json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
 '--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
 '--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
@@ -858,9 +858,9 @@ minikube\:"Use a minikube cluster"))' \
 '--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
 '--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
 '--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-namespace=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
-'--product-ns=[Namespace where the products (e.g. stacks or demos) are deployed]:PRODUCT_NAMESPACE: ' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
 '--release=[Target a specific Stackable release]:RELEASE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
