@@ -1,4 +1,4 @@
-use stackable_cockpit::constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE};
+use stackable_cockpit::constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE};
 
 use crate::output::{ContextExt, OutputKind};
 
@@ -20,7 +20,7 @@ impl ContextExt for ResultContext {
         let mut ctx = tera::Context::new();
 
         ctx.insert("default_operator_namespace", DEFAULT_OPERATOR_NAMESPACE);
-        ctx.insert("default_product_namespace", DEFAULT_PRODUCT_NAMESPACE);
+        ctx.insert("default_product_namespace", DEFAULT_NAMESPACE);
 
         ctx.insert("used_operator_namespace", &self.used_operator_namespace);
         ctx.insert("used_product_namespace", &self.used_product_namespace);

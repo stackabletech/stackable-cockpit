@@ -8,7 +8,7 @@ pub const DEFAULT_OPERATOR_NAMESPACE: &str = "stackable-operators";
 // Currently lots of demos can only run in the default namespace, so we have to
 // keep "default" here, until we switch the demos. We can't switch them right
 // now, as the old stackablectl would break.
-pub const DEFAULT_PRODUCT_NAMESPACE: &str = "default";
+pub const DEFAULT_NAMESPACE: &str = "default";
 
 pub const DEFAULT_LOCAL_CLUSTER_NAME: &str = "stackable-data-platform";
 

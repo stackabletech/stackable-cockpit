@@ -430,8 +430,8 @@ module completions {
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
     --operator-namespace: string # Namespace where the operators are deployed
     --operator-ns: string     # Namespace where the operators are deployed
-    --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
-    --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --namespace(-n): string   # Namespace where the stacks or demos are deployed
+    --product-ns: string      # Namespace where the stacks or demos are deployed
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -521,8 +521,8 @@ module completions {
     --output(-o): string@"nu-complete stackablectl stacklet list output_type"
     --operator-namespace: string # Namespace where the operators are deployed
     --operator-ns: string     # Namespace where the operators are deployed
-    --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
-    --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --namespace(-n): string   # Namespace where the stacks or demos are deployed
+    --product-ns: string      # Namespace where the stacks or demos are deployed
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
@@ -643,8 +643,8 @@ module completions {
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
     --operator-namespace: string # Namespace where the operators are deployed
     --operator-ns: string     # Namespace where the operators are deployed
-    --product-namespace(-n): string # Namespace where the products (e.g. stacks or demos) are deployed
-    --product-ns: string      # Namespace where the products (e.g. stacks or demos) are deployed
+    --namespace(-n): string   # Namespace where the stacks or demos are deployed
+    --product-ns: string      # Namespace where the stacks or demos are deployed
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files

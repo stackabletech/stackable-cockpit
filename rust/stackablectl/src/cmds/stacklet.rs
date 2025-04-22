@@ -7,7 +7,7 @@ use snafu::{ResultExt, Snafu};
 use tracing::{info, instrument};
 
 use stackable_cockpit::{
-    constants::DEFAULT_PRODUCT_NAMESPACE,
+    constants::DEFAULT_NAMESPACE,
     platform::stacklet::{self, get_credentials_for_product, list_stacklets},
     utils::k8s::{self, Client, DisplayCondition},
 };
@@ -47,7 +47,7 @@ pub struct StackletCredentialsArgs {
         long,
         short = 'n',
         global = true,
-        default_value = DEFAULT_PRODUCT_NAMESPACE,
+        default_value = DEFAULT_NAMESPACE,
         visible_aliases(["product-ns"]),
         long_help = "Namespace in the cluster used to deploy the products. Use this to select
 a different namespace for credential lookup.")]
@@ -99,7 +99,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
-    let stacklets = list_stacklets(&client, Some(&args.namespaces.product_namespace))
+    let stacklets = list_stacklets(&client, Some(&args.namespaces.namespace))
         .await
         .context(StackletListSnafu)?;
 

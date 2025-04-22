@@ -1,4 +1,4 @@
-use stackable_cockpit::constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE};
+use stackable_cockpit::constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE};
 
 use crate::output::{ContextExt, ErrorReport, OutputKind};
 
@@ -16,7 +16,7 @@ impl ContextExt for ErrorContext {
         let mut ctx = tera::Context::new();
 
         ctx.insert("default_operator_namespace", DEFAULT_OPERATOR_NAMESPACE);
-        ctx.insert("default_product_namespace", DEFAULT_PRODUCT_NAMESPACE);
+        ctx.insert("default_product_namespace", DEFAULT_NAMESPACE);
 
         ctx.insert("post_hints", &self.post_hints);
         ctx.insert("pre_hints", &self.pre_hints);

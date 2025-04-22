@@ -9,7 +9,7 @@ use tracing::{debug, info, instrument};
 
 use stackable_cockpit::{
     common::list,
-    constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
+    constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE},
     platform::{
         demo::{self, DemoInstallParameters},
         operator::ChartSourceType,
@@ -373,7 +373,7 @@ async fn install_cmd(
 
     let install_parameters = DemoInstallParameters {
         operator_namespace: args.namespaces.operator_namespace.clone(),
-        product_namespace: args.namespaces.product_namespace.clone(),
+        demo_namespace: args.namespaces.namespace.clone(),
         stack_parameters: args.stack_parameters.clone(),
         parameters: args.parameters.clone(),
         skip_release: args.skip_release,
@@ -408,8 +408,8 @@ async fn install_cmd(
 
     let stacklet_cmd = format!(
         "stackablectl stacklet list{}",
-        if args.namespaces.product_namespace != DEFAULT_PRODUCT_NAMESPACE {
-            format!(" --product-namespace {}", args.namespaces.product_namespace)
+        if args.namespaces.namespace != DEFAULT_NAMESPACE {
+            format!(" --namespace {}", args.namespaces.namespace)
         } else {
             "".into()
         }
