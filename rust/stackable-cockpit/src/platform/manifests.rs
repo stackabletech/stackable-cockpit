@@ -62,12 +62,12 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    #[instrument(skip_all, fields(%product_namespace))]
+    #[instrument(skip_all, fields(%namespace))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
-        product_namespace: &str,
+        namespace: &str,
         labels: Labels,
         client: &Client,
         transfer_client: &xfer::Client,
@@ -77,7 +77,7 @@ pub trait InstallManifestsExt {
         let mut parameters = parameters.clone();
         // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
         // fqdn service names [which contain the namespace].
-        parameters.insert("NAMESPACE".to_owned(), product_namespace.to_owned());
+        parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
 
         for manifest in manifests {
             match manifest {
@@ -116,7 +116,7 @@ pub trait InstallManifestsExt {
                             chart_version: Some(&helm_chart.version),
                         },
                         Some(&values_yaml),
-                        product_namespace,
+                        namespace,
                         true,
                     )
                     .context(InstallHelmReleaseSnafu {
@@ -140,7 +140,7 @@ pub trait InstallManifestsExt {
                         .context(FileTransferSnafu)?;
 
                     client
-                        .deploy_manifests(&manifests, product_namespace, labels.clone())
+                        .deploy_manifests(&manifests, namespace, labels.clone())
                         .await
                         .context(DeployManifestSnafu)?
                 }

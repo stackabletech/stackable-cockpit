@@ -48,10 +48,10 @@ pub struct StackletCredentialsArgs {
         short = 'n',
         global = true,
         default_value = DEFAULT_NAMESPACE,
-        visible_aliases(["product-ns"]),
+        aliases(["product-ns", "product-namespace"]),
         long_help = "Namespace in the cluster used to deploy the products. Use this to select
 a different namespace for credential lookup.")]
-    pub product_namespace: String,
+    pub namespace: String,
 }
 
 #[derive(Debug, Args)]
@@ -211,7 +211,7 @@ async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdEr
 
     match get_credentials_for_product(
         &client,
-        &args.product_namespace,
+        &args.namespace,
         &args.stacklet_name,
         &args.product_name,
     )
@@ -229,7 +229,7 @@ async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdEr
 
             let output = format!(
                 "Credentials for {} ({}) in namespace '{}':",
-                args.product_name, args.stacklet_name, args.product_namespace
+                args.product_name, args.stacklet_name, args.namespace
             );
 
             Ok(format!("{}\n\n{}", output, table))

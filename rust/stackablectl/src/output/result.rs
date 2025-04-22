@@ -5,7 +5,7 @@ use crate::output::{ContextExt, OutputKind};
 #[derive(Debug, Default)]
 pub struct ResultContext {
     used_operator_namespace: String,
-    used_product_namespace: String,
+    used_namespace: String,
 
     command_hints: Vec<String>,
     post_hints: Vec<String>,
@@ -20,10 +20,10 @@ impl ContextExt for ResultContext {
         let mut ctx = tera::Context::new();
 
         ctx.insert("default_operator_namespace", DEFAULT_OPERATOR_NAMESPACE);
-        ctx.insert("default_product_namespace", DEFAULT_NAMESPACE);
+        ctx.insert("default_namespace", DEFAULT_NAMESPACE);
 
         ctx.insert("used_operator_namespace", &self.used_operator_namespace);
-        ctx.insert("used_product_namespace", &self.used_product_namespace);
+        ctx.insert("used_namespace", &self.used_namespace);
 
         ctx.insert("command_hints", &self.command_hints);
         ctx.insert("post_hints", &self.post_hints);
