@@ -62,7 +62,7 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(%product_namespace))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
@@ -72,7 +72,7 @@ pub trait InstallManifestsExt {
         client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
-        debug!("Installing demo / stack manifests");
+        debug!("Installing manifests");
 
         let mut parameters = parameters.clone();
         // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
@@ -82,7 +82,7 @@ pub trait InstallManifestsExt {
         for manifest in manifests {
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
-                    debug!("Installing manifest from Helm chart {}", helm_file);
+                    debug!(helm_file, "Installing manifest from Helm chart");
 
                     // Read Helm chart YAML and apply templating
                     let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
@@ -94,10 +94,7 @@ pub trait InstallManifestsExt {
                         .await
                         .context(FileTransferSnafu)?;
 
-                    info!(
-                        "Installing Helm chart {} ({})",
-                        helm_chart.name, helm_chart.version
-                    );
+                    info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
 
                     // Assumption: that all manifest helm charts refer to repos not registries
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
@@ -127,7 +124,7 @@ pub trait InstallManifestsExt {
                     })?;
                 }
                 ManifestSpec::PlainYaml(manifest_file) => {
-                    debug!("Installing YAML manifest from {}", manifest_file);
+                    debug!(manifest_file, "Installing YAML manifest");
 
                     // Read YAML manifest and apply templating
                     let path_or_url =

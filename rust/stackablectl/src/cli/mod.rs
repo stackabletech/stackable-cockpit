@@ -3,7 +3,7 @@ use std::env;
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
 use snafu::{ResultExt, Snafu};
-use tracing::{debug, instrument, Level};
+use tracing::{instrument, Level};
 
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
@@ -135,9 +135,8 @@ impl Cli {
 
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
-    #[instrument]
     pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
-        debug!("Add Helm repos");
+        tracing::info!("Add Helm repos");
 
         // Stable repository
         helm::add_repo(HELM_REPO_NAME_STABLE, &self.repos.helm_repo_stable)?;
@@ -151,9 +150,9 @@ impl Cli {
         Ok(())
     }
 
-    #[instrument]
     pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
+            tracing::debug!("Cache disabled");
             Ok(Settings::disabled())
         } else {
             let project_dir = ProjectDirs::from(
@@ -163,11 +162,16 @@ impl Cli {
             )
             .ok_or(CacheSettingsError::UserDir)?;
 
-            Ok(Settings::disk(project_dir.cache_dir()))
+            let cache_dir = project_dir.cache_dir();
+            tracing::debug!(
+                cache_dir = %cache_dir.to_string_lossy(),
+                "Setting cache directory"
+            );
+            Ok(Settings::disk(cache_dir))
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn run(&self) -> Result<String, Error> {
         // FIXME (Techassi): There might be a better way to handle this with
         // the match later in this function.

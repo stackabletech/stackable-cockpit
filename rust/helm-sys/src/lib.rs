@@ -56,6 +56,8 @@ pub fn uninstall_helm_release(
     }
 }
 
+// TODO (@NickLarsenNZ): Add tracing to helm-sys, maybe?
+// #[instrument]
 pub fn check_helm_release_exists(release_name: &str, namespace: &str) -> bool {
     let release_name = CString::new(release_name).unwrap();
     let namespace = CString::new(namespace).unwrap();

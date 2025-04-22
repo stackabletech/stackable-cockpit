@@ -160,7 +160,7 @@ pub enum CmdError {
 }
 
 impl DemoArgs {
-    #[instrument]
+    #[instrument(skip_all, fields(with_cache = !cli.no_cache))]
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
 
@@ -211,7 +211,7 @@ impl DemoArgs {
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
-#[instrument]
+#[instrument(skip_all)]
 async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
 
@@ -259,13 +259,13 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
-#[instrument]
+#[instrument(skip_all)]
 async fn describe_cmd(
     args: &DemoDescribeArgs,
     cli: &Cli,
     list: demo::List,
 ) -> Result<String, CmdError> {
-    info!("Describing demo {}", args.demo_name);
+    info!(demo_name = %args.demo_name, "Describing demo");
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
@@ -315,7 +315,11 @@ async fn describe_cmd(
 }
 
 /// Install a specific demo
-#[instrument(skip(list, transfer_client))]
+#[instrument(skip_all, fields(
+    demo_name = %args.demo_name,
+    skip_release = args.skip_release,
+    %release_branch
+))]
 async fn install_cmd(
     args: &DemoInstallArgs,
     cli: &Cli,
@@ -323,7 +327,7 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
     release_branch: &str,
 ) -> Result<String, CmdError> {
-    info!(%release_branch, "Installing demo {}", args.demo_name);
+    info!(demo_name = %args.demo_name, "Installing demo");
 
     // Init result output and progress output
     let mut output = cli.result();

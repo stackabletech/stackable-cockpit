@@ -13,7 +13,7 @@ pub(super) async fn list(client: &Client, namespace: Option<&str>) -> Result<Vec
     let mut stacklets = Vec::new();
 
     // The helm-chart uses `app` instead of `app.kubernetes.io/app`, so we can't use `ListParams::from_product` here
-    let params = ListParams::default().labels("app=minio,app.kubernetes.io/managed-by=Helm");
+    let params = ListParams::default().labels("app=minio,heritage=Helm");
     let services = client
         .list_services(namespace, &params)
         .await

@@ -187,7 +187,7 @@ impl OperatorArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
 
@@ -244,9 +244,9 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
-    debug!("Describing operator {}", args.operator_name);
+    debug!(operator_name = %args.operator_name, "Describing operator");
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -303,7 +303,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
 
@@ -328,6 +328,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             )
             .context(HelmSnafu)?;
 
+        // TODO (@NickLarsenNZ): Send this to the progress handler instead of using println
+        // info!(%operator, "Installed operator");
         println!("Installed {} operator", operator);
     }
 
@@ -351,7 +353,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     Ok(result.render())
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
 
@@ -381,9 +383,9 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
     Ok(result.render())
 }
 
-#[instrument]
+#[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
-    debug!("Listing installed operators");
+    info!("Listing installed operators");
 
     type ReleaseList = IndexMap<String, Release>;
 
@@ -465,7 +467,20 @@ async fn build_source_index_file_list<'a>(
         ChartSourceType::OCI => {
             source_index_files = oci::get_oci_index().await.context(OciSnafu)?;
 
-            debug!("OCI Repository entries: {:?}", source_index_files);
+            debug!(count = source_index_files.len(), "OCI Repository entries");
+
+            // TODO (@NickLarsenNZ): Look into why this is so deeply nested with duplicate data.
+            // source_index_files
+            //     .iter()
+            //     .for_each(|(&repo_name, chart_source_metadata)| {
+            //         let x = chart_source_metadata.entries.len();
+            //         tracing::trace!(repo_name, x, "thing");
+            //         let _ = &chart_source_metadata
+            //             .entries
+            //             .iter()
+            //             // y (below) is a Vec
+            //             .for_each(|(x, y)| tracing::error!(x, "blah {:?}", y));
+            //     });
         }
         ChartSourceType::Repo => {
             for helm_repo_name in [
@@ -493,7 +508,7 @@ async fn build_source_index_file_list<'a>(
 
 /// Iterates over all valid operators and creates a list of versions grouped
 /// by stable, test and dev lines based on the list of Helm repo index files.
-#[instrument]
+#[instrument(skip_all)]
 fn build_versions_list(
     helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
@@ -503,7 +518,13 @@ fn build_versions_list(
 
     for operator in operator::VALID_OPERATORS {
         for (helm_repo_name, helm_repo_index_file) in helm_index_files {
-            let versions = list_operator_versions_from_repo(operator, helm_repo_index_file)?;
+            let span = tracing::info_span!(
+                "build_versions_list_iter",
+                helm.repository.name = %helm_repo_name,
+                operator_name = %operator,
+            );
+            let versions =
+                span.in_scope(|| list_operator_versions_from_repo(operator, helm_repo_index_file))?;
             let entry = versions_list.entry(operator.to_string());
             let entry = entry.or_insert(OperatorVersionList(HashMap::new()));
             entry.0.insert(helm_repo_name.to_string(), versions);
@@ -515,18 +536,15 @@ fn build_versions_list(
 
 /// Builds a list of versions for one operator (by name) which is grouped by
 /// stable, test and dev lines based on the list of Helm repo index files.
-#[instrument]
+#[instrument(skip_all, fields(%operator_name))]
 fn build_versions_list_for_operator<T>(
     operator_name: T,
     helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<OperatorVersionList, CmdError>
 where
-    T: AsRef<str> + std::fmt::Debug,
+    T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
-    debug!(
-        "Build versions list for operator {}",
-        operator_name.as_ref()
-    );
+    debug!("Build versions list for operator");
 
     let mut versions_list = OperatorVersionList(HashMap::new());
     let operator_name = operator_name.as_ref();
@@ -540,23 +558,24 @@ where
 }
 
 /// Builds a list of operator versions based on the provided Helm repo.
-#[instrument]
+#[instrument(skip_all, fields(%operator_name))]
 fn list_operator_versions_from_repo<T>(
     operator_name: T,
     helm_repo: &ChartSourceMetadata,
 ) -> Result<Vec<String>, CmdError>
 where
-    T: AsRef<str> + std::fmt::Debug,
+    T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
-    debug!("Listing operator versions from repo");
+    debug!("Listing operator versions from repository");
 
-    let operator_name = utils::operator_chart_name(operator_name.as_ref());
+    let chart_name = utils::operator_chart_name(operator_name.as_ref());
 
-    match helm_repo.entries.get(&operator_name) {
+    match helm_repo.entries.get(&chart_name) {
         Some(entries) => {
             let mut versions = entries
                 .iter()
                 .map(|entry| {
+                    tracing::trace!(helm.chart.name = %chart_name, helm.chart.version = %entry.version, "Found operator chart version");
                     Version::parse(&entry.version).with_context(|_| InvalidHelmChartVersionSnafu {
                         version: entry.version.clone(),
                     })

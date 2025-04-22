@@ -90,7 +90,7 @@ impl StackletArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
 
@@ -203,7 +203,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     }
 }
 
-#[instrument]
+#[instrument(skip_all)]
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
 
