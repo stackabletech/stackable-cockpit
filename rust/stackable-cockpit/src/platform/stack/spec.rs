@@ -187,6 +187,7 @@ impl StackSpec {
         }
 
         // Next, create the product namespace if needed
+        // TODO (@NickLarsenNZ): Remove clones (update create_if_needed to take a &str)
         namespace::create_if_needed(client, install_parameters.stack_namespace.clone())
             .await
             .context(CreateNamespaceSnafu {

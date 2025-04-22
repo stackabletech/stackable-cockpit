@@ -13,6 +13,7 @@ pub enum Error {
 
 /// Creates a namespace with `name` if needed (not already present in the
 /// cluster).
+// TODO (@NickLarsenNZ): Take a &str instead of String (to avoid all the cloning)
 pub async fn create_if_needed(client: &Client, name: String) -> Result<(), Error> {
     client
         .create_namespace_if_needed(name)
