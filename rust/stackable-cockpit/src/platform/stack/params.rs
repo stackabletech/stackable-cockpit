@@ -8,7 +8,7 @@ pub struct StackInstallParameters {
     pub stack_name: String,
 
     pub operator_namespace: String,
-    pub product_namespace: String,
+    pub stack_namespace: String,
 
     pub parameters: Vec<String>,
     pub skip_release: bool,

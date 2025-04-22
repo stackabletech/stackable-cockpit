@@ -8,10 +8,17 @@ All notable changes to this project will be documented in this file.
 
 - Pass the stack/demo namespace as a templating variable `NAMESPACE` to manifests.
   This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the FQDN of services ([#355]).
+### Changed
+
+- Renamed `--product-namespace` argument to `--namespace` ([#373]).
+  - Kept `--product-namespace` as a hidden alias to be removed in a later release.
 
 ### Fixed
 
 - Prefix `ui-http` port endpoints with `http://`, as e.g. used by hbase-operator ([#368]).
+
+[#368]: https://github.com/stackabletech/stackable-cockpit/pull/368
+[#373]: https://github.com/stackabletech/stackable-cockpit/pull/373
 
 ## [25.3.0] - 2025-03-27
 
@@ -25,7 +32,6 @@ All notable changes to this project will be documented in this file.
 [#355]: https://github.com/stackabletech/stackable-cockpit/pull/355
 [#364]: https://github.com/stackabletech/stackable-cockpit/pull/364
 [#365]: https://github.com/stackabletech/stackable-cockpit/pull/365
-[#368]: https://github.com/stackabletech/stackable-cockpit/pull/368
 
 ## [24.11.3] - 2025-01-27
 

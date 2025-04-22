@@ -166,7 +166,7 @@ impl StackSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         // First, we check if the prerequisites are met
-        self.check_prerequisites(client, &install_parameters.product_namespace)
+        self.check_prerequisites(client, &install_parameters.stack_namespace)
             .await?;
 
         // Second, we install the release if not opted out
@@ -180,17 +180,18 @@ impl StackSpec {
             self.install_release(
                 release_list,
                 &install_parameters.operator_namespace,
-                &install_parameters.product_namespace,
+                &install_parameters.stack_namespace,
                 &install_parameters.chart_source,
             )
             .await?;
         }
 
         // Next, create the product namespace if needed
-        namespace::create_if_needed(client, install_parameters.product_namespace.clone())
+        // TODO (@NickLarsenNZ): Remove clones (update create_if_needed to take a &str)
+        namespace::create_if_needed(client, install_parameters.stack_namespace.clone())
             .await
             .context(CreateNamespaceSnafu {
-                namespace: install_parameters.product_namespace.clone(),
+                namespace: install_parameters.stack_namespace.clone(),
             })?;
 
         // Finally install the stack manifests
@@ -240,7 +241,7 @@ impl StackSpec {
         Self::install_manifests(
             &self.manifests,
             &parameters,
-            &install_params.product_namespace,
+            &install_params.stack_namespace,
             install_params.labels,
             client,
             transfer_client,
