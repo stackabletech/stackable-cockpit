@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Renamed `--product-namespace` argument to `--namespace` ([#373]).
+- Renamed `--product-namespace` argument to `--namespace` ([#373], [#355]).
   - Kept `--product-namespace` as a hidden alias to be removed in a later release.
 
 ### Fixed
