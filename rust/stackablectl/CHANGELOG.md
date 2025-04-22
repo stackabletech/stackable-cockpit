@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Pass the stack/demo namespace as a templating variable `NAMESPACE` to manifests.
   This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the FQDN of services ([#355]).
+
 ### Changed
 
 - Renamed `--product-namespace` argument to `--namespace` ([#373]).
