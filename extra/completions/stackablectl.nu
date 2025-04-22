@@ -493,8 +493,7 @@ module completions {
   export extern "stackablectl stacklet credentials" [
     product_name: string      # The name of the product, for example 'superset'
     stacklet_name: string     # The name of the stacklet, for example 'superset'
-    --product-namespace(-n): string # Namespace in the cluster used to deploy the products
-    --product-ns: string      # Namespace in the cluster used to deploy the products
+    --namespace(-n): string   # Namespace in the cluster used to deploy the products
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
