@@ -111,21 +111,17 @@ impl StackSpec {
     /// - Does the stack support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this stack?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(
-        &self,
-        client: &Client,
-        product_namespace: &str,
-    ) -> Result<(), Error> {
+    pub async fn check_prerequisites(&self, client: &Client, namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing stack");
 
         // Returns an error if the stack doesn't support to be installed in the
         // requested product namespace. When installing a demo, this check is
         // already done on the demo spec level, however we still need to check
         // here, as stacks can be installed on their own.
-        if !self.supports_namespace(product_namespace) {
+        if !self.supports_namespace(namespace) {
             return Err(Error::UnsupportedNamespace {
                 supported: self.supported_namespaces.clone(),
-                requested: product_namespace.to_string(),
+                requested: namespace.to_owned(),
             });
         }
 
@@ -204,7 +200,7 @@ impl StackSpec {
         &self,
         release_list: release::ReleaseList,
         operator_namespace: &str,
-        _product_namespace: &str, // TODO (@NickLarsenNZ): remove this field
+        _namespace: &str, // TODO (@NickLarsenNZ): remove this field
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");

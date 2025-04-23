@@ -475,8 +475,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         }
         &'stackablectl;stacklet;credentials'= {
             cand -n 'Namespace in the cluster used to deploy the products'
-            cand --product-namespace 'Namespace in the cluster used to deploy the products'
-            cand --product-ns 'Namespace in the cluster used to deploy the products'
+            cand --namespace 'Namespace in the cluster used to deploy the products'
             cand -l 'Log level this application uses'
             cand --log-level 'Log level this application uses'
             cand -d 'Provide one or more additional (custom) demo file(s)'

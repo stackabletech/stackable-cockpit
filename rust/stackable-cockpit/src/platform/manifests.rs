@@ -62,17 +62,22 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    #[instrument(skip_all, fields(%product_namespace))]
+    #[instrument(skip_all, fields(%namespace))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
-        product_namespace: &str,
+        namespace: &str,
         labels: Labels,
         client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         debug!("Installing manifests");
+
+        let mut parameters = parameters.clone();
+        // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
+        // fqdn service names [which contain the namespace].
+        parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
 
         for manifest in manifests {
             match manifest {
@@ -85,7 +90,7 @@ pub trait InstallManifestsExt {
                     })?;
 
                     let helm_chart: helm::Chart = transfer_client
-                        .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
+                        .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
                         .await
                         .context(FileTransferSnafu)?;
 
@@ -111,7 +116,7 @@ pub trait InstallManifestsExt {
                             chart_version: Some(&helm_chart.version),
                         },
                         Some(&values_yaml),
-                        product_namespace,
+                        namespace,
                         true,
                     )
                     .context(InstallHelmReleaseSnafu {
@@ -130,12 +135,12 @@ pub trait InstallManifestsExt {
                             })?;
 
                     let manifests = transfer_client
-                        .get(&path_or_url, &Template::new(parameters))
+                        .get(&path_or_url, &Template::new(&parameters))
                         .await
                         .context(FileTransferSnafu)?;
 
                     client
-                        .deploy_manifests(&manifests, product_namespace, labels.clone())
+                        .deploy_manifests(&manifests, namespace, labels.clone())
                         .await
                         .context(DeployManifestSnafu)?
                 }

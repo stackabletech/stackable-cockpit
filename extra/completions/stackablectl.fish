@@ -288,7 +288,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -f -a "credentials" -d 'Display credentials for a stacklet'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -f -a "list" -d 'List deployed stacklets'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s n -l product-namespace -l product-ns -d 'Namespace in the cluster used to deploy the products' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s n -l namespace -d 'Namespace in the cluster used to deploy the products' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F

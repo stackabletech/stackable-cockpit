@@ -659,9 +659,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
         case $line[1] in
             (credentials)
 _arguments "${_arguments_options[@]}" : \
-'-n+[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
-'--product-namespace=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
-'--product-ns=[Namespace in the cluster used to deploy the products]:PRODUCT_NAMESPACE: ' \
+'-n+[Namespace in the cluster used to deploy the products]:NAMESPACE: ' \
+'--namespace=[Namespace in the cluster used to deploy the products]:NAMESPACE: ' \
 '-l+[Log level this application uses]:LOG_LEVEL: ' \
 '--log-level=[Log level this application uses]:LOG_LEVEL: ' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \

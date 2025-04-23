@@ -5567,17 +5567,13 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet__credentials)
-            opts="-n -l -d -s -r -h -V --product-ns --product-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <PRODUCT_NAME> <STACKLET_NAME>"
+            opts="-n -l -d -s -r -h -V --namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <PRODUCT_NAME> <STACKLET_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --product-namespace)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --product-ns)
+                --namespace)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;

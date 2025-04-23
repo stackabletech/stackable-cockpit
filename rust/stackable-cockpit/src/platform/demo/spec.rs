@@ -97,18 +97,14 @@ impl DemoSpec {
     /// - Does the demo support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this demo?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(
-        &self,
-        client: &Client,
-        product_namespace: &str,
-    ) -> Result<(), Error> {
+    pub async fn check_prerequisites(&self, client: &Client, namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing demo");
 
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
-        if !self.supports_namespace(product_namespace) {
+        if !self.supports_namespace(namespace) {
             return Err(Error::UnsupportedNamespace {
-                requested: product_namespace.to_string(),
+                requested: namespace.to_owned(),
                 supported: self.supported_namespaces.clone(),
             });
         }
