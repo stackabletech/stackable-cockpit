@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use kube::{core::DynamicObject, ResourceExt};
+use kube::{ResourceExt, core::DynamicObject};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 

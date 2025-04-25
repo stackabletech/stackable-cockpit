@@ -1,11 +1,9 @@
 use clap::{Args, Subcommand};
 use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
+    presets::{NOTHING, UTF8_FULL},
 };
 use snafu::{ResultExt, Snafu};
-use tracing::{debug, info, instrument};
-
 use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
@@ -16,6 +14,7 @@ use stackable_cockpit::{
     },
     xfer::{self, cache::Cache},
 };
+use tracing::{debug, info, instrument};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},

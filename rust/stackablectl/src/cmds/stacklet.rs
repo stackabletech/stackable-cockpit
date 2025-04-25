@@ -1,16 +1,15 @@
 use clap::{Args, Subcommand};
 use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
+    presets::{NOTHING, UTF8_FULL},
 };
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
-
 use stackable_cockpit::{
     constants::DEFAULT_NAMESPACE,
     platform::stacklet::{self, get_credentials_for_product, list_stacklets},
     utils::k8s::{self, Client, DisplayCondition},
 };
+use tracing::{info, instrument};
 
 use crate::{
     args::CommonNamespaceArgs,

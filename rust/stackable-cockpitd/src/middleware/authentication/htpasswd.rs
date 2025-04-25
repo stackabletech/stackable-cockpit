@@ -56,10 +56,10 @@ fn parse_entry(entry: &str) -> Result<(Username, PasswordHash), EntryError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::middleware::authentication::{PasswordHash, Username};
-
-    use super::{parse, EntryError, Error};
     use std::collections::HashMap;
+
+    use super::{EntryError, Error, parse};
+    use crate::middleware::authentication::{PasswordHash, Username};
 
     #[test]
     fn test_load_htaccess() {

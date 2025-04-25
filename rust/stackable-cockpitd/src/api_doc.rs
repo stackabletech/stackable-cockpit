@@ -6,8 +6,8 @@ use stackable_cockpit::{
     utils::{k8s::DisplayCondition, params::Parameter},
 };
 use utoipa::{
-    openapi::security::{HttpAuthScheme, SecurityScheme},
     OpenApi,
+    openapi::security::{HttpAuthScheme, SecurityScheme},
 };
 
 use crate::{

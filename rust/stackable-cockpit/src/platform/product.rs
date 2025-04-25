@@ -1,6 +1,5 @@
 use semver::Version;
 use serde::{Deserialize, Serialize};
-
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
