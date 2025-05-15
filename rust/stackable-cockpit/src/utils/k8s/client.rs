@@ -65,6 +65,9 @@ pub enum Error {
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterInformation { source: cluster::Error },
 
+    #[snafu(display("failed to retrieve previous resource version information"))]
+    ResourceVersion { source: kube::error::Error },
+
     #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
     InvalidSecretData { secret_name: String },
 
@@ -143,6 +146,46 @@ impl Client {
             )
             .await
             .context(KubeClientPatchSnafu)?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn replace_crds(&self, crds: &str) -> Result<()> {
+        for crd in serde_yaml::Deserializer::from_str(crds) {
+            let mut object = DynamicObject::deserialize(crd).context(DeserializeYamlSnafu)?;
+
+            let object_type = object.types.as_ref().ok_or(
+                ObjectTypeSnafu {
+                    object: object.clone(),
+                }
+                .build(),
+            )?;
+
+            let gvk = Self::gvk_of_typemeta(object_type);
+            let (resource, _) = self
+                .resolve_gvk(&gvk)
+                .await?
+                .context(GVKUnkownSnafu { gvk })?;
+
+            // CRDs are cluster scoped
+            let api: Api<DynamicObject> = Api::all_with(self.client.clone(), &resource);
+
+            if let Some(resource) = api
+                .get_opt(&object.name_any())
+                .await
+                .context(KubeClientFetchSnafu)?
+            {
+                object.metadata.resource_version = resource.resource_version();
+                api.replace(&object.name_any(), &PostParams::default(), &object)
+                    .await
+                    .context(KubeClientPatchSnafu)?;
+            } else {
+                // Create CRD if a previous version wasn't found
+                api.create(&PostParams::default(), &object)
+                    .await
+                    .context(KubeClientCreateSnafu)?;
+            }
         }
 
         Ok(())

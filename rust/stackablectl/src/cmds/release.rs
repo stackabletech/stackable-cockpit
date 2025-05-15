@@ -44,6 +44,9 @@ pub enum ReleaseCommands {
     /// Uninstall a release
     #[command(aliases(["rm", "un"]))]
     Uninstall(ReleaseUninstallArgs),
+
+    // Upgrade a release
+    Upgrade(ReleaseUpgradeArgs),
 }
 
 #[derive(Debug, Args)]
@@ -84,6 +87,25 @@ pub struct ReleaseInstallArgs {
 }
 
 #[derive(Debug, Args)]
+pub struct ReleaseUpgradeArgs {
+    /// Release to upgrade to
+    #[arg(name = "RELEASE")]
+    release: String,
+
+    /// List of product operators to upgrade
+    #[arg(short, long = "include", group = "products")]
+    included_products: Vec<String>,
+
+    /// Blacklist of product operators to install
+    #[arg(short, long = "exclude", group = "products")]
+    excluded_products: Vec<String>,
+
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
+}
+
+#[derive(Debug, Args)]
 pub struct ReleaseUninstallArgs {
     /// Name of the release to uninstall
     #[arg(name = "RELEASE")]
@@ -110,6 +132,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to install release"))]
     ReleaseInstall { source: release::Error },
+
+    #[snafu(display("failed to upgrade CRDs for release"))]
+    CrdUpgrade { source: release::Error },
 
     #[snafu(display("failed to uninstall release"))]
     ReleaseUninstall { source: release::Error },
@@ -146,6 +171,7 @@ impl ReleaseArgs {
             ReleaseCommands::Describe(args) => describe_cmd(args, cli, release_list).await,
             ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
             ReleaseCommands::Uninstall(args) => uninstall_cmd(args, cli, release_list).await,
+            ReleaseCommands::Upgrade(args) => upgrade_cmd(args, cli, release_list).await,
         }
     }
 }
@@ -307,6 +333,60 @@ async fn install_cmd(
                     "list installed operators",
                 )
                 .with_output(format!("Installed release '{}'", args.release));
+
+            Ok(output.render())
+        }
+        None => Ok("No such release".into()),
+    }
+}
+
+#[instrument(skip(cli, release_list))]
+async fn upgrade_cmd(
+    args: &ReleaseUpgradeArgs,
+    cli: &Cli,
+    release_list: release::ReleaseList,
+) -> Result<String, CmdError> {
+    debug!(release = %args.release, "Upgrading release");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
+    match release_list.get(&args.release) {
+        Some(release) => {
+            let mut output = cli.result();
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
+            // Uninstall the old operator release first
+            release
+                .uninstall(&args.operator_namespace)
+                .context(ReleaseUninstallSnafu)?;
+
+            // Upgrade the CRDs for all the operators to be upgraded
+            release
+                .upgrade_crds(
+                    &args.included_products,
+                    &args.excluded_products,
+                    &args.operator_namespace,
+                    &client,
+                )
+                .await
+                .context(CrdUpgradeSnafu)?;
+
+            // Install the new operator release
+            release
+                .install(
+                    &args.included_products,
+                    &args.excluded_products,
+                    &args.operator_namespace,
+                    &ChartSourceType::from(cli.chart_type()),
+                )
+                .await
+                .context(ReleaseInstallSnafu)?;
+
+            output
+                .with_command_hint(
+                    "stackablectl operator installed",
+                    "list installed operators",
+                )
+                .with_output(format!("Upgraded to release '{}'", args.release));
 
             Ok(output.render())
         }

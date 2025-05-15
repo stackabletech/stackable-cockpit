@@ -13,6 +13,7 @@ use crate::{
         operator::{self, ChartSourceType, OperatorSpec},
         product,
     },
+    utils::k8s::{self, Client},
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -30,6 +31,15 @@ pub enum Error {
 
     #[snafu(display("failed to launch background task"))]
     BackgroundTask { source: JoinError },
+
+    #[snafu(display("failed to deploy manifests using the kube client"))]
+    DeployManifest { source: k8s::Error },
+
+    #[snafu(display("failed to access the CRDs from source"))]
+    AccessCRDs { source: reqwest::Error },
+
+    #[snafu(display("failed to read CRD manifests"))]
+    ReadManifests { source: reqwest::Error },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -106,6 +116,72 @@ impl ReleaseSpec {
             .map(|res| res.context(BackgroundTaskSnafu)?)
             .try_collect::<()>()
             .await
+    }
+
+    /// Upgrades a release by upgrading individual operators.
+    #[instrument(skip_all, fields(
+        %namespace,
+    ))]
+    pub async fn upgrade_crds(
+        &self,
+        include_products: &[String],
+        exclude_products: &[String],
+        namespace: &str,
+        k8s_client: &Client,
+    ) -> Result<()> {
+        debug!("Upgrading CRDs for release");
+
+        include_products.iter().for_each(|product| {
+            Span::current().record("product.included", product);
+        });
+        exclude_products.iter().for_each(|product| {
+            Span::current().record("product.excluded", product);
+        });
+
+        let client = reqwest::Client::new();
+
+        let operators = self.filter_products(include_products, exclude_products);
+
+        Span::current().pb_set_style(
+            &ProgressStyle::with_template("Upgrading CRDs {wide_bar} {pos}/{len}").unwrap(),
+        );
+        Span::current().pb_set_length(operators.len() as u64);
+
+        for (product_name, product) in operators {
+            Span::current().record("product_name", &product_name);
+            debug!("Upgrading CRDs for {product_name}-operator");
+
+            let release = match product.version.pre.as_str() {
+                "dev" => "main".to_string(),
+                _ => {
+                    format!("{}", product.version)
+                }
+            };
+
+            let request_url = format!(
+                "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release}/deploy/helm/{product_name}-operator/crds/crds.yaml"
+            );
+
+            // Get CRD manifests
+            // TODO bei nicht 200 Status, Fehler werfen
+            let response = client
+                .get(request_url)
+                .send()
+                .await
+                .context(AccessCRDsSnafu)?;
+            let crd_manifests = response.text().await.context(ReadManifestsSnafu)?;
+
+            // Upgrade CRDs
+            k8s_client
+                .replace_crds(&crd_manifests)
+                .await
+                .context(DeployManifestSnafu)?;
+
+            debug!("Upgraded {product_name}-operator CRDs");
+            Span::current().pb_inc(1);
+        }
+
+        Ok(())
     }
 
     #[instrument(skip_all)]
