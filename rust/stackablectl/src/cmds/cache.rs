@@ -2,9 +2,11 @@ use std::time::Duration;
 
 use clap::{Args, Subcommand};
 use comfy_table::{ColumnConstraint, Table, Width, presets::UTF8_FULL};
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
-use tracing::{info, instrument};
+use tracing::{Span, debug, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::cli::Cli;
 
@@ -52,7 +54,8 @@ impl CacheArgs {
 
 #[instrument(skip_all)]
 async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
-    info!("Listing cached files");
+    debug!("Listing cached files");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let files = cache.list().await.context(ListCachedFilesSnafu)?;
 
@@ -88,7 +91,8 @@ async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
 
 #[instrument(skip_all)]
 async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CmdError> {
-    info!("Cleaning cached files");
+    debug!("Cleaning cached files");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let delete_filter = if args.only_remove_old_files {
         DeleteFilter::OnlyExpired

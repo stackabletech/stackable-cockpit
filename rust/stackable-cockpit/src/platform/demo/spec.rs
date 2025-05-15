@@ -1,6 +1,8 @@
+use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, info, instrument, warn};
+use tracing::{Span, debug, info, instrument, warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -98,6 +100,7 @@ impl DemoSpec {
     #[instrument(skip_all)]
     pub async fn check_prerequisites(&self, client: &Client, namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing demo");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
@@ -142,6 +145,8 @@ impl DemoSpec {
         client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
         // Get the stack spec based on the name defined in the demo spec
         let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
             name: self.stack.clone(),
@@ -189,6 +194,7 @@ impl DemoSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let params = install_params
             .parameters

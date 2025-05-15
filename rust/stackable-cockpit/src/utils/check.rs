@@ -1,6 +1,8 @@
 use std::ffi::OsStr;
 
-use tracing::{debug, instrument};
+use indicatif::ProgressStyle;
+use tracing::{Span, debug, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 use which::which;
 
 /// Returns if the binary with `name` is present in the $PATH.
@@ -12,6 +14,7 @@ pub fn binary_present<T: AsRef<OsStr>>(name: T) -> bool {
 #[instrument(skip_all)]
 pub fn binaries_present(names: &[&str]) -> bool {
     debug!("Checking if required binaries are present on the system");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     for name in names {
         if !binary_present(name) {
@@ -27,6 +30,7 @@ pub fn binaries_present(names: &[&str]) -> bool {
 #[instrument(skip_all)]
 pub fn binaries_present_with_name(names: &[&str]) -> Option<String> {
     debug!("Checking if required binaries are present on the system");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     for name in names {
         if !binary_present(name) {

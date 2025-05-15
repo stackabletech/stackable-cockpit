@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     common::manifest::ManifestSpec,
@@ -73,6 +75,7 @@ pub trait InstallManifestsExt {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         debug!("Installing manifests");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let mut parameters = parameters.clone();
         // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the

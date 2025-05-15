@@ -6,6 +6,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
 };
 use indexmap::IndexMap;
+use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
@@ -25,7 +26,8 @@ use stackable_cockpit::{
         k8s::{self, Client},
     },
 };
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info_span, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
@@ -189,6 +191,7 @@ impl OperatorArgs {
 #[instrument(skip_all)]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -246,6 +249,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 #[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!(operator_name = %args.operator_name, "Describing operator");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -304,7 +308,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
 #[instrument(skip_all)]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
-    info!("Installing operator(s)");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     args.local_cluster
         .install_if_needed()
@@ -354,7 +358,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 
 #[instrument(skip_all)]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
-    info!("Uninstalling operator(s)");
+    info_span!("Uninstalling operator(s)");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     for operator in &args.operators {
         operator
@@ -384,7 +389,8 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 
 #[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
-    info!("Listing installed operators");
+    debug!("Listing installed operators");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     type ReleaseList = IndexMap<String, Release>;
 
@@ -459,6 +465,7 @@ async fn build_source_index_file_list<'a>(
     chart_source: &ChartSourceType,
 ) -> Result<HashMap<&'a str, ChartSourceMetadata>, CmdError> {
     debug!("Building source index file list");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
@@ -512,6 +519,7 @@ fn build_versions_list(
     helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
     debug!("Building versions list");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let mut versions_list = IndexMap::new();
 
@@ -544,6 +552,7 @@ where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Build versions list for operator");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let mut versions_list = OperatorVersionList(HashMap::new());
     let operator_name = operator_name.as_ref();
@@ -566,6 +575,7 @@ where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Listing operator versions from repository");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let chart_name = utils::operator_chart_name(operator_name.as_ref());
 

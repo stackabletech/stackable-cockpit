@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
+use indicatif::ProgressStyle;
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, instrument};
+use tracing::{Span, debug, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 use url::Url;
 use urlencoding::encode;
 
@@ -120,6 +122,8 @@ impl OciUrlExt for Url {
 // TODO (@NickLarsenNZ): Look into why a HashMap is used here when the key is inside each entry in the value
 #[instrument]
 pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>, Error> {
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
     let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
     // initialize map
@@ -128,9 +132,12 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
         HELM_REPO_NAME_TEST,
         HELM_REPO_NAME_DEV,
     ] {
-        source_index_files.insert(repo_name, ChartSourceMetadata {
-            entries: HashMap::new(),
-        });
+        source_index_files.insert(
+            repo_name,
+            ChartSourceMetadata {
+                entries: HashMap::new(),
+            },
+        );
     }
     let base_url = format!("https://{HELM_OCI_BASE}/api/v2.0");
 

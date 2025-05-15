@@ -14,7 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{debug, info};
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -354,13 +354,16 @@ impl Client {
     pub async fn create_namespace(&self, name: String) -> Result<()> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
         namespace_api
-            .create(&PostParams::default(), &Namespace {
-                metadata: ObjectMeta {
-                    name: Some(name),
+            .create(
+                &PostParams::default(),
+                &Namespace {
+                    metadata: ObjectMeta {
+                        name: Some(name),
+                        ..Default::default()
+                    },
                     ..Default::default()
                 },
-                ..Default::default()
-            })
+            )
             .await
             .context(KubeClientPatchSnafu)?;
 
@@ -420,7 +423,7 @@ impl Client {
     /// Creates a new [`Discovery`] object and immediatly runs a discovery.
     #[tracing::instrument(skip_all)]
     async fn run_discovery(client: kube::client::Client) -> Result<Discovery> {
-        info!("running discovery");
+        debug!("running discovery");
         Discovery::new(client)
             .run()
             .await

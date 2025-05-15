@@ -3,6 +3,7 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     common::list,
@@ -14,7 +15,8 @@ use stackable_cockpit::{
     },
     xfer::{self, cache::Cache},
 };
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
@@ -130,6 +132,7 @@ pub enum CmdError {
 impl ReleaseArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle release args");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let transfer_client = xfer::Client::new_with(cache);
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
@@ -156,7 +159,8 @@ async fn list_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    info!("Listing releases");
+    debug!("Listing releases");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -210,7 +214,8 @@ async fn describe_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    info!(release = %args.release, "Describing release");
+    debug!(release = %args.release, "Describing release");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let release = release_list.get(&args.release);
 
@@ -271,7 +276,9 @@ async fn install_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    info!(release = %args.release, "Installing release");
+    debug!(release = %args.release, "Installing release");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
     match release_list.get(&args.release) {
         Some(release) => {
             let mut output = cli.result();
@@ -320,6 +327,8 @@ async fn uninstall_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
     match release_list.get(&args.release) {
         Some(release) => {
             release

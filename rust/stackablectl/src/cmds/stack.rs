@@ -3,6 +3,7 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use indicatif::ProgressStyle;
 use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
@@ -19,7 +20,8 @@ use stackable_cockpit::{
     xfer::{self, cache::Cache},
 };
 use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -158,9 +160,10 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
-                    release
-                });
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
 
                 if release == "dev" {
                     "main".to_string()
@@ -197,7 +200,8 @@ fn list_cmd(
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
-    info!("Listing stacks");
+    debug!("Listing stacks");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -247,7 +251,8 @@ fn describe_cmd(
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
-    info!(stack_name = %args.stack_name, "Describing stack");
+    debug!(stack_name = %args.stack_name, "Describing stack");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -310,7 +315,8 @@ async fn install_cmd(
     stack_list: stack::StackList,
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
-    info!(stack_name = %args.stack_name, "Installing stack");
+    debug!(stack_name = %args.stack_name, "Installing stack");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)

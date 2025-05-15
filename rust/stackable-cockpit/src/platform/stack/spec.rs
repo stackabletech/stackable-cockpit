@@ -1,6 +1,8 @@
+use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, info, instrument, log::warn};
+use tracing::{Span, debug, info, instrument, log::warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -112,6 +114,7 @@ impl StackSpec {
     #[instrument(skip_all)]
     pub async fn check_prerequisites(&self, client: &Client, namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing stack");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         // Returns an error if the stack doesn't support to be installed in the
         // requested product namespace. When installing a demo, this check is
@@ -160,6 +163,8 @@ impl StackSpec {
         client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
         // First, we check if the prerequisites are met
         self.check_prerequisites(client, &install_parameters.stack_namespace)
             .await?;
@@ -203,6 +208,7 @@ impl StackSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         // Get the release by name
         let release = release_list
@@ -226,6 +232,7 @@ impl StackSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let parameters = install_params
             .parameters

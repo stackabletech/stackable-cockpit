@@ -1,9 +1,11 @@
 use std::{fmt::Display, str::FromStr};
 
+use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu, ensure};
-use tracing::{info, instrument};
+use tracing::{Span, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     constants::{
@@ -61,10 +63,15 @@ pub struct OperatorSpec {
 
 impl Display for OperatorSpec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.name, match &self.version {
-            Some(v) => format!("={v}"),
-            None => "".into(),
-        })
+        write!(
+            f,
+            "{}{}",
+            self.name,
+            match &self.version {
+                Some(v) => format!("={v}"),
+                None => "".into(),
+            }
+        )
     }
 }
 
@@ -86,9 +93,10 @@ impl FromStr for OperatorSpec {
         ensure!(len <= 2, InvalidEqualSignCountSnafu);
 
         // Check if the provided operator name is in the list of valid operators
-        ensure!(VALID_OPERATORS.contains(&parts[0]), InvalidNameSnafu {
-            name: parts[0]
-        });
+        ensure!(
+            VALID_OPERATORS.contains(&parts[0]),
+            InvalidNameSnafu { name: parts[0] }
+        );
 
         // If there is only one part, the input didn't include
         // the optional version identifier
@@ -185,7 +193,8 @@ impl OperatorSpec {
         namespace: &str,
         chart_source: &ChartSourceType,
     ) -> Result<(), helm::Error> {
-        info!(operator = %self, "Installing operator");
+        Span::current().pb_set_message(format!("Installing {}-operator", self.name).as_str());
+        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").unwrap());
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();
@@ -210,6 +219,9 @@ impl OperatorSpec {
             true,
         )?;
 
+        Span::current().pb_set_message(format!("{}-operator installed", self.name).as_str());
+        Span::current().pb_set_style(&ProgressStyle::with_template("{msg}").unwrap());
+
         Ok(())
     }
 
@@ -219,6 +231,8 @@ impl OperatorSpec {
     where
         T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
     {
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
         match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {
                 println!("{status}");

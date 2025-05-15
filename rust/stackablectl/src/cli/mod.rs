@@ -2,6 +2,7 @@ use std::env;
 
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
@@ -12,7 +13,8 @@ use stackable_cockpit::{
     },
     xfer::cache::Settings,
 };
-use tracing::{Level, instrument};
+use tracing::{Level, Span, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
@@ -135,7 +137,7 @@ impl Cli {
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
     pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
-        tracing::info!("Add Helm repos");
+        tracing::debug!("Add Helm repos");
 
         // Stable repository
         helm::add_repo(HELM_REPO_NAME_STABLE, &self.repos.helm_repo_stable)?;
@@ -172,6 +174,8 @@ impl Cli {
 
     #[instrument(skip_all)]
     pub async fn run(&self) -> Result<String, Error> {
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
         // FIXME (Techassi): There might be a better way to handle this with
         // the match later in this function.
 

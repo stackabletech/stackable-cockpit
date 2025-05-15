@@ -1,8 +1,10 @@
 use std::process::Stdio;
 
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use tokio::process::Command;
-use tracing::{debug, instrument};
+use tracing::{Span, debug, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt;
 
 type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -22,6 +24,7 @@ pub enum Error {
 #[instrument(skip_all)]
 pub async fn check_if_docker_is_running() -> Result<()> {
     debug!("Checking if Docker is running");
+    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     if Command::new("docker")
         .arg("info")

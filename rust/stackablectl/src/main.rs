@@ -1,8 +1,10 @@
 use clap::Parser;
 use dotenvy::dotenv;
+use indicatif::ProgressStyle;
 use stackablectl::cli::{Cli, Error};
-use tracing::metadata::LevelFilter;
-use tracing_subscriber::fmt;
+use tracing::{Span, metadata::LevelFilter};
+use tracing_indicatif::{IndicatifLayer, span_ext::IndicatifSpanExt};
+use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[snafu::report]
 #[tokio::main]
@@ -16,14 +18,30 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .with_target(false);
 
-    tracing_subscriber::fmt()
-        .with_max_level(match app.log_level {
-            Some(level) => LevelFilter::from_level(level),
-            None => LevelFilter::WARN,
-        })
-        .event_format(format)
-        .pretty()
-        .init();
+    let indicatif_layer = IndicatifLayer::new();
+
+    let level_filter = match app.log_level {
+        Some(level) => LevelFilter::from_level(level),
+        None => LevelFilter::INFO,
+    };
+
+    if level_filter == LevelFilter::DEBUG {
+        tracing_subscriber::registry()
+            .with(
+                fmt::layer()
+                    .event_format(format)
+                    .pretty()
+                    .with_writer(indicatif_layer.get_stderr_writer()),
+            )
+            .init();
+    } else {
+        tracing_subscriber::registry()
+            .with(level_filter)
+            .with(indicatif_layer)
+            .init();
+
+        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    }
 
     // Load env vars from optional .env file
     match dotenv() {
