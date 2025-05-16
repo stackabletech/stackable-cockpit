@@ -1,11 +1,9 @@
 use std::fmt::Display;
 
-use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::block_in_place;
-use tracing::{Span, debug, error, info, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{debug, error, info, instrument};
 use url::Url;
 
 use crate::{
@@ -197,8 +195,6 @@ pub fn install_release_from_repo_or_registry(
     namespace: &str,
     suppress_output: bool,
 ) -> Result<InstallReleaseStatus, Error> {
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
-
     // Ideally, each Helm invocation would spawn_blocking instead in/around helm_sys,
     // but that requires a larger refactoring
     block_in_place(|| {
@@ -274,8 +270,6 @@ fn install_release(
     namespace: &str,
     suppress_output: bool,
 ) -> Result<(), Error> {
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
-
     let result = helm_sys::install_helm_release(
         release_name,
         chart_name,
@@ -310,7 +304,6 @@ pub fn uninstall_release(
     suppress_output: bool,
 ) -> Result<UninstallReleaseStatus, Error> {
     debug!("Uninstall Helm release");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     if check_release_exists(release_name, namespace)? {
         let result = helm_sys::uninstall_helm_release(release_name, namespace, suppress_output);
@@ -343,7 +336,6 @@ pub fn uninstall_release(
 #[instrument]
 pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool, Error> {
     debug!("Check if Helm release exists");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     // TODO (Techassi): Handle error
     Ok(helm_sys::check_helm_release_exists(release_name, namespace))
@@ -353,7 +345,6 @@ pub fn check_release_exists(release_name: &str, namespace: &str) -> Result<bool,
 #[instrument]
 pub fn list_releases(namespace: &str) -> Result<Vec<Release>, Error> {
     debug!("List Helm releases");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let result = helm_sys::list_helm_releases(namespace);
 
@@ -373,7 +364,6 @@ pub fn list_releases(namespace: &str) -> Result<Vec<Release>, Error> {
 #[instrument]
 pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<Release>, Error> {
     debug!("Get Helm release");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     Ok(list_releases(namespace)?
         .into_iter()
@@ -384,7 +374,6 @@ pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<Release
 #[instrument]
 pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), Error> {
     debug!("Add Helm repo");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let result = helm_sys::add_helm_repository(repository_name, repository_url);
 
@@ -407,7 +396,6 @@ where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Get Helm repo index file");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let url = Url::parse(repo_url.as_ref()).context(UrlParseSnafu)?;
     let url = url.join(HELM_REPO_INDEX_FILE).context(UrlParseSnafu)?;

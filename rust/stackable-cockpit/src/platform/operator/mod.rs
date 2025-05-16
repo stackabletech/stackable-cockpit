@@ -4,8 +4,8 @@ use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu, ensure};
-use tracing::{Span, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{info, instrument, Span};
+use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 
 use crate::{
     constants::{
@@ -193,6 +193,7 @@ impl OperatorSpec {
         namespace: &str,
         chart_source: &ChartSourceType,
     ) -> Result<(), helm::Error> {
+        info!(operator = %self, "Installing operator");
         Span::current().pb_set_message(format!("Installing {}-operator", self.name).as_str());
         Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").unwrap());
 
@@ -219,9 +220,6 @@ impl OperatorSpec {
             true,
         )?;
 
-        Span::current().pb_set_message(format!("{}-operator installed", self.name).as_str());
-        Span::current().pb_set_style(&ProgressStyle::with_template("{msg}").unwrap());
-
         Ok(())
     }
 
@@ -231,11 +229,9 @@ impl OperatorSpec {
     where
         T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
     {
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
-
         match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {
-                println!("{status}");
+                indicatif_println!("{}", status);
                 Ok(())
             }
             Err(err) => Err(err),

@@ -1,10 +1,8 @@
 use std::collections::HashMap;
 
-use indicatif::ProgressStyle;
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{Span, debug, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{debug, instrument};
 use url::Url;
 use urlencoding::encode;
 
@@ -122,8 +120,6 @@ impl OciUrlExt for Url {
 // TODO (@NickLarsenNZ): Look into why a HashMap is used here when the key is inside each entry in the value
 #[instrument]
 pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>, Error> {
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
-
     let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
     // initialize map

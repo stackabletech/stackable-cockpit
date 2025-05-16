@@ -20,8 +20,8 @@ use stackable_cockpit::{
     xfer::{self, cache::Cache},
 };
 use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{Span, debug, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -164,7 +164,6 @@ impl DemoArgs {
     #[instrument(skip_all, fields(with_cache = !cli.no_cache))]
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle demo args");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let transfer_client = xfer::Client::new_with(cache);
 
@@ -215,8 +214,10 @@ impl DemoArgs {
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument(skip_all)]
 async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
-    debug!("Listing demos");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!("Listing demos");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching demo information").unwrap(),
+    );
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -268,8 +269,10 @@ async fn describe_cmd(
     cli: &Cli,
     list: demo::List,
 ) -> Result<String, CmdError> {
-    debug!(demo_name = %args.demo_name, "Describing demo");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!(demo_name = %args.demo_name, "Describing demo");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching demo information").unwrap(),
+    );
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
@@ -331,8 +334,9 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
     release_branch: &str,
 ) -> Result<String, CmdError> {
-    debug!(demo_name = %args.demo_name, "Installing demo");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!(demo_name = %args.demo_name, "Installing demo");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing demo").unwrap());
 
     // Init result output and progress output
     let mut output = cli.result();

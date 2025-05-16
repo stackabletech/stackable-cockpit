@@ -20,8 +20,8 @@ use stackable_cockpit::{
     xfer::{self, cache::Cache},
 };
 use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{Span, debug, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -200,8 +200,10 @@ fn list_cmd(
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
-    debug!("Listing stacks");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!("Listing stacks");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching stack information").unwrap(),
+    );
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -251,8 +253,10 @@ fn describe_cmd(
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
-    debug!(stack_name = %args.stack_name, "Describing stack");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!(stack_name = %args.stack_name, "Describing stack");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching stack information").unwrap(),
+    );
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -315,8 +319,9 @@ async fn install_cmd(
     stack_list: stack::StackList,
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
-    debug!(stack_name = %args.stack_name, "Installing stack");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!(stack_name = %args.stack_name, "Installing stack");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing stack").unwrap());
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)

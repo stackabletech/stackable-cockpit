@@ -2,8 +2,8 @@ use clap::Parser;
 use dotenvy::dotenv;
 use indicatif::ProgressStyle;
 use stackablectl::cli::{Cli, Error};
-use tracing::{Span, metadata::LevelFilter};
-use tracing_indicatif::{IndicatifLayer, span_ext::IndicatifSpanExt};
+use tracing::metadata::LevelFilter;
+use tracing_indicatif::{indicatif_println, IndicatifLayer};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[snafu::report]
@@ -18,7 +18,17 @@ async fn main() -> Result<(), Error> {
         .without_time()
         .with_target(false);
 
-    let indicatif_layer = IndicatifLayer::new();
+    let indicatif_layer = IndicatifLayer::new()
+        .with_progress_style(ProgressStyle::with_template("").unwrap())
+        .with_max_progress_bars(
+            15,
+            Some(
+                ProgressStyle::with_template(
+                    "...and {pending_progress_bars} more processes not shown above.",
+                )
+                .unwrap(),
+            ),
+        );
 
     let level_filter = match app.log_level {
         Some(level) => LevelFilter::from_level(level),
@@ -39,8 +49,6 @@ async fn main() -> Result<(), Error> {
             .with(level_filter)
             .with(indicatif_layer)
             .init();
-
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
     }
 
     // Load env vars from optional .env file
@@ -48,7 +56,7 @@ async fn main() -> Result<(), Error> {
         Ok(_) => (),
         Err(err) => {
             if !err.not_found() {
-                println!("{err}")
+                indicatif_println!("{err}")
             }
         }
     }

@@ -1,10 +1,8 @@
 use std::process::Stdio;
 
-use indicatif::ProgressStyle;
 use snafu::{OptionExt, ResultExt, Snafu, ensure};
 use tokio::{io::AsyncWriteExt, process::Command};
-use tracing::{Span, debug, info, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{debug, info, instrument};
 
 use crate::{
     engine::{
@@ -69,7 +67,6 @@ impl Cluster {
     #[instrument(skip_all)]
     pub async fn create(&self) -> Result<()> {
         info!("Creating local cluster using kind");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         // Check if required binaries are present
         if let Some(binary) = binaries_present_with_name(&["docker", "kind"]) {
@@ -115,7 +112,6 @@ impl Cluster {
     #[instrument(skip_all)]
     pub async fn create_if_not_exists(&self) -> Result<()> {
         info!("Creating cluster if it doesn't exist using kind");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         if Self::check_if_cluster_exists(&self.name).await? {
             return Ok(());
@@ -138,7 +134,6 @@ impl Cluster {
     #[instrument(skip_all)]
     async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool> {
         debug!("Checking if kind cluster exists");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let output = Command::new("kind")
             .args(["get", "clusters"])

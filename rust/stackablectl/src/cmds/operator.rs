@@ -26,8 +26,8 @@ use stackable_cockpit::{
         k8s::{self, Client},
     },
 };
-use tracing::{Span, debug, info_span, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
@@ -191,7 +191,9 @@ impl OperatorArgs {
 #[instrument(skip_all)]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+    );
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -249,7 +251,9 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 #[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!(operator_name = %args.operator_name, "Describing operator");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+    );
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -308,7 +312,9 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
 #[instrument(skip_all)]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!("Installing operator(s)");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing operator(s)").unwrap());
 
     args.local_cluster
         .install_if_needed()
@@ -331,9 +337,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             )
             .context(HelmSnafu)?;
 
-        // TODO (@NickLarsenNZ): Send this to the progress handler instead of using println
-        // info!(%operator, "Installed operator");
-        println!("Installed {} operator", operator);
+        info!(%operator, "Installed operator");
+        indicatif_println!("Installed {} operator", operator);
     }
 
     let mut result = cli.result();
@@ -358,8 +363,9 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 
 #[instrument(skip_all)]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
-    info_span!("Uninstalling operator(s)");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!("Uninstalling operator(s)");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling operator(s)").unwrap());
 
     for operator in &args.operators {
         operator
@@ -389,8 +395,10 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 
 #[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
-    debug!("Listing installed operators");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!("Listing installed operators");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+    );
 
     type ReleaseList = IndexMap<String, Release>;
 
@@ -465,7 +473,6 @@ async fn build_source_index_file_list<'a>(
     chart_source: &ChartSourceType,
 ) -> Result<HashMap<&'a str, ChartSourceMetadata>, CmdError> {
     debug!("Building source index file list");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let mut source_index_files: HashMap<&str, ChartSourceMetadata> = HashMap::new();
 
@@ -519,7 +526,6 @@ fn build_versions_list(
     helm_index_files: &HashMap<&str, ChartSourceMetadata>,
 ) -> Result<IndexMap<String, OperatorVersionList>, CmdError> {
     debug!("Building versions list");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let mut versions_list = IndexMap::new();
 
@@ -552,7 +558,6 @@ where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Build versions list for operator");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let mut versions_list = OperatorVersionList(HashMap::new());
     let operator_name = operator_name.as_ref();
@@ -575,7 +580,6 @@ where
     T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
 {
     debug!("Listing operator versions from repository");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
     let chart_name = utils::operator_chart_name(operator_name.as_ref());
 

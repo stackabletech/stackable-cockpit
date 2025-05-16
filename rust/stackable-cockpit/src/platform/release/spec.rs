@@ -4,8 +4,8 @@ use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{Instrument, Span, debug, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{info, instrument, Instrument, Span};
+use tracing_indicatif::{span_ext::IndicatifSpanExt as _};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -63,6 +63,11 @@ impl ReleaseSpec {
         namespace: &str,
         chart_source: &ChartSourceType,
     ) -> Result<()> {
+        info!("Installing release");
+        Span::current().pb_set_style(
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").unwrap(),
+        );
+
         include_products.iter().for_each(|product| {
             Span::current().record("product.included", product);
         });
@@ -72,9 +77,6 @@ impl ReleaseSpec {
 
         let operators = self.filter_products(include_products, exclude_products);
 
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("Installing Release {wide_bar} {pos}/{len}").unwrap(),
-        );
         Span::current().pb_set_length(operators.len() as u64);
 
         let namespace = namespace.to_string();
@@ -90,12 +92,6 @@ impl ReleaseSpec {
                 tokio::spawn(
                     async move {
                         Span::current().record("product_name", &product_name);
-                        Span::current().pb_set_message(
-                            format!("Installing {}-operator", product_name).as_str(),
-                        );
-                        Span::current().pb_set_style(
-                            &ProgressStyle::with_template("{spinner} {msg}").unwrap(),
-                        );
 
                         // Create operator spec
                         let operator =
@@ -106,12 +102,6 @@ impl ReleaseSpec {
                         operator
                             .install(&namespace, &chart_source)
                             .context(HelmInstallSnafu)?;
-
-                        Span::current().pb_set_message(
-                            format!("{}-operator installed", product_name).as_str(),
-                        );
-                        Span::current()
-                            .pb_set_style(&ProgressStyle::with_template("{msg}").unwrap());
 
                         Ok(())
                     }
@@ -129,15 +119,15 @@ impl ReleaseSpec {
 
     #[instrument(skip_all)]
     pub fn uninstall(&self, namespace: &str) -> Result<()> {
-        debug!("Uninstalling release");
+        info!("Uninstalling release");
 
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Uninstalling Release {wide_bar} {pos}/{len}").unwrap(),
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").unwrap(),
         );
         Span::current().pb_set_length(self.products.len() as u64);
 
         for (product_name, product_spec) in &self.products {
-            debug!("Uninstalling {product_name}-operator");
+            info!("Uninstalling {product_name}-operator");
 
             // Create operator spec
             let operator = OperatorSpec::new(product_name, Some(product_spec.version.clone()))

@@ -4,7 +4,7 @@ use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
 use tracing::{Span, debug, info, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     common::manifest::ManifestSpec,
@@ -75,7 +75,11 @@ pub trait InstallManifestsExt {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         debug!("Installing manifests");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+
+        Span::current().pb_set_style(
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").unwrap(),
+        );
+        Span::current().pb_set_length(manifests.len() as u64);
 
         let mut parameters = parameters.clone();
         // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
@@ -148,6 +152,8 @@ pub trait InstallManifestsExt {
                         .context(DeployManifestSnafu)?
                 }
             }
+
+            Span::current().pb_inc(1);
         }
 
         Ok(())

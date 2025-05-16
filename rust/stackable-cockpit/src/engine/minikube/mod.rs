@@ -1,8 +1,6 @@
-use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use tokio::process::Command;
-use tracing::{Span, debug, info, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt;
+use tracing::{debug, info, instrument};
 
 use crate::{
     engine::docker::{self, check_if_docker_is_running},
@@ -46,7 +44,6 @@ impl Cluster {
     #[instrument(skip_all)]
     pub async fn create(&self) -> Result<(), Error> {
         info!("Creating local cluster using Minikube");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         // Check if required binaries are present
         if let Some(binary) = binaries_present_with_name(&["docker", "minikube"]) {
@@ -76,7 +73,6 @@ impl Cluster {
     #[instrument(skip_all)]
     pub async fn create_if_not_exists(&self) -> Result<(), Error> {
         info!("Creating cluster if it doesn't exist using Minikube");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         if Self::check_if_cluster_exists(&self.name).await? {
             return Ok(());
@@ -99,7 +95,6 @@ impl Cluster {
     #[instrument(skip_all)]
     async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool, Error> {
         debug!("Checking if Minikube cluster exists");
-        Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
 
         let output = Command::new("minikube")
             .arg("status")

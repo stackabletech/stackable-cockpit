@@ -14,7 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::{debug, info};
+use tracing::{info};
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -423,7 +423,7 @@ impl Client {
     /// Creates a new [`Discovery`] object and immediatly runs a discovery.
     #[tracing::instrument(skip_all)]
     async fn run_discovery(client: kube::client::Client) -> Result<Discovery> {
-        debug!("running discovery");
+        info!("running discovery");
         Discovery::new(client)
             .run()
             .await
