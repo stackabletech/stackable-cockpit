@@ -14,7 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::{info};
+use tracing::info;
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;

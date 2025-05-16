@@ -92,6 +92,7 @@ impl ReleaseSpec {
                 tokio::spawn(
                     async move {
                         Span::current().record("product_name", &product_name);
+                        info!("Installing {product_name}-operator");
 
                         // Create operator spec
                         let operator =
@@ -102,6 +103,8 @@ impl ReleaseSpec {
                         operator
                             .install(&namespace, &chart_source)
                             .context(HelmInstallSnafu)?;
+
+                        info!("Installed {product_name}-operator");
 
                         Ok(())
                     }

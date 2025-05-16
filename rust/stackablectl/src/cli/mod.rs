@@ -172,7 +172,6 @@ impl Cli {
 
     #[instrument(skip_all)]
     pub async fn run(&self) -> Result<String, Error> {
-
         // FIXME (Techassi): There might be a better way to handle this with
         // the match later in this function.
 
