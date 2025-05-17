@@ -1,6 +1,8 @@
+use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, info, instrument, warn};
+use tracing::{Span, debug, info, instrument, warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -189,6 +191,7 @@ impl DemoSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
+        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing manifests").unwrap());
 
         let params = install_params
             .parameters

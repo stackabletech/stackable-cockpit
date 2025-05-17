@@ -170,11 +170,14 @@ fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, G
     for product_name in product_names {
         // Why? Just why? Can we please make this consistent?
         if *product_name == "spark-history-server" {
-            map.insert(*product_name, GroupVersionKind {
-                group: "spark.stackable.tech".into(),
-                version: "v1alpha1".into(),
-                kind: "SparkHistoryServer".into(),
-            });
+            map.insert(
+                *product_name,
+                GroupVersionKind {
+                    group: "spark.stackable.tech".into(),
+                    version: "v1alpha1".into(),
+                    kind: "SparkHistoryServer".into(),
+                },
+            );
             continue;
         }
 

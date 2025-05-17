@@ -3,13 +3,15 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     constants::DEFAULT_NAMESPACE,
     platform::stacklet::{self, get_credentials_for_product, list_stacklets},
     utils::k8s::{self, Client, DisplayCondition},
 };
-use tracing::{info, instrument};
+use tracing::{Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::CommonNamespaceArgs,
@@ -92,6 +94,9 @@ impl StackletArgs {
 #[instrument(skip_all)]
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching stacklet information").unwrap(),
+    );
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
@@ -205,6 +210,9 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 #[instrument(skip_all)]
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching stacklet information").unwrap(),
+    );
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 

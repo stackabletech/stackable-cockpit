@@ -3,6 +3,7 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     common::list,
@@ -14,7 +15,8 @@ use stackable_cockpit::{
     },
     xfer::{self, cache::Cache},
 };
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
@@ -157,6 +159,9 @@ async fn list_cmd(
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching release information").unwrap(),
+    );
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -211,6 +216,9 @@ async fn describe_cmd(
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Describing release");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching release information").unwrap(),
+    );
 
     let release = release_list.get(&args.release);
 
@@ -272,6 +280,9 @@ async fn install_cmd(
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Installing release");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing release").unwrap());
+
     match release_list.get(&args.release) {
         Some(release) => {
             let mut output = cli.result();
@@ -320,6 +331,9 @@ async fn uninstall_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling release").unwrap());
+
     match release_list.get(&args.release) {
         Some(release) => {
             release

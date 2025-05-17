@@ -31,6 +31,7 @@ directories = "5.0"
 dotenvy = "0.15"
 futures = "0.3"
 indexmap = { version = "2.2", features = ["serde"] }
+indicatif = "0.17.11"
 k8s-openapi = { version = "0.24", default-features = false, features = ["v1_32"] }
 kube = { version = "0.99", default-features = false, features = ["client", "rustls-tls", "ws", "socks5", "http-proxy"] }
 lazy_static = "1.5"
@@ -54,6 +55,7 @@ termion = "4.0"
 tokio = { version = "1.38", features = ["rt-multi-thread", "macros", "fs", "process", "io-std"] }
 tower-http = { version = "0.5", features = ["validate-request"] }
 tracing = "0.1"
+tracing-indicatif = "0.3.9"
 tracing-subscriber = "0.3"
 url = "2.5"
 urlencoding = "2.1.3"

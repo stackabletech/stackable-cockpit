@@ -1,6 +1,8 @@
+use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, info, instrument, log::warn};
+use tracing::{Span, debug, info, instrument, log::warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -203,6 +205,7 @@ impl StackSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
+        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing operators").unwrap());
 
         // Get the release by name
         let release = release_list
@@ -226,6 +229,7 @@ impl StackSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
+        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing manifests").unwrap());
 
         let parameters = install_params
             .parameters

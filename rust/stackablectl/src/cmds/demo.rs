@@ -3,6 +3,7 @@ use comfy_table::{
     ContentArrangement, Row, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use indicatif::ProgressStyle;
 use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
@@ -19,7 +20,8 @@ use stackable_cockpit::{
     xfer::{self, cache::Cache},
 };
 use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -172,9 +174,10 @@ impl DemoArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
-                    release
-                });
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
 
                 if release == "dev" {
                     "main".to_string()
@@ -212,6 +215,9 @@ impl DemoArgs {
 #[instrument(skip_all)]
 async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching demo information").unwrap(),
+    );
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -264,6 +270,9 @@ async fn describe_cmd(
     list: demo::List,
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Describing demo");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching demo information").unwrap(),
+    );
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
@@ -326,6 +335,8 @@ async fn install_cmd(
     release_branch: &str,
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Installing demo");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing demo").unwrap());
 
     // Init result output and progress output
     let mut output = cli.result();

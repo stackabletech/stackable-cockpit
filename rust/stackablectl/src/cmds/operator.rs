@@ -6,6 +6,7 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
 };
 use indexmap::IndexMap;
+use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
@@ -25,7 +26,8 @@ use stackable_cockpit::{
         k8s::{self, Client},
     },
 };
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
@@ -189,6 +191,9 @@ impl OperatorArgs {
 #[instrument(skip_all)]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+    );
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -246,6 +251,9 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 #[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!(operator_name = %args.operator_name, "Describing operator");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+    );
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -305,6 +313,8 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 #[instrument(skip_all)]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing operator(s)").unwrap());
 
     args.local_cluster
         .install_if_needed()
@@ -327,9 +337,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             )
             .context(HelmSnafu)?;
 
-        // TODO (@NickLarsenNZ): Send this to the progress handler instead of using println
-        // info!(%operator, "Installed operator");
-        println!("Installed {} operator", operator);
+        info!(%operator, "Installed operator");
+        indicatif_println!("Installed {} operator", operator);
     }
 
     let mut result = cli.result();
@@ -355,6 +364,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 #[instrument(skip_all)]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
+    Span::current()
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling operator(s)").unwrap());
 
     for operator in &args.operators {
         operator
@@ -385,6 +396,9 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 #[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed operators");
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+    );
 
     type ReleaseList = IndexMap<String, Release>;
 

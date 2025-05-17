@@ -281,17 +281,23 @@ mod test {
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(p.unwrap(), &RawParameter {
-                    name: "param1".into(),
-                    value: "value1".into()
-                });
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param1".into(),
+                        value: "value1".into()
+                    }
+                );
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(p.unwrap(), &RawParameter {
-                    name: "param2".into(),
-                    value: "value2".into()
-                });
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param2".into(),
+                        value: "value2".into()
+                    }
+                );
 
                 let p = iter.next();
                 assert!(p.is_none());
@@ -309,17 +315,23 @@ mod test {
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(p.unwrap(), &RawParameter {
-                    name: "param1".into(),
-                    value: "value1".into()
-                });
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param1".into(),
+                        value: "value1".into()
+                    }
+                );
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(p.unwrap(), &RawParameter {
-                    name: "param2".into(),
-                    value: "value2".into()
-                });
+                assert_eq!(
+                    p.unwrap(),
+                    &RawParameter {
+                        name: "param2".into(),
+                        value: "value2".into()
+                    }
+                );
 
                 let p = iter.next();
                 assert!(p.is_none());
@@ -367,10 +379,13 @@ mod test {
 
         match input.into_params(valid_parameters) {
             Ok(validated) => panic!("SHOULD FAIL: {validated:?}"),
-            Err(err) => assert_eq!(err, IntoParametersError::InvalidParameter {
-                parameter: "param2".into(),
-                expected: "param1".into()
-            }),
+            Err(err) => assert_eq!(
+                err,
+                IntoParametersError::InvalidParameter {
+                    parameter: "param2".into(),
+                    expected: "param1".into()
+                }
+            ),
         }
     }
 }
