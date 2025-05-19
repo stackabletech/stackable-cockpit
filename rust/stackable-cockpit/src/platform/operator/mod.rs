@@ -194,7 +194,7 @@ impl OperatorSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), helm::Error> {
         info!(operator = %self, "Installing operator");
-        Span::current().pb_set_message(format!("Installing {}-operator", self.name).as_str());
+        Span::current().pb_set_message(format!("Installing {name}-operator", name = self.name).as_str());
         Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").expect("valid progress template"));
 
         let version = self.version.as_ref().map(|v| v.to_string());
