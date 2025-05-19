@@ -2,7 +2,7 @@ use clap::Parser;
 use dotenvy::dotenv;
 use indicatif::ProgressStyle;
 use stackablectl::cli::{Cli, Error};
-use tracing::metadata::LevelFilter;
+use tracing::{metadata::LevelFilter, Level};
 use tracing_indicatif::{indicatif_eprintln, IndicatifLayer};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -19,23 +19,18 @@ async fn main() -> Result<(), Error> {
         .with_target(false);
 
     let indicatif_layer = IndicatifLayer::new()
-        .with_progress_style(ProgressStyle::with_template("").expect("This is a valid progress template"))
+        .with_progress_style(ProgressStyle::with_template("").expect("valid progress template"))
         .with_max_progress_bars(
             15,
             Some(
                 ProgressStyle::with_template(
                     "...and {pending_progress_bars} more processes not shown above."
                 )
-                .expect("This is a valid progress template")
+                .expect("valid progress template")
             ),
         );
 
-    let level_filter = match app.log_level {
-        Some(level) => LevelFilter::from_level(level),
-        None => LevelFilter::INFO,
-    };
-
-    if level_filter == LevelFilter::DEBUG {
+    if let Some(level) = app.log_level {
         tracing_subscriber::registry()
             .with(
                 fmt::layer()
@@ -43,10 +38,11 @@ async fn main() -> Result<(), Error> {
                     .pretty()
                     .with_writer(indicatif_layer.get_stderr_writer()),
             )
+            .with(LevelFilter::from_level(level))
             .init();
     } else {
         tracing_subscriber::registry()
-            .with(level_filter)
+            .with(LevelFilter::from_level(Level::INFO))
             .with(indicatif_layer)
             .init();
     }

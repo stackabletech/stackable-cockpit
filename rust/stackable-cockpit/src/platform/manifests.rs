@@ -77,7 +77,7 @@ pub trait InstallManifestsExt {
         debug!("Installing manifests");
 
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("This is a valid progress template")
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
         );
         Span::current().pb_set_length(manifests.len() as u64);
 

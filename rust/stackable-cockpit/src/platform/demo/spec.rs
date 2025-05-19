@@ -191,7 +191,7 @@ impl DemoSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing manifests").expect("This is a valid progress template"));
+        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing manifests").expect("valid progress template"));
 
         let params = install_params
             .parameters
