@@ -166,7 +166,7 @@ pub trait InstallManifestsExt {
             }.instrument(span).await?;
 
             Span::current().pb_inc(1);
-        };
+        }
 
         Ok(())
     }
