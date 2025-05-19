@@ -95,7 +95,7 @@ impl StackletArgs {
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stacklet information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching stacklet information").expect("This is a valid progress template")
     );
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
@@ -211,7 +211,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stacklet information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching stacklet information").expect("This is a valid progress template")
     );
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;

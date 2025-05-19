@@ -192,7 +192,7 @@ impl OperatorArgs {
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching operator information").expect("This is a valid progress template")
     );
 
     // Build map which maps artifacts to a chart source
@@ -252,7 +252,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!(operator_name = %args.operator_name, "Describing operator");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching operator information").expect("This is a valid progress template")
     );
 
     // Build map which maps artifacts to a chart source
@@ -314,7 +314,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
     Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing operator(s)").unwrap());
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing operator(s)").expect("This is a valid progress template"));
 
     args.local_cluster
         .install_if_needed()
@@ -338,7 +338,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             .context(HelmSnafu)?;
 
         info!(%operator, "Installed operator");
-        indicatif_println!("Installed {} operator", operator);
+        indicatif_println!("Installed {operator} operator");
     }
 
     let mut result = cli.result();
@@ -365,7 +365,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
     Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling operator(s)").unwrap());
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling operator(s)").expect("This is a valid progress template"));
 
     for operator in &args.operators {
         operator
@@ -397,7 +397,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed operators");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching operator information").expect("This is a valid progress template")
     );
 
     type ReleaseList = IndexMap<String, Release>;

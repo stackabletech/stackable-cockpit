@@ -3,7 +3,7 @@ use dotenvy::dotenv;
 use indicatif::ProgressStyle;
 use stackablectl::cli::{Cli, Error};
 use tracing::metadata::LevelFilter;
-use tracing_indicatif::{indicatif_println, IndicatifLayer};
+use tracing_indicatif::{indicatif_eprintln, IndicatifLayer};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[snafu::report]
@@ -19,14 +19,14 @@ async fn main() -> Result<(), Error> {
         .with_target(false);
 
     let indicatif_layer = IndicatifLayer::new()
-        .with_progress_style(ProgressStyle::with_template("").unwrap())
+        .with_progress_style(ProgressStyle::with_template("").expect("This is a valid progress template"))
         .with_max_progress_bars(
             15,
             Some(
                 ProgressStyle::with_template(
-                    "...and {pending_progress_bars} more processes not shown above.",
+                    "...and {pending_progress_bars} more processes not shown above."
                 )
-                .unwrap(),
+                .expect("This is a valid progress template")
             ),
         );
 
@@ -56,7 +56,7 @@ async fn main() -> Result<(), Error> {
         Ok(_) => (),
         Err(err) => {
             if !err.not_found() {
-                indicatif_println!("{err}")
+                indicatif_eprintln!("{err}")
             }
         }
     }

@@ -195,7 +195,7 @@ impl OperatorSpec {
     ) -> Result<(), helm::Error> {
         info!(operator = %self, "Installing operator");
         Span::current().pb_set_message(format!("Installing {}-operator", self.name).as_str());
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").unwrap());
+        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").expect("This is a valid progress template"));
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();
@@ -231,7 +231,7 @@ impl OperatorSpec {
     {
         match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {
-                indicatif_println!("{}", status);
+                indicatif_println!("{status}");
                 Ok(())
             }
             Err(err) => Err(err),

@@ -216,7 +216,7 @@ impl DemoArgs {
 async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching demo information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching demo information").expect("This is a valid progress template")
     );
 
     match args.output_type {
@@ -271,7 +271,7 @@ async fn describe_cmd(
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Describing demo");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching demo information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching demo information").expect("This is a valid progress template")
     );
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
@@ -336,7 +336,7 @@ async fn install_cmd(
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Installing demo");
     Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing demo").unwrap());
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing demo").expect("This is a valid progress template"));
 
     // Init result output and progress output
     let mut output = cli.result();

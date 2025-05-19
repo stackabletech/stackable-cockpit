@@ -202,7 +202,7 @@ fn list_cmd(
 ) -> Result<String, CmdError> {
     info!("Listing stacks");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stack information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching stack information").expect("This is a valid progress template")
     );
 
     match args.output_type {
@@ -255,7 +255,7 @@ fn describe_cmd(
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Describing stack");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stack information").unwrap(),
+        &ProgressStyle::with_template("{spinner} Fetching stack information").expect("This is a valid progress template")
     );
 
     match stack_list.get(&args.stack_name) {
@@ -321,7 +321,7 @@ async fn install_cmd(
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Installing stack");
     Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing stack").unwrap());
+        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing stack").expect("This is a valid progress template"));
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)

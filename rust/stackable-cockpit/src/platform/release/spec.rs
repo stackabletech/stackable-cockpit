@@ -65,7 +65,7 @@ impl ReleaseSpec {
     ) -> Result<()> {
         info!("Installing release");
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").unwrap(),
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("This is a valid progress template")
         );
 
         include_products.iter().for_each(|product| {
@@ -125,7 +125,7 @@ impl ReleaseSpec {
         info!("Uninstalling release");
 
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").unwrap(),
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("This is a valid progress template")
         );
         Span::current().pb_set_length(self.products.len() as u64);
 
