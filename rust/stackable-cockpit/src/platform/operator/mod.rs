@@ -65,9 +65,9 @@ impl Display for OperatorSpec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}",
-            self.name,
-            match &self.version {
+            "{name}{version_selector}",
+            name = self.name,
+            version_selector = match &self.version {
                 Some(v) => format!("={v}"),
                 None => "".into(),
             }
