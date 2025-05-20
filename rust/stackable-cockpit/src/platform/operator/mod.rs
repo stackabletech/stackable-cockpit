@@ -1,6 +1,5 @@
 use std::{fmt::Display, str::FromStr};
 
-use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu, ensure};
@@ -186,6 +185,7 @@ impl OperatorSpec {
         // display for the inner type if it exists. Otherwise we gte the Debug
         // impl for the whole Option.
         version = self.version.as_ref().map(tracing::field::display),
+        indicatif.pb_show = true
     ))]
     pub fn install(
         &self,
@@ -195,9 +195,6 @@ impl OperatorSpec {
         info!(operator = %self, "Installing operator");
         Span::current()
             .pb_set_message(format!("Installing {name}-operator", name = self.name).as_str());
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("{spinner} {msg}").expect("valid progress template"),
-        );
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();

@@ -54,6 +54,7 @@ impl ReleaseSpec {
         %namespace,
         product.included = tracing::field::Empty,
         product.excluded = tracing::field::Empty,
+        indicatif.pb_show = true
     ))]
     pub async fn install(
         &self,
@@ -117,7 +118,7 @@ impl ReleaseSpec {
             .await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub fn uninstall(&self, namespace: &str) -> Result<()> {
         info!("Uninstalling release");
 

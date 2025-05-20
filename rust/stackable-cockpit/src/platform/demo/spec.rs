@@ -1,4 +1,3 @@
-use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{Span, debug, info, instrument, warn};
@@ -183,6 +182,7 @@ impl DemoSpec {
         stack_name = %self.stack,
         operator_namespace = %install_params.operator_namespace,
         demo_namespace = %install_params.demo_namespace,
+        indicatif.pb_show = true
     ))]
     async fn prepare_manifests(
         &self,
@@ -191,10 +191,7 @@ impl DemoSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("{spinner} Installing manifests")
-                .expect("valid progress template"),
-        );
+        Span::current().pb_set_message("Installing manifests");
 
         let params = install_params
             .parameters

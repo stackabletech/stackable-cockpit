@@ -3,7 +3,6 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
-use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     common::list,
@@ -152,17 +151,14 @@ impl ReleaseArgs {
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
 async fn list_cmd(
     args: &ReleaseListArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching release information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching release information");
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -210,17 +206,14 @@ async fn list_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Describing release");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching release information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching release information");
 
     let release = release_list.get(&args.release);
 
@@ -275,17 +268,14 @@ async fn describe_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Installing release");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Installing release")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Installing release");
 
     match release_list.get(&args.release) {
         Some(release) => {
@@ -329,16 +319,13 @@ async fn install_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Uninstalling release")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Uninstalling release");
 
     match release_list.get(&args.release) {
         Some(release) => {

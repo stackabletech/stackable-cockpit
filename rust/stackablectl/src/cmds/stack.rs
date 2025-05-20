@@ -3,7 +3,6 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
-use indicatif::ProgressStyle;
 use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
@@ -193,17 +192,14 @@ impl StackArgs {
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn list_cmd(
     args: &StackListArgs,
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
     info!("Listing stacks");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stack information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching stack information");
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -247,17 +243,14 @@ fn list_cmd(
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Describing stack");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stack information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching stack information");
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -313,7 +306,7 @@ fn describe_cmd(
     }
 }
 
-#[instrument(skip(cli, stack_list, transfer_client))]
+#[instrument(skip(cli, stack_list, transfer_client), fields(indicatif.pb_show = true))]
 async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
@@ -321,10 +314,7 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Installing stack");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Installing stack")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Installing stack");
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)

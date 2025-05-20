@@ -6,7 +6,6 @@ use comfy_table::{
     presets::{NOTHING, UTF8_FULL},
 };
 use indexmap::IndexMap;
-use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
@@ -188,13 +187,10 @@ impl OperatorArgs {
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching operator information");
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -249,13 +245,10 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!(operator_name = %args.operator_name, "Describing operator");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching operator information");
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -312,13 +305,10 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Installing operator(s)")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Installing operator(s)");
 
     args.local_cluster
         .install_if_needed()
@@ -365,13 +355,10 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     Ok(result.render())
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Uninstalling operator(s)")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Uninstalling operator(s)");
 
     for operator in &args.operators {
         operator
@@ -399,13 +386,10 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
     Ok(result.render())
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed operators");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information")
-            .expect("valid progress template"),
-    );
+    Span::current().pb_set_message("Fetching operator information");
 
     type ReleaseList = IndexMap<String, Release>;
 

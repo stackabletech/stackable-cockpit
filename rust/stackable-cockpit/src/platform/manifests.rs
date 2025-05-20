@@ -1,9 +1,8 @@
 use std::collections::HashMap;
 
-use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
-use tracing::{Instrument as _, Span, debug, info, info_span, instrument};
+use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
@@ -65,7 +64,7 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    #[instrument(skip_all, fields(%namespace))]
+    #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
@@ -86,94 +85,75 @@ pub trait InstallManifestsExt {
         parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
 
         for manifest in manifests {
-            let span = info_span!("install_manifests_iter");
-
             let parameters = parameters.clone();
             let labels = labels.clone();
-            async move {
-                match manifest {
-                    ManifestSpec::HelmChart(helm_file) => {
-                        debug!(helm_file, "Installing manifest from Helm chart");
 
-                        // Read Helm chart YAML and apply templating
-                        let helm_file =
-                            helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
-                                path_or_url: helm_file.clone(),
+            match manifest {
+                ManifestSpec::HelmChart(helm_file) => {
+                    debug!(helm_file, "Installing manifest from Helm chart");
+
+                    // Read Helm chart YAML and apply templating
+                    let helm_file =
+                        helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
+                            path_or_url: helm_file.clone(),
+                        })?;
+
+                    let helm_chart: helm::Chart = transfer_client
+                        .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
+                        .await
+                        .context(FileTransferSnafu)?;
+
+                    info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
+
+                    // Assumption: that all manifest helm charts refer to repos not registries
+                    helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
+                        AddHelmRepositorySnafu {
+                            repo_name: helm_chart.repo.name.clone(),
+                        },
+                    )?;
+
+                    // Serialize chart options to string
+                    let values_yaml = serde_yaml::to_string(&helm_chart.options)
+                        .context(SerializeOptionsSnafu)?;
+
+                    // Install the Helm chart using the Helm wrapper
+                    helm::install_release_from_repo_or_registry(
+                        &helm_chart.release_name,
+                        helm::ChartVersion {
+                            chart_source: &helm_chart.repo.name,
+                            chart_name: &helm_chart.name,
+                            chart_version: Some(&helm_chart.version),
+                        },
+                        Some(&values_yaml),
+                        namespace,
+                        true,
+                    )
+                    .context(InstallHelmReleaseSnafu {
+                        release_name: helm_chart.release_name,
+                    })?;
+                }
+                ManifestSpec::PlainYaml(manifest_file) => {
+                    debug!(manifest_file, "Installing YAML manifest");
+
+                    // Read YAML manifest and apply templating
+                    let path_or_url =
+                        manifest_file
+                            .into_path_or_url()
+                            .context(ParsePathOrUrlSnafu {
+                                path_or_url: manifest_file.clone(),
                             })?;
 
-                        let helm_chart: helm::Chart = transfer_client
-                            .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
-                            .await
-                            .context(FileTransferSnafu)?;
+                    let manifests = transfer_client
+                        .get(&path_or_url, &Template::new(&parameters))
+                        .await
+                        .context(FileTransferSnafu)?;
 
-                        info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
-                        Span::current().pb_set_message(
-                            format!("Installing {name} Helm chart", name = helm_chart.name)
-                                .as_str(),
-                        );
-                        Span::current().pb_set_style(
-                            &ProgressStyle::with_template("{spinner} {msg}")
-                                .expect("valid progress template"),
-                        );
-
-                        // Assumption: that all manifest helm charts refer to repos not registries
-                        helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
-                            AddHelmRepositorySnafu {
-                                repo_name: helm_chart.repo.name.clone(),
-                            },
-                        )?;
-
-                        // Serialize chart options to string
-                        let values_yaml = serde_yaml::to_string(&helm_chart.options)
-                            .context(SerializeOptionsSnafu)?;
-
-                        // Install the Helm chart using the Helm wrapper
-                        helm::install_release_from_repo_or_registry(
-                            &helm_chart.release_name,
-                            helm::ChartVersion {
-                                chart_source: &helm_chart.repo.name,
-                                chart_name: &helm_chart.name,
-                                chart_version: Some(&helm_chart.version),
-                            },
-                            Some(&values_yaml),
-                            namespace,
-                            true,
-                        )
-                        .context(InstallHelmReleaseSnafu {
-                            release_name: helm_chart.release_name,
-                        })?;
-                    }
-                    ManifestSpec::PlainYaml(manifest_file) => {
-                        debug!(manifest_file, "Installing YAML manifest");
-                        Span::current().pb_set_style(
-                            &ProgressStyle::with_template("{spinner} Installing YAML manifest")
-                                .expect("valid progress template"),
-                        );
-
-                        // Read YAML manifest and apply templating
-                        let path_or_url =
-                            manifest_file
-                                .into_path_or_url()
-                                .context(ParsePathOrUrlSnafu {
-                                    path_or_url: manifest_file.clone(),
-                                })?;
-
-                        let manifests = transfer_client
-                            .get(&path_or_url, &Template::new(&parameters))
-                            .await
-                            .context(FileTransferSnafu)?;
-
-                        client
-                            .deploy_manifests(&manifests, namespace, labels.clone())
-                            .await
-                            .context(DeployManifestSnafu)?;
-                    }
+                    client
+                        .deploy_manifests(&manifests, namespace, labels.clone())
+                        .await
+                        .context(DeployManifestSnafu)?;
                 }
-
-                Ok::<(), Error>(())
             }
-            .instrument(span)
-            .await?;
 
             Span::current().pb_inc(1);
         }
