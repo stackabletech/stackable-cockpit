@@ -201,7 +201,7 @@ pub fn install_release_from_repo_or_registry(
     block_in_place(|| {
         debug!("Install Helm release from repo");
         Span::current().pb_set_message(
-                            format!("Installing {name} Helm chart", name = chart_name)
+                            format!("Installing {chart_name} Helm chart")
                                 .as_str(),
                         );
 
@@ -309,7 +309,7 @@ pub fn uninstall_release(
     suppress_output: bool,
 ) -> Result<UninstallReleaseStatus, Error> {
     debug!("Uninstall Helm release");
-    Span::current().pb_set_message(format!("Uninstalling {name}-operator", name = release_name).as_str());
+    Span::current().pb_set_message(format!("Uninstalling {release_name}-operator").as_str());
 
     if check_release_exists(release_name, namespace)? {
         let result = helm_sys::uninstall_helm_release(release_name, namespace, suppress_output);
