@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
-use tracing::{debug, info, info_span, instrument, Instrument as _, Span};
+use tracing::{Instrument as _, Span, debug, info, info_span, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
@@ -77,7 +77,8 @@ pub trait InstallManifestsExt {
         debug!("Installing manifests");
 
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}")
+                .expect("valid progress template"),
         );
         Span::current().pb_set_length(manifests.len() as u64);
 
@@ -97,9 +98,10 @@ pub trait InstallManifestsExt {
                         debug!(helm_file, "Installing manifest from Helm chart");
 
                         // Read Helm chart YAML and apply templating
-                        let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
-                            path_or_url: helm_file.clone(),
-                        })?;
+                        let helm_file =
+                            helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
+                                path_or_url: helm_file.clone(),
+                            })?;
 
                         let helm_chart: helm::Chart = transfer_client
                             .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
@@ -107,8 +109,14 @@ pub trait InstallManifestsExt {
                             .context(FileTransferSnafu)?;
 
                         info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
-                        Span::current().pb_set_message(format!("Installing {name} Helm chart", name = helm_chart.name).as_str());
-                        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").expect("valid progress template"));
+                        Span::current().pb_set_message(
+                            format!("Installing {name} Helm chart", name = helm_chart.name)
+                                .as_str(),
+                        );
+                        Span::current().pb_set_style(
+                            &ProgressStyle::with_template("{spinner} {msg}")
+                                .expect("valid progress template"),
+                        );
 
                         // Assumption: that all manifest helm charts refer to repos not registries
                         helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
@@ -139,7 +147,10 @@ pub trait InstallManifestsExt {
                     }
                     ManifestSpec::PlainYaml(manifest_file) => {
                         debug!(manifest_file, "Installing YAML manifest");
-                        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing YAML manifest").expect("valid progress template"));
+                        Span::current().pb_set_style(
+                            &ProgressStyle::with_template("{spinner} Installing YAML manifest")
+                                .expect("valid progress template"),
+                        );
 
                         // Read YAML manifest and apply templating
                         let path_or_url =
@@ -162,8 +173,9 @@ pub trait InstallManifestsExt {
                 }
 
                 Ok::<(), Error>(())
-
-            }.instrument(span).await?;
+            }
+            .instrument(span)
+            .await?;
 
             Span::current().pb_inc(1);
         }

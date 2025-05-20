@@ -4,8 +4,8 @@ use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{info, instrument, Instrument, Span};
-use tracing_indicatif::{span_ext::IndicatifSpanExt as _};
+use tracing::{Instrument, Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -65,7 +65,8 @@ impl ReleaseSpec {
     ) -> Result<()> {
         info!("Installing release");
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}")
+                .expect("valid progress template"),
         );
 
         include_products.iter().for_each(|product| {
@@ -125,7 +126,8 @@ impl ReleaseSpec {
         info!("Uninstalling release");
 
         Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
+            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}")
+                .expect("valid progress template"),
         );
         Span::current().pb_set_length(self.products.len() as u64);
 

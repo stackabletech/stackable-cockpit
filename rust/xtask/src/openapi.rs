@@ -35,12 +35,9 @@ pub fn generate() -> Result<(), GenOpenapiError> {
         .write_all(openapi_json.as_bytes())
         .context(WriteOpenapiSchemaSnafu)?;
     let status = codegen.wait().context(ImportOpenapiSchemaRunSnafu)?;
-    ensure!(
-        status.success(),
-        ImportOpenapiSchemaSnafu {
-            error_code: status.code()
-        }
-    );
+    ensure!(status.success(), ImportOpenapiSchemaSnafu {
+        error_code: status.code()
+    });
 
     Ok(())
 }

@@ -205,7 +205,10 @@ impl StackSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing operators").expect("valid progress template"));
+        Span::current().pb_set_style(
+            &ProgressStyle::with_template("{spinner} Installing operators")
+                .expect("valid progress template"),
+        );
 
         // Get the release by name
         let release = release_list
@@ -229,7 +232,10 @@ impl StackSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing manifests").expect("valid progress template"));
+        Span::current().pb_set_style(
+            &ProgressStyle::with_template("{spinner} Installing manifests")
+                .expect("valid progress template"),
+        );
 
         let parameters = install_params
             .parameters

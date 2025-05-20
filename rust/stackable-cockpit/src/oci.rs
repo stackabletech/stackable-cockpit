@@ -128,12 +128,9 @@ pub async fn get_oci_index<'a>() -> Result<HashMap<&'a str, ChartSourceMetadata>
         HELM_REPO_NAME_TEST,
         HELM_REPO_NAME_DEV,
     ] {
-        source_index_files.insert(
-            repo_name,
-            ChartSourceMetadata {
-                entries: HashMap::new(),
-            },
-        );
+        source_index_files.insert(repo_name, ChartSourceMetadata {
+            entries: HashMap::new(),
+        });
     }
     let base_url = format!("https://{HELM_OCI_BASE}/api/v2.0");
 

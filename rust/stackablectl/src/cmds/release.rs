@@ -160,7 +160,8 @@ async fn list_cmd(
 ) -> Result<String, CmdError> {
     info!("Listing releases");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching release information").expect("valid progress template")
+        &ProgressStyle::with_template("{spinner} Fetching release information")
+            .expect("valid progress template"),
     );
 
     match args.output_type {
@@ -217,7 +218,8 @@ async fn describe_cmd(
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Describing release");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching release information").expect("valid progress template")
+        &ProgressStyle::with_template("{spinner} Fetching release information")
+            .expect("valid progress template"),
     );
 
     let release = release_list.get(&args.release);
@@ -280,8 +282,10 @@ async fn install_cmd(
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Installing release");
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing release").expect("valid progress template"));
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Installing release")
+            .expect("valid progress template"),
+    );
 
     match release_list.get(&args.release) {
         Some(release) => {
@@ -331,8 +335,10 @@ async fn uninstall_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling release").expect("valid progress template"));
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Uninstalling release")
+            .expect("valid progress template"),
+    );
 
     match release_list.get(&args.release) {
         Some(release) => {

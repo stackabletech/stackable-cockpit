@@ -160,10 +160,9 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(
-                    release_list.contains_key(release),
-                    NoSuchReleaseSnafu { release }
-                );
+                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
+                    release
+                });
 
                 if release == "dev" {
                     "main".to_string()
@@ -202,7 +201,8 @@ fn list_cmd(
 ) -> Result<String, CmdError> {
     info!("Listing stacks");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stack information").expect("valid progress template")
+        &ProgressStyle::with_template("{spinner} Fetching stack information")
+            .expect("valid progress template"),
     );
 
     match args.output_type {
@@ -255,7 +255,8 @@ fn describe_cmd(
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Describing stack");
     Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stack information").expect("valid progress template")
+        &ProgressStyle::with_template("{spinner} Fetching stack information")
+            .expect("valid progress template"),
     );
 
     match stack_list.get(&args.stack_name) {
@@ -320,8 +321,10 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Installing stack");
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing stack").expect("valid progress template"));
+    Span::current().pb_set_style(
+        &ProgressStyle::with_template("{spinner} Installing stack")
+            .expect("valid progress template"),
+    );
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)

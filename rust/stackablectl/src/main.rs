@@ -2,8 +2,8 @@ use clap::Parser;
 use dotenvy::dotenv;
 use indicatif::ProgressStyle;
 use stackablectl::cli::{Cli, Error};
-use tracing::{metadata::LevelFilter, Level};
-use tracing_indicatif::{indicatif_eprintln, IndicatifLayer};
+use tracing::{Level, metadata::LevelFilter};
+use tracing_indicatif::{IndicatifLayer, indicatif_eprintln};
 use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
 
 #[snafu::report]
@@ -24,9 +24,9 @@ async fn main() -> Result<(), Error> {
             15,
             Some(
                 ProgressStyle::with_template(
-                    "...and {pending_progress_bars} more processes not shown above."
+                    "...and {pending_progress_bars} more processes not shown above.",
                 )
-                .expect("valid progress template")
+                .expect("valid progress template"),
             ),
         );
 

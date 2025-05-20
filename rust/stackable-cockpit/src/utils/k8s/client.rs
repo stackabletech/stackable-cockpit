@@ -354,16 +354,13 @@ impl Client {
     pub async fn create_namespace(&self, name: String) -> Result<()> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
         namespace_api
-            .create(
-                &PostParams::default(),
-                &Namespace {
-                    metadata: ObjectMeta {
-                        name: Some(name),
-                        ..Default::default()
-                    },
+            .create(&PostParams::default(), &Namespace {
+                metadata: ObjectMeta {
+                    name: Some(name),
                     ..Default::default()
                 },
-            )
+                ..Default::default()
+            })
             .await
             .context(KubeClientPatchSnafu)?;
 
