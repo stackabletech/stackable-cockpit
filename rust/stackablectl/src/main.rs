@@ -2,9 +2,17 @@ use clap::Parser;
 use dotenvy::dotenv;
 use indicatif::ProgressStyle;
 use stackablectl::cli::{Cli, Error};
-use tracing::{metadata::LevelFilter, Level};
-use tracing_indicatif::{indicatif_eprintln, IndicatifLayer};
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing::{Level, metadata::LevelFilter};
+use tracing_indicatif::{
+    IndicatifLayer,
+    filter::{IndicatifFilter, hide_indicatif_span_fields},
+    indicatif_eprintln,
+};
+use tracing_subscriber::{
+    fmt::{self, format::DefaultFields},
+    layer::{Layer as _, SubscriberExt as _},
+    util::SubscriberInitExt as _,
+};
 
 #[snafu::report]
 #[tokio::main]
@@ -19,16 +27,19 @@ async fn main() -> Result<(), Error> {
         .with_target(false);
 
     let indicatif_layer = IndicatifLayer::new()
-        .with_progress_style(ProgressStyle::with_template("").expect("valid progress template"))
-        .with_max_progress_bars(
-            15,
-            Some(
-                ProgressStyle::with_template(
-                    "...and {pending_progress_bars} more processes not shown above."
-                )
-                .expect("valid progress template")
-            ),
-        );
+        .with_span_field_formatter(hide_indicatif_span_fields(DefaultFields::new()))
+        .with_progress_style(ProgressStyle::with_template("{span_child_prefix}{span_name}").unwrap())
+        // .with_progress_style(ProgressStyle::with_template("{span_child_prefix:.bold.dim}").expect("valid progress template"))
+        // .with_max_progress_bars(
+        //     15,
+        //     Some(
+        //         ProgressStyle::with_template(
+        //             "{span_child_prefix:.bold.dim} ...and {pending_progress_bars} more processes not shown above."
+        //         )
+        //         .expect("valid progress template")
+        //     ),
+        // )
+        ;
 
     if let Some(level) = app.log_level {
         tracing_subscriber::registry()
@@ -43,7 +54,7 @@ async fn main() -> Result<(), Error> {
     } else {
         tracing_subscriber::registry()
             .with(LevelFilter::from_level(Level::INFO))
-            .with(indicatif_layer)
+            .with(indicatif_layer.with_filter(IndicatifFilter::new(false)))
             .init();
     }
 

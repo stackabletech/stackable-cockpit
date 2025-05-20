@@ -1,12 +1,13 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 
 use indicatif::ProgressStyle;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
-use tracing::{debug, info, info_span, instrument, Instrument as _, Span};
+use tracing::{Instrument as _, Span, debug, info, info_span, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
+    PROGRESS_BAR_STYLE,
     common::manifest::ManifestSpec,
     helm,
     utils::{
@@ -64,7 +65,7 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    #[instrument(skip_all, fields(%namespace))]
+    #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
@@ -76,10 +77,10 @@ pub trait InstallManifestsExt {
     ) -> Result<(), Error> {
         debug!("Installing manifests");
 
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
-        );
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
         Span::current().pb_set_length(manifests.len() as u64);
+
+        tokio::time::sleep(Duration::from_secs(2)).await;
 
         let mut parameters = parameters.clone();
         // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
@@ -87,7 +88,10 @@ pub trait InstallManifestsExt {
         parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
 
         for manifest in manifests {
-            let span = info_span!("install_manifests_iter");
+            let span = tracing::warn_span!("install_manifests_iter", indicatif.pb_show = true);
+            span.pb_set_style(
+                &ProgressStyle::with_template("{span_child_prefix} boo {span_name}").unwrap(),
+            );
 
             let parameters = parameters.clone();
             let labels = labels.clone();
@@ -97,18 +101,27 @@ pub trait InstallManifestsExt {
                         debug!(helm_file, "Installing manifest from Helm chart");
 
                         // Read Helm chart YAML and apply templating
-                        let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
-                            path_or_url: helm_file.clone(),
-                        })?;
+                        let helm_file =
+                            helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
+                                path_or_url: helm_file.clone(),
+                            })?;
 
                         let helm_chart: helm::Chart = transfer_client
                             .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
                             .await
                             .context(FileTransferSnafu)?;
 
-                        info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
-                        Span::current().pb_set_message(format!("Installing {name} Helm chart", name = helm_chart.name).as_str());
-                        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").expect("valid progress template"));
+                        info!(helm_chart.name, helm_chart.version, "Installing Helm chart");
+                        Span::current().pb_set_message(
+                            format!("Installing {name} Helm chart", name = helm_chart.name)
+                                .as_str(),
+                        );
+                        // Span::current().pb_set_style(
+                        //     &ProgressStyle::with_template(
+                        //         "{span_child_prefix:.bold.dim} {spinner} {span_name}",
+                        //     )
+                        //     .expect("valid progress template"),
+                        // );
 
                         // Assumption: that all manifest helm charts refer to repos not registries
                         helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
@@ -139,7 +152,13 @@ pub trait InstallManifestsExt {
                     }
                     ManifestSpec::PlainYaml(manifest_file) => {
                         debug!(manifest_file, "Installing YAML manifest");
-                        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing YAML manifest").expect("valid progress template"));
+                        // TODO (@NickLarsenNZ): This span already has a style.
+                        // Span::current().pb_set_style(
+                        //     &ProgressStyle::with_template(
+                        //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Installing YAML manifest",
+                        //     )
+                        //     .expect("valid progress template"),
+                        // );
 
                         // Read YAML manifest and apply templating
                         let path_or_url =
@@ -162,8 +181,9 @@ pub trait InstallManifestsExt {
                 }
 
                 Ok::<(), Error>(())
-
-            }.instrument(span).await?;
+            }
+            .instrument(span)
+            .await?;
 
             Span::current().pb_inc(1);
         }

@@ -14,7 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{Instrument, info, info_span, instrument};
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -98,6 +98,7 @@ impl Client {
     /// Deploys manifests defined the in raw `manifests` YAML string. This
     /// method will fail if it is unable to parse the manifests, unable to
     /// resolve GVKs or unable to patch the dynamic objects.
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub async fn deploy_manifests(
         &self,
         manifests: &str,
@@ -108,6 +109,8 @@ impl Client {
         let labels: BTreeMap<String, String> = labels.into();
 
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
+            let span = info_span!("install_a_manifest", indicatif.pb_show = true);
+
             let mut object = DynamicObject::deserialize(manifest).context(DeserializeYamlSnafu)?;
 
             // Add our own labels to the object
@@ -141,6 +144,7 @@ impl Client {
                 &PatchParams::apply("stackablectl"),
                 &Patch::Apply(object),
             )
+            .instrument(span)
             .await
             .context(KubeClientPatchSnafu)?;
         }
@@ -354,16 +358,13 @@ impl Client {
     pub async fn create_namespace(&self, name: String) -> Result<()> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
         namespace_api
-            .create(
-                &PostParams::default(),
-                &Namespace {
-                    metadata: ObjectMeta {
-                        name: Some(name),
-                        ..Default::default()
-                    },
+            .create(&PostParams::default(), &Namespace {
+                metadata: ObjectMeta {
+                    name: Some(name),
                     ..Default::default()
                 },
-            )
+                ..Default::default()
+            })
             .await
             .context(KubeClientPatchSnafu)?;
 

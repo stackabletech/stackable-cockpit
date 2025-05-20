@@ -1,16 +1,15 @@
 use futures::{StreamExt as _, TryStreamExt};
 use indexmap::IndexMap;
-use indicatif::ProgressStyle;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{info, instrument, Instrument, Span};
-use tracing_indicatif::{span_ext::IndicatifSpanExt as _};
+use tracing::{Instrument, Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
 use crate::{
-    helm,
+    PROGRESS_BAR_STYLE, helm,
     platform::{
         operator::{self, ChartSourceType, OperatorSpec},
         product,
@@ -55,6 +54,7 @@ impl ReleaseSpec {
         %namespace,
         product.included = tracing::field::Empty,
         product.excluded = tracing::field::Empty,
+        indicatif.pb_show = true,
     ))]
     pub async fn install(
         &self,
@@ -64,9 +64,8 @@ impl ReleaseSpec {
         chart_source: &ChartSourceType,
     ) -> Result<()> {
         info!("Installing release");
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
-        );
+        Span::current().pb_set_message("Progress");
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
 
         include_products.iter().for_each(|product| {
             Span::current().record("product.included", product);
@@ -120,13 +119,11 @@ impl ReleaseSpec {
             .await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub fn uninstall(&self, namespace: &str) -> Result<()> {
         info!("Uninstalling release");
 
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}").expect("valid progress template")
-        );
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
         Span::current().pb_set_length(self.products.len() as u64);
 
         for (product_name, product_spec) in &self.products {

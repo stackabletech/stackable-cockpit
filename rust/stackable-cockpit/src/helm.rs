@@ -183,7 +183,7 @@ pub struct ChartVersion<'a> {
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
-#[instrument(skip(values_yaml), fields(with_values = values_yaml.is_some()))]
+#[instrument(skip(values_yaml), fields(with_values = values_yaml.is_some(), indicatif.pb_show = true))]
 pub fn install_release_from_repo_or_registry(
     release_name: &str,
     ChartVersion {
@@ -371,7 +371,7 @@ pub fn get_release(release_name: &str, namespace: &str) -> Result<Option<Release
 }
 
 /// Adds a Helm repo with `repo_name` and `repo_url`.
-#[instrument]
+#[instrument(fields(indicatif.pb_show = true))]
 pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), Error> {
     debug!("Add Helm repo");
 

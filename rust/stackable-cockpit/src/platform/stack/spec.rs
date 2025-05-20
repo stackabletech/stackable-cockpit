@@ -196,7 +196,7 @@ impl StackSpec {
             .await
     }
 
-    #[instrument(skip_all, fields(release = %self.release, %operator_namespace))]
+    #[instrument(skip_all, fields(release = %self.release, %operator_namespace, indicatif.pb_show = true))]
     pub async fn install_release(
         &self,
         release_list: release::ReleaseList,
@@ -205,7 +205,12 @@ impl StackSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing operators").expect("valid progress template"));
+        Span::current().pb_set_style(
+            &ProgressStyle::with_template(
+                "{span_child_prefix:.bold.dim} {spinner} {span_name} Installing operators",
+            )
+            .expect("valid progress template"),
+        );
 
         // Get the release by name
         let release = release_list
@@ -221,7 +226,7 @@ impl StackSpec {
             .context(InstallReleaseSnafu)
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub async fn prepare_manifests(
         &self,
         install_params: StackInstallParameters,
@@ -229,7 +234,10 @@ impl StackSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} Installing manifests").expect("valid progress template"));
+        // Span::current().pb_set_style(
+        //     &ProgressStyle::with_template("{spinner} {span_name} Installing manifests")
+        //         .expect("valid progress template"),
+        // );
 
         let parameters = install_params
             .parameters

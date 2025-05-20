@@ -159,9 +159,13 @@ async fn list_cmd(
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching release information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from list command
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching release information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -216,9 +220,13 @@ async fn describe_cmd(
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Describing release");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching release information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from descibe command
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching release information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     let release = release_list.get(&args.release);
 
@@ -273,15 +281,19 @@ async fn describe_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip_all, fields(indicatif.pb_hide = true))]
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Installing release");
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing release").expect("valid progress template"));
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Installing release",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     match release_list.get(&args.release) {
         Some(release) => {
@@ -325,14 +337,18 @@ async fn install_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling release").expect("valid progress template"));
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Uninstalling release",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     match release_list.get(&args.release) {
         Some(release) => {

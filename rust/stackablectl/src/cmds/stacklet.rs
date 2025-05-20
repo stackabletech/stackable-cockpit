@@ -94,9 +94,13 @@ impl StackletArgs {
 #[instrument(skip_all)]
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stacklet information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from list command
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching stacklet information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
@@ -210,9 +214,13 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
 #[instrument(skip_all)]
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching stacklet information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from credentials command
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching stacklet information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 

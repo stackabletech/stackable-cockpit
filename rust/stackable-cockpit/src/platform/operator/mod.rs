@@ -4,7 +4,7 @@ use indicatif::ProgressStyle;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu, ensure};
-use tracing::{info, instrument, Span};
+use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 
 use crate::{
@@ -93,10 +93,9 @@ impl FromStr for OperatorSpec {
         ensure!(len <= 2, InvalidEqualSignCountSnafu);
 
         // Check if the provided operator name is in the list of valid operators
-        ensure!(
-            VALID_OPERATORS.contains(&parts[0]),
-            InvalidNameSnafu { name: parts[0] }
-        );
+        ensure!(VALID_OPERATORS.contains(&parts[0]), InvalidNameSnafu {
+            name: parts[0]
+        });
 
         // If there is only one part, the input didn't include
         // the optional version identifier
@@ -187,6 +186,7 @@ impl OperatorSpec {
         // display for the inner type if it exists. Otherwise we gte the Debug
         // impl for the whole Option.
         version = self.version.as_ref().map(tracing::field::display),
+        indicatif.pb_show = true,
     ))]
     pub fn install(
         &self,
@@ -194,8 +194,12 @@ impl OperatorSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), helm::Error> {
         info!(operator = %self, "Installing operator");
-        Span::current().pb_set_message(format!("Installing {name}-operator", name = self.name).as_str());
-        Span::current().pb_set_style(&ProgressStyle::with_template("{spinner} {msg}").expect("valid progress template"));
+        Span::current()
+            .pb_set_message(format!("Installing {name}-operator", name = self.name).as_str());
+        // Span::current().pb_set_style(
+        //     &ProgressStyle::with_template("{span_child_prefix:.bold.dim} {spinner} {span_name}")
+        //         .expect("valid progress template"),
+        // );
 
         let version = self.version.as_ref().map(|v| v.to_string());
         let helm_name = self.helm_name();

@@ -188,12 +188,16 @@ impl OperatorArgs {
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!("Listing operators");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from list commands
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching operator information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -251,9 +255,13 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
 #[instrument(skip_all)]
 async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, CmdError> {
     debug!(operator_name = %args.operator_name, "Describing operator");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from describe commands
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching operator information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     // Build map which maps artifacts to a chart source
     let source_index_files =
@@ -310,11 +318,15 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_hide = true))]
 async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Installing operator(s)");
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Installing operator(s)").expect("valid progress template"));
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Installing operator(s)",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     args.local_cluster
         .install_if_needed()
@@ -361,11 +373,15 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     Ok(result.render())
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
-    Span::current()
-        .pb_set_style(&ProgressStyle::with_template("{spinner} Uninstalling operator(s)").expect("valid progress template"));
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Uninstalling operator(s)",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     for operator in &args.operators {
         operator
@@ -396,9 +412,13 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 #[instrument(skip_all)]
 fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed operators");
-    Span::current().pb_set_style(
-        &ProgressStyle::with_template("{spinner} Fetching operator information").expect("valid progress template")
-    );
+    // TODO (@NickLarsenNZ): Remove progress bar from installed command
+    // Span::current().pb_set_style(
+    //     &ProgressStyle::with_template(
+    //         "{span_child_prefix:.bold.dim} {spinner} {span_name} Fetching operator information",
+    //     )
+    //     .expect("valid progress template"),
+    // );
 
     type ReleaseList = IndexMap<String, Release>;
 
