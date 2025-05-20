@@ -7,6 +7,7 @@ use tracing::{Instrument as _, Span, debug, info, info_span, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
+    PROGRESS_BAR_STYLE,
     common::manifest::ManifestSpec,
     helm,
     utils::{
@@ -76,10 +77,7 @@ pub trait InstallManifestsExt {
     ) -> Result<(), Error> {
         debug!("Installing manifests");
 
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("Progress: {wide_bar} {pos}/{len}")
-                .expect("valid progress template"),
-        );
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
         Span::current().pb_set_length(manifests.len() as u64);
 
         let mut parameters = parameters.clone();
