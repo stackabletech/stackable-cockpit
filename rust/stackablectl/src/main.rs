@@ -1,10 +1,19 @@
 use clap::Parser;
 use dotenvy::dotenv;
-use indicatif::ProgressStyle;
+use stackable_cockpit::PROGRESS_SPINNER_STYLE;
 use stackablectl::cli::{Cli, Error};
 use tracing::{Level, metadata::LevelFilter};
-use tracing_indicatif::{IndicatifLayer, indicatif_eprintln};
-use tracing_subscriber::{fmt, layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_indicatif::{
+    IndicatifLayer,
+    filter::{IndicatifFilter, hide_indicatif_span_fields},
+    indicatif_eprintln,
+};
+use tracing_subscriber::{
+    Layer as _,
+    fmt::{self, format::DefaultFields},
+    layer::SubscriberExt,
+    util::SubscriberInitExt,
+};
 
 #[snafu::report]
 #[tokio::main]
@@ -19,16 +28,12 @@ async fn main() -> Result<(), Error> {
         .with_target(false);
 
     let indicatif_layer = IndicatifLayer::new()
-        .with_progress_style(ProgressStyle::with_template("").expect("valid progress template"))
-        .with_max_progress_bars(
-            15,
-            Some(
-                ProgressStyle::with_template(
-                    "...and {pending_progress_bars} more processes not shown above.",
-                )
-                .expect("valid progress template"),
-            ),
-        );
+        .with_span_field_formatter(
+            // If the `{span_fields}` interpolation is used in a template, then we want to hide the
+            // indicatif control fields "indicatif.pb_show" and "indicatif.pb_hide"
+            hide_indicatif_span_fields(DefaultFields::new()),
+        )
+        .with_progress_style(PROGRESS_SPINNER_STYLE.clone());
 
     if let Some(level) = app.log_level {
         tracing_subscriber::registry()
@@ -43,7 +48,7 @@ async fn main() -> Result<(), Error> {
     } else {
         tracing_subscriber::registry()
             .with(LevelFilter::from_level(Level::INFO))
-            .with(indicatif_layer)
+            .with(indicatif_layer.with_filter(IndicatifFilter::new(false)))
             .init();
     }
 

@@ -11,9 +11,14 @@ pub mod platform;
 pub mod utils;
 pub mod xfer;
 
-pub(crate) static PROGRESS_BAR_STYLE: LazyLock<ProgressStyle> = LazyLock::new(|| {
+pub static PROGRESS_BAR_STYLE: LazyLock<ProgressStyle> = LazyLock::new(|| {
     ProgressStyle::with_template(
-        "{span_child_prefix} Progress {msg}: {wide_bar:.magenta/cyan} {pos}/{len}",
+        "{span_child_prefix_indent}Progress: {wide_bar:.magenta/cyan} {pos}/{len}",
     )
     .expect("valid progress template")
+});
+
+pub static PROGRESS_SPINNER_STYLE: LazyLock<ProgressStyle> = LazyLock::new(|| {
+    ProgressStyle::with_template("{span_child_prefix_indent}{spinner} {msg}")
+        .expect("valid progress template")
 });
