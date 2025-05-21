@@ -37,6 +37,9 @@ pub enum Error {
     #[snafu(display("failed to patch/create Kubernetes object"))]
     KubeClientPatch { source: kube::error::Error },
 
+    #[snafu(display("failed to replace Kubernetes object"))]
+    KubeClientReplace { source: kube::error::Error },
+
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
 
@@ -64,9 +67,6 @@ pub enum Error {
 
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterInformation { source: cluster::Error },
-
-    #[snafu(display("failed to retrieve previous resource version information"))]
-    ResourceVersion { source: kube::error::Error },
 
     #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
     InvalidSecretData { secret_name: String },
@@ -151,6 +151,9 @@ impl Client {
         Ok(())
     }
 
+    /// Replaces CRDs defined the in raw `crds` YAML string. This
+    /// method will fail if it is unable to parse the CRDs, unable to
+    /// resolve GVKs or unable to replace/create the dynamic objects.
     pub async fn replace_crds(&self, crds: &str) -> Result<()> {
         for crd in serde_yaml::Deserializer::from_str(crds) {
             let mut object = DynamicObject::deserialize(crd).context(DeserializeYamlSnafu)?;
@@ -179,12 +182,12 @@ impl Client {
                 object.metadata.resource_version = resource.resource_version();
                 api.replace(&object.name_any(), &PostParams::default(), &object)
                     .await
-                    .context(KubeClientPatchSnafu)?;
+                    .context(KubeClientReplaceSnafu)?;
             } else {
                 // Create CRD if a previous version wasn't found
                 api.create(&PostParams::default(), &object)
                     .await
-                    .context(KubeClientCreateSnafu)?;
+                    .context(KubeClientPatchSnafu)?;
             }
         }
 

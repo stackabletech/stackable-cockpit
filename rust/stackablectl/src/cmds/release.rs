@@ -346,8 +346,7 @@ async fn upgrade_cmd(
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
-    debug!(release = %args.release, "Upgrading release");
-    Span::current().pb_set_style(&ProgressStyle::with_template("").unwrap());
+    info!(release = %args.release, "Upgrading release");
 
     match release_list.get(&args.release) {
         Some(release) => {
@@ -356,7 +355,10 @@ async fn upgrade_cmd(
 
             // Uninstall the old operator release first
             release
-                .uninstall(&args.operator_namespace)
+                .uninstall(
+                    &args.included_products,
+                    &args.excluded_products,
+                    &args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
             // Upgrade the CRDs for all the operators to be upgraded
@@ -403,7 +405,10 @@ async fn uninstall_cmd(
     match release_list.get(&args.release) {
         Some(release) => {
             release
-                .uninstall(&args.operator_namespace)
+                .uninstall(
+                    &Vec::new(),
+                    &Vec::new(),
+                    &args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
             let mut result = cli.result();

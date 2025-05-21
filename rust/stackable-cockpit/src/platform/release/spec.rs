@@ -35,6 +35,9 @@ pub enum Error {
     #[snafu(display("failed to deploy manifests using the kube client"))]
     DeployManifest { source: k8s::Error },
 
+    #[snafu(display("failed to construct a valid request"))]
+    ConstructRequest { source: reqwest::Error },
+
     #[snafu(display("failed to access the CRDs from source"))]
     AccessCRDs { source: reqwest::Error },
 
@@ -129,7 +132,7 @@ impl ReleaseSpec {
         namespace: &str,
         k8s_client: &Client,
     ) -> Result<()> {
-        debug!("Upgrading CRDs for release");
+        info!("Upgrading CRDs for release");
 
         include_products.iter().for_each(|product| {
             Span::current().record("product.included", product);
@@ -139,19 +142,12 @@ impl ReleaseSpec {
         });
 
         let client = reqwest::Client::new();
-
         let operators = self.filter_products(include_products, exclude_products);
 
-        Span::current().pb_set_style(
-            &ProgressStyle::with_template("Upgrading CRDs {wide_bar} {pos}/{len}").unwrap(),
-        );
-        Span::current().pb_set_length(operators.len() as u64);
-
         for (product_name, product) in operators {
-            Span::current().record("product_name", &product_name);
-            debug!("Upgrading CRDs for {product_name}-operator");
+            info!("Upgrading CRDs for {product_name}-operator");
 
-            let release = match product.version.pre.as_str() {
+            let release_branch = match product.version.pre.as_str() {
                 "dev" => "main".to_string(),
                 _ => {
                     format!("{}", product.version)
@@ -159,16 +155,18 @@ impl ReleaseSpec {
             };
 
             let request_url = format!(
-                "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release}/deploy/helm/{product_name}-operator/crds/crds.yaml"
+                "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release_branch}/deploy/helm/{product_name}-operator/crds/crds.yaml"
             );
 
-            // Get CRD manifests
-            // TODO bei nicht 200 Status, Fehler werfen
+            // Get CRD manifests from request_url
             let response = client
                 .get(request_url)
                 .send()
                 .await
+                .context(ConstructRequestSnafu)?
+                .error_for_status()
                 .context(AccessCRDsSnafu)?;
+
             let crd_manifests = response.text().await.context(ReadManifestsSnafu)?;
 
             // Upgrade CRDs
@@ -177,18 +175,29 @@ impl ReleaseSpec {
                 .await
                 .context(DeployManifestSnafu)?;
 
-            debug!("Upgraded {product_name}-operator CRDs");
-            Span::current().pb_inc(1);
+            info!("Upgraded {product_name}-operator CRDs");
         }
 
         Ok(())
     }
 
     #[instrument(skip_all)]
-    pub fn uninstall(&self, namespace: &str) -> Result<()> {
+    pub fn uninstall(&self,
+        include_products: &[String],
+        exclude_products: &[String],
+        namespace: &str) -> Result<()> {
         info!("Uninstalling release");
 
-        for (product_name, product_spec) in &self.products {
+        include_products.iter().for_each(|product| {
+            Span::current().record("product.included", product);
+        });
+        exclude_products.iter().for_each(|product| {
+            Span::current().record("product.excluded", product);
+        });
+
+        let operators = self.filter_products(include_products, exclude_products);
+
+        for (product_name, product_spec) in operators {
             info!("Uninstalling {product_name}-operator");
 
             // Create operator spec
