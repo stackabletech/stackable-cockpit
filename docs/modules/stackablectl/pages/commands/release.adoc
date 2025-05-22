@@ -158,3 +158,15 @@ Upgraded to release '25.3'
 
 Use "stackablectl operator installed" to list installed operators.
 ----
+
+The above command only upgrades the currently installed operators.
+To include additional operators in the installation step, use the `--include`/`-i` subcommands and specify the desired operators.
+
+For example
+[source,console]
+----
+$ stackablectl release upgrade 25.3 -i druid -i nifi
+----
+would upgrade the existing operators as well as install the Stackable operators for Apache Druid and Apache NiFi.
+
+Likewise, operators can be exluded from the upgrade using the `--exclude`/`-e` subcommands.
