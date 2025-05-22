@@ -7,8 +7,14 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::{namespace, operator::ChartSourceType, release},
+    helm::{self, Release},
+    platform::{
+        namespace,
+        operator::{self, ChartSourceType},
+        release,
+    },
     utils::{
+        self,
         k8s::{self, Client},
         path::PathOrUrlParseError,
     },
@@ -118,6 +124,9 @@ pub struct ReleaseUninstallArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
+    #[snafu(display("Helm error"))]
+    HelmError { source: helm::Error },
+
     #[snafu(display("failed to serialize YAML output"))]
     SerializeYamlOutput { source: serde_yaml::Error },
 
@@ -353,19 +362,40 @@ async fn upgrade_cmd(
             let mut output = cli.result();
             let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
+            // Get all currently installed operators to only upgrade those
+            let installed_charts: Vec<Release> =
+                helm::list_releases(&args.operator_namespace).context(HelmSnafu)?;
+
+            let mut operators: Vec<String> = operator::VALID_OPERATORS
+                .iter()
+                .filter(|operator| {
+                    installed_charts
+                        .iter()
+                        .any(|release| release.name == utils::operator_chart_name(operator))
+                })
+                .map(|operator| operator.to_string())
+                .collect();
+
             // Uninstall the old operator release first
             release
                 .uninstall(
-                    &args.included_products,
+                    &operators,
                     &args.excluded_products,
                     &args.operator_namespace,
                 )
                 .context(ReleaseUninstallSnafu)?;
 
+            // If operators were added to args.included_products, install them as well
+            for product in &args.included_products {
+                if !operators.contains(product) {
+                    operators.push(product.clone());
+                }
+            }
+
             // Upgrade the CRDs for all the operators to be upgraded
             release
                 .upgrade_crds(
-                    &args.included_products,
+                    &operators,
                     &args.excluded_products,
                     &args.operator_namespace,
                     &client,
@@ -376,7 +406,7 @@ async fn upgrade_cmd(
             // Install the new operator release
             release
                 .install(
-                    &args.included_products,
+                    &operators,
                     &args.excluded_products,
                     &args.operator_namespace,
                     &ChartSourceType::from(cli.chart_type()),
