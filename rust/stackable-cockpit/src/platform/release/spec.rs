@@ -182,10 +182,12 @@ impl ReleaseSpec {
     }
 
     #[instrument(skip_all)]
-    pub fn uninstall(&self,
+    pub fn uninstall(
+        &self,
         include_products: &[String],
         exclude_products: &[String],
-        namespace: &str) -> Result<()> {
+        namespace: &str,
+    ) -> Result<()> {
         info!("Uninstalling release");
 
         include_products.iter().for_each(|product| {

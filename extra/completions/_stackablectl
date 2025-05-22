@@ -418,6 +418,35 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ':RELEASE -- Name of the release to uninstall:' \
 && ret=0
 ;;
+(upgrade)
+_arguments "${_arguments_options[@]}" : \
+'*-i+[List of product operators to upgrade]:INCLUDED_PRODUCTS: ' \
+'*--include=[List of product operators to upgrade]:INCLUDED_PRODUCTS: ' \
+'*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
+'*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'-l+[Log level this application uses]:LOG_LEVEL: ' \
+'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':RELEASE -- Upgrade to the specified release:' \
+&& ret=0
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 ":: :_stackablectl__release__help_commands" \
@@ -443,6 +472,10 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (uninstall)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(upgrade)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -1316,6 +1349,10 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(upgrade)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -1820,6 +1857,7 @@ _stackablectl__help__release_commands() {
 'describe:Print out detailed release information' \
 'install:Install a specific release' \
 'uninstall:Uninstall a release' \
+'upgrade:Upgrade a release' \
     )
     _describe -t commands 'stackablectl help release commands' commands "$@"
 }
@@ -1842,6 +1880,11 @@ _stackablectl__help__release__list_commands() {
 _stackablectl__help__release__uninstall_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl help release uninstall commands' commands "$@"
+}
+(( $+functions[_stackablectl__help__release__upgrade_commands] )) ||
+_stackablectl__help__release__upgrade_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl help release upgrade commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__stack_commands] )) ||
 _stackablectl__help__stack_commands() {
@@ -1971,6 +2014,7 @@ _stackablectl__release_commands() {
 'describe:Print out detailed release information' \
 'install:Install a specific release' \
 'uninstall:Uninstall a release' \
+'upgrade:Upgrade a release' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl release commands' commands "$@"
@@ -1987,6 +2031,7 @@ _stackablectl__release__help_commands() {
 'describe:Print out detailed release information' \
 'install:Install a specific release' \
 'uninstall:Uninstall a release' \
+'upgrade:Upgrade a release' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl release help commands' commands "$@"
@@ -2016,6 +2061,11 @@ _stackablectl__release__help__uninstall_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl release help uninstall commands' commands "$@"
 }
+(( $+functions[_stackablectl__release__help__upgrade_commands] )) ||
+_stackablectl__release__help__upgrade_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl release help upgrade commands' commands "$@"
+}
 (( $+functions[_stackablectl__release__install_commands] )) ||
 _stackablectl__release__install_commands() {
     local commands; commands=()
@@ -2030,6 +2080,11 @@ _stackablectl__release__list_commands() {
 _stackablectl__release__uninstall_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl release uninstall commands' commands "$@"
+}
+(( $+functions[_stackablectl__release__upgrade_commands] )) ||
+_stackablectl__release__upgrade_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl release upgrade commands' commands "$@"
 }
 (( $+functions[_stackablectl__stack_commands] )) ||
 _stackablectl__stack_commands() {

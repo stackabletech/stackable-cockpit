@@ -315,6 +315,30 @@ module completions {
     --version(-V)             # Print version
   ]
 
+  def "nu-complete stackablectl release upgrade chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
+  # Upgrade a release
+  export extern "stackablectl release upgrade" [
+    RELEASE: string           # Upgrade to the specified release
+    --include(-i): string     # List of product operators to upgrade
+    --exclude(-e): string     # Blacklist of product operators to install
+    --operator-namespace: string # Namespace in the cluster used to deploy the operators
+    --operator-ns: string     # Namespace in the cluster used to deploy the operators
+    --log-level(-l): string   # Log level this application uses
+    --no-cache                # Do not cache the remote (default) demo, stack and release files
+    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --helm-repo-stable: string # Provide a custom Helm stable repository URL
+    --helm-repo-test: string  # Provide a custom Helm test repository URL
+    --helm-repo-dev: string   # Provide a custom Helm dev repository URL
+    --chart-source: string@"nu-complete stackablectl release upgrade chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --help(-h)                # Print help (see more with '--help')
+    --version(-V)             # Print version
+  ]
+
   # Print this message or the help of the given subcommand(s)
   export extern "stackablectl release help" [
   ]
@@ -333,6 +357,10 @@ module completions {
 
   # Uninstall a release
   export extern "stackablectl release help uninstall" [
+  ]
+
+  # Upgrade a release
+  export extern "stackablectl release help upgrade" [
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -965,6 +993,10 @@ module completions {
 
   # Uninstall a release
   export extern "stackablectl help release uninstall" [
+  ]
+
+  # Upgrade a release
+  export extern "stackablectl help release upgrade" [
   ]
 
   # Interact with stacks, which are ready-to-use product combinations

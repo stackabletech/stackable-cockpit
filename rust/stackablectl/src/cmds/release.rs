@@ -45,7 +45,7 @@ pub enum ReleaseCommands {
     #[command(aliases(["rm", "un"]))]
     Uninstall(ReleaseUninstallArgs),
 
-    // Upgrade a release
+    /// Upgrade a release
     Upgrade(ReleaseUpgradeArgs),
 }
 
@@ -88,7 +88,7 @@ pub struct ReleaseInstallArgs {
 
 #[derive(Debug, Args)]
 pub struct ReleaseUpgradeArgs {
-    /// Release to upgrade to
+    /// Upgrade to the specified release
     #[arg(name = "RELEASE")]
     release: String,
 
@@ -358,7 +358,8 @@ async fn upgrade_cmd(
                 .uninstall(
                     &args.included_products,
                     &args.excluded_products,
-                    &args.operator_namespace)
+                    &args.operator_namespace,
+                )
                 .context(ReleaseUninstallSnafu)?;
 
             // Upgrade the CRDs for all the operators to be upgraded
@@ -405,10 +406,7 @@ async fn uninstall_cmd(
     match release_list.get(&args.release) {
         Some(release) => {
             release
-                .uninstall(
-                    &Vec::new(),
-                    &Vec::new(),
-                    &args.operator_namespace)
+                .uninstall(&Vec::new(), &Vec::new(), &args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
             let mut result = cli.result();
