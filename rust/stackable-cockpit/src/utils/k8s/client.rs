@@ -14,7 +14,7 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::{info, instrument, Span};
+use tracing::{Span, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 #[cfg(doc)]

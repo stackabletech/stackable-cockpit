@@ -93,10 +93,9 @@ pub trait InstallManifestsExt {
                     debug!(helm_file, "Installing manifest from Helm chart");
 
                     // Read Helm chart YAML and apply templating
-                    let helm_file =
-                        helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
-                            path_or_url: helm_file.clone(),
-                        })?;
+                    let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
+                        path_or_url: helm_file.clone(),
+                    })?;
 
                     let helm_chart: helm::Chart = transfer_client
                         .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))

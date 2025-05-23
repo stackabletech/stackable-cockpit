@@ -3,7 +3,7 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::block_in_place;
-use tracing::{debug, error, info, instrument, Span};
+use tracing::{Span, debug, error, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 use url::Url;
 
@@ -200,10 +200,7 @@ pub fn install_release_from_repo_or_registry(
     // but that requires a larger refactoring
     block_in_place(|| {
         debug!("Install Helm release from repo");
-        Span::current().pb_set_message(
-                            format!("Installing {chart_name} Helm chart")
-                                .as_str(),
-                        );
+        Span::current().pb_set_message(format!("Installing {chart_name} Helm chart").as_str());
 
         if check_release_exists(release_name, namespace)? {
             let release = get_release(release_name, namespace)?.ok_or(Error::InstallRelease {
