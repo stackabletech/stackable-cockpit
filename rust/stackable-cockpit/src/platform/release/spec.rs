@@ -81,7 +81,7 @@ impl ReleaseSpec {
         futures::stream::iter(operators)
             .map(|(product_name, product)| {
                 let task_span =
-                    tracing::debug_span!("install_operator", product_name = tracing::field::Empty);
+                    tracing::info_span!("install_operator", product_name = tracing::field::Empty);
 
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
