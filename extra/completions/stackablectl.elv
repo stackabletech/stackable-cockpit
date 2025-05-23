@@ -224,6 +224,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand describe 'Print out detailed release information'
             cand install 'Install a specific release'
             cand uninstall 'Uninstall a release'
+            cand upgrade 'Upgrade a release'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;release;list'= {
@@ -319,11 +320,37 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand -V 'Print version'
             cand --version 'Print version'
         }
+        &'stackablectl;release;upgrade'= {
+            cand -i 'List of product operators to upgrade'
+            cand --include 'List of product operators to upgrade'
+            cand -e 'Blacklist of product operators to install'
+            cand --exclude 'Blacklist of product operators to install'
+            cand --operator-namespace 'Namespace in the cluster used to deploy the operators'
+            cand --operator-ns 'Namespace in the cluster used to deploy the operators'
+            cand -l 'Log level this application uses'
+            cand --log-level 'Log level this application uses'
+            cand -d 'Provide one or more additional (custom) demo file(s)'
+            cand --demo-file 'Provide one or more additional (custom) demo file(s)'
+            cand -s 'Provide one or more additional (custom) stack file(s)'
+            cand --stack-file 'Provide one or more additional (custom) stack file(s)'
+            cand -r 'Provide one or more additional (custom) release file(s)'
+            cand --release-file 'Provide one or more additional (custom) release file(s)'
+            cand --helm-repo-stable 'Provide a custom Helm stable repository URL'
+            cand --helm-repo-test 'Provide a custom Helm test repository URL'
+            cand --helm-repo-dev 'Provide a custom Helm dev repository URL'
+            cand --chart-source 'Source the charts from either a OCI registry or from index.yaml-based repositories'
+            cand --no-cache 'Do not cache the remote (default) demo, stack and release files'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand -V 'Print version'
+            cand --version 'Print version'
+        }
         &'stackablectl;release;help'= {
             cand list 'List available releases'
             cand describe 'Print out detailed release information'
             cand install 'Install a specific release'
             cand uninstall 'Uninstall a release'
+            cand upgrade 'Upgrade a release'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;release;help;list'= {
@@ -333,6 +360,8 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;release;help;install'= {
         }
         &'stackablectl;release;help;uninstall'= {
+        }
+        &'stackablectl;release;help;upgrade'= {
         }
         &'stackablectl;release;help;help'= {
         }
@@ -916,6 +945,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand describe 'Print out detailed release information'
             cand install 'Install a specific release'
             cand uninstall 'Uninstall a release'
+            cand upgrade 'Upgrade a release'
         }
         &'stackablectl;help;release;list'= {
         }
@@ -924,6 +954,8 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;help;release;install'= {
         }
         &'stackablectl;help;release;uninstall'= {
+        }
+        &'stackablectl;help;release;upgrade'= {
         }
         &'stackablectl;help;stack'= {
             cand list 'List available stacks'

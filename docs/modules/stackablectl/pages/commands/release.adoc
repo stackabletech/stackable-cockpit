@@ -14,25 +14,35 @@ To list the available Stackable releases run the following command:
 [source,console]
 ----
 $ stackablectl release list
-┌───┬─────────┬──────────────┬─────────────────────────────────────────────────────────────────────────────┐
-│ # ┆ RELEASE ┆ RELEASE DATE ┆ DESCRIPTION                                                                 │
-╞═══╪═════════╪══════════════╪═════════════════════════════════════════════════════════════════════════════╡
-│ 1 ┆ 23.7    ┆ 2023-07-26   ┆ Sixth release focusing on resources and pod overrides                       │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 2 ┆ 23.4    ┆ 2023-05-17   ┆ Fifth release focusing on affinities and product status                     │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 3 ┆ 23.1    ┆ 2023-01-27   ┆ Fourth release focusing on image selection and logging                      │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 4 ┆ 22.11   ┆ 2022-11-14   ┆ Third release focusing on resource management                               │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 5 ┆ 22.09   ┆ 2022-09-09   ┆ Second release focusing on security and OpenShift support                   │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 6 ┆ 22.06   ┆ 2022-06-30   ┆ First official release of the Stackable Data Platform                       │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 7 ┆ latest  ┆ 2023-07-26   ┆ Always pointing to the latest stable version of the Stackable Data Platform │
-├╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
-│ 8 ┆ dev     ┆ 2023-01-27   ┆ Development versions from main branch. Not stable!                          │
-└───┴─────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────┘
+┌────┬─────────┬──────────────┬─────────────────────────────────────────────────────────────────────────────────┐
+│ #  ┆ RELEASE ┆ RELEASE DATE ┆ DESCRIPTION                                                                     │
+╞════╪═════════╪══════════════╪═════════════════════════════════════════════════════════════════════════════════╡
+│ 1  ┆ 25.3    ┆ 2025-03-24   ┆ The March 2025 release                                                          │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 2  ┆ 24.11   ┆ 2024-11-18   ┆ The November 2024 release                                                       │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 3  ┆ 24.7    ┆ 2024-07-24   ┆ Security focused release to reduce CVEs and to build product images from source │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 4  ┆ 24.3    ┆ 2024-03-20   ┆ Security focused release to improve platform authentication and authorization   │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 5  ┆ 23.11   ┆ 2023-11-30   ┆ Seventh release focusing on PodDisruptionBudgets and graceful shutdown          │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 6  ┆ 23.7    ┆ 2023-07-26   ┆ Sixth release focusing on resources and pod overrides                           │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 7  ┆ 23.4    ┆ 2023-05-17   ┆ Fifth release focusing on affinities and product status                         │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 8  ┆ 23.1    ┆ 2023-01-27   ┆ Fourth release focusing on image selection and logging                          │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 9  ┆ 22.11   ┆ 2022-11-14   ┆ Third release focusing on resource management                                   │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 10 ┆ 22.09   ┆ 2022-09-09   ┆ Second release focusing on security and OpenShift support                       │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 11 ┆ 22.06   ┆ 2022-06-30   ┆ First official release of the Stackable Data Platform                           │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 12 ┆ latest  ┆ 2025-03-24   ┆ Always pointing to the latest stable version of the Stackable Data Platform     │
+├╌╌╌╌┼╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌┼╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌┤
+│ 13 ┆ dev     ┆ 1970-01-01   ┆ Development versions from main branch. Not stable!                              │
+└────┴─────────┴──────────────┴─────────────────────────────────────────────────────────────────────────────────┘
 ----
 
 Detailed information of a release can be queried with the `stackablectl release describe` command:
@@ -128,3 +138,35 @@ Installed product trino=23.7.0
 Installed product zookeeper=23.7.0
 Installed release 23.7
 ----
+
+== Upgrading Releases
+
+As described in the xref:home::release-notes.adoc[Upgrade sections of the Release Notes], the upgrade process can be achieved by the following three steps:
+
+. Uninstalling the previous release with `stackablectl release uninstall <RELEASE>`
+. Replacing the CRDs with `kubectl replace`
+. Installing the next release with `stackablectl release install <RELEASE>`
+
+For convenience `stackablectl` also provides an upgrade functionality which executes those steps by itself.
+To upgrade a release, run the following command:
+
+[source,console]
+----
+$ stackablectl release upgrade 25.3
+
+Upgraded to release '25.3'
+
+Use "stackablectl operator installed" to list installed operators.
+----
+
+The above command only upgrades the currently installed operators.
+To include additional operators in the installation step, use the `--include`/`-i` subcommands and specify the desired operators.
+
+For example
+[source,console]
+----
+$ stackablectl release upgrade 25.3 -i druid -i nifi
+----
+would upgrade the existing operators as well as install the Stackable operators for Apache Druid and Apache NiFi.
+
+Likewise, operators can be exluded from the upgrade using the `--exclude`/`-e` subcommands.

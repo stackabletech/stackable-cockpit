@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 
 - Pass the stack/demo namespace as a templating variable `NAMESPACE` to manifests.
   This should unblock demos to run in all namespaces, as they can template the namespace e.g. for the FQDN of services ([#355]).
+- Add release upgrade functionality to `stackablectl release` command through `upgrade` subcommand ([#379]).
 
 ### Changed
 
@@ -20,6 +21,7 @@ All notable changes to this project will be documented in this file.
 
 [#368]: https://github.com/stackabletech/stackable-cockpit/pull/368
 [#373]: https://github.com/stackabletech/stackable-cockpit/pull/373
+[#379]: https://github.com/stackabletech/stackable-cockpit/pull/379
 
 ## [25.3.0] - 2025-03-27
 

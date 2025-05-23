@@ -37,6 +37,9 @@ pub enum Error {
     #[snafu(display("failed to patch/create Kubernetes object"))]
     KubeClientPatch { source: kube::error::Error },
 
+    #[snafu(display("failed to replace Kubernetes object"))]
+    KubeClientReplace { source: kube::error::Error },
+
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
 
@@ -143,6 +146,49 @@ impl Client {
             )
             .await
             .context(KubeClientPatchSnafu)?;
+        }
+
+        Ok(())
+    }
+
+    /// Replaces CRDs defined the in raw `crds` YAML string. This
+    /// method will fail if it is unable to parse the CRDs, unable to
+    /// resolve GVKs or unable to replace/create the dynamic objects.
+    pub async fn replace_crds(&self, crds: &str) -> Result<()> {
+        for crd in serde_yaml::Deserializer::from_str(crds) {
+            let mut object = DynamicObject::deserialize(crd).context(DeserializeYamlSnafu)?;
+
+            let object_type = object.types.as_ref().ok_or(
+                ObjectTypeSnafu {
+                    object: object.clone(),
+                }
+                .build(),
+            )?;
+
+            let gvk = Self::gvk_of_typemeta(object_type);
+            let (resource, _) = self
+                .resolve_gvk(&gvk)
+                .await?
+                .context(GVKUnkownSnafu { gvk })?;
+
+            // CRDs are cluster scoped
+            let api: Api<DynamicObject> = Api::all_with(self.client.clone(), &resource);
+
+            if let Some(resource) = api
+                .get_opt(&object.name_any())
+                .await
+                .context(KubeClientFetchSnafu)?
+            {
+                object.metadata.resource_version = resource.resource_version();
+                api.replace(&object.name_any(), &PostParams::default(), &object)
+                    .await
+                    .context(KubeClientReplaceSnafu)?;
+            } else {
+                // Create CRD if a previous version wasn't found
+                api.create(&PostParams::default(), &object)
+                    .await
+                    .context(KubeClientPatchSnafu)?;
+            }
         }
 
         Ok(())

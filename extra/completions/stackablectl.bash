@@ -201,6 +201,9 @@ _stackablectl() {
             stackablectl__help__release,uninstall)
                 cmd="stackablectl__help__release__uninstall"
                 ;;
+            stackablectl__help__release,upgrade)
+                cmd="stackablectl__help__release__upgrade"
+                ;;
             stackablectl__help__stack,describe)
                 cmd="stackablectl__help__stack__describe"
                 ;;
@@ -267,6 +270,9 @@ _stackablectl() {
             stackablectl__release,uninstall)
                 cmd="stackablectl__release__uninstall"
                 ;;
+            stackablectl__release,upgrade)
+                cmd="stackablectl__release__upgrade"
+                ;;
             stackablectl__release__help,describe)
                 cmd="stackablectl__release__help__describe"
                 ;;
@@ -281,6 +287,9 @@ _stackablectl() {
                 ;;
             stackablectl__release__help,uninstall)
                 cmd="stackablectl__release__help__uninstall"
+                ;;
+            stackablectl__release__help,upgrade)
+                cmd="stackablectl__release__help__upgrade"
                 ;;
             stackablectl__stack,describe)
                 cmd="stackablectl__stack__describe"
@@ -2883,7 +2892,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help__release)
-            opts="list describe install uninstall"
+            opts="list describe install uninstall upgrade"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2939,6 +2948,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help__release__uninstall)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__help__release__upgrade)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -3985,7 +4008,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release)
-            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list describe install uninstall help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list describe install uninstall upgrade help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4249,7 +4272,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__help)
-            opts="list describe install uninstall help"
+            opts="list describe install uninstall upgrade help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4319,6 +4342,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__help__uninstall)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__release__help__upgrade)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -4647,6 +4684,158 @@ _stackablectl() {
                 return 0
             fi
             case "${prev}" in
+                --operator-namespace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --operator-ns)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --log-level)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -l)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --demo-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -d)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --stack-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -s)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --release-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -r)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --helm-repo-stable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-test)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-dev)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__release__upgrade)
+            opts="-i -e -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <RELEASE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --include)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -i)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --exclude)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -e)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --operator-namespace)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
