@@ -2,9 +2,11 @@ use std::collections::HashMap;
 
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
+    PROGRESS_BAR_STYLE,
     common::manifest::ManifestSpec,
     helm,
     utils::{
@@ -62,7 +64,7 @@ pub enum Error {
 
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
-    #[instrument(skip_all, fields(%namespace))]
+    #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
@@ -74,12 +76,18 @@ pub trait InstallManifestsExt {
     ) -> Result<(), Error> {
         debug!("Installing manifests");
 
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
+        Span::current().pb_set_length(manifests.len() as u64);
+
         let mut parameters = parameters.clone();
         // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
         // fqdn service names [which contain the namespace].
         parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
 
         for manifest in manifests {
+            let parameters = parameters.clone();
+            let labels = labels.clone();
+
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
                     debug!(helm_file, "Installing manifest from Helm chart");
@@ -142,9 +150,11 @@ pub trait InstallManifestsExt {
                     client
                         .deploy_manifests(&manifests, namespace, labels.clone())
                         .await
-                        .context(DeployManifestSnafu)?
+                        .context(DeployManifestSnafu)?;
                 }
             }
+
+            Span::current().pb_inc(1);
         }
 
         Ok(())

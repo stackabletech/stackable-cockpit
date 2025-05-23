@@ -9,7 +9,8 @@ use stackable_cockpit::{
     platform::stacklet::{self, get_credentials_for_product, list_stacklets},
     utils::k8s::{self, Client, DisplayCondition},
 };
-use tracing::{info, instrument};
+use tracing::{Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::CommonNamespaceArgs,
@@ -89,9 +90,10 @@ impl StackletArgs {
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
+    Span::current().pb_set_message("Fetching stacklet information");
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
@@ -202,9 +204,10 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     }
 }
 
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
+    Span::current().pb_set_message("Fetching stacklet information");
 
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 

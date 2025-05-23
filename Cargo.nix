@@ -332,7 +332,7 @@ rec {
           }
           {
             name = "vte";
-            packageId = "vte";
+            packageId = "vte 0.10.1";
           }
         ];
         features = {
@@ -492,7 +492,7 @@ rec {
         };
         resolvedDefaultFeatures = [ "derive" "derive_arbitrary" ];
       };
-      "arrayvec" = rec {
+      "arrayvec 0.5.2" = rec {
         crateName = "arrayvec";
         version = "0.5.2";
         edition = "2018";
@@ -503,6 +503,21 @@ rec {
         features = {
           "default" = [ "std" ];
           "serde" = [ "dep:serde" ];
+        };
+      };
+      "arrayvec 0.7.6" = rec {
+        crateName = "arrayvec";
+        version = "0.7.6";
+        edition = "2018";
+        sha256 = "0l1fz4ccgv6pm609rif37sl5nv5k6lbzi7kkppgzqzh1vwix20kw";
+        authors = [
+          "bluss"
+        ];
+        features = {
+          "borsh" = [ "dep:borsh" ];
+          "default" = [ "std" ];
+          "serde" = [ "dep:serde" ];
+          "zeroize" = [ "dep:zeroize" ];
         };
       };
       "async-broadcast" = rec {
@@ -2276,7 +2291,7 @@ rec {
           }
           {
             name = "unicode-width";
-            packageId = "unicode-width";
+            packageId = "unicode-width 0.1.13";
           }
         ];
         features = {
@@ -2339,7 +2354,7 @@ rec {
           }
           {
             name = "unicode-width";
-            packageId = "unicode-width";
+            packageId = "unicode-width 0.1.13";
             optional = true;
           }
           {
@@ -5257,6 +5272,55 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "serde" "std" ];
       };
+      "indicatif" = rec {
+        crateName = "indicatif";
+        version = "0.17.11";
+        edition = "2021";
+        sha256 = "0db2b2r79r9x8x4lysq1ci9xm13c0xg0sqn3z960yh2bk2430fqq";
+        dependencies = [
+          {
+            name = "console";
+            packageId = "console";
+            usesDefaultFeatures = false;
+            features = [ "ansi-parsing" ];
+          }
+          {
+            name = "number_prefix";
+            packageId = "number_prefix";
+          }
+          {
+            name = "portable-atomic";
+            packageId = "portable-atomic";
+          }
+          {
+            name = "unicode-width";
+            packageId = "unicode-width 0.2.0";
+            optional = true;
+          }
+          {
+            name = "vt100";
+            packageId = "vt100";
+            optional = true;
+          }
+          {
+            name = "web-time";
+            packageId = "web-time";
+            target = { target, features }: ("wasm32" == target."arch" or null);
+          }
+        ];
+        features = {
+          "default" = [ "unicode-width" "console/unicode-width" ];
+          "futures" = [ "dep:futures-core" ];
+          "improved_unicode" = [ "unicode-segmentation" "unicode-width" "console/unicode-width" ];
+          "in_memory" = [ "vt100" ];
+          "rayon" = [ "dep:rayon" ];
+          "tokio" = [ "dep:tokio" ];
+          "unicode-segmentation" = [ "dep:unicode-segmentation" ];
+          "unicode-width" = [ "dep:unicode-width" ];
+          "vt100" = [ "dep:vt100" ];
+        };
+        resolvedDefaultFeatures = [ "default" "in_memory" "unicode-width" "vt100" ];
+      };
       "inout" = rec {
         crateName = "inout";
         version = "0.1.3";
@@ -6214,7 +6278,7 @@ rec {
           }
           {
             name = "windows-targets";
-            packageId = "windows-targets 0.48.5";
+            packageId = "windows-targets 0.52.6";
             target = { target, features }: (target."windows" or false);
           }
         ];
@@ -6724,6 +6788,19 @@ rec {
           "std" = [ "proc-macro-crate" ];
         };
         resolvedDefaultFeatures = [ "proc-macro-crate" "std" ];
+      };
+      "number_prefix" = rec {
+        crateName = "number_prefix";
+        version = "0.4.0";
+        edition = "2015";
+        sha256 = "1wvh13wvlajqxkb1filsfzbrnq0vrmrw298v2j3sy82z1rm282w3";
+        authors = [
+          "Benjamin Sago <ogham@bsago.me>"
+        ];
+        features = {
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
       };
       "numtoa" = rec {
         crateName = "numtoa";
@@ -7703,6 +7780,19 @@ rec {
           "Josef Brandl <mail@josefbrandl.de>"
         ];
 
+      };
+      "portable-atomic" = rec {
+        crateName = "portable-atomic";
+        version = "1.11.0";
+        edition = "2018";
+        sha256 = "0glb2wngflvfmg789qbf6dbnwcf6ai212fs7n0lf1c66rd49n3im";
+        libName = "portable_atomic";
+        features = {
+          "critical-section" = [ "dep:critical-section" ];
+          "default" = [ "fallback" ];
+          "serde" = [ "dep:serde" ];
+        };
+        resolvedDefaultFeatures = [ "default" "fallback" ];
       };
       "powerfmt" = rec {
         crateName = "powerfmt";
@@ -10585,6 +10675,10 @@ rec {
             features = [ "serde" ];
           }
           {
+            name = "indicatif";
+            packageId = "indicatif";
+          }
+          {
             name = "k8s-openapi";
             packageId = "k8s-openapi";
             usesDefaultFeatures = false;
@@ -10650,6 +10744,10 @@ rec {
           {
             name = "tracing";
             packageId = "tracing";
+          }
+          {
+            name = "tracing-indicatif";
+            packageId = "tracing-indicatif";
           }
           {
             name = "url";
@@ -11298,6 +11396,10 @@ rec {
             features = [ "serde" ];
           }
           {
+            name = "indicatif";
+            packageId = "indicatif";
+          }
+          {
             name = "lazy_static";
             packageId = "lazy_static";
           }
@@ -11364,6 +11466,10 @@ rec {
           {
             name = "tracing";
             packageId = "tracing";
+          }
+          {
+            name = "tracing-indicatif";
+            packageId = "tracing-indicatif";
           }
           {
             name = "tracing-subscriber";
@@ -13123,6 +13229,33 @@ rec {
         };
         resolvedDefaultFeatures = [ "default" "once_cell" "std" ];
       };
+      "tracing-indicatif" = rec {
+        crateName = "tracing-indicatif";
+        version = "0.3.9";
+        edition = "2021";
+        sha256 = "188anka0xqrjbd7bzj41854rqvf02qszs9l2jzpr7n0c1r1wl0c2";
+        libName = "tracing_indicatif";
+        dependencies = [
+          {
+            name = "indicatif";
+            packageId = "indicatif";
+            features = [ "in_memory" ];
+          }
+          {
+            name = "tracing";
+            packageId = "tracing";
+          }
+          {
+            name = "tracing-core";
+            packageId = "tracing-core";
+          }
+          {
+            name = "tracing-subscriber";
+            packageId = "tracing-subscriber";
+          }
+        ];
+
+      };
       "tracing-log" = rec {
         crateName = "tracing-log";
         version = "0.2.0";
@@ -13712,7 +13845,7 @@ rec {
         features = {
         };
       };
-      "unicode-width" = rec {
+      "unicode-width 0.1.13" = rec {
         crateName = "unicode-width";
         version = "0.1.13";
         edition = "2021";
@@ -13729,6 +13862,25 @@ rec {
           "std" = [ "dep:std" ];
         };
         resolvedDefaultFeatures = [ "default" ];
+      };
+      "unicode-width 0.2.0" = rec {
+        crateName = "unicode-width";
+        version = "0.2.0";
+        edition = "2021";
+        sha256 = "1zd0r5vs52ifxn25rs06gxrgz8cmh4xpra922k0xlmrchib1kj0z";
+        libName = "unicode_width";
+        authors = [
+          "kwantam <kwantam@gmail.com>"
+          "Manish Goregaokar <manishsmail@gmail.com>"
+        ];
+        features = {
+          "compiler_builtins" = [ "dep:compiler_builtins" ];
+          "core" = [ "dep:core" ];
+          "default" = [ "cjk" ];
+          "rustc-dep-of-std" = [ "std" "core" "compiler_builtins" ];
+          "std" = [ "dep:std" ];
+        };
+        resolvedDefaultFeatures = [ "cjk" "default" ];
       };
       "unicode-xid" = rec {
         crateName = "unicode-xid";
@@ -14080,7 +14232,41 @@ rec {
         ];
 
       };
-      "vte" = rec {
+      "vt100" = rec {
+        crateName = "vt100";
+        version = "0.15.2";
+        edition = "2021";
+        sha256 = "1pklc8y984axmxr0cd363srr2d27wd5rj15xlcmkjznvy0xqdkc4";
+        authors = [
+          "Jesse Luehrs <doy@tozt.net>"
+        ];
+        dependencies = [
+          {
+            name = "itoa";
+            packageId = "itoa";
+          }
+          {
+            name = "log";
+            packageId = "log";
+          }
+          {
+            name = "unicode-width";
+            packageId = "unicode-width 0.1.13";
+          }
+          {
+            name = "vte";
+            packageId = "vte 0.11.1";
+          }
+        ];
+        devDependencies = [
+          {
+            name = "vte";
+            packageId = "vte 0.11.1";
+          }
+        ];
+
+      };
+      "vte 0.10.1" = rec {
         crateName = "vte";
         version = "0.10.1";
         edition = "2018";
@@ -14092,7 +14278,7 @@ rec {
         dependencies = [
           {
             name = "arrayvec";
-            packageId = "arrayvec";
+            packageId = "arrayvec 0.5.2";
             optional = true;
             usesDefaultFeatures = false;
           }
@@ -14110,6 +14296,42 @@ rec {
           "default" = [ "no_std" ];
           "nightly" = [ "utf8parse/nightly" ];
           "no_std" = [ "arrayvec" ];
+        };
+        resolvedDefaultFeatures = [ "arrayvec" "default" "no_std" ];
+      };
+      "vte 0.11.1" = rec {
+        crateName = "vte";
+        version = "0.11.1";
+        edition = "2021";
+        sha256 = "15r1ff4j8ndqj9vsyil3wqwxhhl7jsz5g58f31n0h1wlpxgjn0pm";
+        authors = [
+          "Joe Wilm <joe@jwilm.com>"
+          "Christian Duerr <contact@christianduerr.com>"
+        ];
+        dependencies = [
+          {
+            name = "arrayvec";
+            packageId = "arrayvec 0.7.6";
+            optional = true;
+            usesDefaultFeatures = false;
+          }
+          {
+            name = "utf8parse";
+            packageId = "utf8parse";
+          }
+          {
+            name = "vte_generate_state_changes";
+            packageId = "vte_generate_state_changes";
+          }
+        ];
+        features = {
+          "ansi" = [ "log" ];
+          "arrayvec" = [ "dep:arrayvec" ];
+          "default" = [ "no_std" ];
+          "log" = [ "dep:log" ];
+          "nightly" = [ "utf8parse/nightly" ];
+          "no_std" = [ "arrayvec" ];
+          "serde" = [ "dep:serde" ];
         };
         resolvedDefaultFeatures = [ "arrayvec" "default" "no_std" ];
       };
@@ -14999,7 +15221,7 @@ rec {
         dependencies = [
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.48.0";
+            packageId = "windows-sys 0.59.0";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Storage_FileSystem" "Win32_System_Console" "Win32_System_SystemInformation" ];
           }
@@ -15409,7 +15631,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Globalization" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Com" "Win32_System_Console" "Win32_System_SystemInformation" "Win32_UI" "Win32_UI_Shell" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Globalization" "Win32_System" "Win32_System_Com" "Win32_UI" "Win32_UI_Shell" "default" ];
       };
       "windows-sys 0.52.0" = rec {
         crateName = "windows-sys";
@@ -15916,7 +16138,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_System" "Win32_System_IO" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_Storage" "Win32_Storage_FileSystem" "Win32_System" "Win32_System_Console" "Win32_System_IO" "Win32_System_SystemInformation" "default" ];
       };
       "windows-targets 0.48.5" = rec {
         crateName = "windows-targets";

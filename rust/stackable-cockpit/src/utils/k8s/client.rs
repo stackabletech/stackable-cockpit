@@ -14,7 +14,8 @@ use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
-use tracing::info;
+use tracing::{Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -98,12 +99,15 @@ impl Client {
     /// Deploys manifests defined the in raw `manifests` YAML string. This
     /// method will fail if it is unable to parse the manifests, unable to
     /// resolve GVKs or unable to patch the dynamic objects.
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub async fn deploy_manifests(
         &self,
         manifests: &str,
         namespace: &str,
         labels: Labels,
     ) -> Result<()> {
+        Span::current().pb_set_message("Installing YAML manifest");
+
         // TODO (Techassi): Impl IntoIterator for Labels
         let labels: BTreeMap<String, String> = labels.into();
 

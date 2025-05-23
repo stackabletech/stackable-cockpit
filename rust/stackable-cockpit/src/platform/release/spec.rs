@@ -4,11 +4,12 @@ use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
 use tracing::{Instrument, Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
 use crate::{
-    helm,
+    PROGRESS_BAR_STYLE, helm,
     platform::{
         operator::{self, ChartSourceType, OperatorSpec},
         product,
@@ -53,6 +54,7 @@ impl ReleaseSpec {
         %namespace,
         product.included = tracing::field::Empty,
         product.excluded = tracing::field::Empty,
+        indicatif.pb_show = true
     ))]
     pub async fn install(
         &self,
@@ -62,6 +64,7 @@ impl ReleaseSpec {
         chart_source: &ChartSourceType,
     ) -> Result<()> {
         info!("Installing release");
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
 
         include_products.iter().for_each(|product| {
             Span::current().record("product.included", product);
@@ -70,11 +73,15 @@ impl ReleaseSpec {
             Span::current().record("product.excluded", product);
         });
 
+        let operators = self.filter_products(include_products, exclude_products);
+
+        Span::current().pb_set_length(operators.len() as u64);
+
         let namespace = namespace.to_string();
-        futures::stream::iter(self.filter_products(include_products, exclude_products))
+        futures::stream::iter(operators)
             .map(|(product_name, product)| {
                 let task_span =
-                    tracing::debug_span!("install_operator", product_name = tracing::field::Empty);
+                    tracing::info_span!("install_operator", product_name = tracing::field::Empty);
 
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
@@ -103,14 +110,20 @@ impl ReleaseSpec {
                 )
             })
             .buffer_unordered(10)
-            .map(|res| res.context(BackgroundTaskSnafu)?)
+            .map(|res| {
+                Span::current().pb_inc(1);
+                res.context(BackgroundTaskSnafu)?
+            })
             .try_collect::<()>()
             .await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub fn uninstall(&self, namespace: &str) -> Result<()> {
         info!("Uninstalling release");
+
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
+        Span::current().pb_set_length(self.products.len() as u64);
 
         for (product_name, product_spec) in &self.products {
             info!("Uninstalling {product_name}-operator");
@@ -122,6 +135,8 @@ impl ReleaseSpec {
             // Uninstall operator
             helm::uninstall_release(&operator.helm_name(), namespace, true)
                 .context(HelmUninstallSnafu)?;
+
+            Span::current().pb_inc(1);
         }
 
         Ok(())

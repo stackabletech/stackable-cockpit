@@ -19,7 +19,8 @@ use stackable_cockpit::{
     xfer::{self, cache::Cache},
 };
 use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -209,9 +210,10 @@ impl DemoArgs {
 }
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
+    Span::current().pb_set_message("Fetching demo information");
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -257,13 +259,14 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
 }
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
-#[instrument(skip_all)]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn describe_cmd(
     args: &DemoDescribeArgs,
     cli: &Cli,
     list: demo::List,
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Describing demo");
+    Span::current().pb_set_message("Fetching demo information");
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
@@ -316,7 +319,8 @@ async fn describe_cmd(
 #[instrument(skip_all, fields(
     demo_name = %args.demo_name,
     skip_release = args.skip_release,
-    %release_branch
+    %release_branch,
+    indicatif.pb_show = true
 ))]
 async fn install_cmd(
     args: &DemoInstallArgs,
@@ -326,6 +330,7 @@ async fn install_cmd(
     release_branch: &str,
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Installing demo");
+    Span::current().pb_set_message("Installing demo");
 
     // Init result output and progress output
     let mut output = cli.result();
