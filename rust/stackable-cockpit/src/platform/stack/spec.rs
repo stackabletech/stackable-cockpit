@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, info, instrument, log::warn};
+use tracing::{Span, debug, info, instrument, log::warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -194,7 +195,7 @@ impl StackSpec {
             .await
     }
 
-    #[instrument(skip_all, fields(release = %self.release, %operator_namespace))]
+    #[instrument(skip_all, fields(release = %self.release, %operator_namespace, indicatif.pb_show = true))]
     pub async fn install_release(
         &self,
         release_list: release::ReleaseList,
@@ -203,6 +204,7 @@ impl StackSpec {
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
+        Span::current().pb_set_message("Installing operators");
 
         // Get the release by name
         let release = release_list
@@ -218,7 +220,7 @@ impl StackSpec {
             .context(InstallReleaseSnafu)
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub async fn prepare_manifests(
         &self,
         install_params: StackInstallParameters,
@@ -226,6 +228,7 @@ impl StackSpec {
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
+        Span::current().pb_set_message("Installing manifests");
 
         let parameters = install_params
             .parameters

@@ -3,7 +3,8 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::block_in_place;
-use tracing::{debug, error, info, instrument};
+use tracing::{Span, debug, error, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 use url::Url;
 
 use crate::{
@@ -183,7 +184,7 @@ pub struct ChartVersion<'a> {
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
-#[instrument(skip(values_yaml), fields(with_values = values_yaml.is_some()))]
+#[instrument(skip(values_yaml), fields(with_values = values_yaml.is_some(), indicatif.pb_show = true))]
 pub fn install_release_from_repo_or_registry(
     release_name: &str,
     ChartVersion {
@@ -199,6 +200,7 @@ pub fn install_release_from_repo_or_registry(
     // but that requires a larger refactoring
     block_in_place(|| {
         debug!("Install Helm release from repo");
+        Span::current().pb_set_message(format!("Installing {chart_name} Helm chart").as_str());
 
         if check_release_exists(release_name, namespace)? {
             let release = get_release(release_name, namespace)?.ok_or(Error::InstallRelease {
@@ -297,13 +299,14 @@ fn install_release(
 ///
 /// This function expects the fully qualified Helm release name. In case of our
 /// operators this is: `<PRODUCT_NAME>-operator`.
-#[instrument]
+#[instrument(fields(indicatif.pb_show = true))]
 pub fn uninstall_release(
     release_name: &str,
     namespace: &str,
     suppress_output: bool,
 ) -> Result<UninstallReleaseStatus, Error> {
     debug!("Uninstall Helm release");
+    Span::current().pb_set_message(format!("Uninstalling {release_name}-operator").as_str());
 
     if check_release_exists(release_name, namespace)? {
         let result = helm_sys::uninstall_helm_release(release_name, namespace, suppress_output);
