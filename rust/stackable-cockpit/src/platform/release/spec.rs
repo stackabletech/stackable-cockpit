@@ -134,6 +134,7 @@ impl ReleaseSpec {
     /// Upgrades a release by upgrading individual operators.
     #[instrument(skip_all, fields(
         %namespace,
+        indicatif.pb_show = true
     ))]
     pub async fn upgrade_crds(
         &self,
@@ -143,6 +144,7 @@ impl ReleaseSpec {
         k8s_client: &Client,
     ) -> Result<()> {
         info!("Upgrading CRDs for release");
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
 
         include_products.iter().for_each(|product| {
             Span::current().record("product.included", product);
@@ -154,38 +156,50 @@ impl ReleaseSpec {
         let client = reqwest::Client::new();
         let operators = self.filter_products(include_products, exclude_products);
 
+        Span::current().pb_set_length(operators.len() as u64);
+
         for (product_name, product) in operators {
             info!("Upgrading CRDs for {product_name}-operator");
+            let iter_span = tracing::info_span!("upgrade_crds_iter", indicatif.pb_show = true);
 
-            let release_branch = match product.version.pre.as_str() {
-                "dev" => "main".to_string(),
-                _ => {
-                    format!("{}", product.version)
-                }
-            };
+            let client = client.clone();
+            async move {
+                Span::current().pb_set_message(format!("Ugrading CRDs for {product_name}-operator").as_str());
 
-            let request_url = format!(
-                "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release_branch}/deploy/helm/{product_name}-operator/crds/crds.yaml"
-            );
+                let release_branch = match product.version.pre.as_str() {
+                    "dev" => "main".to_string(),
+                    _ => {
+                        format!("{}", product.version)
+                    }
+                };
 
-            // Get CRD manifests from request_url
-            let response = client
-                .get(request_url)
-                .send()
-                .await
-                .context(ConstructRequestSnafu)?
-                .error_for_status()
-                .context(AccessCRDsSnafu)?;
+                let request_url = format!(
+                    "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release_branch}/deploy/helm/{product_name}-operator/crds/crds.yaml"
+                );
 
-            let crd_manifests = response.text().await.context(ReadManifestsSnafu)?;
+                // Get CRD manifests from request_url
+                let response = client
+                    .get(request_url)
+                    .send()
+                    .await
+                    .context(ConstructRequestSnafu)?
+                    .error_for_status()
+                    .context(AccessCRDsSnafu)?;
 
-            // Upgrade CRDs
-            k8s_client
-                .replace_crds(&crd_manifests)
-                .await
-                .context(DeployManifestSnafu)?;
+                let crd_manifests = response.text().await.context(ReadManifestsSnafu)?;
 
-            info!("Upgraded {product_name}-operator CRDs");
+                // Upgrade CRDs
+                k8s_client
+                    .replace_crds(&crd_manifests)
+                    .await
+                    .context(DeployManifestSnafu)?;
+
+                info!("Upgraded {product_name}-operator CRDs");
+
+                Ok::<(), Error>(())
+            }.instrument(iter_span).await?;
+
+            Span::current().pb_inc(1);
         }
 
         Ok(())

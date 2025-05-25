@@ -354,13 +354,14 @@ async fn install_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list))]
+#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
 async fn upgrade_cmd(
     args: &ReleaseUpgradeArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Upgrading release");
+    Span::current().pb_set_message("Upgrading release");
 
     match release_list.get(&args.release) {
         Some(release) => {
