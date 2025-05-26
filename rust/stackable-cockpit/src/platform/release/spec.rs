@@ -169,7 +169,7 @@ impl ReleaseSpec {
                 let release_branch = match product.version.pre.as_str() {
                     "dev" => "main".to_string(),
                     _ => {
-                        format!("{}", product.version)
+                        product.version.to_string()
                     }
                 };
 
