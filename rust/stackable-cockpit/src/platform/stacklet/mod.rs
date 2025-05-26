@@ -168,23 +168,31 @@ fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, G
     let mut map = IndexMap::new();
 
     for product_name in product_names {
-        // Why? Just why? Can we please make this consistent?
-        if *product_name == "spark-history-server" {
+        // Note(techassi): Why? Just why? Can we please make this consistent?
+        // Note(sbernauer): I think it's legit that SparkHistoryServer and SparkConnectServer are in
+        // the api group spark.stackable.tech. All of this will probably be rewritten any as soon as
+        // we have versions different than v1alpha1.
+        if *product_name == "spark-history" {
             map.insert(*product_name, GroupVersionKind {
                 group: "spark.stackable.tech".into(),
                 version: "v1alpha1".into(),
                 kind: "SparkHistoryServer".into(),
             });
-            continue;
+        } else if *product_name == "spark-connect" {
+            map.insert(*product_name, GroupVersionKind {
+                group: "spark.stackable.tech".into(),
+                version: "v1alpha1".into(),
+                kind: "SparkConnectServer".into(),
+            });
+        } else {
+            map.insert(*product_name, gvk_from_product_name(product_name));
         }
-
-        map.insert(*product_name, gvk_from_product_name(product_name));
     }
 
     map
 }
 
-// FIXME: Support SparkApplication
+// FIXME: Support SparkApplication and SparkConnectServer
 fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
     GroupVersionKind {
         group: format!("{product_name}.stackable.tech"),
