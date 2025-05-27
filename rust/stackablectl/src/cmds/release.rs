@@ -140,6 +140,9 @@ pub enum CmdError {
     #[snafu(display("failed to build release list"))]
     BuildList { source: list::Error },
 
+    #[snafu(display("no release '{release}'"))]
+    NoSuchRelease { release: String },
+
     #[snafu(display("failed to install release"))]
     ReleaseInstall { source: release::Error },
 
@@ -301,7 +304,9 @@ async fn describe_cmd(
             OutputType::Json => serde_json::to_string(&release).context(SerializeJsonOutputSnafu),
             OutputType::Yaml => serde_yaml::to_string(&release).context(SerializeYamlOutputSnafu),
         },
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }
 
@@ -352,7 +357,9 @@ async fn install_cmd(
 
             Ok(output.render())
         }
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }
 
@@ -433,7 +440,9 @@ async fn upgrade_cmd(
 
             Ok(output.render())
         }
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }
 
@@ -459,6 +468,8 @@ async fn uninstall_cmd(
 
             Ok(result.render())
         }
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }

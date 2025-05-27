@@ -68,7 +68,8 @@ async fn main() -> Result<(), Error> {
             let mut output = app.error();
             output.with_error_report(err);
 
-            eprint!("{}", output.render())
+            eprint!("{}", output.render());
+            std::process::exit(1);
         }
     }
 
