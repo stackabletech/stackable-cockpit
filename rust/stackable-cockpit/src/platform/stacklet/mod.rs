@@ -50,7 +50,7 @@ pub enum Error {
     #[snafu(display("failed to fetch data from the Kubernetes API"))]
     KubeClientFetch { source: k8s::Error },
 
-    #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
+    #[snafu(display("no namespace set for custom resource {crd_name:?}"))]
     CustomCrdNamespace { crd_name: String },
 
     #[snafu(display("failed to deserialize cluster conditions from JSON"))]

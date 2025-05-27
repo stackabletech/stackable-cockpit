@@ -121,7 +121,7 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("no release '{release}'"))]
+    #[snafu(display("no release {release:?}"))]
     NoSuchRelease { release: String },
 
     #[snafu(display("failed to get latest release"))]

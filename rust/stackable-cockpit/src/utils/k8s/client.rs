@@ -64,19 +64,19 @@ pub enum Error {
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvert { source: FromUtf8Error },
 
-    #[snafu(display("missing namespace for service '{service}'"))]
+    #[snafu(display("missing namespace for service {service:?}"))]
     MissingServiceNamespace { service: String },
 
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterInformation { source: cluster::Error },
 
-    #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
+    #[snafu(display("invalid or empty secret data in {secret_name:?}"))]
     InvalidSecretData { secret_name: String },
 
-    #[snafu(display("no username key in credentials secret '{secret_name}'"))]
+    #[snafu(display("no username key in credentials secret {secret_name:?}"))]
     NoUsernameKey { secret_name: String },
 
-    #[snafu(display("no password key in credentials secret '{secret_name}'"))]
+    #[snafu(display("no password key in credentials secret {secret_name:?}"))]
     NoPasswordKey { secret_name: String },
 }
 

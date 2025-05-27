@@ -125,13 +125,13 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("no demo with name '{name}'"))]
+    #[snafu(display("no demo with name {name:?}"))]
     NoSuchDemo { name: String },
 
-    #[snafu(display("no stack with name '{name}'"))]
+    #[snafu(display("no stack with name {name:?}"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("no release '{release}'"))]
+    #[snafu(display("no release {release:?}"))]
     NoSuchRelease { release: String },
 
     #[snafu(display("failed to get latest release"))]

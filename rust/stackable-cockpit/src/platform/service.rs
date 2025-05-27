@@ -20,22 +20,22 @@ pub enum Error {
     #[snafu(display("failed to fetch data from Kubernetes API"))]
     KubeClientFetch { source: k8s::Error },
 
-    #[snafu(display("missing namespace for service '{service}'"))]
+    #[snafu(display("missing namespace for service {service:?}"))]
     MissingServiceNamespace { service: String },
 
-    #[snafu(display("missing spec for service '{service}'"))]
+    #[snafu(display("missing spec for service {service:?}"))]
     MissingServiceSpec { service: String },
 
-    #[snafu(display("failed to get status of node '{node_name}'"))]
+    #[snafu(display("failed to get status of node {node_name:?}"))]
     GetNodeStatus { node_name: String },
 
-    #[snafu(display("failed to get address of node '{node_name}'"))]
+    #[snafu(display("failed to get address of node {node_name:?}"))]
     GetNodeAddress { node_name: String },
 
-    #[snafu(display("failed to find an ExternalIP or InternalIP for node '{node_name}'"))]
+    #[snafu(display("failed to find an ExternalIP or InternalIP for node {node_name:?}"))]
     NoIpForNode { node_name: String },
 
-    #[snafu(display("failed to find node '{node_name}' in node_name_ip_mapping"))]
+    #[snafu(display("failed to find node {node_name:?} in node_name_ip_mapping"))]
     NodeMissingInIpMapping { node_name: String },
 }
 

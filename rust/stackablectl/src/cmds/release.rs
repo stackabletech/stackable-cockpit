@@ -140,7 +140,7 @@ pub enum CmdError {
     #[snafu(display("failed to build release list"))]
     BuildList { source: list::Error },
 
-    #[snafu(display("no release '{release}'"))]
+    #[snafu(display("no release {release:?}"))]
     NoSuchRelease { release: String },
 
     #[snafu(display("failed to install release"))]
@@ -158,7 +158,7 @@ pub enum CmdError {
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
+    #[snafu(display("failed to create namespace {namespace:?}"))]
     NamespaceCreate {
         source: namespace::Error,
         namespace: String,

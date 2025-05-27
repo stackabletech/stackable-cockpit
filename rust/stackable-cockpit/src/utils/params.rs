@@ -34,7 +34,7 @@ pub enum IntoParametersError {
     #[snafu(display("failed to parse raw parameter"))]
     RawParse { source: RawParameterParseError },
 
-    #[snafu(display("invalid parameter '{parameter}', expected one of {expected}"))]
+    #[snafu(display("invalid parameter {parameter:?}, expected one of {expected:?}"))]
     InvalidParameter { parameter: String, expected: String },
 }
 

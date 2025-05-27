@@ -29,13 +29,13 @@ pub type DemoParameter = Parameter;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("no stack named '{name}'"))]
+    #[snafu(display("no stack named {name:?}"))]
     NoSuchStack { name: String },
 
     #[snafu(display("demo resource requests error"), context(false))]
     DemoResourceRequests { source: ResourceRequestsError },
 
-    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    #[snafu(display("cannot install demo in namespace {requested:?}, only '{}' supported", supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,

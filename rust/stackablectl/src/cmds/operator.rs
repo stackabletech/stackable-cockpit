@@ -141,7 +141,7 @@ pub enum CmdError {
         version: String,
     },
 
-    #[snafu(display("unknown repository name '{name}'"))]
+    #[snafu(display("unknown repository name {name:?}"))]
     UnknownRepoName { name: String },
 
     #[snafu(display("Helm error"))]
@@ -159,7 +159,7 @@ pub enum CmdError {
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
+    #[snafu(display("failed to create namespace {namespace:?}"))]
     NamespaceCreate {
         source: namespace::Error,
         namespace: String,
