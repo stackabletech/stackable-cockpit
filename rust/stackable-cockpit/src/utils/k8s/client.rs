@@ -50,18 +50,16 @@ pub enum Error {
     #[snafu(display("failed to run GVK discovery"))]
     GVKDiscoveryRun { source: kube::error::Error },
 
-    #[snafu(display("GVK {gvk:?} is not known"))]
-    GVKUnknown { gvk: GroupVersionKind },
-
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
     ObjectType { object: DynamicObject },
 
-    #[snafu(display("failed to deploy manifest because GVK {group}/{kind}@{version} cannot be resolved",
+    // Using output close to Display for ObjectRef https://docs.rs/kube-runtime/0.99.0/src/kube_runtime/reflector/object_ref.rs.html#292-296
+    #[snafu(display("failed to resolve GVK: {kind}.{version}.{group}",
         group = gvk.group,
         version = gvk.version,
         kind = gvk.kind
     ))]
-    DiscoveryResolve { gvk: GroupVersionKind },
+    GVKResolve { gvk: GroupVersionKind },
 
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvert { source: FromUtf8Error },
@@ -134,7 +132,7 @@ impl Client {
             let (resource, capabilities) = self
                 .resolve_gvk(&gvk)
                 .await?
-                .context(GVKUnknownSnafu { gvk })?;
+                .context(GVKResolveSnafu { gvk })?;
 
             let api: Api<DynamicObject> = match capabilities.scope {
                 Scope::Cluster => {
@@ -176,7 +174,7 @@ impl Client {
             let (resource, _) = self
                 .resolve_gvk(&gvk)
                 .await?
-                .context(GVKUnknownSnafu { gvk: gvk.clone() })?;
+                .with_context(|| GVKResolveSnafu { gvk: gvk.clone() })?;
 
             // CRDs are cluster scoped
             let api: Api<DynamicObject> = Api::all_with(self.client.clone(), &resource);
@@ -189,7 +187,7 @@ impl Client {
                 object.metadata.resource_version = resource.resource_version();
                 api.replace(&object.name_any(), &PostParams::default(), &object)
                     .await
-                    .context(KubeClientReplaceSnafu { gvk })?;
+                    .with_context(|_| KubeClientReplaceSnafu { gvk })?;
             } else {
                 // Create CRD if a previous version wasn't found
                 api.create(&PostParams::default(), &object)
