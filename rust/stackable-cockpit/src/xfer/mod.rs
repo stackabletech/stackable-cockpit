@@ -120,6 +120,8 @@ impl Client {
             .client
             .execute(req)
             .await
+            .context(FetchRemoteContentSnafu)?
+            .error_for_status()
             .context(FetchRemoteContentSnafu)?;
 
         result.text().await.context(FetchRemoteContentSnafu)

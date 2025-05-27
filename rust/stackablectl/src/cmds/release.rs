@@ -181,7 +181,9 @@ impl ReleaseArgs {
             ReleaseCommands::Describe(args) => describe_cmd(args, cli, release_list).await,
             ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
             ReleaseCommands::Uninstall(args) => uninstall_cmd(args, cli, release_list).await,
-            ReleaseCommands::Upgrade(args) => upgrade_cmd(args, cli, release_list).await,
+            ReleaseCommands::Upgrade(args) => {
+                upgrade_cmd(args, cli, release_list, &transfer_client).await
+            }
         }
     }
 }
@@ -354,11 +356,12 @@ async fn install_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
+#[instrument(skip(cli, release_list, transfer_client), fields(indicatif.pb_show = true))]
 async fn upgrade_cmd(
     args: &ReleaseUpgradeArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
+    transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Upgrading release");
     Span::current().pb_set_message("Upgrading release");
@@ -405,6 +408,7 @@ async fn upgrade_cmd(
                     &args.excluded_products,
                     &args.operator_namespace,
                     &client,
+                    transfer_client,
                 )
                 .await
                 .context(CrdUpgradeSnafu)?;

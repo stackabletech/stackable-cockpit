@@ -14,7 +14,11 @@ use crate::{
         operator::{self, ChartSourceType, OperatorSpec},
         product,
     },
-    utils::k8s::{self, Client},
+    utils::{
+        k8s::{self, Client},
+        path::{IntoPathOrUrl as _, PathOrUrlParseError},
+    },
+    xfer::{self, processor::Text},
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -23,6 +27,17 @@ type Result<T, E = Error> = std::result::Result<T, E>;
 pub enum Error {
     #[snafu(display("failed to parse operator spec"))]
     OperatorSpecParse { source: operator::SpecParseError },
+
+    /// This error indicates that parsing a string into a path or URL failed.
+    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
+    ParsePathOrUrl {
+        source: PathOrUrlParseError,
+        path_or_url: String,
+    },
+
+    /// This error indicates that receiving remote content failed.
+    #[snafu(display("failed to receive remote content"))]
+    FileTransfer { source: xfer::Error },
 
     #[snafu(display("failed to install release using Helm"))]
     HelmInstall { source: helm::Error },
@@ -35,15 +50,6 @@ pub enum Error {
 
     #[snafu(display("failed to deploy manifests using the kube client"))]
     DeployManifest { source: k8s::Error },
-
-    #[snafu(display("failed to construct a valid request"))]
-    ConstructRequest { source: reqwest::Error },
-
-    #[snafu(display("failed to access the CRDs from source"))]
-    AccessCRDs { source: reqwest::Error },
-
-    #[snafu(display("failed to read CRD manifests"))]
-    ReadManifests { source: reqwest::Error },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -142,6 +148,7 @@ impl ReleaseSpec {
         exclude_products: &[String],
         namespace: &str,
         k8s_client: &Client,
+        transfer_client: &xfer::Client,
     ) -> Result<()> {
         info!("Upgrading CRDs for release");
         Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
@@ -153,7 +160,6 @@ impl ReleaseSpec {
             Span::current().record("product.excluded", product);
         });
 
-        let client = reqwest::Client::new();
         let operators = self.filter_products(include_products, exclude_products);
 
         Span::current().pb_set_length(operators.len() as u64);
@@ -162,7 +168,6 @@ impl ReleaseSpec {
             info!("Upgrading CRDs for {product_name}-operator");
             let iter_span = tracing::info_span!("upgrade_crds_iter", indicatif.pb_show = true);
 
-            let client = client.clone();
             async move {
                 Span::current().pb_set_message(format!("Ugrading CRDs for {product_name}-operator").as_str());
 
@@ -173,20 +178,18 @@ impl ReleaseSpec {
                     }
                 };
 
-                let request_url = format!(
+                let request_url = &format!(
                     "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release_branch}/deploy/helm/{product_name}-operator/crds/crds.yaml"
                 );
+                let request_url = request_url.into_path_or_url().context(ParsePathOrUrlSnafu {
+                    path_or_url: request_url.clone(),
+                })?;
 
                 // Get CRD manifests from request_url
-                let response = client
-                    .get(request_url)
-                    .send()
+                let crd_manifests: String = transfer_client
+                    .get(&request_url, &Text)
                     .await
-                    .context(ConstructRequestSnafu)?
-                    .error_for_status()
-                    .context(AccessCRDsSnafu)?;
-
-                let crd_manifests = response.text().await.context(ReadManifestsSnafu)?;
+                    .context(FileTransferSnafu)?;
 
                 // Upgrade CRDs
                 k8s_client
