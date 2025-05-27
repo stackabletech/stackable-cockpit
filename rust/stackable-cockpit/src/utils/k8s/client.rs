@@ -39,7 +39,10 @@ pub enum Error {
     KubeClientPatch { source: kube::error::Error },
 
     #[snafu(display("failed to replace Kubernetes object"))]
-    KubeClientReplace { source: kube::error::Error },
+    KubeClientReplace {
+        source: kube::error::Error,
+        gvk: GroupVersionKind,
+    },
 
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
@@ -48,7 +51,7 @@ pub enum Error {
     GVKDiscoveryRun { source: kube::error::Error },
 
     #[snafu(display("GVK {gvk:?} is not known"))]
-    GVKUnkown { gvk: GroupVersionKind },
+    GVKUnknown { gvk: GroupVersionKind },
 
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
     ObjectType { object: DynamicObject },
@@ -131,7 +134,7 @@ impl Client {
             let (resource, capabilities) = self
                 .resolve_gvk(&gvk)
                 .await?
-                .context(GVKUnkownSnafu { gvk })?;
+                .context(GVKUnknownSnafu { gvk })?;
 
             let api: Api<DynamicObject> = match capabilities.scope {
                 Scope::Cluster => {
@@ -173,7 +176,7 @@ impl Client {
             let (resource, _) = self
                 .resolve_gvk(&gvk)
                 .await?
-                .context(GVKUnkownSnafu { gvk })?;
+                .context(GVKUnknownSnafu { gvk: gvk.clone() })?;
 
             // CRDs are cluster scoped
             let api: Api<DynamicObject> = Api::all_with(self.client.clone(), &resource);
@@ -186,7 +189,7 @@ impl Client {
                 object.metadata.resource_version = resource.resource_version();
                 api.replace(&object.name_any(), &PostParams::default(), &object)
                     .await
-                    .context(KubeClientReplaceSnafu)?;
+                    .context(KubeClientReplaceSnafu { gvk })?;
             } else {
                 // Create CRD if a previous version wasn't found
                 api.create(&PostParams::default(), &object)
