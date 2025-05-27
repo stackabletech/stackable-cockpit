@@ -65,7 +65,7 @@ where
         let mut index = 1;
 
         while let Some(source) = error.source() {
-            writeln!(report, " {}: {}", index, source)?;
+            writeln!(report, " {index}: {source}")?;
             error = source;
             index += 1;
         }
