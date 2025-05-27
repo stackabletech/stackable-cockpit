@@ -29,7 +29,7 @@ pub enum Error {
     OperatorSpecParse { source: operator::SpecParseError },
 
     /// This error indicates that parsing a string into a path or URL failed.
-    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
+    #[snafu(display("failed to parse {path_or_url:?} as path/url"))]
     ParsePathOrUrl {
         source: PathOrUrlParseError,
         path_or_url: String,
