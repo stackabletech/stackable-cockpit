@@ -293,7 +293,10 @@ async fn describe_cmd(
 
                 result
                     .with_command_hint(
-                        format!("stackablectl release install {}", args.release),
+                        format!(
+                            "stackablectl release install {release}",
+                            release = args.release
+                        ),
                         "install the release",
                     )
                     .with_command_hint("stackablectl release list", "list all available releases")
@@ -353,7 +356,10 @@ async fn install_cmd(
                     "stackablectl operator installed",
                     "list installed operators",
                 )
-                .with_output(format!("Installed release '{}'", args.release));
+                .with_output(format!(
+                    "Installed release {release:?}",
+                    release = args.release
+                ));
 
             Ok(output.render())
         }
@@ -436,7 +442,10 @@ async fn upgrade_cmd(
                     "stackablectl operator installed",
                     "list installed operators",
                 )
-                .with_output(format!("Upgraded to release '{}'", args.release));
+                .with_output(format!(
+                    "Upgraded to release {release:?}",
+                    release = args.release
+                ));
 
             Ok(output.render())
         }
@@ -464,7 +473,10 @@ async fn uninstall_cmd(
 
             result
                 .with_command_hint("stackablectl release list", "list available releases")
-                .with_output(format!("Uninstalled release '{}'", args.release));
+                .with_output(format!(
+                    "Uninstalled release {release:?}",
+                    release = args.release
+                ));
 
             Ok(result.render())
         }

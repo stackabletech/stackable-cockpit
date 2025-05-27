@@ -197,6 +197,9 @@ fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
     GroupVersionKind {
         group: format!("{product_name}.stackable.tech"),
         version: "v1alpha1".into(),
-        kind: format!("{}Cluster", product_name.capitalize()),
+        kind: format!(
+            "{product_name}Cluster",
+            product_name = product_name.capitalize()
+        ),
     }
 }

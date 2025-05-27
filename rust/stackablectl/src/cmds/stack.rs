@@ -291,7 +291,10 @@ fn describe_cmd(
 
                 result
                     .with_command_hint(
-                        format!("stackablectl stack install {}", args.stack_name),
+                        format!(
+                            "stackablectl stack install {stack_name}",
+                            stack_name = args.stack_name
+                        ),
                         "install the stack",
                     )
                     .with_command_hint("stackablectl stack list", "list all available stacks")
@@ -361,11 +364,11 @@ async fn install_cmd(
                 })?;
 
             let operator_cmd = format!(
-                "stackablectl operator installed{}",
-                if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+                "stackablectl operator installed{option}",
+                option = if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
                     format!(
-                        " --operator-namespace {}",
-                        args.namespaces.operator_namespace
+                        " --operator-namespace {namespace}",
+                        namespace = args.namespaces.operator_namespace
                     )
                 } else {
                     "".into()
@@ -373,9 +376,12 @@ async fn install_cmd(
             );
 
             let stacklet_cmd = format!(
-                "stackablectl stacklet list{}",
-                if args.namespaces.namespace != DEFAULT_NAMESPACE {
-                    format!(" --namespace {}", args.namespaces.namespace)
+                "stackablectl stacklet list{option}",
+                option = if args.namespaces.namespace != DEFAULT_NAMESPACE {
+                    format!(
+                        " --namespace {namespace}",
+                        namespace = args.namespaces.namespace
+                    )
                 } else {
                     "".into()
                 }
@@ -384,7 +390,10 @@ async fn install_cmd(
             output
                 .with_command_hint(operator_cmd, "display the installed operators")
                 .with_command_hint(stacklet_cmd, "display the installed stacklets")
-                .with_output(format!("Installed stack '{}'", args.stack_name));
+                .with_output(format!(
+                    "Installed stack {stack_name:?}",
+                    stack_name = args.stack_name
+                ));
 
             Ok(output.render())
         }

@@ -35,7 +35,7 @@ pub enum Error {
     #[snafu(display("demo resource requests error"), context(false))]
     DemoResourceRequests { source: ResourceRequestsError },
 
-    #[snafu(display("cannot install demo in namespace {requested:?}, only '{}' supported", supported.join(", ")))]
+    #[snafu(display("cannot install demo in namespace {requested:?}, only {supported:?} supported", supported = supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,

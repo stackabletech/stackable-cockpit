@@ -43,8 +43,8 @@ pub fn generate() -> Result<(), GenDocsError> {
             .unwrap()
             .join(DOCS_BASE_PATH)
             .join(format!(
-                "{}.adoc",
-                if cmd.get_name() == cli.get_name() {
+                "{name}.adoc",
+                name = if cmd.get_name() == cli.get_name() {
                     "index"
                 } else {
                     cmd.get_name()

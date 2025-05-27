@@ -122,8 +122,7 @@ impl Display for InstallReleaseStatus {
             } => {
                 write!(
                     f,
-                    "The release {} ({}) is already installed (requested {}), skipping.",
-                    release_name, current_version, requested_version
+                    "The release {release_name} ({current_version}) is already installed (requested {requested_version}), skipping."
                 )
             }
             InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
@@ -132,16 +131,11 @@ impl Display for InstallReleaseStatus {
             } => {
                 write!(
                     f,
-                    "The release {} ({}) is already installed and no specific version was requested, skipping.",
-                    release_name, current_version
+                    "The release {release_name} ({current_version}) is already installed and no specific version was requested, skipping."
                 )
             }
             InstallReleaseStatus::Installed(release_name) => {
-                write!(
-                    f,
-                    "The release {} was successfully installed.",
-                    release_name
-                )
+                write!(f, "The release {release_name} was successfully installed.")
             }
         }
     }
@@ -157,17 +151,12 @@ impl Display for UninstallReleaseStatus {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             UninstallReleaseStatus::NotInstalled(release_name) => {
-                write!(
-                    f,
-                    "The release {} is not installed, skipping.",
-                    release_name
-                )
+                write!(f, "The release {release_name} is not installed, skipping.")
             }
             UninstallReleaseStatus::Uninstalled(release_name) => {
                 write!(
                     f,
-                    "The release {} was successfully uninstalled.",
-                    release_name
+                    "The release {release_name} was successfully uninstalled."
                 )
             }
         }
@@ -282,10 +271,7 @@ fn install_release(
     );
 
     if let Some(error) = helm_sys::to_helm_error(&result) {
-        error!(
-            "Go wrapper function go_install_helm_release encountered an error: {}",
-            error
-        );
+        error!("Go wrapper function go_install_helm_release encountered an error: {error}");
 
         return Err(Error::InstallRelease {
             source: InstallReleaseError::HelmWrapper { error },
@@ -312,10 +298,7 @@ pub fn uninstall_release(
         let result = helm_sys::uninstall_helm_release(release_name, namespace, suppress_output);
 
         if let Some(err) = helm_sys::to_helm_error(&result) {
-            error!(
-                "Go wrapper function go_uninstall_helm_release encountered an error: {}",
-                err
-            );
+            error!("Go wrapper function go_uninstall_helm_release encountered an error: {err}");
 
             return Err(Error::UninstallRelease { error: err });
         }
@@ -325,10 +308,7 @@ pub fn uninstall_release(
         ));
     }
 
-    info!(
-        "The Helm release {} is not installed, skipping.",
-        release_name
-    );
+    info!("The Helm release {release_name} is not installed, skipping.");
 
     Ok(UninstallReleaseStatus::NotInstalled(
         release_name.to_string(),
@@ -352,10 +332,7 @@ pub fn list_releases(namespace: &str) -> Result<Vec<Release>, Error> {
     let result = helm_sys::list_helm_releases(namespace);
 
     if let Some(err) = helm_sys::to_helm_error(&result) {
-        error!(
-            "Go wrapper function go_helm_list_releases encountered an error: {}",
-            err
-        );
+        error!("Go wrapper function go_helm_list_releases encountered an error: {err}");
 
         return Err(Error::ListReleases { error: err });
     }
@@ -381,10 +358,7 @@ pub fn add_repo(repository_name: &str, repository_url: &str) -> Result<(), Error
     let result = helm_sys::add_helm_repository(repository_name, repository_url);
 
     if let Some(err) = helm_sys::to_helm_error(&result) {
-        error!(
-            "Go wrapper function go_add_helm_repo encountered an error: {}",
-            err
-        );
+        error!("Go wrapper function go_add_helm_repo encountered an error: {err}");
 
         return Err(Error::AddRepo { error: err });
     }
@@ -403,7 +377,7 @@ where
     let url = Url::parse(repo_url.as_ref()).context(UrlParseSnafu)?;
     let url = url.join(HELM_REPO_INDEX_FILE).context(UrlParseSnafu)?;
 
-    debug!("Using {} to retrieve Helm index file", url);
+    debug!("Using {url} to retrieve Helm index file");
 
     // TODO (Techassi): Use the FileTransferClient for that
     let index_file_content = reqwest::get(url)

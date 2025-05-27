@@ -25,7 +25,12 @@ pub struct Credentials {
 
 impl Display for Credentials {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", self.username, self.password)
+        write!(
+            f,
+            "{username}:{password}",
+            username = self.username,
+            password = self.password
+        )
     }
 }
 

@@ -106,7 +106,7 @@ pub enum RawParameterParseError {
 
 impl Display for RawParameter {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}={}", self.name, self.value)
+        write!(f, "{name}={value}", name = self.name, value = self.value)
     }
 }
 

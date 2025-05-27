@@ -191,7 +191,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                 .with_output(format!(
                     "{table}{errors}",
                     errors = if !error_list.is_empty() {
-                        format!("\n\n{}", error_list.join("\n"))
+                        format!("\n\n{error_list}", error_list = error_list.join("\n"))
                     } else {
                         "".into()
                     }
@@ -230,11 +230,13 @@ async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdEr
                 .add_row(vec!["PASSWORD", &credentials.password]);
 
             let output = format!(
-                "Credentials for {} ({}) in namespace '{}':",
-                args.product_name, args.stacklet_name, args.namespace
+                "Credentials for {product_name} ({stacklet_name}) in namespace {namespace:?}:",
+                product_name = args.product_name,
+                stacklet_name = args.stacklet_name,
+                namespace = args.namespace
             );
 
-            Ok(format!("{}\n\n{}", output, table))
+            Ok(format!("{output}\n\n{table}"))
         }
         None => Ok("No credentials".into()),
     }
@@ -280,7 +282,7 @@ fn render_condition_error(
 ) -> Option<String> {
     if !is_good.unwrap_or(true) {
         let message = message.unwrap_or("-".into());
-        return Some(format!("[{}]: {}", error_index, message));
+        return Some(format!("[{error_index}]: {message}"));
     }
 
     None
@@ -294,7 +296,7 @@ fn color_condition(condition: &str, is_good: Option<bool>, error_index: usize) -
             if is_good {
                 condition.to_owned()
             } else {
-                format!("{}: See [{}]", condition, error_index)
+                format!("{condition}: See [{error_index}]")
             }
         }
         None => condition.to_owned(),
@@ -308,6 +310,6 @@ fn render_errors(errors: Vec<String>) -> Option<String> {
     } else if errors.len() == 1 {
         Some(errors[0].clone())
     } else {
-        Some(format!("{}\n---\n", errors.join("\n")))
+        Some(format!("{errors}\n---\n", errors = errors.join("\n")))
     }
 }

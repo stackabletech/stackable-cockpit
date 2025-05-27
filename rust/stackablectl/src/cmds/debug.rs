@@ -340,8 +340,8 @@ impl Drop for AsyncStdin {
         let status = unsafe { libc::fcntl(self.fd.as_raw_fd(), libc::F_SETFL, self.old_flags) };
         if status == -1 {
             panic!(
-                "unable to revert stdin flags: {}",
-                std::io::Error::last_os_error()
+                "unable to revert stdin flags: {error}",
+                error = std::io::Error::last_os_error()
             );
         }
     }
