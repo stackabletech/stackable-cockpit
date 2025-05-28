@@ -125,13 +125,13 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
-    #[snafu(display("no demo with name '{name}'"))]
+    #[snafu(display("no demo with name {name:?}"))]
     NoSuchDemo { name: String },
 
-    #[snafu(display("no stack with name '{name}'"))]
+    #[snafu(display("no stack with name {name:?}"))]
     NoSuchStack { name: String },
 
-    #[snafu(display("no release '{release}'"))]
+    #[snafu(display("no release {release:?}"))]
     NoSuchRelease { release: String },
 
     #[snafu(display("failed to get latest release"))]
@@ -302,7 +302,10 @@ async fn describe_cmd(
 
             result
                 .with_command_hint(
-                    format!("stackablectl demo install {}", args.demo_name),
+                    format!(
+                        "stackablectl demo install {demo_name}",
+                        demo_name = args.demo_name
+                    ),
                     "install the demo",
                 )
                 .with_command_hint("stackablectl demo list", "list all available demos")
@@ -398,11 +401,11 @@ async fn install_cmd(
     })?;
 
     let operator_cmd = format!(
-        "stackablectl operator installed{}",
-        if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+        "stackablectl operator installed{option}",
+        option = if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
             format!(
-                " --operator-namespace {}",
-                args.namespaces.operator_namespace
+                " --operator-namespace {namespace}",
+                namespace = args.namespaces.operator_namespace
             )
         } else {
             "".into()
@@ -410,9 +413,12 @@ async fn install_cmd(
     );
 
     let stacklet_cmd = format!(
-        "stackablectl stacklet list{}",
-        if args.namespaces.namespace != DEFAULT_NAMESPACE {
-            format!(" --namespace {}", args.namespaces.namespace)
+        "stackablectl stacklet list{option}",
+        option = if args.namespaces.namespace != DEFAULT_NAMESPACE {
+            format!(
+                " --namespace {namespace}",
+                namespace = args.namespaces.namespace
+            )
         } else {
             "".into()
         }
@@ -421,7 +427,10 @@ async fn install_cmd(
     output
         .with_command_hint(operator_cmd, "display the installed operators")
         .with_command_hint(stacklet_cmd, "display the installed stacklets")
-        .with_output(format!("Installed demo '{}'", args.demo_name));
+        .with_output(format!(
+            "Installed demo {demo_name:?}",
+            demo_name = args.demo_name
+        ));
 
     Ok(output.render())
 }

@@ -55,9 +55,9 @@ impl ResultContext {
         description: impl Into<String>,
     ) -> &mut Self {
         self.command_hints.push(format!(
-            "Use \"{}\" to {}.",
-            command.into(),
-            description.into()
+            "Use \"{command}\" to {description}.",
+            command = command.into(),
+            description = description.into()
         ));
 
         self

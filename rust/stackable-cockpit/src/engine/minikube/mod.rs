@@ -10,7 +10,7 @@ use crate::{
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display(
-        "failed to determine if a Minikube cluster named '{cluster_name}' already exists"
+        "failed to determine if a Minikube cluster named {cluster_name:?} already exists"
     ))]
     CheckCluster {
         source: std::io::Error,

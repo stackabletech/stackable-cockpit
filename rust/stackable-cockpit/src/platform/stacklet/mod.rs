@@ -50,7 +50,7 @@ pub enum Error {
     #[snafu(display("failed to fetch data from the Kubernetes API"))]
     KubeClientFetch { source: k8s::Error },
 
-    #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
+    #[snafu(display("no namespace set for custom resource {crd_name:?}"))]
     CustomCrdNamespace { crd_name: String },
 
     #[snafu(display("failed to deserialize cluster conditions from JSON"))]
@@ -197,6 +197,9 @@ fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
     GroupVersionKind {
         group: format!("{product_name}.stackable.tech"),
         version: "v1alpha1".into(),
-        kind: format!("{}Cluster", product_name.capitalize()),
+        kind: format!(
+            "{product_name}Cluster",
+            product_name = product_name.capitalize()
+        ),
     }
 }

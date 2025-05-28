@@ -6,7 +6,7 @@ use tracing::{Level, metadata::LevelFilter};
 use tracing_indicatif::{
     IndicatifLayer,
     filter::{IndicatifFilter, hide_indicatif_span_fields},
-    indicatif_eprintln,
+    indicatif_eprintln, indicatif_println,
 };
 use tracing_subscriber::{
     Layer as _,
@@ -63,12 +63,13 @@ async fn main() -> Result<(), Error> {
     }
 
     match app.run().await {
-        Ok(result) => print!("{result}"),
+        Ok(result) => indicatif_println!("{result}"),
         Err(err) => {
             let mut output = app.error();
             output.with_error_report(err);
 
-            eprint!("{}", output.render())
+            indicatif_eprintln!("{error}", error = output.render());
+            std::process::exit(1);
         }
     }
 

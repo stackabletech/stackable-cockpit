@@ -47,8 +47,8 @@ fn main() {
     }
     write!(
         File::create(out_dir.join("vite-asset-map.rs")).unwrap(),
-        "{}",
-        asset_map.build()
+        "{asset_map}",
+        asset_map = asset_map.build()
     )
     .unwrap();
 }

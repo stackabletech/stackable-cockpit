@@ -7,8 +7,14 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     common::list,
     constants::DEFAULT_OPERATOR_NAMESPACE,
-    platform::{namespace, operator::ChartSourceType, release},
+    helm::{self, Release},
+    platform::{
+        namespace,
+        operator::{self, ChartSourceType},
+        release,
+    },
     utils::{
+        self,
         k8s::{self, Client},
         path::PathOrUrlParseError,
     },
@@ -45,6 +51,9 @@ pub enum ReleaseCommands {
     /// Uninstall a release
     #[command(aliases(["rm", "un"]))]
     Uninstall(ReleaseUninstallArgs),
+
+    /// Upgrade a release
+    Upgrade(ReleaseUpgradeArgs),
 }
 
 #[derive(Debug, Args)]
@@ -85,6 +94,25 @@ pub struct ReleaseInstallArgs {
 }
 
 #[derive(Debug, Args)]
+pub struct ReleaseUpgradeArgs {
+    /// Upgrade to the specified release
+    #[arg(name = "RELEASE")]
+    release: String,
+
+    /// List of product operators to upgrade
+    #[arg(short, long = "include", group = "products")]
+    included_products: Vec<String>,
+
+    /// Blacklist of product operators to install
+    #[arg(short, long = "exclude", group = "products")]
+    excluded_products: Vec<String>,
+
+    /// Namespace in the cluster used to deploy the operators
+    #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
+    pub operator_namespace: String,
+}
+
+#[derive(Debug, Args)]
 pub struct ReleaseUninstallArgs {
     /// Name of the release to uninstall
     #[arg(name = "RELEASE")]
@@ -97,6 +125,9 @@ pub struct ReleaseUninstallArgs {
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
+    #[snafu(display("Helm error"))]
+    HelmError { source: helm::Error },
+
     #[snafu(display("failed to serialize YAML output"))]
     SerializeYamlOutput { source: serde_yaml::Error },
 
@@ -109,8 +140,14 @@ pub enum CmdError {
     #[snafu(display("failed to build release list"))]
     BuildList { source: list::Error },
 
+    #[snafu(display("no release {release:?}"))]
+    NoSuchRelease { release: String },
+
     #[snafu(display("failed to install release"))]
     ReleaseInstall { source: release::Error },
+
+    #[snafu(display("failed to upgrade CRDs for release"))]
+    CrdUpgrade { source: release::Error },
 
     #[snafu(display("failed to uninstall release"))]
     ReleaseUninstall { source: release::Error },
@@ -121,7 +158,7 @@ pub enum CmdError {
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
+    #[snafu(display("failed to create namespace {namespace:?}"))]
     NamespaceCreate {
         source: namespace::Error,
         namespace: String,
@@ -147,6 +184,9 @@ impl ReleaseArgs {
             ReleaseCommands::Describe(args) => describe_cmd(args, cli, release_list).await,
             ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
             ReleaseCommands::Uninstall(args) => uninstall_cmd(args, cli, release_list).await,
+            ReleaseCommands::Upgrade(args) => {
+                upgrade_cmd(args, cli, release_list, &transfer_client).await
+            }
         }
     }
 }
@@ -253,7 +293,10 @@ async fn describe_cmd(
 
                 result
                     .with_command_hint(
-                        format!("stackablectl release install {}", args.release),
+                        format!(
+                            "stackablectl release install {release}",
+                            release = args.release
+                        ),
                         "install the release",
                     )
                     .with_command_hint("stackablectl release list", "list all available releases")
@@ -264,7 +307,9 @@ async fn describe_cmd(
             OutputType::Json => serde_json::to_string(&release).context(SerializeJsonOutputSnafu),
             OutputType::Yaml => serde_yaml::to_string(&release).context(SerializeYamlOutputSnafu),
         },
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }
 
@@ -311,11 +356,102 @@ async fn install_cmd(
                     "stackablectl operator installed",
                     "list installed operators",
                 )
-                .with_output(format!("Installed release '{}'", args.release));
+                .with_output(format!(
+                    "Installed release {release:?}",
+                    release = args.release
+                ));
 
             Ok(output.render())
         }
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
+    }
+}
+
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
+async fn upgrade_cmd(
+    args: &ReleaseUpgradeArgs,
+    cli: &Cli,
+    release_list: release::ReleaseList,
+    transfer_client: &xfer::Client,
+) -> Result<String, CmdError> {
+    info!(release = %args.release, "Upgrading release");
+    Span::current().pb_set_message("Upgrading release");
+
+    match release_list.get(&args.release) {
+        Some(release) => {
+            let mut output = cli.result();
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
+            // Get all currently installed operators to only upgrade those
+            let installed_charts: Vec<Release> =
+                helm::list_releases(&args.operator_namespace).context(HelmSnafu)?;
+
+            let mut operators: Vec<String> = operator::VALID_OPERATORS
+                .iter()
+                .filter(|operator| {
+                    installed_charts
+                        .iter()
+                        .any(|release| release.name == utils::operator_chart_name(operator))
+                })
+                .map(|operator| operator.to_string())
+                .collect();
+
+            // Uninstall the old operator release first
+            release
+                .uninstall(
+                    &operators,
+                    &args.excluded_products,
+                    &args.operator_namespace,
+                )
+                .context(ReleaseUninstallSnafu)?;
+
+            // If operators were added to args.included_products, install them as well
+            for product in &args.included_products {
+                if !operators.contains(product) {
+                    operators.push(product.clone());
+                }
+            }
+
+            // Upgrade the CRDs for all the operators to be upgraded
+            release
+                .upgrade_crds(
+                    &operators,
+                    &args.excluded_products,
+                    &args.operator_namespace,
+                    &client,
+                    transfer_client,
+                )
+                .await
+                .context(CrdUpgradeSnafu)?;
+
+            // Install the new operator release
+            release
+                .install(
+                    &operators,
+                    &args.excluded_products,
+                    &args.operator_namespace,
+                    &ChartSourceType::from(cli.chart_type()),
+                )
+                .await
+                .context(ReleaseInstallSnafu)?;
+
+            output
+                .with_command_hint(
+                    "stackablectl operator installed",
+                    "list installed operators",
+                )
+                .with_output(format!(
+                    "Upgraded to release {release:?}",
+                    release = args.release
+                ));
+
+            Ok(output.render())
+        }
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }
 
@@ -330,17 +466,22 @@ async fn uninstall_cmd(
     match release_list.get(&args.release) {
         Some(release) => {
             release
-                .uninstall(&args.operator_namespace)
+                .uninstall(&Vec::new(), &Vec::new(), &args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
             let mut result = cli.result();
 
             result
                 .with_command_hint("stackablectl release list", "list available releases")
-                .with_output(format!("Uninstalled release '{}'", args.release));
+                .with_output(format!(
+                    "Uninstalled release {release:?}",
+                    release = args.release
+                ));
 
             Ok(result.render())
         }
-        None => Ok("No such release".into()),
+        None => Err(CmdError::NoSuchRelease {
+            release: args.release.clone(),
+        }),
     }
 }

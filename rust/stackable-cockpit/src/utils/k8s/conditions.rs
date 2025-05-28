@@ -43,7 +43,11 @@ impl ConditionsExt for Vec<Condition> {
         self.iter()
             .map(|c| {
                 DisplayCondition::new(
-                    format!("{}: {}", c.type_, c.status),
+                    format!(
+                        "{condition_type}: {status}",
+                        condition_type = c.type_,
+                        status = c.status
+                    ),
                     Some(c.message.clone()),
                     c.is_good(),
                 )
@@ -57,7 +61,11 @@ impl ConditionsExt for Vec<DeploymentCondition> {
         self.iter()
             .map(|c| {
                 DisplayCondition::new(
-                    format!("{}: {}", c.type_, c.status),
+                    format!(
+                        "{condition_type}: {status}",
+                        condition_type = c.type_,
+                        status = c.status
+                    ),
                     c.message.clone(),
                     c.is_good(),
                 )
@@ -79,7 +87,11 @@ impl ConditionsExt for Vec<StatefulSetCondition> {
         self.iter()
             .map(|c| {
                 DisplayCondition::new(
-                    format!("{}: {}", c.type_, c.status),
+                    format!(
+                        "{condition_type}: {status}",
+                        condition_type = c.type_,
+                        status = c.status
+                    ),
                     c.message.clone(),
                     c.is_good(),
                 )

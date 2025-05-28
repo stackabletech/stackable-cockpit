@@ -37,7 +37,7 @@ pub trait ListParamsExt {
 impl ListParamsExt for ListParams {
     fn add_label(&mut self, label: impl Into<String>) {
         match self.label_selector.as_mut() {
-            Some(labels) => labels.push_str(format!(",{}", label.into()).as_str()),
+            Some(labels) => labels.push_str(format!(",{label}", label = label.into()).as_str()),
             None => self.label_selector = Some(label.into()),
         }
     }

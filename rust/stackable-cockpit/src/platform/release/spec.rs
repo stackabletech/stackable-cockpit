@@ -14,6 +14,11 @@ use crate::{
         operator::{self, ChartSourceType, OperatorSpec},
         product,
     },
+    utils::{
+        k8s::{self, Client},
+        path::{IntoPathOrUrl as _, PathOrUrlParseError},
+    },
+    xfer::{self, processor::Text},
 };
 
 type Result<T, E = Error> = std::result::Result<T, E>;
@@ -23,6 +28,17 @@ pub enum Error {
     #[snafu(display("failed to parse operator spec"))]
     OperatorSpecParse { source: operator::SpecParseError },
 
+    /// This error indicates that parsing a string into a path or URL failed.
+    #[snafu(display("failed to parse {path_or_url:?} as path/url"))]
+    ParsePathOrUrl {
+        source: PathOrUrlParseError,
+        path_or_url: String,
+    },
+
+    /// This error indicates that receiving remote content failed.
+    #[snafu(display("failed to receive remote content"))]
+    FileTransfer { source: xfer::Error },
+
     #[snafu(display("failed to install release using Helm"))]
     HelmInstall { source: helm::Error },
 
@@ -31,6 +47,9 @@ pub enum Error {
 
     #[snafu(display("failed to launch background task"))]
     BackgroundTask { source: JoinError },
+
+    #[snafu(display("failed to deploy manifests using the kube client"))]
+    DeployManifest { source: k8s::Error },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -118,14 +137,99 @@ impl ReleaseSpec {
             .await
     }
 
+    /// Upgrades a release by upgrading individual operators.
+    #[instrument(skip_all, fields(
+        %namespace,
+        indicatif.pb_show = true
+    ))]
+    pub async fn upgrade_crds(
+        &self,
+        include_products: &[String],
+        exclude_products: &[String],
+        namespace: &str,
+        k8s_client: &Client,
+        transfer_client: &xfer::Client,
+    ) -> Result<()> {
+        info!("Upgrading CRDs for release");
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
+
+        include_products.iter().for_each(|product| {
+            Span::current().record("product.included", product);
+        });
+        exclude_products.iter().for_each(|product| {
+            Span::current().record("product.excluded", product);
+        });
+
+        let operators = self.filter_products(include_products, exclude_products);
+
+        Span::current().pb_set_length(operators.len() as u64);
+
+        for (product_name, product) in operators {
+            info!("Upgrading CRDs for {product_name}-operator");
+            let iter_span = tracing::info_span!("upgrade_crds_iter", indicatif.pb_show = true);
+
+            async move {
+                Span::current().pb_set_message(format!("Ugrading CRDs for {product_name}-operator").as_str());
+
+                let release_branch = match product.version.pre.as_str() {
+                    "dev" => "main".to_string(),
+                    _ => {
+                        product.version.to_string()
+                    }
+                };
+
+                let request_url = &format!(
+                    "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release_branch}/deploy/helm/{product_name}-operator/crds/crds.yaml"
+                );
+                let request_url = request_url.into_path_or_url().context(ParsePathOrUrlSnafu {
+                    path_or_url: request_url.clone(),
+                })?;
+
+                // Get CRD manifests from request_url
+                let crd_manifests: String = transfer_client
+                    .get(&request_url, &Text)
+                    .await
+                    .context(FileTransferSnafu)?;
+
+                // Upgrade CRDs
+                k8s_client
+                    .replace_crds(&crd_manifests)
+                    .await
+                    .context(DeployManifestSnafu)?;
+
+                info!("Upgraded {product_name}-operator CRDs");
+
+                Ok::<(), Error>(())
+            }.instrument(iter_span).await?;
+
+            Span::current().pb_inc(1);
+        }
+
+        Ok(())
+    }
+
     #[instrument(skip_all, fields(indicatif.pb_show = true))]
-    pub fn uninstall(&self, namespace: &str) -> Result<()> {
+    pub fn uninstall(
+        &self,
+        include_products: &[String],
+        exclude_products: &[String],
+        namespace: &str,
+    ) -> Result<()> {
         info!("Uninstalling release");
 
-        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
-        Span::current().pb_set_length(self.products.len() as u64);
+        include_products.iter().for_each(|product| {
+            Span::current().record("product.included", product);
+        });
+        exclude_products.iter().for_each(|product| {
+            Span::current().record("product.excluded", product);
+        });
 
-        for (product_name, product_spec) in &self.products {
+        let operators = self.filter_products(include_products, exclude_products);
+
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
+        Span::current().pb_set_length(operators.len() as u64);
+
+        for (product_name, product_spec) in operators {
             info!("Uninstalling {product_name}-operator");
 
             // Create operator spec

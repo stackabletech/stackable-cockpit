@@ -49,7 +49,7 @@ pub enum Error {
 
     /// This error indicates that the stack doesn't support being installed in
     /// the provided namespace.
-    #[snafu(display("unable install stack in namespace {requested:?}, only '{}' supported", supported.join(", ")))]
+    #[snafu(display("unable install stack in namespace {requested:?}, only {supported:?} supported", supported = supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,

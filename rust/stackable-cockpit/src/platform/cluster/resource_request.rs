@@ -32,8 +32,10 @@ impl Display for ResourceRequests {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "CPU: {}, Memory: {}, PVC space: {}",
-            self.cpu.0, self.memory.0, self.pvc.0
+            "CPU: {cpu}, Memory: {memory}, PVC space: {pvc}",
+            cpu = self.cpu.0,
+            memory = self.memory.0,
+            pvc = self.pvc.0
         )
     }
 }
@@ -67,8 +69,8 @@ pub enum ResourceRequestsError {
 #[derive(Debug, Snafu)]
 pub enum ResourceRequestsValidationError {
     #[snafu(display(
-        "The {object_name} requires {} CPU core(s), but there are only {} CPU core(s) available in the cluster",
-        required.as_cpu_count(), available.as_cpu_count()
+        "The {object_name} requires {required_cpu} CPU core(s), but there are only {available_cpu} CPU core(s) available in the cluster",
+        required_cpu = required.as_cpu_count(), available_cpu = available.as_cpu_count()
     ))]
     InsufficientCpu {
         available: CpuQuantity,

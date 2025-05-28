@@ -38,41 +38,45 @@ pub enum Error {
     #[snafu(display("failed to patch/create Kubernetes object"))]
     KubeClientPatch { source: kube::error::Error },
 
+    #[snafu(display("failed to replace Kubernetes object"))]
+    KubeClientReplace {
+        source: kube::error::Error,
+        gvk: GroupVersionKind,
+    },
+
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
 
     #[snafu(display("failed to run GVK discovery"))]
     GVKDiscoveryRun { source: kube::error::Error },
 
-    #[snafu(display("GVK {gvk:?} is not known"))]
-    GVKUnkown { gvk: GroupVersionKind },
-
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
     ObjectType { object: DynamicObject },
 
-    #[snafu(display("failed to deploy manifest because GVK {group}/{kind}@{version} cannot be resolved",
+    // Using output close to Display for ObjectRef https://docs.rs/kube-runtime/0.99.0/src/kube_runtime/reflector/object_ref.rs.html#292-296
+    #[snafu(display("failed to resolve GVK: {kind}.{version}.{group}",
         group = gvk.group,
         version = gvk.version,
         kind = gvk.kind
     ))]
-    DiscoveryResolve { gvk: GroupVersionKind },
+    GVKResolve { gvk: GroupVersionKind },
 
     #[snafu(display("failed to convert byte string into UTF-8 string"))]
     ByteStringConvert { source: FromUtf8Error },
 
-    #[snafu(display("missing namespace for service '{service}'"))]
+    #[snafu(display("missing namespace for service {service:?}"))]
     MissingServiceNamespace { service: String },
 
     #[snafu(display("failed to retrieve cluster information"))]
     ClusterInformation { source: cluster::Error },
 
-    #[snafu(display("invalid or empty secret data in '{secret_name}'"))]
+    #[snafu(display("invalid or empty secret data in {secret_name:?}"))]
     InvalidSecretData { secret_name: String },
 
-    #[snafu(display("no username key in credentials secret '{secret_name}'"))]
+    #[snafu(display("no username key in credentials secret {secret_name:?}"))]
     NoUsernameKey { secret_name: String },
 
-    #[snafu(display("no password key in credentials secret '{secret_name}'"))]
+    #[snafu(display("no password key in credentials secret {secret_name:?}"))]
     NoPasswordKey { secret_name: String },
 }
 
@@ -128,7 +132,7 @@ impl Client {
             let (resource, capabilities) = self
                 .resolve_gvk(&gvk)
                 .await?
-                .context(GVKUnkownSnafu { gvk })?;
+                .context(GVKResolveSnafu { gvk })?;
 
             let api: Api<DynamicObject> = match capabilities.scope {
                 Scope::Cluster => {
@@ -147,6 +151,49 @@ impl Client {
             )
             .await
             .context(KubeClientPatchSnafu)?;
+        }
+
+        Ok(())
+    }
+
+    /// Replaces CRDs defined the in raw `crds` YAML string. This
+    /// method will fail if it is unable to parse the CRDs, unable to
+    /// resolve GVKs or unable to replace/create the dynamic objects.
+    pub async fn replace_crds(&self, crds: &str) -> Result<()> {
+        for crd in serde_yaml::Deserializer::from_str(crds) {
+            let mut object = DynamicObject::deserialize(crd).context(DeserializeYamlSnafu)?;
+
+            let object_type = object.types.as_ref().ok_or(
+                ObjectTypeSnafu {
+                    object: object.clone(),
+                }
+                .build(),
+            )?;
+
+            let gvk = Self::gvk_of_typemeta(object_type);
+            let (resource, _) = self
+                .resolve_gvk(&gvk)
+                .await?
+                .with_context(|| GVKResolveSnafu { gvk: gvk.clone() })?;
+
+            // CRDs are cluster scoped
+            let api: Api<DynamicObject> = Api::all_with(self.client.clone(), &resource);
+
+            if let Some(resource) = api
+                .get_opt(&object.name_any())
+                .await
+                .context(KubeClientFetchSnafu)?
+            {
+                object.metadata.resource_version = resource.resource_version();
+                api.replace(&object.name_any(), &PostParams::default(), &object)
+                    .await
+                    .with_context(|_| KubeClientReplaceSnafu { gvk })?;
+            } else {
+                // Create CRD if a previous version wasn't found
+                api.create(&PostParams::default(), &object)
+                    .await
+                    .context(KubeClientPatchSnafu)?;
+            }
         }
 
         Ok(())

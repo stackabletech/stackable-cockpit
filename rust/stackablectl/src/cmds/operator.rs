@@ -141,7 +141,7 @@ pub enum CmdError {
         version: String,
     },
 
-    #[snafu(display("unknown repository name '{name}'"))]
+    #[snafu(display("unknown repository name {name:?}"))]
     UnknownRepoName { name: String },
 
     #[snafu(display("Helm error"))]
@@ -159,7 +159,7 @@ pub enum CmdError {
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
-    #[snafu(display("failed to create namespace '{namespace}'"))]
+    #[snafu(display("failed to create namespace {namespace:?}"))]
     NamespaceCreate {
         source: namespace::Error,
         namespace: String,
@@ -292,7 +292,10 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 
             result
                 .with_command_hint(
-                    format!("stackablectl operator install {}", args.operator_name),
+                    format!(
+                        "stackablectl operator install {operator_name}",
+                        operator_name = args.operator_name
+                    ),
                     "install the operator",
                 )
                 .with_command_hint("stackablectl operator list", "list all available operators")
@@ -343,9 +346,9 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             "list installed operators",
         )
         .with_output(format!(
-            "Installed {} {}",
-            args.operators.len(),
-            if args.operators.len() == 1 {
+            "Installed {num_of_operators} {suffix}",
+            num_of_operators = args.operators.len(),
+            suffix = if args.operators.len() == 1 {
                 "operator"
             } else {
                 "operators"
@@ -374,9 +377,9 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
             "list remaining installed operators",
         )
         .with_output(format!(
-            "Uninstalled {} {}",
-            args.operators.len(),
-            if args.operators.len() == 1 {
+            "Uninstalled {num_of_operators} {suffix}",
+            num_of_operators = args.operators.len(),
+            suffix = if args.operators.len() == 1 {
                 "operator"
             } else {
                 "operators"
