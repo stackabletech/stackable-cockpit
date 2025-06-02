@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- nix: Update nixpkgs and upgrade nodejs-18 to nodejs_20 ([#xxx]).
+
+[#xxx]: https://github.com/stackabletech/stackable-cockpit/pull/xxx
+
 ## [1.0.0] - 2025-06-02
 
 ### Added
