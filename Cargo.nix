@@ -11346,7 +11346,7 @@ rec {
       };
       "stackablectl" = rec {
         crateName = "stackablectl";
-        version = "25.3.0";
+        version = "1.0.0";
         edition = "2021";
         crateBin = [
           {

@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-06-02
+
 ### Added
 
 - Pass the stack/demo namespace as a templating variable `NAMESPACE` to manifests.
@@ -21,6 +23,7 @@ All notable changes to this project will be documented in this file.
 
 - Prefix `ui-http` port endpoints with `http://`, as e.g. used by hbase-operator ([#368]).
 
+[#355]: https://github.com/stackabletech/stackable-cockpit/pull/355
 [#368]: https://github.com/stackabletech/stackable-cockpit/pull/368
 [#373]: https://github.com/stackabletech/stackable-cockpit/pull/373
 [#376]: https://github.com/stackabletech/stackable-cockpit/pull/376
@@ -36,7 +39,6 @@ All notable changes to this project will be documented in this file.
 - Improve tracing and log output ([#365]).
 
 [#351]: https://github.com/stackabletech/stackable-cockpit/pull/351
-[#355]: https://github.com/stackabletech/stackable-cockpit/pull/355
 [#364]: https://github.com/stackabletech/stackable-cockpit/pull/364
 [#365]: https://github.com/stackabletech/stackable-cockpit/pull/365
 
