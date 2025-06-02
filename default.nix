@@ -10,7 +10,7 @@
     inherit nixpkgs pkgs; release = false;
     defaultCrateOverrides = pkgs.defaultCrateOverrides // {
       stackable-cockpit-web = attrs: {
-        nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs ];
+        nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs_20 ];
         preConfigure =
           ''
             [[ ! -e node_modules ]] || rm -r node_modules
@@ -69,7 +69,7 @@
         done
       '';
   }
-, js2nix ? pkgs.callPackage sources.js2nix { nodejs = pkgs.nodejs-18_x; }
+, js2nix ? pkgs.callPackage sources.js2nix { nodejs = pkgs.nodejs_20; }
 , gomod2nix ? pkgs.callPackage sources.gomod2nix {}
 }:
 rec {
