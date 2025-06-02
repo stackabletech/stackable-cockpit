@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0] - 2025-06-02
+
 ### Added
 
 - Pass the stack/demo namespace as a templating variable `NAMESPACE` to manifests.
