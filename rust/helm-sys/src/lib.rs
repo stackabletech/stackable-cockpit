@@ -37,6 +37,34 @@ pub fn install_helm_release(
     }
 }
 
+pub fn upgrade_or_install_helm_release(
+    release_name: &str,
+    chart_name: &str,
+    chart_version: &str,
+    values_yaml: &str,
+    namespace: &str,
+    suppress_output: bool,
+) -> String {
+    let release_name = CString::new(release_name).unwrap();
+    let chart_name = CString::new(chart_name).unwrap();
+    let chart_version = CString::new(chart_version).unwrap();
+    let values_yaml = CString::new(values_yaml).unwrap();
+    let namespace = CString::new(namespace).unwrap();
+
+    unsafe {
+        let c = go_upgrade_or_install_helm_release(
+            release_name.as_ptr() as *mut c_char,
+            chart_name.as_ptr() as *mut c_char,
+            chart_version.as_ptr() as *mut c_char,
+            values_yaml.as_ptr() as *mut c_char,
+            namespace.as_ptr() as *mut c_char,
+            suppress_output as u8,
+        );
+
+        cstr_ptr_to_string(c)
+    }
+}
+
 pub fn uninstall_helm_release(
     release_name: &str,
     namespace: &str,

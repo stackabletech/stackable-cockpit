@@ -58,6 +58,30 @@ func go_install_helm_release(releaseName *C.char, chartName *C.char, chartVersio
 	return C.CString("")
 }
 
+//export go_upgrade_or_install_helm_release
+func go_upgrade_or_install_helm_release(releaseName *C.char, chartName *C.char, chartVersion *C.char, valuesYaml *C.char, namespace *C.char, suppressOutput bool) *C.char {
+	helmClient := getHelmClient(namespace, suppressOutput)
+
+	timeout, _ := time.ParseDuration("20m")
+	chartSpec := gohelm.ChartSpec{
+		ReleaseName: C.GoString(releaseName),
+		ChartName:   C.GoString(chartName),
+		Version:     C.GoString(chartVersion),
+		ValuesYaml:  C.GoString(valuesYaml),
+		Namespace:   C.GoString(namespace),
+		UpgradeCRDs: true,
+		Wait:        true,
+		Timeout:     timeout,
+		Force:       true,
+	}
+
+	if _, err := helmClient.InstallOrUpgradeChart(context.Background(), &chartSpec, nil); err != nil {
+		return C.CString(fmt.Sprintf("%s%s", HELM_ERROR_PREFIX, err))
+	}
+
+	return C.CString("")
+}
+
 //export go_uninstall_helm_release
 func go_uninstall_helm_release(releaseName *C.char, namespace *C.char, suppressOutput bool) *C.char {
 	helmClient := getHelmClient(namespace, suppressOutput)
