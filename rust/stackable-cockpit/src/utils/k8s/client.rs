@@ -15,7 +15,7 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
 use tracing::{Span, info, instrument};
-use tracing_indicatif::{indicatif_eprintln, indicatif_println, span_ext::IndicatifSpanExt as _};
+use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -171,10 +171,6 @@ impl Client {
                             );
                             object
                         } else {
-                            indicatif_println!(
-                                "{object_name} {object:?}",
-                                object_name = &object.name_any()
-                            );
                             return Err(e).context(KubeClientPatchSnafu);
                         }
                     }
