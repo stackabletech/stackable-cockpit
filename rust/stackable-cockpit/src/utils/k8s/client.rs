@@ -15,7 +15,7 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
 use tracing::{Span, info, instrument};
-use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt as _};
+use tracing_indicatif::{indicatif_eprintln, indicatif_println, span_ext::IndicatifSpanExt as _};
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -114,7 +114,6 @@ impl Client {
 
         // TODO (Techassi): Impl IntoIterator for Labels
         let labels: BTreeMap<String, String> = labels.into();
-        let mut failed_manifests = Vec::new();
 
         for manifest in serde_yaml::Deserializer::from_str(manifests) {
             let mut object = DynamicObject::deserialize(manifest).context(DeserializeYamlSnafu)?;
@@ -165,11 +164,11 @@ impl Client {
                         // If re-applying a Job fails due to immutability, print out the failed manifests instead of erroring out,
                         // so the user can decide if the existing Job needs a deletion and recreation
                         if resource.kind == *"Job" && e.to_string().contains("field is immutable") {
-                            failed_manifests.push(format!(
-                                "{kind} {object_name}",
+                            indicatif_eprintln!(
+                                "Deploying {kind}/{object_name} manifest failed due to immutability",
                                 kind = resource.kind,
                                 object_name = object.name_any().clone()
-                            ));
+                            );
                             object
                         } else {
                             indicatif_println!(
@@ -189,10 +188,6 @@ impl Client {
                 .await
                 .context(KubeClientPatchSnafu)?;
             }
-        }
-
-        if !failed_manifests.is_empty() {
-            indicatif_println!("Failed manifests due to immutability: {failed_manifests:?}");
         }
 
         Ok(())
