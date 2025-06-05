@@ -151,30 +151,30 @@ impl Client {
             {
                 object.metadata.resource_version = existing_object.resource_version();
 
-                match api
+                api
                     .patch(
                         &object.name_any(),
                         &PatchParams::apply("stackablectl"),
                         &Patch::Merge(object.clone()),
                     )
                     .await
-                {
-                    Ok(result) => result,
-                    Err(e) => {
+                    .or_else(|e| {
                         // If re-applying a Job fails due to immutability, print out the failed manifests instead of erroring out,
                         // so the user can decide if the existing Job needs a deletion and recreation
-                        if resource.kind == *"Job" && e.to_string().contains("field is immutable") {
-                            indicatif_eprintln!(
-                                "Deploying {kind}/{object_name} manifest failed due to immutability",
-                                kind = resource.kind,
-                                object_name = object.name_any().clone()
-                            );
-                            object
-                        } else {
-                            return Err(e).context(KubeClientPatchSnafu);
+                        match (resource.kind.as_ref(), e) {
+                            ("Job", kube::Error::Api(e)) if e.message.contains("field is immutable") => {
+                                indicatif_eprintln!(
+                                    "Deploying {kind}/{object_name} manifest failed due to immutability",
+                                    kind = resource.kind,
+                                    object_name = object.name_any().clone()
+                                );
+                                Ok(object)
+                            }
+                            (_, e) => {
+                                Err(e).context(KubeClientPatchSnafu)
+                            }
                         }
-                    }
-                };
+                    })?;
             } else {
                 api.patch(
                     &object.name_any(),
