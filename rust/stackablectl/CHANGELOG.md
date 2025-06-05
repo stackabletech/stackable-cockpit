@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- nix: Update nixpkgs and upgrade nodejs-18 to nodejs_20 ([#384]).
 - Switch to idempotent Helm installations for demos and stacks ([#386]).
 - Ignore failed re-application of Jobs due to immutability in demo and stack installations.
   Display those manifests to the user, so they can decide if they need to delete and recreate it ([#386]).
 
+[#384]: https://github.com/stackabletech/stackable-cockpit/pull/384
 [#386]: https://github.com/stackabletech/stackable-cockpit/pull/386
 
 ## [1.0.0] - 2025-06-02
