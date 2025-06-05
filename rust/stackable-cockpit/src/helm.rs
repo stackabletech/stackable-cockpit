@@ -61,6 +61,9 @@ pub enum Error {
     #[snafu(display("failed to install Helm release"))]
     InstallRelease { source: InstallReleaseError },
 
+    #[snafu(display("failed to upgrade/install Helm release"))]
+    UpgradeRelease { source: InstallReleaseError },
+
     #[snafu(display("failed to uninstall Helm release ({error})"))]
     UninstallRelease { error: String },
 }
@@ -248,6 +251,78 @@ pub fn install_release_from_repo_or_registry(
     })
 }
 
+/// Upgrades a Helm release from a repo or registry.
+///
+/// This function expects the fully qualified Helm release name. In case of our
+/// operators this is: `<PRODUCT_NAME>-operator`.
+#[instrument(skip(values_yaml), fields(with_values = values_yaml.is_some(), indicatif.pb_show = true))]
+pub fn upgrade_or_install_release_from_repo_or_registry(
+    release_name: &str,
+    ChartVersion {
+        chart_source,
+        chart_name,
+        chart_version,
+    }: ChartVersion,
+    values_yaml: Option<&str>,
+    namespace: &str,
+    suppress_output: bool,
+) -> Result<InstallReleaseStatus, Error> {
+    // Ideally, each Helm invocation would spawn_blocking instead in/around helm_sys,
+    // but that requires a larger refactoring
+    block_in_place(|| {
+        debug!("Install/Upgrade Helm release from repo");
+        Span::current()
+            .pb_set_message(format!("Installing/Upgrading {chart_name} Helm chart").as_str());
+
+        if check_release_exists(release_name, namespace)? {
+            let release = get_release(release_name, namespace)?.ok_or(Error::InstallRelease {
+                source: InstallReleaseError::NoSuchRelease {
+                    name: release_name.to_owned(),
+                },
+            })?;
+
+            let current_version = release.version;
+
+            match chart_version {
+                Some(chart_version) => {
+                    if chart_version == current_version {
+                        return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledWithVersion {
+                            requested_version: chart_version.to_string(),
+                            release_name: release_name.to_string(),
+                            current_version,
+                        });
+                    }
+                }
+                None => {
+                    return Ok(InstallReleaseStatus::ReleaseAlreadyInstalledUnspecified {
+                        release_name: release_name.to_string(),
+                        current_version,
+                    });
+                }
+            }
+        }
+
+        let full_chart_name = format!("{chart_source}/{chart_name}");
+        let chart_version = chart_version.unwrap_or(HELM_DEFAULT_CHART_VERSION);
+
+        debug!(
+            release_name,
+            chart_version, full_chart_name, "Installing Helm release"
+        );
+
+        upgrade_release(
+            release_name,
+            &full_chart_name,
+            chart_version,
+            values_yaml,
+            namespace,
+            suppress_output,
+        )?;
+
+        Ok(InstallReleaseStatus::Installed(release_name.to_string()))
+    })
+}
+
 /// Installs a Helm release.
 ///
 /// This function expects the fully qualified Helm release name. In case of our
@@ -274,6 +349,47 @@ fn install_release(
         error!("Go wrapper function go_install_helm_release encountered an error: {error}");
 
         return Err(Error::InstallRelease {
+            source: InstallReleaseError::HelmWrapper { error },
+        });
+    }
+
+    Ok(())
+}
+
+/// Upgrades a Helm release.
+/// If a release with the specified `chart_name` does not already exist,
+/// this function installs it instead.
+///
+/// This function expects the fully qualified Helm release name. In case of our
+/// operators this is: `<PRODUCT_NAME>-operator`.
+#[instrument(fields(with_values = values_yaml.is_some()))]
+fn upgrade_release(
+    release_name: &str,
+    chart_name: &str,
+    chart_version: &str,
+    values_yaml: Option<&str>,
+    namespace: &str,
+    suppress_output: bool,
+) -> Result<(), Error> {
+    // In Helm 3 the behavior of the `--force` option has changed
+    // It no longer deletes and re-installs a resource https://github.com/helm/helm/issues/7082#issuecomment-559558318
+    // Because of that, conflict errors might appear, which fail the upgrade, even if `helm upgrade --force` is used
+    // Therefore we uninstall the previous release (if present) and install the new one
+    uninstall_release(release_name, namespace, suppress_output)?;
+
+    let result = helm_sys::install_helm_release(
+        release_name,
+        chart_name,
+        chart_version,
+        values_yaml.unwrap_or(""),
+        namespace,
+        suppress_output,
+    );
+
+    if let Some(error) = helm_sys::to_helm_error(&result) {
+        error!("Go wrapper function go_install_helm_release encountered an error: {error}");
+
+        return Err(Error::UpgradeRelease {
             source: InstallReleaseError::HelmWrapper { error },
         });
     }

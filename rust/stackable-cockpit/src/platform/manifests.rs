@@ -116,7 +116,7 @@ pub trait InstallManifestsExt {
                         .context(SerializeOptionsSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
-                    helm::install_release_from_repo_or_registry(
+                    helm::upgrade_or_install_release_from_repo_or_registry(
                         &helm_chart.release_name,
                         helm::ChartVersion {
                             chart_source: &helm_chart.repo.name,
