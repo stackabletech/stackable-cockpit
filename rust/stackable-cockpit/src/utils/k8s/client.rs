@@ -162,6 +162,8 @@ impl Client {
                         // If re-applying a Job fails due to immutability, print out the failed manifests instead of erroring out,
                         // so the user can decide if the existing Job needs a deletion and recreation
                         match (resource.kind.as_ref(), e) {
+                            // Errors for immutability in Kubernetes do not return meaningful `code`, `status`, or `reason` to filter on
+                            // Currently we have to check the `message` for the actual error we are looking for
                             ("Job", kube::Error::Api(e)) if e.message.contains("field is immutable") => {
                                 indicatif_eprintln!(
                                     "Deploying {kind}/{object_name} manifest failed due to immutability",
