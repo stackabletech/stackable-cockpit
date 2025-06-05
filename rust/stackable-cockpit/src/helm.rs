@@ -371,7 +371,9 @@ fn upgrade_release(
     namespace: &str,
     suppress_output: bool,
 ) -> Result<(), Error> {
-    let result = helm_sys::upgrade_or_install_helm_release(
+    uninstall_release(release_name, namespace, suppress_output)?;
+
+    let result = helm_sys::install_helm_release(
         release_name,
         chart_name,
         chart_version,
