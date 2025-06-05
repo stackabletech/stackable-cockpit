@@ -371,6 +371,10 @@ fn upgrade_release(
     namespace: &str,
     suppress_output: bool,
 ) -> Result<(), Error> {
+    // In Helm 3 the behavior of the `--force` option has changed
+    // It no longer deletes and re-installs a resource https://github.com/helm/helm/issues/7082#issuecomment-559558318
+    // Because of that, conflict errors might appear, which fail the upgrade, even if `helm upgrade --force` is used
+    // Therefore we uninstall the previous release (if present) and install the new one
     uninstall_release(release_name, namespace, suppress_output)?;
 
     let result = helm_sys::install_helm_release(
@@ -383,9 +387,7 @@ fn upgrade_release(
     );
 
     if let Some(error) = helm_sys::to_helm_error(&result) {
-        error!(
-            "Go wrapper function go_upgrade_or_install_helm_release encountered an error: {error}"
-        );
+        error!("Go wrapper function go_install_helm_release encountered an error: {error}");
 
         return Err(Error::UpgradeRelease {
             source: InstallReleaseError::HelmWrapper { error },
