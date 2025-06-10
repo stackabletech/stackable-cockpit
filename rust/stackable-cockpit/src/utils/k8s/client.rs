@@ -15,7 +15,7 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{commons::listener::Listener, kvp::Labels};
 use tokio::sync::RwLock;
 use tracing::{Span, info, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt as _;
+use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};
 
 #[cfg(doc)]
 use crate::utils::k8s::ListParamsExt;
@@ -144,13 +144,48 @@ impl Client {
                 }
             };
 
-            api.patch(
-                &object.name_any(),
-                &PatchParams::apply("stackablectl"),
-                &Patch::Apply(object),
-            )
-            .await
-            .context(KubeClientPatchSnafu)?;
+            if let Some(existing_object) = api
+                .get_opt(&object.name_any())
+                .await
+                .context(KubeClientFetchSnafu)?
+            {
+                object.metadata.resource_version = existing_object.resource_version();
+
+                api
+                    .patch(
+                        &object.name_any(),
+                        &PatchParams::apply("stackablectl"),
+                        &Patch::Merge(object.clone()),
+                    )
+                    .await
+                    .or_else(|e| {
+                        // If re-applying a Job fails due to immutability, print out the failed manifests instead of erroring out,
+                        // so the user can decide if the existing Job needs a deletion and recreation
+                        match (resource.kind.as_ref(), e) {
+                            // Errors for immutability in Kubernetes do not return meaningful `code`, `status`, or `reason` to filter on
+                            // Currently we have to check the `message` for the actual error we are looking for
+                            ("Job", kube::Error::Api(e)) if e.message.contains("field is immutable") => {
+                                indicatif_eprintln!(
+                                    "Deploying {kind}/{object_name} manifest failed due to immutability",
+                                    kind = resource.kind,
+                                    object_name = object.name_any().clone()
+                                );
+                                Ok(object)
+                            }
+                            (_, e) => {
+                                Err(e).context(KubeClientPatchSnafu)
+                            }
+                        }
+                    })?;
+            } else {
+                api.patch(
+                    &object.name_any(),
+                    &PatchParams::apply("stackablectl"),
+                    &Patch::Apply(object.clone()),
+                )
+                .await
+                .context(KubeClientPatchSnafu)?;
+            }
         }
 
         Ok(())
