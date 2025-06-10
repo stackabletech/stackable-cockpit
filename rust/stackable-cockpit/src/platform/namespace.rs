@@ -1,21 +1,22 @@
-use snafu::{ResultExt, Snafu};
+use snafu::Snafu;
 
-use crate::utils::k8s;
+use crate::utils::k8s::{self, Client};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
 
-    #[snafu(display("permission denied - try to create the namespace manually or choose an already existing one to which you have access to"))]
+    #[snafu(display(
+        "permission denied - try to create the namespace manually or choose an already existing one to which you have access to"
+    ))]
     PermissionDenied,
 }
 
 /// Creates a namespace with `name` if needed (not already present in the
 /// cluster).
-pub async fn create_if_needed(name: String) -> Result<(), Error> {
-    let client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
-
+// TODO (@NickLarsenNZ): Take a &str instead of String (to avoid all the cloning)
+pub async fn create_if_needed(client: &Client, name: String) -> Result<(), Error> {
     client
         .create_namespace_if_needed(name)
         .await

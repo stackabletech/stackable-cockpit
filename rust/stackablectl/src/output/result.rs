@@ -1,11 +1,11 @@
-use stackable_cockpit::constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE};
+use stackable_cockpit::constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE};
 
 use crate::output::{ContextExt, OutputKind};
 
 #[derive(Debug, Default)]
 pub struct ResultContext {
     used_operator_namespace: String,
-    used_product_namespace: String,
+    used_namespace: String,
 
     command_hints: Vec<String>,
     post_hints: Vec<String>,
@@ -20,10 +20,10 @@ impl ContextExt for ResultContext {
         let mut ctx = tera::Context::new();
 
         ctx.insert("default_operator_namespace", DEFAULT_OPERATOR_NAMESPACE);
-        ctx.insert("default_product_namespace", DEFAULT_PRODUCT_NAMESPACE);
+        ctx.insert("default_namespace", DEFAULT_NAMESPACE);
 
         ctx.insert("used_operator_namespace", &self.used_operator_namespace);
-        ctx.insert("used_product_namespace", &self.used_product_namespace);
+        ctx.insert("used_namespace", &self.used_namespace);
 
         ctx.insert("command_hints", &self.command_hints);
         ctx.insert("post_hints", &self.post_hints);
@@ -55,9 +55,9 @@ impl ResultContext {
         description: impl Into<String>,
     ) -> &mut Self {
         self.command_hints.push(format!(
-            "Use \"{}\" to {}.",
-            command.into(),
-            description.into()
+            "Use \"{command}\" to {description}.",
+            command = command.into(),
+            description = description.into()
         ));
 
         self

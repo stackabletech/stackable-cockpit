@@ -1,10 +1,10 @@
 use std::fmt::Display;
 
-use kube::{core::DynamicObject, ResourceExt};
+use kube::{ResourceExt, core::DynamicObject};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 
-use crate::utils::k8s;
+use crate::utils::k8s::{self, Client};
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;
 
@@ -25,7 +25,12 @@ pub struct Credentials {
 
 impl Display for Credentials {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", self.username, self.password)
+        write!(
+            f,
+            "{username}:{password}",
+            username = self.username,
+            password = self.password
+        )
     }
 }
 
@@ -34,7 +39,7 @@ impl Display for Credentials {
 /// and/or `password_key` are not found or the product does not provide
 /// any credentials.
 pub async fn get(
-    kube_client: &k8s::Client,
+    client: &Client,
     product_name: &str,
     stacklet: &DynamicObject,
 ) -> Result<Option<Credentials>> {
@@ -56,7 +61,7 @@ pub async fn get(
                 .as_str()
                 .context(NoSecretSnafu)?;
 
-            kube_client
+            client
                 .get_credentials_from_secret(
                     secret_name,
                     &stacklet.namespace().unwrap(),
@@ -71,7 +76,7 @@ pub async fn get(
                 .as_str()
                 .context(NoSecretSnafu)?;
 
-            kube_client
+            client
                 .get_credentials_from_secret(
                     secret_name,
                     &stacklet.namespace().unwrap(),

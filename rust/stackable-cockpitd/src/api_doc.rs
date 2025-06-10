@@ -6,8 +6,8 @@ use stackable_cockpit::{
     utils::{k8s::DisplayCondition, params::Parameter},
 };
 use utoipa::{
-    openapi::security::{HttpAuthScheme, SecurityScheme},
     OpenApi,
+    openapi::security::{HttpAuthScheme, SecurityScheme},
 };
 
 use crate::{
@@ -57,6 +57,8 @@ pub fn openapi() -> utoipa::openapi::OpenApi {
 }
 
 /// Synthetic types that are used to generate type definitions for foreign types.
+/// These are unused in this crate, so we explicitly allow the dead code.
+#[allow(dead_code)]
 mod synthetic_types {
 
     use utoipa::ToSchema;

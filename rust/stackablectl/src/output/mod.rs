@@ -1,3 +1,9 @@
+//! This module contains helper structs and functions to render the CLI output
+//! based on templates. These templates allow dynamic composition of the output.
+//! The output offers sections for pre, post and command hints, as well as
+//! success and error output. The [`ErrorReport`] serves as an alternative to
+//! snafu's [`Report`](snafu::Report).
+
 use std::{
     fmt::Write,
     ops::{Deref, DerefMut},
@@ -49,7 +55,7 @@ where
         let mut report = String::new();
 
         // Print top most error
-        write!(report, "An unrecoverable error occured: {}\n\n", self)?;
+        write!(report, "An unrecoverable error occured: {self}\n\n")?;
         writeln!(
             report,
             "Caused by these errors (recent errors listed first):"
@@ -59,16 +65,7 @@ where
         let mut index = 1;
 
         while let Some(source) = error.source() {
-            let source_string = source.to_string();
-
-            let cleaned = if let Some((cleaned, _)) = source_string.split_once(':') {
-                cleaned
-            } else {
-                &source_string
-            };
-
-            writeln!(report, " {}: {}", index, cleaned)?;
-
+            writeln!(report, " {index}: {source}")?;
             error = source;
             index += 1;
         }

@@ -10,14 +10,14 @@ use crate::{
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display(
-        "failed to determine if a Minikube cluster named '{cluster_name}' already exists"
+        "failed to determine if a Minikube cluster named {cluster_name:?} already exists"
     ))]
     CheckCluster {
         source: std::io::Error,
         cluster_name: String,
     },
 
-    #[snafu(display("missing required binary: {binary}"))]
+    #[snafu(display("missing required binary {binary:?}"))]
     MissingBinary { binary: String },
 
     #[snafu(display("failed to execute Minikube command"))]
@@ -41,7 +41,7 @@ impl Cluster {
     }
 
     /// Create a new local cluster by calling the Minikube binary
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn create(&self) -> Result<(), Error> {
         info!("Creating local cluster using Minikube");
 
@@ -70,7 +70,7 @@ impl Cluster {
     }
 
     /// Creates a Minikube cluster if it doesn't exist already.
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn create_if_not_exists(&self) -> Result<(), Error> {
         info!("Creating cluster if it doesn't exist using Minikube");
 
@@ -92,7 +92,7 @@ impl Cluster {
     }
 
     /// Check if a kind cluster with the provided name already exists.
-    #[instrument]
+    #[instrument(skip_all)]
     async fn check_if_cluster_exists(cluster_name: &str) -> Result<bool, Error> {
         debug!("Checking if Minikube cluster exists");
 

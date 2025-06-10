@@ -60,11 +60,17 @@ _stackablectl() {
             stackablectl__completions,bash)
                 cmd="stackablectl__completions__bash"
                 ;;
+            stackablectl__completions,elvish)
+                cmd="stackablectl__completions__elvish"
+                ;;
             stackablectl__completions,fish)
                 cmd="stackablectl__completions__fish"
                 ;;
             stackablectl__completions,help)
                 cmd="stackablectl__completions__help"
+                ;;
+            stackablectl__completions,nushell)
+                cmd="stackablectl__completions__nushell"
                 ;;
             stackablectl__completions,zsh)
                 cmd="stackablectl__completions__zsh"
@@ -72,11 +78,17 @@ _stackablectl() {
             stackablectl__completions__help,bash)
                 cmd="stackablectl__completions__help__bash"
                 ;;
+            stackablectl__completions__help,elvish)
+                cmd="stackablectl__completions__help__elvish"
+                ;;
             stackablectl__completions__help,fish)
                 cmd="stackablectl__completions__help__fish"
                 ;;
             stackablectl__completions__help,help)
                 cmd="stackablectl__completions__help__help"
+                ;;
+            stackablectl__completions__help,nushell)
+                cmd="stackablectl__completions__help__nushell"
                 ;;
             stackablectl__completions__help,zsh)
                 cmd="stackablectl__completions__help__zsh"
@@ -141,8 +153,14 @@ _stackablectl() {
             stackablectl__help__completions,bash)
                 cmd="stackablectl__help__completions__bash"
                 ;;
+            stackablectl__help__completions,elvish)
+                cmd="stackablectl__help__completions__elvish"
+                ;;
             stackablectl__help__completions,fish)
                 cmd="stackablectl__help__completions__fish"
+                ;;
+            stackablectl__help__completions,nushell)
+                cmd="stackablectl__help__completions__nushell"
                 ;;
             stackablectl__help__completions,zsh)
                 cmd="stackablectl__help__completions__zsh"
@@ -182,6 +200,9 @@ _stackablectl() {
                 ;;
             stackablectl__help__release,uninstall)
                 cmd="stackablectl__help__release__uninstall"
+                ;;
+            stackablectl__help__release,upgrade)
+                cmd="stackablectl__help__release__upgrade"
                 ;;
             stackablectl__help__stack,describe)
                 cmd="stackablectl__help__stack__describe"
@@ -249,6 +270,9 @@ _stackablectl() {
             stackablectl__release,uninstall)
                 cmd="stackablectl__release__uninstall"
                 ;;
+            stackablectl__release,upgrade)
+                cmd="stackablectl__release__upgrade"
+                ;;
             stackablectl__release__help,describe)
                 cmd="stackablectl__release__help__describe"
                 ;;
@@ -263,6 +287,9 @@ _stackablectl() {
                 ;;
             stackablectl__release__help,uninstall)
                 cmd="stackablectl__release__help__uninstall"
+                ;;
+            stackablectl__release__help,upgrade)
+                cmd="stackablectl__release__help__upgrade"
                 ;;
             stackablectl__stack,describe)
                 cmd="stackablectl__stack__describe"
@@ -313,7 +340,7 @@ _stackablectl() {
 
     case "${cmd}" in
         stackablectl)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version operator release stack stacklet demo completions cache experimental-debug help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version operator release stack stacklet demo completions cache experimental-debug help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -429,6 +456,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -437,7 +468,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list clean help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list clean help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -553,6 +584,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -561,7 +596,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__clean)
-            opts="-l -d -s -r -h -V --outdated --old --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --outdated --old --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -675,6 +710,10 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -741,7 +780,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__cache__list)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -857,6 +896,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -865,7 +908,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version bash fish zsh help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version bash elvish fish nushell zsh help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -981,6 +1024,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -989,7 +1036,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__bash)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1103,6 +1150,138 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__completions__elvish)
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --log-level)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -l)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --demo-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -d)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --stack-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -s)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --release-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -r)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --helm-repo-stable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-test)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-dev)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -1113,7 +1292,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__fish)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1229,6 +1408,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1237,7 +1420,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__help)
-            opts="bash fish zsh help"
+            opts="bash elvish fish nushell zsh help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1251,6 +1434,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__completions__help__bash)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__completions__help__elvish)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -1292,6 +1489,20 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        stackablectl__completions__help__nushell)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         stackablectl__completions__help__zsh)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
@@ -1306,8 +1517,8 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        stackablectl__completions__zsh)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+        stackablectl__completions__nushell)
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1423,6 +1634,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1430,9 +1645,9 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        stackablectl__demo)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+        stackablectl__completions__zsh)
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -1547,6 +1762,142 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__demo)
+            opts="-l -d -s -r -h -V --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list describe install help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --log-level)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -l)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --demo-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -d)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --stack-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -s)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --release-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -r)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --helm-repo-stable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-test)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-dev)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1555,7 +1906,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
+            opts="-o -l -d -s -r -h -V --output --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1569,6 +1920,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -1677,6 +2032,10 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -1757,7 +2116,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <DEMO>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --namespace --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1799,7 +2158,7 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --product-namespace)
+                --namespace)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1808,6 +2167,10 @@ _stackablectl() {
                     return 0
                     ;;
                 -n)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --release)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -1921,6 +2284,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -1929,7 +2296,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1943,6 +2310,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -2053,6 +2424,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -2061,7 +2436,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__experimental__debug)
-            opts="-n -c -l -d -s -r -h -V --namespace --container --image --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <POD> [CMD]..."
+            opts="-n -c -l -d -s -r -h -V --namespace --container --image --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <POD> [CMD]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2197,6 +2572,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -2261,7 +2640,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help__completions)
-            opts="bash fish zsh"
+            opts="bash elvish fish nushell zsh"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2288,7 +2667,35 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        stackablectl__help__completions__elvish)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         stackablectl__help__completions__fish)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__help__completions__nushell)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2485,7 +2892,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help__release)
-            opts="list describe install uninstall"
+            opts="list describe install uninstall upgrade"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2541,6 +2948,20 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__help__release__uninstall)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__help__release__upgrade)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
@@ -2653,7 +3074,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install uninstall installed help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list describe install uninstall installed help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2769,6 +3190,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -2777,7 +3202,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATOR>"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <OPERATOR>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2901,6 +3326,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -3007,7 +3436,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__install)
-            opts="-c -l -d -s -r -h -V --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
+            opts="-c -l -d -s -r -h -V --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <OPERATORS>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3151,6 +3580,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -3159,7 +3592,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__installed)
-            opts="-o -l -d -s -r -h -V --output --operator-ns --operator-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --operator-ns --operator-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3289,6 +3722,10 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -3299,7 +3736,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3423,6 +3860,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -3431,7 +3872,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__operator__uninstall)
-            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <OPERATORS>..."
+            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <OPERATORS>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3555,6 +3996,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -3563,7 +4008,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install uninstall help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list describe install uninstall upgrade help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3679,6 +4124,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -3687,7 +4136,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3811,6 +4260,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -3819,7 +4272,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__help)
-            opts="list describe install uninstall help"
+            opts="list describe install uninstall upgrade help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -3902,8 +4355,22 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        stackablectl__release__help__upgrade)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         stackablectl__release__install)
-            opts="-i -e -c -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-i -e -c -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4063,6 +4530,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4071,7 +4542,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4195,6 +4666,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4203,7 +4678,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__release__uninstall)
-            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <RELEASE>"
+            opts="-l -d -s -r -h -V --operator-ns --operator-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <RELEASE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4327,6 +4802,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4334,13 +4813,37 @@ _stackablectl() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
-        stackablectl__stack)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version list describe install help"
-            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+        stackablectl__release__upgrade)
+            opts="-i -e -l -d -s -r -h -V --include --exclude --operator-ns --operator-namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <RELEASE>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
+                --include)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -i)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --exclude)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -e)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --operator-namespace)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --operator-ns)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -4451,6 +4954,142 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        stackablectl__stack)
+            opts="-l -d -s -r -h -V --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version list describe install help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --log-level)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -l)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --demo-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -d)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --stack-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -s)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --release-file)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                -r)
+                    local oldifs
+                    if [ -n "${IFS+x}" ]; then
+                        oldifs="$IFS"
+                    fi
+                    IFS=$'\n'
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    if [ -n "${oldifs+x}" ]; then
+                        IFS="$oldifs"
+                    fi
+                    if [[ "${BASH_VERSINFO[0]}" -ge 4 ]]; then
+                        compopt -o filenames
+                    fi
+                    return 0
+                    ;;
+                --helm-repo-stable)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-test)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --helm-repo-dev)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4459,7 +5098,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__describe)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-o -l -d -s -r -h -V --output --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4473,6 +5112,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -4581,6 +5224,10 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -4661,7 +5308,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <STACK_NAME>"
+            opts="-c -n -l -d -s -r -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --namespace --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4703,7 +5350,7 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --product-namespace)
+                --namespace)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -4712,6 +5359,10 @@ _stackablectl() {
                     return 0
                     ;;
                 -n)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --release)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -4825,6 +5476,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4833,7 +5488,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__list)
-            opts="-o -l -d -s -r -h -V --output --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -l -d -s -r -h -V --output --release --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -4847,6 +5502,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -W "plain table json yaml" -- "${cur}"))
                     return 0
                     ;;
+                --release)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
                 --log-level)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
@@ -4957,6 +5616,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -4965,7 +5628,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet)
-            opts="-l -d -s -r -h -V --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version credentials list help"
+            opts="-l -d -s -r -h -V --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version credentials list help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5081,6 +5744,10 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
+                    return 0
+                    ;;
                 *)
                     COMPREPLY=()
                     ;;
@@ -5089,17 +5756,13 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet__credentials)
-            opts="-n -l -d -s -r -h -V --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version <PRODUCT_NAME> <STACKLET_NAME>"
+            opts="-n -l -d -s -r -h -V --namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version <PRODUCT_NAME> <STACKLET_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
             case "${prev}" in
-                --product-namespace)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                --product-ns)
+                --namespace)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -5215,6 +5878,10 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)
@@ -5281,7 +5948,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stacklet__list)
-            opts="-o -n -l -d -s -r -h -V --output --operator-ns --operator-namespace --product-ns --product-namespace --log-level --no-cache --offline --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --help --version"
+            opts="-o -n -l -d -s -r -h -V --output --operator-ns --operator-namespace --product-ns --namespace --log-level --no-cache --demo-file --stack-file --release-file --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --help --version"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -5303,7 +5970,7 @@ _stackablectl() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                --product-namespace)
+                --namespace)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -5423,6 +6090,10 @@ _stackablectl() {
                     ;;
                 --helm-repo-dev)
                     COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --chart-source)
+                    COMPREPLY=($(compgen -W "oci repo" -- "${cur}"))
                     return 0
                     ;;
                 *)

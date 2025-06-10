@@ -4,8 +4,8 @@ name: Pull Request General
 on: workflow_call
 
 env:
-  RUST_VERSION: 1.75.0
-  GO_VERSION: '^1.22.2'
+  RUST_VERSION: 1.85.0
+  GO_VERSION: '^1.22.5'
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -28,11 +28,11 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 18
           cache: yarn
@@ -42,7 +42,7 @@ jobs:
         with:
           key: udeps
           cache-all-crates: "true"
-      - run: cargo install --locked cargo-udeps@0.1.39
+      - run: cargo install --locked cargo-udeps@0.1.55
       - run: cargo udeps --workspace
 
   run_cargodeny:
@@ -59,65 +59,9 @@ jobs:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
-      - uses: EmbarkStudios/cargo-deny-action@a50c7d5f86370e02fae8472c398f15a36e517bb8 # v1.5.4
+      - uses: EmbarkStudios/cargo-deny-action@3f4a782664881cf5725d0ffd23969fcce89fd868 # v1.6.3
         with:
           command: check ${{ matrix.checks }}
-
-  run_rustfmt:
-    name: Run Rustfmt
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
-        with:
-          submodules: recursive
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-          components: rustfmt
-      - run: cargo fmt --all -- --check
-
-  run_clippy:
-    name: Run Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
-        with:
-          submodules: recursive
-
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-          components: clippy
-
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
-        with:
-          key: clippy
-
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
-        with:
-          node-version: 18
-          cache: yarn
-
-      - run: yarn install --frozen-lockfile
-      - name: Run clippy action to produce annotations
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        uses: giraffate/clippy-action@871cc4173f2594435c7ea6b0bce499cf6c2164a1
-        if: env.GITHUB_TOKEN != null
-        with:
-          clippy_flags: --all-targets -- -D warnings
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          reporter: "github-pr-check"
-
-      - name: Run clippy manually without annotations
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        if: env.GITHUB_TOKEN == null
-        run: cargo clippy --all-targets -- -D warnings
 
   run_rustdoc:
     name: Run RustDoc
@@ -132,15 +76,15 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           components: rustfmt
 
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+      - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2.7.3
         with:
           key: doc
 
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 18
           cache: yarn
@@ -159,15 +103,15 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
 
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+      - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2.7.3
         with:
           key: test
 
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 18
           cache: yarn
@@ -179,8 +123,6 @@ jobs:
     needs:
       - run_udeps
       - run_cargodeny
-      - run_clippy
-      - run_rustfmt
       - run_rustdoc
       - run_tests
     runs-on: ubuntu-latest

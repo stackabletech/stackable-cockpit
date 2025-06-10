@@ -1,16 +1,16 @@
 use clap::{Args, Subcommand};
 use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
+    presets::{NOTHING, UTF8_FULL},
 };
 use snafu::{ResultExt, Snafu};
-use tracing::{info, instrument};
-
 use stackable_cockpit::{
-    constants::DEFAULT_PRODUCT_NAMESPACE,
+    constants::DEFAULT_NAMESPACE,
     platform::stacklet::{self, get_credentials_for_product, list_stacklets},
-    utils::k8s::DisplayCondition,
+    utils::k8s::{self, Client, DisplayCondition},
 };
+use tracing::{Span, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::CommonNamespaceArgs,
@@ -47,11 +47,11 @@ pub struct StackletCredentialsArgs {
         long,
         short = 'n',
         global = true,
-        default_value = DEFAULT_PRODUCT_NAMESPACE,
-        visible_aliases(["product-ns"]),
+        default_value = DEFAULT_NAMESPACE,
+        aliases(["product-ns", "product-namespace"]),
         long_help = "Namespace in the cluster used to deploy the products. Use this to select
 a different namespace for credential lookup.")]
-    pub product_namespace: String,
+    pub namespace: String,
 }
 
 #[derive(Debug, Args)]
@@ -76,6 +76,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
+
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
 }
 
 impl StackletArgs {
@@ -87,14 +90,17 @@ impl StackletArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
+    Span::current().pb_set_message("Fetching stacklet information");
+
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
     // If the user wants to list stacklets from all namespaces, we use `None`.
     // `None` indicates that don't want to list stacklets scoped to only ONE
     // namespace.
-    let stacklets = list_stacklets(Some(&args.namespaces.product_namespace))
+    let stacklets = list_stacklets(&client, Some(&args.namespaces.namespace))
         .await
         .context(StackletListSnafu)?;
 
@@ -185,7 +191,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                 .with_output(format!(
                     "{table}{errors}",
                     errors = if !error_list.is_empty() {
-                        format!("\n\n{}", error_list.join("\n"))
+                        format!("\n\n{error_list}", error_list = error_list.join("\n"))
                     } else {
                         "".into()
                     }
@@ -198,12 +204,16 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
     }
 }
 
-#[instrument]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdError> {
     info!("Displaying stacklet credentials");
+    Span::current().pb_set_message("Fetching stacklet information");
+
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
     match get_credentials_for_product(
-        &args.product_namespace,
+        &client,
+        &args.namespace,
         &args.stacklet_name,
         &args.product_name,
     )
@@ -220,11 +230,13 @@ async fn credentials_cmd(args: &StackletCredentialsArgs) -> Result<String, CmdEr
                 .add_row(vec!["PASSWORD", &credentials.password]);
 
             let output = format!(
-                "Credentials for {} ({}) in namespace '{}':",
-                args.product_name, args.stacklet_name, args.product_namespace
+                "Credentials for {product_name} ({stacklet_name}) in namespace {namespace:?}:",
+                product_name = args.product_name,
+                stacklet_name = args.stacklet_name,
+                namespace = args.namespace
             );
 
-            Ok(format!("{}\n\n{}", output, table))
+            Ok(format!("{output}\n\n{table}"))
         }
         None => Ok("No credentials".into()),
     }
@@ -270,7 +282,7 @@ fn render_condition_error(
 ) -> Option<String> {
     if !is_good.unwrap_or(true) {
         let message = message.unwrap_or("-".into());
-        return Some(format!("[{}]: {}", error_index, message));
+        return Some(format!("[{error_index}]: {message}"));
     }
 
     None
@@ -284,7 +296,7 @@ fn color_condition(condition: &str, is_good: Option<bool>, error_index: usize) -
             if is_good {
                 condition.to_owned()
             } else {
-                format!("{}: See [{}]", condition, error_index)
+                format!("{condition}: See [{error_index}]")
             }
         }
         None => condition.to_owned(),
@@ -298,6 +310,6 @@ fn render_errors(errors: Vec<String>) -> Option<String> {
     } else if errors.len() == 1 {
         Some(errors[0].clone())
     } else {
-        Some(format!("{}\n---\n", errors.join("\n")))
+        Some(format!("{errors}\n---\n", errors = errors.join("\n")))
     }
 }

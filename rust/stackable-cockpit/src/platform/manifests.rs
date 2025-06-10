@@ -2,13 +2,15 @@ use std::collections::HashMap;
 
 use snafu::{ResultExt, Snafu};
 use stackable_operator::kvp::Labels;
-use tracing::{debug, info, instrument};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
+    PROGRESS_BAR_STYLE,
     common::manifest::ManifestSpec,
     helm,
     utils::{
-        k8s,
+        k8s::{self, Client},
         path::{IntoPathOrUrl, PathOrUrlParseError},
     },
     xfer::{
@@ -20,7 +22,7 @@ use crate::{
 #[derive(Debug, Snafu)]
 pub enum Error {
     /// This error indicates that parsing a string into a path or URL failed.
-    #[snafu(display("failed to parse '{path_or_url}' as path/url"))]
+    #[snafu(display("failed to parse {path_or_url:?} as path/url"))]
     ParsePathOrUrl {
         source: PathOrUrlParseError,
         path_or_url: String,
@@ -61,24 +63,34 @@ pub enum Error {
 }
 
 pub trait InstallManifestsExt {
-    // TODO (Techassi): This step shouldn't care about templating the manifests nor fecthing them from remote
-    #[instrument(skip_all)]
+    // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
+    #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
     #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
-        product_namespace: &str,
+        namespace: &str,
         labels: Labels,
+        client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
-        debug!("Installing demo / stack manifests");
+        debug!("Installing manifests");
 
-        let kube_client = k8s::Client::new().await.context(CreateKubeClientSnafu)?;
+        Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
+        Span::current().pb_set_length(manifests.len() as u64);
+
+        let mut parameters = parameters.clone();
+        // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
+        // fqdn service names [which contain the namespace].
+        parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
 
         for manifest in manifests {
+            let parameters = parameters.clone();
+            let labels = labels.clone();
+
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
-                    debug!("Installing manifest from Helm chart {}", helm_file);
+                    debug!(helm_file, "Installing manifest from Helm chart");
 
                     // Read Helm chart YAML and apply templating
                     let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
@@ -86,15 +98,13 @@ pub trait InstallManifestsExt {
                     })?;
 
                     let helm_chart: helm::Chart = transfer_client
-                        .get(&helm_file, &Template::new(parameters).then(Yaml::new()))
+                        .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
                         .await
                         .context(FileTransferSnafu)?;
 
-                    info!(
-                        "Installing Helm chart {} ({})",
-                        helm_chart.name, helm_chart.version
-                    );
+                    info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
 
+                    // Assumption: that all manifest helm charts refer to repos not registries
                     helm::add_repo(&helm_chart.repo.name, &helm_chart.repo.url).context(
                         AddHelmRepositorySnafu {
                             repo_name: helm_chart.repo.name.clone(),
@@ -106,15 +116,15 @@ pub trait InstallManifestsExt {
                         .context(SerializeOptionsSnafu)?;
 
                     // Install the Helm chart using the Helm wrapper
-                    helm::install_release_from_repo(
+                    helm::install_release_from_repo_or_registry(
                         &helm_chart.release_name,
                         helm::ChartVersion {
-                            repo_name: &helm_chart.repo.name,
+                            chart_source: &helm_chart.repo.name,
                             chart_name: &helm_chart.name,
                             chart_version: Some(&helm_chart.version),
                         },
                         Some(&values_yaml),
-                        product_namespace,
+                        namespace,
                         true,
                     )
                     .context(InstallHelmReleaseSnafu {
@@ -122,7 +132,7 @@ pub trait InstallManifestsExt {
                     })?;
                 }
                 ManifestSpec::PlainYaml(manifest_file) => {
-                    debug!("Installing YAML manifest from {}", manifest_file);
+                    debug!(manifest_file, "Installing YAML manifest");
 
                     // Read YAML manifest and apply templating
                     let path_or_url =
@@ -133,16 +143,18 @@ pub trait InstallManifestsExt {
                             })?;
 
                     let manifests = transfer_client
-                        .get(&path_or_url, &Template::new(parameters))
+                        .get(&path_or_url, &Template::new(&parameters))
                         .await
                         .context(FileTransferSnafu)?;
 
-                    kube_client
-                        .deploy_manifests(&manifests, product_namespace, labels.clone())
+                    client
+                        .deploy_manifests(&manifests, namespace, labels.clone())
                         .await
-                        .context(DeployManifestSnafu)?
+                        .context(DeployManifestSnafu)?;
                 }
             }
+
+            Span::current().pb_inc(1);
         }
 
         Ok(())

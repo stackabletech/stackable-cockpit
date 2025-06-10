@@ -189,7 +189,7 @@ impl Cache {
                 // back the new timestamp
                 if last_purged_at
                     .and_then(|ts| ts.elapsed().ok())
-                    .map_or(true, |elapsed| elapsed >= self.auto_purge_interval)
+                    .is_none_or(|elapsed| elapsed >= self.auto_purge_interval)
                 {
                     debug!("Auto-purging outdated cache files");
 

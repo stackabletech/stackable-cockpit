@@ -1,10 +1,10 @@
 .ie \n(.g .ds Aq \(aq
 .el .ds Aq '
-.TH stackablectl 1  "stackablectl 24.3.2" 
+.TH stackablectl 1  "stackablectl 1.0.0" 
 .SH NAME
 stackablectl \- Command line tool to interact with the Stackable Data Platform
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-\-offline\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-\-chart\-source\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 Command line tool to interact with the Stackable Data Platform
 .SH OPTIONS
@@ -17,9 +17,6 @@ Do not cache the remote (default) demo, stack and release files
 
 Cached files are saved at \*(Aq$XDG_CACHE_HOME/stackablectl\*(Aq, which is usually
 \*(Aq$HOME/.cache/stackablectl\*(Aq when not explicitly set.
-.TP
-\fB\-\-offline\fR
-Do not request any remote files via the network
 .TP
 \fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILE\fR
 Provide one or more additional (custom) demo file(s)
@@ -64,6 +61,19 @@ Provide a custom Helm test repository URL
 \fB\-\-helm\-repo\-dev\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-dev/]
 Provide a custom Helm dev repository URL
 .TP
+\fB\-\-chart\-source\fR=\fICHART_SOURCE\fR [default: oci]
+Source the charts from either a OCI registry or from index.yaml\-based repositories.
+.br
+
+.br
+\fIPossible values:\fR
+.RS 14
+.IP \(bu 2
+oci: OCI registry
+.IP \(bu 2
+repo: index.yaml\-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator\-specific
+.RE
+.TP
 \fB\-h\fR, \fB\-\-help\fR
 Print help (see a summary with \*(Aq\-h\*(Aq)
 .TP
@@ -98,6 +108,6 @@ EXPERIMENTAL: Launch a debug container for a Pod
 stackablectl\-help(1)
 Print this message or the help of the given subcommand(s)
 .SH VERSION
-v24.3.2
+v1.0.0
 .SH AUTHORS
 Stackable GmbH <info@stackable.tech>

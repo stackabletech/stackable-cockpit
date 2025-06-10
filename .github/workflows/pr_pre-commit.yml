@@ -1,0 +1,30 @@
+---
+name: pre-commit
+
+on:
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_TOOLCHAIN_VERSION: "nightly-2025-01-15"
+  HADOLINT_VERSION: "v1.17.6"
+  NIX_VERSION: "2.25.2"
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 18
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - uses: stackabletech/actions/run-pre-commit@5901c3b1455488820c4be367531e07c3c3e82538 # v0.4.0
+        with:
+          rust: ${{ env.RUST_TOOLCHAIN_VERSION }}
+          hadolint: ${{ env.HADOLINT_VERSION }}
+          nix: ${{ env.NIX_VERSION }}
+          nix-github-token: ${{ secrets.GITHUB_TOKEN }}

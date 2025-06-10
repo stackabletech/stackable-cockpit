@@ -5,7 +5,7 @@
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
-use std::ffi::{c_char, CStr, CString};
+use std::ffi::{CStr, CString, c_char};
 
 pub const HELM_ERROR_PREFIX: &str = "ERROR:";
 
@@ -56,6 +56,8 @@ pub fn uninstall_helm_release(
     }
 }
 
+// TODO (@NickLarsenNZ): Add tracing to helm-sys, maybe?
+// #[instrument]
 pub fn check_helm_release_exists(release_name: &str, namespace: &str) -> bool {
     let release_name = CString::new(release_name).unwrap();
     let namespace = CString::new(namespace).unwrap();
@@ -104,9 +106,9 @@ pub fn to_helm_error(result: &str) -> Option<String> {
 /// also makes sure, that the pointer (and underlying memory) of the Go string is
 /// freed. The pointer **cannot** be used afterwards.
 unsafe fn cstr_ptr_to_string(c: *mut c_char) -> String {
-    let cstr = CStr::from_ptr(c);
+    let cstr = unsafe { CStr::from_ptr(c) };
     let s = String::from_utf8_lossy(cstr.to_bytes()).to_string();
-    free_go_string(cstr.as_ptr() as *mut c_char);
+    unsafe { free_go_string(cstr.as_ptr() as *mut c_char) };
 
     s
 }

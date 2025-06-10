@@ -14,8 +14,8 @@ on:
       - "extra/**"
 
 env:
-  RUST_VERSION: 1.75.0
-  GO_VERSION: '^1.22.2'
+  RUST_VERSION: 1.85.0
+  GO_VERSION: '^1.22.5'
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -28,24 +28,19 @@ jobs:
     name: General Pull Request Checks
     uses: ./.github/workflows/pr_general.yml
 
-  reviewdog-checks:
-    name: Reviewdog Pull Request Checks
-    uses: ./.github/workflows/pr_reviewdog.yml
-
   build:
     name: Build stackablectl for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     needs:
       - general-checks
-      - reviewdog-checks
     strategy:
       fail-fast: false
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-latest
+            os: ubuntu-24.04
           - target: aarch64-unknown-linux-gnu
-            os: buildjet-4vcpu-ubuntu-2204-arm
+            os: ubuntu-24.04-arm
           - target: x86_64-apple-darwin
             os: macos-latest
           - target: aarch64-apple-darwin
@@ -61,11 +56,11 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           targets: ${{ matrix.target }}
 
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5
+      - uses: actions/setup-go@0a12ed9d6a96ab950c8f026ed9f722fe0da7ef32 # v5.0.2
         with:
           go-version: ${{ env.GO_VERSION }}
 
-      - uses: Swatinem/rust-cache@359a70e43a0bb8a13953b04a90f76428b4959bb6 # v2.2.0
+      - uses: Swatinem/rust-cache@23bce251a8cd2ffc3c1075eaa2367cf899916d84 # v2.7.3
         with:
           key: build-stackablectl-${{ matrix.target }}
 

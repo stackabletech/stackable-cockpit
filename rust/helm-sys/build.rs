@@ -13,10 +13,10 @@ enum Error {
     #[snafu(display("Failed to find env var"))]
     EnvVarNotFound { source: VarError },
 
-    #[snafu(display("Unsupported GOARCH: {arch}"))]
+    #[snafu(display("Unsupported GOARCH ({arch})"))]
     UnsupportedGoArch { arch: String },
 
-    #[snafu(display("Unsupported GOOS: {os}"))]
+    #[snafu(display("Unsupported GOOS ({os})"))]
     UnsupportedGoOs { os: String },
 }
 
@@ -55,7 +55,12 @@ fn main() {
 
     let bindings = bindgen::builder()
         .header(build_path.join("libgo-helm-wrapper.h").to_str().unwrap())
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .parse_callbacks(Box::new(
+            bindgen::CargoCallbacks::new()
+                // libgo-helm-wrapper.h will *always* just have been rebuilt here by the gobuild above
+                // (and, conversely, if the gobuild *has* been rebuilt then we'll already be rebuilding the crate anyway)
+                .rerun_on_header_files(false),
+        ))
         .generate()
         .expect("Failed to generate Rust bindings from Go header file");
 

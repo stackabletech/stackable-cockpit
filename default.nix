@@ -1,36 +1,16 @@
 { sources ? import ./nix/sources.nix # managed by https://github.com/nmattia/niv
 , nixpkgs ? sources.nixpkgs
 , pkgs ? import nixpkgs {
-  overlays = [
-    # gomod2nix must be imported as a nixpkgs overlay
-    (import (sources.gomod2nix+"/overlay.nix"))
-  ];
+    overlays = [
+      # gomod2nix must be imported as a nixpkgs overlay
+      (import (sources.gomod2nix+"/overlay.nix"))
+    ];
 }
-, meta ? pkgs.lib.importJSON ./nix/meta.json
-, dockerName ? "docker.stackable.tech/sandbox/${meta.operator.name}"
-, dockerTag ? null
-}:
-rec {
-  cargo = import ./Cargo.nix {
+, cargo ? import ./Cargo.nix {
     inherit nixpkgs pkgs; release = false;
     defaultCrateOverrides = pkgs.defaultCrateOverrides // {
-      prost-build = attrs: {
-        buildInputs = [ pkgs.protobuf ];
-      };
-      tonic-reflection = attrs: {
-        buildInputs = [ pkgs.rustfmt ];
-      };
-      stackable-secret-operator = attrs: {
-        buildInputs = [ pkgs.protobuf pkgs.rustfmt ];
-      };
-      krb5-sys = attrs: {
-        nativeBuildInputs = [ pkgs.pkg-config ];
-        buildInputs = [ (pkgs.enableDebugging pkgs.krb5) ];
-        LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
-        BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.glibc.dev}/include -I${pkgs.clang.cc.lib}/lib/clang/${pkgs.lib.getVersion pkgs.clang.cc}/include";
-      };
       stackable-cockpit-web = attrs: {
-        nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs ];
+        nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs_20 ];
         preConfigure =
           ''
             [[ ! -e node_modules ]] || rm -r node_modules
@@ -44,23 +24,56 @@ rec {
       };
       utoipa-swagger-ui = attrs: rec {
         # utoipa-swagger-ui tries to redownload swagger-ui, which is blocked by Nix's sandboxing
-        # so we download it instead, and put it where it expects to be cached
-        preConfigure =
-          let
-            swaggerUi = pkgs.fetchurl {
-              url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.3.zip";
-              hash = "sha256-zrb8feuuDzt/g6y7Tucfh+Y2BWZov0soyNPR5LBqKx4=";
-            };
-          in ''
-            mkdir -p target/build/utoipa-swagger-ui.out
-            ln -s "${swaggerUi}" target/build/utoipa-swagger-ui.out/swagger-ui.zip
-          '';
-        # Build script only supports fetching from HTTP, not file URLs
-        # Last path element decides the cache key, which we rely on above
-        SWAGGER_UI_DOWNLOAD_URL = "file:///invalid-path/swagger-ui.zip";
+        # so we download it instead, and tell it to use that
+        SWAGGER_UI_DOWNLOAD_URL = "file://${pkgs.fetchurl {
+          url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.3.zip";
+          hash = "sha256-zrb8feuuDzt/g6y7Tucfh+Y2BWZov0soyNPR5LBqKx4=";
+        }}";
       };
     };
-  };
+  }
+, meta ? pkgs.lib.importJSON ./nix/meta.json
+, dockerName ? "oci.stackable.tech/sandbox/${meta.operator.name}"
+, dockerTag ? null
+, web ? js2nix.buildEnv {
+    # js2nix doesn't import peer dependencies, so we use overlays to patch them in explicitly
+    # https://github.com/canva-public/js2nix/blob/d37912f6cc824e7f41bea7a481af1739ca195c8f/docs/usage.md#overriding
+    package-json = ./web/package.json;
+    yarn-lock = ./yarn.lock;
+    overlays = [
+      (self: super: {
+        # TODO: remove once this https://github.com/canva-public/js2nix/issues/20 is resolved
+        buildNodeModule = pkgs.lib.makeOverridable
+          (args: (super.buildNodeModule args).override { doCheck = false; });
+      })
+    ];
+  }
+, goHelmWrapper ? pkgs.buildGoApplication {
+    pname = "go-helm-wrapper";
+    version = "0.0";
+    src = pkgs.runCommand "go-helm-wrapper-src" {}
+      ''
+        mkdir $out
+        cp ${./go.mod} $out/go.mod
+        cp ${./go.sum} $out/go.sum
+        cp -r ${./rust/helm-sys/go-helm-wrapper} $out/go-helm-wrapper
+      '';
+    pwd = ./rust/helm-sys/go-helm-wrapper;
+    modules = ./gomod2nix.toml;
+    ldflags = "-buildmode c-archive";
+    allowGoReference = true;
+    postBuild =
+      ''
+        for pkg in $(getGoDirs ""); do
+          buildFlags="-buildmode c-archive -o $GOPATH/bin/libgo-helm-wrapper.a" buildGoDir build "$pkg"
+        done
+      '';
+  }
+, js2nix ? pkgs.callPackage sources.js2nix { nodejs = pkgs.nodejs_20; }
+, gomod2nix ? pkgs.callPackage sources.gomod2nix {}
+}:
+rec {
+  inherit cargo sources pkgs meta;
   build = cargo.workspaceMembers.stackable-cockpitd.build.override {
     features = [ "ui" ];
   };
@@ -117,45 +130,9 @@ rec {
 
   # need to use vendored crate2nix because of https://github.com/kolloch/crate2nix/issues/264
   crate2nix = import sources.crate2nix {};
-  js2nix = pkgs.callPackage sources.js2nix { nodejs = pkgs.nodejs-18_x; };
-  gomod2nix = pkgs.callPackage sources.gomod2nix {};
   tilt = pkgs.tilt;
 
-  web = js2nix.buildEnv {
-    # js2nix doesn't import peer dependencies, so we use overlays to patch them in explicitly
-    # https://github.com/canva-public/js2nix/blob/d37912f6cc824e7f41bea7a481af1739ca195c8f/docs/usage.md#overriding
-    package-json = ./web/package.json;
-    yarn-lock = ./yarn.lock;
-    overlays = [
-      (self: super: {
-        # TODO: remove once this https://github.com/canva-public/js2nix/issues/20 is resolved
-        buildNodeModule = pkgs.lib.makeOverridable
-          (args: (super.buildNodeModule args).override { doCheck = false; });
-      })
-    ];
-  };
 
-  goHelmWrapper = pkgs.buildGoApplication {
-    pname = "go-helm-wrapper";
-    version = "0.0";
-    src = pkgs.runCommand "go-helm-wrapper-src" {}
-      ''
-        mkdir $out
-        cp ${./go.mod} $out/go.mod
-        cp ${./go.sum} $out/go.sum
-        cp -r ${./rust/helm-sys/go-helm-wrapper} $out/go-helm-wrapper
-      '';
-    pwd = ./rust/helm-sys/go-helm-wrapper;
-    modules = ./gomod2nix.toml;
-    ldflags = "-buildmode c-archive";
-    allowGoReference = true;
-    postBuild =
-      ''
-        for pkg in $(getGoDirs ""); do
-          buildFlags="-buildmode c-archive -o $GOPATH/bin/libgo-helm-wrapper.a" buildGoDir build "$pkg"
-        done
-      '';
-  };
 
   regenerateNixLockfiles = pkgs.writeScriptBin "regenerate-nix-lockfiles"
     ''

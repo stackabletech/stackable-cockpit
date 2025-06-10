@@ -1,16 +1,16 @@
 use std::{
     io::{Read, Stdin},
     os::fd::AsRawFd,
-    task::{ready, Poll},
+    task::{Poll, ready},
 };
 
 use clap::Args;
 use futures::{
-    channel::mpsc::{self, Sender},
     FutureExt, SinkExt, TryFutureExt,
+    channel::mpsc::{self, Sender},
 };
 use rand::Rng;
-use snafu::{futures::TryFutureExt as _, OptionExt, ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu, futures::TryFutureExt as _};
 use stackable_operator::{
     builder::pod::security::SecurityContextBuilder,
     k8s_openapi::api::core::v1::{ContainerStatus, EphemeralContainer, Pod, PodSpec},
@@ -22,10 +22,10 @@ use stackable_operator::{
 };
 use termion::{raw::IntoRawMode, terminal_size};
 use tokio::{
-    io::{unix::AsyncFd, AsyncRead},
+    io::{AsyncRead, unix::AsyncFd},
     signal::unix::SignalKind,
 };
-use tracing::{error, info, info_span, warn, Instrument};
+use tracing::{Instrument, error, info, info_span, warn};
 
 use crate::cli::Cli;
 
@@ -313,7 +313,9 @@ impl AsyncStdin {
                 return Err(std::io::Error::last_os_error()).context(AsyncifyStdinSnafu);
             }
             if old_flags & libc::O_NONBLOCK != 0 {
-                warn!("stdin is already non-blocking (did you try to create multiple AsyncStdin instances?)");
+                warn!(
+                    "stdin is already non-blocking (did you try to create multiple AsyncStdin instances?)"
+                );
             }
             let status = unsafe {
                 libc::fcntl(
@@ -338,8 +340,8 @@ impl Drop for AsyncStdin {
         let status = unsafe { libc::fcntl(self.fd.as_raw_fd(), libc::F_SETFL, self.old_flags) };
         if status == -1 {
             panic!(
-                "unable to revert stdin flags: {}",
-                std::io::Error::last_os_error()
+                "unable to revert stdin flags: {error}",
+                error = std::io::Error::last_os_error()
             );
         }
     }
@@ -353,11 +355,14 @@ impl AsyncRead for AsyncStdin {
     ) -> Poll<std::io::Result<()>> {
         loop {
             let mut ready = ready!(self.fd.poll_read_ready_mut(cx)?);
-            break match ready.try_io(|r| {
+
+            let io = ready.try_io(|r| {
                 let read = r.get_mut().read(buf.initialize_unfilled())?;
                 buf.advance(read);
                 Ok(())
-            }) {
+            });
+
+            break match io {
                 Ok(res) => Poll::Ready(res),
                 Err(_would_block) => {
                     // Try to poll again, so that we re-register the waker

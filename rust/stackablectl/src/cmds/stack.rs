@@ -1,22 +1,26 @@
 use clap::{Args, Subcommand};
 use comfy_table::{
-    presets::{NOTHING, UTF8_FULL},
     ContentArrangement, Table,
+    presets::{NOTHING, UTF8_FULL},
 };
-use snafu::{ResultExt, Snafu};
-use stackable_operator::kvp::{LabelError, Labels};
-use tracing::{debug, info, instrument};
-
+use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
-    constants::{DEFAULT_OPERATOR_NAMESPACE, DEFAULT_PRODUCT_NAMESPACE},
+    constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE},
     platform::{
+        operator::ChartSourceType,
         release,
         stack::{self, StackInstallParameters},
     },
-    utils::path::PathOrUrlParseError,
-    xfer::{cache::Cache, Client},
+    utils::{
+        k8s::{self, Client},
+        path::PathOrUrlParseError,
+    },
+    xfer::{self, cache::Cache},
 };
+use stackable_operator::kvp::{LabelError, Labels};
+use tracing::{Span, debug, info, instrument};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -27,6 +31,10 @@ use crate::{
 pub struct StackArgs {
     #[command(subcommand)]
     subcommand: StackCommands,
+
+    /// Target a specific Stackable release
+    #[arg(long, global = true)]
+    release: Option<String>,
 }
 
 #[derive(Debug, Subcommand)]
@@ -113,6 +121,12 @@ pub enum CmdError {
     #[snafu(display("failed to serialize JSON output"))]
     SerializeJsonOutput { source: serde_json::Error },
 
+    #[snafu(display("no release {release:?}"))]
+    NoSuchRelease { release: String },
+
+    #[snafu(display("failed to get latest release"))]
+    LatestRelease,
+
     #[snafu(display("failed to build stack/release list"))]
     BuildList { source: list::Error },
 
@@ -127,14 +141,43 @@ pub enum CmdError {
 
     #[snafu(display("failed to build labels for stack resources"))]
     BuildLabels { source: LabelError },
+
+    #[snafu(display("failed to create Kubernetes client"))]
+    KubeClientCreate { source: k8s::Error },
 }
 
 impl StackArgs {
     pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
         debug!("Handle stack args");
 
-        let transfer_client = Client::new_with(cache);
-        let files = cli.get_stack_files().context(PathOrUrlParseSnafu)?;
+        let transfer_client = xfer::Client::new_with(cache);
+
+        let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+        let release_list = release::ReleaseList::build(&release_files, &transfer_client)
+            .await
+            .context(BuildListSnafu)?;
+
+        let release_branch = match &self.release {
+            Some(release) => {
+                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
+                    release
+                });
+
+                if release == "dev" {
+                    "main".to_string()
+                } else {
+                    format!("release-{release}")
+                }
+            }
+            None => {
+                let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
+                format!("release-{release}", release = release_name,)
+            }
+        };
+
+        let files = cli
+            .get_stack_files(&release_branch)
+            .context(PathOrUrlParseSnafu)?;
         let stack_list = stack::StackList::build(&files, &transfer_client)
             .await
             .context(BuildListSnafu)?;
@@ -149,13 +192,14 @@ impl StackArgs {
     }
 }
 
-#[instrument]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn list_cmd(
     args: &StackListArgs,
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
     info!("Listing stacks");
+    Span::current().pb_set_message("Fetching stack information");
 
     match args.output_type {
         OutputType::Plain | OutputType::Table => {
@@ -170,7 +214,7 @@ fn list_cmd(
                 .set_content_arrangement(arrangement)
                 .load_preset(preset);
 
-            for (index, (stack_name, stack)) in stack_list.inner().iter().enumerate() {
+            for (index, (stack_name, stack)) in stack_list.iter().enumerate() {
                 table.add_row(vec![
                     (index + 1).to_string(),
                     stack_name.clone(),
@@ -199,13 +243,14 @@ fn list_cmd(
     }
 }
 
-#[instrument]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn describe_cmd(
     args: &StackDescribeArgs,
     cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
-    info!("Describing stack {}", args.stack_name);
+    info!(stack_name = %args.stack_name, "Describing stack");
+    Span::current().pb_set_message("Fetching stack information");
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => match args.output_type {
@@ -246,7 +291,10 @@ fn describe_cmd(
 
                 result
                     .with_command_hint(
-                        format!("stackablectl stack install {}", args.stack_name),
+                        format!(
+                            "stackablectl stack install {stack_name}",
+                            stack_name = args.stack_name
+                        ),
                         "install the stack",
                     )
                     .with_command_hint("stackablectl stack list", "list all available stacks")
@@ -261,14 +309,15 @@ fn describe_cmd(
     }
 }
 
-#[instrument(skip(cli, stack_list, transfer_client))]
+#[instrument(skip(cli, stack_list, transfer_client), fields(indicatif.pb_show = true))]
 async fn install_cmd(
     args: &StackInstallArgs,
     cli: &Cli,
     stack_list: stack::StackList,
-    transfer_client: &Client,
+    transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
-    info!("Installing stack {}", args.stack_name);
+    info!(stack_name = %args.stack_name, "Installing stack");
+    Span::current().pb_set_message("Installing stack");
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)
@@ -285,6 +334,8 @@ async fn install_cmd(
                 .await
                 .context(InstallClusterSnafu)?;
 
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
             // Construct labels which get attached to all dynamic objects which
             // are part of the stack.
             let labels = Labels::try_from([
@@ -296,27 +347,28 @@ async fn install_cmd(
 
             let install_parameters = StackInstallParameters {
                 operator_namespace: args.namespaces.operator_namespace.clone(),
-                product_namespace: args.namespaces.product_namespace.clone(),
+                stack_namespace: args.namespaces.namespace.clone(),
                 stack_name: args.stack_name.clone(),
                 parameters: args.parameters.clone(),
                 skip_release: args.skip_release,
                 demo_name: None,
                 labels,
+                chart_source: ChartSourceType::from(cli.chart_type()),
             };
 
             stack_spec
-                .install(release_list, install_parameters, transfer_client)
+                .install(release_list, install_parameters, &client, transfer_client)
                 .await
                 .context(InstallStackSnafu {
                     stack_name: args.stack_name.clone(),
                 })?;
 
             let operator_cmd = format!(
-                "stackablectl operator installed{}",
-                if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
+                "stackablectl operator installed{option}",
+                option = if args.namespaces.operator_namespace != DEFAULT_OPERATOR_NAMESPACE {
                     format!(
-                        " --operator-namespace {}",
-                        args.namespaces.operator_namespace
+                        " --operator-namespace {namespace}",
+                        namespace = args.namespaces.operator_namespace
                     )
                 } else {
                     "".into()
@@ -324,9 +376,12 @@ async fn install_cmd(
             );
 
             let stacklet_cmd = format!(
-                "stackablectl stacklet list{}",
-                if args.namespaces.product_namespace != DEFAULT_PRODUCT_NAMESPACE {
-                    format!(" --product-namespace {}", args.namespaces.product_namespace)
+                "stackablectl stacklet list{option}",
+                option = if args.namespaces.namespace != DEFAULT_NAMESPACE {
+                    format!(
+                        " --namespace {namespace}",
+                        namespace = args.namespaces.namespace
+                    )
                 } else {
                     "".into()
                 }
@@ -335,7 +390,10 @@ async fn install_cmd(
             output
                 .with_command_hint(operator_cmd, "display the installed operators")
                 .with_command_hint(stacklet_cmd, "display the installed stacklets")
-                .with_output(format!("Installed stack '{}'", args.stack_name));
+                .with_output(format!(
+                    "Installed stack {stack_name:?}",
+                    stack_name = args.stack_name
+                ));
 
             Ok(output.render())
         }

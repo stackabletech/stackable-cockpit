@@ -15,6 +15,7 @@ mod readme;
 #[derive(clap::Parser)]
 #[allow(clippy::enum_variant_names)]
 enum XtaskCommand {
+    GenAll,
     GenMan,
     GenComp,
     GenOpenapi,
@@ -49,6 +50,14 @@ enum TaskError {
 #[snafu::report]
 fn main() -> Result<(), TaskError> {
     match XtaskCommand::parse() {
+        XtaskCommand::GenAll => {
+            // IMPORTANT (@NickLarsenNZ): ensure all commands defined below are also in here.
+            man::generate()?;
+            completions::generate()?;
+            openapi::generate()?;
+            readme::generate()?;
+            docs::generate()?;
+        }
         XtaskCommand::GenMan => man::generate()?,
         XtaskCommand::GenComp => completions::generate()?,
         XtaskCommand::GenOpenapi => openapi::generate()?,

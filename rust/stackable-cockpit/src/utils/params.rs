@@ -5,8 +5,7 @@ use std::{
 };
 
 use serde::{Deserialize, Serialize};
-use snafu::{ensure, ResultExt, Snafu};
-
+use snafu::{ResultExt, Snafu, ensure};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -35,7 +34,7 @@ pub enum IntoParametersError {
     #[snafu(display("failed to parse raw parameter"))]
     RawParse { source: RawParameterParseError },
 
-    #[snafu(display("invalid parameter '{parameter}', expected one of {expected}"))]
+    #[snafu(display("invalid parameter {parameter:?}, expected one of {expected:?}"))]
     InvalidParameter { parameter: String, expected: String },
 }
 
@@ -107,7 +106,7 @@ pub enum RawParameterParseError {
 
 impl Display for RawParameter {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}={}", self.name, self.value)
+        write!(f, "{name}={value}", name = self.name, value = self.value)
     }
 }
 
@@ -282,23 +281,17 @@ mod test {
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(
-                    p.unwrap(),
-                    &RawParameter {
-                        name: "param1".into(),
-                        value: "value1".into()
-                    }
-                );
+                assert_eq!(p.unwrap(), &RawParameter {
+                    name: "param1".into(),
+                    value: "value1".into()
+                });
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(
-                    p.unwrap(),
-                    &RawParameter {
-                        name: "param2".into(),
-                        value: "value2".into()
-                    }
-                );
+                assert_eq!(p.unwrap(), &RawParameter {
+                    name: "param2".into(),
+                    value: "value2".into()
+                });
 
                 let p = iter.next();
                 assert!(p.is_none());
@@ -316,23 +309,17 @@ mod test {
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(
-                    p.unwrap(),
-                    &RawParameter {
-                        name: "param1".into(),
-                        value: "value1".into()
-                    }
-                );
+                assert_eq!(p.unwrap(), &RawParameter {
+                    name: "param1".into(),
+                    value: "value1".into()
+                });
 
                 let p = iter.next();
                 assert!(p.is_some());
-                assert_eq!(
-                    p.unwrap(),
-                    &RawParameter {
-                        name: "param2".into(),
-                        value: "value2".into()
-                    }
-                );
+                assert_eq!(p.unwrap(), &RawParameter {
+                    name: "param2".into(),
+                    value: "value2".into()
+                });
 
                 let p = iter.next();
                 assert!(p.is_none());
@@ -356,7 +343,7 @@ mod test {
             Ok(validated) => {
                 assert_eq!(validated.len(), 1);
 
-                if let Some(value) = validated.get(&"param1".to_string()) {
+                if let Some(value) = validated.get("param1") {
                     assert_eq!(*value, "value1".to_string());
                     return;
                 }
@@ -380,13 +367,10 @@ mod test {
 
         match input.into_params(valid_parameters) {
             Ok(validated) => panic!("SHOULD FAIL: {validated:?}"),
-            Err(err) => assert_eq!(
-                err,
-                IntoParametersError::InvalidParameter {
-                    parameter: "param2".into(),
-                    expected: "param1".into()
-                }
-            ),
+            Err(err) => assert_eq!(err, IntoParametersError::InvalidParameter {
+                parameter: "param2".into(),
+                expected: "param1".into()
+            }),
         }
     }
 }

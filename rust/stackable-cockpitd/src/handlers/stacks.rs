@@ -1,4 +1,4 @@
-use axum::{extract::Path, routing::get, Json, Router};
+use axum::{Json, Router, extract::Path, routing::get};
 use stackable_cockpit::platform::stack::StackSpec;
 
 /// Creates the stack sub-router.

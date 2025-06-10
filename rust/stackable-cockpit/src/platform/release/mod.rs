@@ -15,12 +15,9 @@ pub struct Releases {
 }
 
 impl SpecIter<ReleaseSpec> for Releases {
-    fn inner(&self) -> &IndexMap<String, ReleaseSpec> {
-        &self.releases
+    fn inner(self) -> IndexMap<String, ReleaseSpec> {
+        self.releases
     }
 }
 
 pub type ReleaseList = crate::common::list::List<Releases, ReleaseSpec>;
-
-#[derive(Default)]
-pub struct Release {}

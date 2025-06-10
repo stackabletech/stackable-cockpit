@@ -11,9 +11,6 @@ const DOCS_BASE_PATH: &str = "docs/modules/stackablectl/partials/commands";
 
 #[derive(Debug, Snafu)]
 pub enum GenDocsError {
-    #[snafu(display("No such subcommand: {name}"))]
-    NoSuchSubcommand { name: String },
-
     #[snafu(display("io error"))]
     Io { source: std::io::Error },
 
@@ -46,8 +43,8 @@ pub fn generate() -> Result<(), GenDocsError> {
             .unwrap()
             .join(DOCS_BASE_PATH)
             .join(format!(
-                "{}.adoc",
-                if cmd.get_name() == cli.get_name() {
+                "{name}.adoc",
+                name = if cmd.get_name() == cli.get_name() {
                     "index"
                 } else {
                     cmd.get_name()

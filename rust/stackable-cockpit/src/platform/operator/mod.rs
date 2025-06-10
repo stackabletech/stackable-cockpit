@@ -1,11 +1,15 @@
 use std::{fmt::Display, str::FromStr};
 
 use semver::Version;
-use snafu::{ensure, ResultExt, Snafu};
-use tracing::{info, instrument};
+use serde::Serialize;
+use snafu::{ResultExt, Snafu, ensure};
+use tracing::{Span, info, instrument};
+use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 
 use crate::{
-    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    constants::{
+        HELM_OCI_REGISTRY, HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+    },
     helm,
     utils::operator_chart_name,
 };
@@ -43,7 +47,7 @@ pub enum SpecParseError {
     #[snafu(display("empty operator spec input"))]
     EmptyInput,
 
-    #[snafu(display("invalid operator name: '{name}'"))]
+    #[snafu(display("invalid operator name {name:?}"))]
     InvalidName { name: String },
 }
 
@@ -60,9 +64,9 @@ impl Display for OperatorSpec {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}{}",
-            self.name,
-            match &self.version {
+            "{name}{version_selector}",
+            name = self.name,
+            version_selector = match &self.version {
                 Some(v) => format!("={v}"),
                 None => "".into(),
             }
@@ -88,10 +92,9 @@ impl FromStr for OperatorSpec {
         ensure!(len <= 2, InvalidEqualSignCountSnafu);
 
         // Check if the provided operator name is in the list of valid operators
-        ensure!(
-            VALID_OPERATORS.contains(&parts[0]),
-            InvalidNameSnafu { name: parts[0] }
-        );
+        ensure!(VALID_OPERATORS.contains(&parts[0]), InvalidNameSnafu {
+            name: parts[0]
+        });
 
         // If there is only one part, the input didn't include
         // the optional version identifier
@@ -175,21 +178,41 @@ impl OperatorSpec {
     }
 
     /// Installs the operator using Helm.
-    #[instrument(skip_all)]
-    pub fn install(&self, namespace: &str) -> Result<(), helm::Error> {
-        info!("Installing operator {}", self);
+    #[instrument(skip_all, fields(
+        %namespace,
+        name = %self.name,
+        // NOTE (@NickLarsenNZ): Option doesn't impl Display, so we need to call
+        // display for the inner type if it exists. Otherwise we gte the Debug
+        // impl for the whole Option.
+        version = self.version.as_ref().map(tracing::field::display),
+        indicatif.pb_show = true
+    ))]
+    pub fn install(
+        &self,
+        namespace: &str,
+        chart_source: &ChartSourceType,
+    ) -> Result<(), helm::Error> {
+        info!(operator = %self, "Installing operator");
+        Span::current()
+            .pb_set_message(format!("Installing {name}-operator", name = self.name).as_str());
 
         let version = self.version.as_ref().map(|v| v.to_string());
-        let helm_repo = self.helm_repo_name();
         let helm_name = self.helm_name();
 
+        // we can't resolve this any earlier as, for the repository case,
+        // this will be dependent on the operator version.
+        let chart_source = match chart_source {
+            ChartSourceType::OCI => HELM_OCI_REGISTRY.to_string(),
+            ChartSourceType::Repo => self.helm_repo_name(),
+        };
+
         // Install using Helm
-        helm::install_release_from_repo(
+        helm::install_release_from_repo_or_registry(
             &helm_name,
             helm::ChartVersion {
                 chart_version: version.as_deref(),
                 chart_name: &helm_name,
-                repo_name: &helm_repo,
+                chart_source: &chart_source,
             },
             None,
             namespace,
@@ -200,19 +223,29 @@ impl OperatorSpec {
     }
 
     /// Uninstalls the operator using Helm.
-    #[instrument]
+    #[instrument(skip_all, fields(%namespace))]
     pub fn uninstall<T>(&self, namespace: T) -> Result<(), helm::Error>
     where
-        T: AsRef<str> + std::fmt::Debug,
+        T: AsRef<str> + std::fmt::Display + std::fmt::Debug,
     {
         match helm::uninstall_release(&self.helm_name(), namespace.as_ref(), true) {
             Ok(status) => {
-                println!("{status}");
+                indicatif_println!("{status}");
                 Ok(())
             }
             Err(err) => Err(err),
         }
     }
+}
+
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum ChartSourceType {
+    /// OCI registry
+    OCI,
+
+    /// index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus may be operator-specific
+    Repo,
 }
 
 #[cfg(test)]

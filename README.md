@@ -65,7 +65,7 @@ hooks are:
 - [`yamllint`](https://github.com/adrienverge/yamllint): Runs linting on all YAML files
 - [`markdownlint`](https://github.com/igorshubovych/markdownlint-cli): Runs linting on all Markdown files
 - [`prettier`](https://github.com/pre-commit/mirrors-prettier): Runs prettier on files located in `web`
-- `cargo clippy -- -D warnings`: Runs Clippy on all files and errors on warnings
+- `cargo clippy --all-targets --all-features -- -D warnings`: Runs Clippy on all files and errors on warnings
 - `cargo fmt -- --check`: Checks if Rust code needs formatting
 - `cargo xtask gen-comp`: Runs shell completions generation for `stackablectl`
 - `cargo xtask gen-man`: Runs man page generation for `stackablectl`
@@ -77,4 +77,3 @@ hooks are:
 [pre-commit]: https://pre-commit.com/
 [web-readme]: ./web/README.md
 [lib-readme]: ./rust/stackable-cockpit/README.md
-[xtasks]: ./xtask/src/main.rs

@@ -1,70 +1,109 @@
 = Installation
 :page-aliases: stable@stackablectl::installation.adoc
 
-:latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-24.3.2
+:latest-release: https://github.com/stackabletech/stackable-cockpit/releases/tag/stackablectl-25.3.0
 :fish-comp-loations: https://fishshell.com/docs/current/completions.html#where-to-put-completions
+:nushell-comp-locations: https://www.nushell.sh/book/custom_commands.html#persisting
 
 == Using Pre-Compiled Binaries
 
-Stackable provides pre-compiled binaries of stackablectl, which should work on most environments such as Windows, macOS,
-and Linux distributions like Ubuntu and Arch. You can also build the binary from source. More information about the
-manual building steps can be found in xref:#building-from-source[this] section.
+Stackable provides pre-compiled binaries of stackablectl, which should work on most environments such as Windows, macOS, and Linux distributions like Ubuntu and Arch.
+You can also build the binary from source.
+More information about the manual building steps can be found in xref:#building-from-source[this] section.
 
 [tabs]
 ====
 Linux::
 +
 --
-Download the `stackablectl-x86_64-unknown-linux-gnu` binary file from the link:{latest-release}[latest release], then
-rename the file to `stackablectl`. You can also use the following command:
+Download the appropriate binary file for your architecture from the link:{latest-release}[latest release], then rename the file to `stackablectl`.
+You can also use the following command:
+
+*x86_64* (amd64):
 
 [source,console]
 ----
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-x86_64-unknown-linux-gnu
-# or
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-aarch64-unknown-linux-gnu
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-25.3.0/stackablectl-x86_64-unknown-linux-gnu
 ----
 
-Mark the binary as executable:
+**aarch64** (arm64):
 
 [source,console]
 ----
-$ chmod +x stackablectl
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-25.3.0/stackablectl-aarch64-unknown-linux-gnu
 ----
 
-Then, make sure it is present in your `$PATH`, like `/usr/local/bin`.
+Install the binary into a directory in the `$PATH`, and make it executable:
+
+NOTE: If you have a directory in your `$HOME` for user binaries, you can remove `sudo`, and change the directory to that.
+
+[source,console]
+----
+$ sudo install -m 755 -t /usr/local/bin stackablectl
+----
+
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
 --
 
 macOS::
 +
 --
-Download the `stackablectl-x86_64-apple-darwin` binary file for Intel-based devices or the
-`stackablectl-aarch64-apple-darwin` binary file for ARM-based devices from the link:{latest-release}[latest release],
-then rename the file to `stackablectl`. You can also use the following command:
+Download the appropriate binary file for your architecture from the link:{latest-release}[latest release], then rename the file to `stackablectl`.
+You can also use the following command:
+
+*x86_64* (amd64):
 
 [source,console]
 ----
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-x86_64-apple-darwin
-# or
-$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-24.3.2/stackablectl-aarch64-apple-darwin
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-25.3.0/stackablectl-x86_64-apple-darwin
 ----
 
-Mark the binary as executable:
+**aarch64** (arm64):
 
 [source,console]
 ----
-$ chmod +x stackablectl
+$ curl -L -o stackablectl https://github.com/stackabletech/stackable-cockpit/releases/download/stackablectl-25.3.0/stackablectl-aarch64-apple-darwin
 ----
 
+Install the binary into a directory in the `$PATH`, and make it executable:
+
+NOTE: If you have a directory in your `$HOME` for user binaries, you can remove `sudo`, and change the directory to that.
+
+[source,console]
+----
+$ sudo install -m 755 stackablectl /usr/local/bin
+----
+
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
+
+[TIP]
+======
 If macOS denies the execution of `stackablectl` go to Settings -> Security & Privacy -> General. Here you will see a pop
 up asking if you want to allow access for `stackablectl`. You must allow access.
+======
 --
 
 Windows::
 +
 --
-Currently, there are no pre-built binaries available for Windows. Please refer to xref:#building-from-source[this]
-section to learn how to build the binary from source.
+Currently, there are no pre-built binaries available for Windows.
+At the time of writing, compiling `stackablectl` on Windows was impossible due to upstream bugs.
+While it may have become possible since then, it'll still provide significant challenges due to high technical complexity
+related to FFI, cgo and Windows-specific issues.
+
+For Windows users, WSL will probably be the best option for using `stackablectl`.
+
+If you do want to attempt compiling for Windows, please refer to xref:#building-from-source[this] section - and if you are successful, by all means, give us a shout and we will reward you handsomely!
 --
 ====
 
@@ -93,12 +132,19 @@ access it from anywhere if you like:
 $ cp target/release/stackablectl /usr/local/bin
 ----
 
+Test that it works:
+
+[source,console]
+----
+$ stackablectl --version
+----
+
 [#shell-comps]
 == Shell Completions
 
-We provide completions for `stackablectl` for major shells out there. Currently, ZSH, Fish and Bash are supported. The
-repository provides pre-generated completion files. These can be downloaded and copied to the appropriate location on
-your system.
+We provide completions for `stackablectl` for major shells out there. Currently, ZSH, Fish, Bash, Nushell, and Elvish are supported.
+The repository provides pre-generated completion files.
+These can be downloaded and copied to the appropriate location on your system.
 
 [tabs]
 ====
@@ -109,7 +155,7 @@ Download the completions file and place it in `/usr/local/share/zsh/site-functio
 
 [source,console]
 ----
-$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/_stackablectl
 $ mv _stackablectl /usr/local/share/zsh/site-functions/
 ----
 --
@@ -121,7 +167,7 @@ Download the completions file and place it in any of the supported location list
 
 [source,console]
 ----
-$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.fish
 ----
 --
 
@@ -132,8 +178,28 @@ Download the completions file and place it in `/etc/bash_completion.d/` to load 
 
 [source,console]
 ----
-$ wget https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.bash
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.bash
 $ mv stackablectl.bash /etc/bash_completion.d/
+----
+--
+
+Nushell::
++
+--
+Download the completions file at a location where it is loaded for all Nushell sessions, see {nushell-comp-locations}[here].
+
+[source,console]
+----
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.nu
+----
+--
+
+Elvish::
++
+--
+[source,console]
+----
+$ curl -LO https://raw.githubusercontent.com/stackabletech/stackable-cockpit/main/extra/completions/stackablectl.elv
 ----
 --
 ====

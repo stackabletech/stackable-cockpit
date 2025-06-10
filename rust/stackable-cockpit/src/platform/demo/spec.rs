@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
-use tracing::{debug, info, instrument, warn};
-
+use tracing::{Span, debug, info, instrument, warn};
+use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -14,10 +14,13 @@ use crate::{
         release::ReleaseList,
         stack::{self, StackInstallParameters, StackList},
     },
-    utils::params::{
-        IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+    utils::{
+        k8s::Client,
+        params::{
+            IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
+        },
     },
-    xfer::{self, Client},
+    xfer,
 };
 
 pub type RawDemoParameterParseError = RawParameterParseError;
@@ -26,13 +29,13 @@ pub type DemoParameter = Parameter;
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("no stack named '{name}'"))]
+    #[snafu(display("no stack named {name:?}"))]
     NoSuchStack { name: String },
 
     #[snafu(display("demo resource requests error"), context(false))]
     DemoResourceRequests { source: ResourceRequestsError },
 
-    #[snafu(display("cannot install demo in namespace '{requested}', only '{}' supported", supported.join(", ")))]
+    #[snafu(display("cannot install demo in namespace {requested:?}, only {supported:?} supported", supported = supported.join(", ")))]
     UnsupportedNamespace {
         requested: String,
         supported: Vec<String>,
@@ -94,14 +97,14 @@ impl DemoSpec {
     /// - Does the demo support to be installed in the requested namespace?
     /// - Does the cluster have enough resources available to run this demo?
     #[instrument(skip_all)]
-    pub async fn check_prerequisites(&self, product_namespace: &str) -> Result<(), Error> {
+    pub async fn check_prerequisites(&self, client: &Client, namespace: &str) -> Result<(), Error> {
         debug!("Checking prerequisites before installing demo");
 
         // Returns an error if the demo doesn't support to be installed in the
         // requested namespace
-        if !self.supports_namespace(product_namespace) {
+        if !self.supports_namespace(namespace) {
             return Err(Error::UnsupportedNamespace {
-                requested: product_namespace.to_string(),
+                requested: namespace.to_owned(),
                 supported: self.supported_namespaces.clone(),
             });
         }
@@ -109,7 +112,10 @@ impl DemoSpec {
         // Checks if the available cluster resources are sufficient to deploy
         // the demo.
         if let Some(resource_requests) = &self.resource_requests {
-            if let Err(err) = resource_requests.validate_cluster_size("demo").await {
+            if let Err(err) = resource_requests
+                .validate_cluster_size(client, "demo")
+                .await
+            {
                 match err {
                     ResourceRequestsError::ValidationErrors { errors } => {
                         for error in errors {
@@ -124,12 +130,18 @@ impl DemoSpec {
         Ok(())
     }
 
+    #[instrument(skip_all, fields(
+        stack_name = %self.stack,
+        operator_namespace = %install_parameters.operator_namespace,
+        demo_namespace = %install_parameters.demo_namespace,
+    ))]
     pub async fn install(
         &self,
         stack_list: StackList,
         release_list: ReleaseList,
         install_parameters: DemoInstallParameters,
-        transfer_client: &Client,
+        client: &Client,
+        transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         // Get the stack spec based on the name defined in the demo spec
         let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
@@ -137,36 +149,49 @@ impl DemoSpec {
         })?;
 
         // Check demo prerequisites
-        self.check_prerequisites(&install_parameters.product_namespace)
+        self.check_prerequisites(client, &install_parameters.demo_namespace)
             .await?;
 
         let stack_install_parameters = StackInstallParameters {
             operator_namespace: install_parameters.operator_namespace.clone(),
-            product_namespace: install_parameters.product_namespace.clone(),
+            stack_namespace: install_parameters.demo_namespace.clone(),
             parameters: install_parameters.stack_parameters.clone(),
             labels: install_parameters.stack_labels.clone(),
             skip_release: install_parameters.skip_release,
             stack_name: self.stack.clone(),
             demo_name: None,
+            chart_source: install_parameters.chart_source.clone(),
         };
 
         stack
-            .install(release_list, stack_install_parameters, transfer_client)
+            .install(
+                release_list,
+                stack_install_parameters,
+                client,
+                transfer_client,
+            )
             .await
             .context(InstallStackSnafu)?;
 
         // Install demo manifests
-        self.prepare_manifests(install_parameters, transfer_client)
+        self.prepare_manifests(install_parameters, client, transfer_client)
             .await
     }
 
-    #[instrument(skip_all)]
+    #[instrument(skip_all, fields(
+        stack_name = %self.stack,
+        operator_namespace = %install_params.operator_namespace,
+        demo_namespace = %install_params.demo_namespace,
+        indicatif.pb_show = true
+    ))]
     async fn prepare_manifests(
         &self,
         install_params: DemoInstallParameters,
+        client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
+        Span::current().pb_set_message("Installing manifests");
 
         let params = install_params
             .parameters
@@ -177,8 +202,9 @@ impl DemoSpec {
         Self::install_manifests(
             &self.manifests,
             &params,
-            &install_params.product_namespace,
+            &install_params.demo_namespace,
             install_params.labels,
+            client,
             transfer_client,
         )
         .await

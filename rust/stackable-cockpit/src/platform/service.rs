@@ -9,38 +9,38 @@ use std::collections::HashMap;
 
 use indexmap::IndexMap;
 use k8s_openapi::api::core::v1::{Service, ServiceSpec};
-use kube::{api::ListParams, ResourceExt};
+use kube::{ResourceExt, api::ListParams};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{debug, warn};
 
-use crate::utils::k8s::{self, ListParamsExt};
+use crate::utils::k8s::{self, Client, ListParamsExt};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to fetch data from Kubernetes API"))]
     KubeClientFetch { source: k8s::Error },
 
-    #[snafu(display("missing namespace for service '{service}'"))]
+    #[snafu(display("missing namespace for service {service:?}"))]
     MissingServiceNamespace { service: String },
 
-    #[snafu(display("missing spec for service '{service}'"))]
+    #[snafu(display("missing spec for service {service:?}"))]
     MissingServiceSpec { service: String },
 
-    #[snafu(display("failed to get status of node '{node_name}'"))]
+    #[snafu(display("failed to get status of node {node_name:?}"))]
     GetNodeStatus { node_name: String },
 
-    #[snafu(display("failed to get address of node '{node_name}'"))]
+    #[snafu(display("failed to get address of node {node_name:?}"))]
     GetNodeAddress { node_name: String },
 
-    #[snafu(display("failed to find an ExternalIP or InternalIP for node '{node_name}'"))]
+    #[snafu(display("failed to find an ExternalIP or InternalIP for node {node_name:?}"))]
     NoIpForNode { node_name: String },
 
-    #[snafu(display("failed to find node '{node_name}' in node_name_ip_mapping"))]
+    #[snafu(display("failed to find node {node_name:?} in node_name_ip_mapping"))]
     NodeMissingInIpMapping { node_name: String },
 }
 
 pub async fn get_endpoints(
-    kube_client: &k8s::Client,
+    client: &Client,
     product_name: &str,
     object_name: &str,
     object_namespace: &str,
@@ -48,7 +48,7 @@ pub async fn get_endpoints(
     let list_params =
         ListParams::from_product(product_name, Some(object_name), k8s::ProductLabel::Name);
 
-    let listeners = kube_client
+    let listeners = client
         .list_listeners(Some(object_namespace), &list_params)
         .await;
     let listeners = match listeners {
@@ -92,13 +92,13 @@ pub async fn get_endpoints(
         return Ok(endpoints);
     }
 
-    let services = kube_client
+    let services = client
         .list_services(Some(object_namespace), &list_params)
         .await
         .context(KubeClientFetchSnafu)?;
 
     for service in services {
-        match get_endpoint_urls(kube_client, &service, object_name).await {
+        match get_endpoint_urls(client, &service, object_name).await {
             Ok(urls) => endpoints.extend(urls),
             Err(err) => warn!(
                 "Failed to get endpoint_urls of service {service_name}: {err}",
@@ -111,7 +111,7 @@ pub async fn get_endpoints(
 }
 
 pub async fn get_endpoint_urls(
-    kube_client: &k8s::Client,
+    client: &Client,
     service: &Service,
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, Error> {
@@ -128,7 +128,7 @@ pub async fn get_endpoint_urls(
     let endpoints = match service_spec.type_.as_deref() {
         Some("NodePort") => {
             get_endpoint_urls_for_nodeport(
-                kube_client,
+                client,
                 &service_name,
                 service_spec,
                 &service_namespace,
@@ -152,13 +152,13 @@ pub async fn get_endpoint_urls(
 }
 
 pub async fn get_endpoint_urls_for_nodeport(
-    kube_client: &k8s::Client,
+    client: &Client,
     service_name: &str,
     service_spec: &ServiceSpec,
     service_namespace: &str,
     referenced_object_name: &str,
 ) -> Result<IndexMap<String, String>, Error> {
-    let endpoints = kube_client
+    let endpoints = client
         .get_endpoints(service_namespace, service_name)
         .await
         .context(KubeClientFetchSnafu)?;
@@ -168,30 +168,41 @@ pub async fn get_endpoint_urls_for_nodeport(
             Some(addresses) if !addresses.is_empty() => match &addresses[0].node_name {
                 Some(node_name) => node_name,
                 None => {
-                    warn!("Could not determine the node the endpoint {service_name} is running on because the address of the subset didn't had a node name");
+                    warn!(
+                        "Could not determine the node the endpoint {service_name} is running on because the address of the subset didn't had a node name"
+                    );
                     return Ok(IndexMap::new());
                 }
             },
             Some(_) => {
-                warn!("Could not determine the node the endpoint {service_name} is running on because the subset had no addresses");
+                warn!(
+                    "Could not determine the node the endpoint {service_name} is running on because the subset had no addresses"
+                );
                 return Ok(IndexMap::new());
             }
             None => {
-                warn!("Could not determine the node the endpoint {service_name} is running on because subset had no addresses. Is the service {service_name} up and running?");
+                warn!(
+                    "Could not determine the node the endpoint {service_name} is running on because subset had no addresses. Is the service {service_name} up and running?"
+                );
                 return Ok(IndexMap::new());
             }
         },
         Some(subsets) => {
-            warn!("Could not determine the node the endpoint {service_name} is running on because endpoints consists of {num_subsets} subsets", num_subsets=subsets.len());
+            warn!(
+                "Could not determine the node the endpoint {service_name} is running on because endpoints consists of {num_subsets} subsets",
+                num_subsets = subsets.len()
+            );
             return Ok(IndexMap::new());
         }
         None => {
-            warn!("Could not determine the node the endpoint {service_name} is running on because the endpoint has no subset. Is the service {service_name} up and running?");
+            warn!(
+                "Could not determine the node the endpoint {service_name} is running on because the endpoint has no subset. Is the service {service_name} up and running?"
+            );
             return Ok(IndexMap::new());
         }
     };
 
-    let node_ip = get_node_ip(kube_client, node_name).await?;
+    let node_ip = get_node_ip(client, node_name).await?;
 
     let mut endpoints = IndexMap::new();
     for service_port in service_spec.ports.iter().flatten() {
@@ -265,8 +276,8 @@ pub async fn get_endpoint_urls_for_loadbalancer(
     Ok(endpoints)
 }
 
-async fn get_node_ip(kube_client: &k8s::Client, node_name: &str) -> Result<String, Error> {
-    let node_name_ip_mapping = get_node_name_ip_mapping(kube_client).await?;
+async fn get_node_ip(client: &Client, node_name: &str) -> Result<String, Error> {
+    let node_name_ip_mapping = get_node_name_ip_mapping(client).await?;
 
     match node_name_ip_mapping.get(node_name) {
         Some(node_ip) => Ok(node_ip.to_string()),
@@ -276,13 +287,8 @@ async fn get_node_ip(kube_client: &k8s::Client, node_name: &str) -> Result<Strin
 
 // TODO(sbernauer): Add caching. Not going to do so now, as listener-op
 // will replace this code entirely anyway.
-async fn get_node_name_ip_mapping(
-    kube_client: &k8s::Client,
-) -> Result<HashMap<String, String>, Error> {
-    let nodes = kube_client
-        .list_nodes()
-        .await
-        .context(KubeClientFetchSnafu)?;
+async fn get_node_name_ip_mapping(client: &Client) -> Result<HashMap<String, String>, Error> {
+    let nodes = client.list_nodes().await.context(KubeClientFetchSnafu)?;
 
     let mut result = HashMap::new();
     for node in nodes {
@@ -316,6 +322,7 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
     // As we still support older operator versions we need to also include the "old" way of naming
     if port_name == "http"
         || port_name.starts_with("http-")
+        || port_name == "ui-http"
         || port_name == "ui"
         || port_name == "airflow"
         || port_name == "superset"
@@ -334,16 +341,15 @@ fn endpoint_url(endpoint_host: &str, endpoint_port: i32, port_name: &str) -> Str
 /// This truncation is *not* ideal, however we only have implemented listener-operator for HDFS so far,
 /// so better to have support for that than nothing :)
 fn display_name_for_listener_name(listener_name: &str, object_name: &str) -> Option<String> {
-    let Some((_, display_name)) = listener_name.split_once(object_name) else {
-        return None;
-    };
+    let (_, display_name) = listener_name.split_once(object_name)?;
     Some(display_name.trim_start_matches('-').to_owned())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use rstest::rstest;
+
+    use super::*;
 
     #[rstest]
     // These are all the listener names implemented so far (only HDFS is using listener-operator). In the future more

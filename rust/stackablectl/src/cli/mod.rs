@@ -3,25 +3,24 @@ use std::env;
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
 use snafu::{ResultExt, Snafu};
-use tracing::{debug, instrument, Level};
-
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
-    platform::demo::List,
+    platform::operator::ChartSourceType,
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
-    xfer::{cache::Settings, Client},
+    xfer::cache::Settings,
 };
+use tracing::{Level, instrument};
 
 use crate::{
     args::{CommonFileArgs, CommonRepoArgs},
     cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
     constants::{
-        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_DEMO_FILE,
-        REMOTE_RELEASE_FILE, REMOTE_STACK_FILE, USER_DIR_APPLICATION_NAME,
-        USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
+        DEMOS_REPOSITORY_DEMOS_SUBPATH, DEMOS_REPOSITORY_STACKS_SUBPATH, DEMOS_REPOSITORY_URL_BASE,
+        ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_RELEASE_FILE,
+        USER_DIR_APPLICATION_NAME, USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
     output::{ErrorContext, Output, ResultContext},
 };
@@ -74,10 +73,6 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
     )]
     pub no_cache: bool,
 
-    /// Do not request any remote files via the network
-    #[arg(long, global = true)]
-    pub offline: bool,
-
     #[command(flatten)]
     pub files: CommonFileArgs,
 
@@ -90,10 +85,16 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
 
 impl Cli {
     /// Returns a list of demo files, consisting of entries which are either a path or URL. The list of files combines
-    /// the default demo file URL, [`REMOTE_DEMO_FILE`], files provided by the ENV variable [`ENV_KEY_DEMO_FILES`], and
-    /// lastly, files provided by the CLI argument `--demo-file`.
-    pub fn get_demo_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_DEMO_FILE, ENV_KEY_DEMO_FILES)?;
+    /// the default demo file URL constructed from [`DEMOS_REPOSITORY_URL_BASE`] and the provided branch, files provided
+    /// by the ENV variable [`ENV_KEY_DEMO_FILES`], and lastly, files provided by the CLI argument `--demo-file`.
+    pub fn get_demo_files(&self, branch: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let branch_url = format!(
+            "{base}/{branch}/{demos}",
+            base = DEMOS_REPOSITORY_URL_BASE,
+            demos = DEMOS_REPOSITORY_DEMOS_SUBPATH
+        );
+
+        let mut files = get_files(&branch_url, ENV_KEY_DEMO_FILES)?;
 
         let arg_files = self.files.demo_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
@@ -101,16 +102,17 @@ impl Cli {
         Ok(files)
     }
 
-    pub async fn get_demo_list(&self, transfer_client: &Client) -> List {
-        let files = self.get_demo_files().unwrap();
-        List::build(&files, transfer_client).await.unwrap()
-    }
-
     /// Returns a list of stack files, consisting of entries which are either a path or URL. The list of files combines
-    /// the default stack file URL, [`REMOTE_STACK_FILE`], files provided by the ENV variable [`ENV_KEY_STACK_FILES`],
-    /// and lastly, files provided by the CLI argument `--stack-file`.
-    pub fn get_stack_files(&self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let mut files = get_files(REMOTE_STACK_FILE, ENV_KEY_STACK_FILES)?;
+    /// the default stack file URL constructed from [`DEMOS_REPOSITORY_URL_BASE`] and the provided branch, files provided
+    /// by the ENV variable [`ENV_KEY_STACK_FILES`], and lastly, files provided by the CLI argument `--stack-file`.
+    pub fn get_stack_files(&self, branch: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
+        let branch_url = format!(
+            "{base}/{branch}/{stacks}",
+            base = DEMOS_REPOSITORY_URL_BASE,
+            stacks = DEMOS_REPOSITORY_STACKS_SUBPATH
+        );
+
+        let mut files = get_files(&branch_url, ENV_KEY_STACK_FILES)?;
 
         let arg_files = self.files.stack_files.clone().into_paths_or_urls()?;
         files.extend(arg_files);
@@ -132,9 +134,8 @@ impl Cli {
 
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
-    #[instrument]
     pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
-        debug!("Add Helm repos");
+        tracing::info!("Add Helm repos");
 
         // Stable repository
         helm::add_repo(HELM_REPO_NAME_STABLE, &self.repos.helm_repo_stable)?;
@@ -148,9 +149,9 @@ impl Cli {
         Ok(())
     }
 
-    #[instrument]
     pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
+            tracing::debug!("Cache disabled");
             Ok(Settings::disabled())
         } else {
             let project_dir = ProjectDirs::from(
@@ -160,11 +161,16 @@ impl Cli {
             )
             .ok_or(CacheSettingsError::UserDir)?;
 
-            Ok(Settings::disk(project_dir.cache_dir()))
+            let cache_dir = project_dir.cache_dir();
+            tracing::debug!(
+                cache_dir = %cache_dir.to_string_lossy(),
+                "Setting cache directory"
+            );
+            Ok(Settings::disk(cache_dir))
         }
     }
 
-    #[instrument]
+    #[instrument(skip_all)]
     pub async fn run(&self) -> Result<String, Error> {
         // FIXME (Techassi): There might be a better way to handle this with
         // the match later in this function.
@@ -205,6 +211,10 @@ impl Cli {
 
     pub fn error(&self) -> Output<ErrorContext> {
         Output::new(ErrorContext::default(), true).expect("Failed to create output renderer")
+    }
+
+    pub fn chart_type(&self) -> ChartSourceTypeArg {
+        self.repos.chart_source.clone()
     }
 }
 
@@ -287,4 +297,32 @@ fn get_files(default_file: &str, env_key: &str) -> Result<Vec<PathOrUrl>, PathOr
     files.extend(env_files);
 
     Ok(files)
+}
+
+/// Enum used for resolving the argument for chart source type. This will be
+/// mapped to ChartSourceType (see below): the reason why we don't have one
+/// enum is to avoid having to add clap dependencies to stackable-cockpit
+/// for the ValueEnum macro.
+#[derive(Clone, Debug, Default, ValueEnum)]
+pub enum ChartSourceTypeArg {
+    /// OCI registry
+    #[default]
+    OCI,
+
+    /// index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific
+    Repo,
+}
+
+impl From<ChartSourceTypeArg> for ChartSourceType {
+    /// Resolves the enum used by clap/arg-resolution to the core type used in
+    /// stackable-cockpit. For the (index.yaml-based) repo case this core type cannot be
+    /// decorated with meaningful information as that would be operator-specific
+    /// i.e. we cannot resolve *which* (index.yaml-based) repo to use until we have inspected
+    /// the operator version. Hence just a simple mapping.
+    fn from(cli_enum: ChartSourceTypeArg) -> Self {
+        match cli_enum {
+            ChartSourceTypeArg::OCI => ChartSourceType::OCI,
+            ChartSourceTypeArg::Repo => ChartSourceType::Repo,
+        }
+    }
 }

@@ -1,9 +1,9 @@
 use std::net::SocketAddr;
 
 use axum::{
+    Router,
     response::Redirect,
     routing::{get, post},
-    Router,
 };
 use clap::Parser;
 use futures::FutureExt;
@@ -14,7 +14,7 @@ use stackable_cockpitd::{
 };
 use tokio::net::TcpListener;
 use tracing::{info, metadata::LevelFilter};
-use tracing_subscriber::{fmt, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::cli::Cli;

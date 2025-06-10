@@ -31,10 +31,13 @@ stackable-operator.workspace = true
 tera.workspace = true
 tokio.workspace = true
 tracing.workspace = true
+tracing-indicatif.workspace = true
 url.workspace = true
+urlencoding.workspace = true
 utoipa = { workspace = true, optional = true }
 which.workspace = true
 futures.workspace = true
+indicatif.workspace = true
 
 [dev-dependencies]
 rstest.workspace = true

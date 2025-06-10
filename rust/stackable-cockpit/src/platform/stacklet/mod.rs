@@ -1,10 +1,9 @@
 use indexmap::IndexMap;
-use kube::{core::GroupVersionKind, ResourceExt};
+use kube::{ResourceExt, core::GroupVersionKind};
 use serde::Serialize;
 use snafu::{ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
 use tracing::info;
-
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
@@ -12,7 +11,7 @@ use crate::{
     constants::PRODUCT_NAMES,
     platform::{credentials, service},
     utils::{
-        k8s::{self, ConditionsExt},
+        k8s::{self, Client, ConditionsExt},
         string::Casing,
     },
 };
@@ -51,7 +50,7 @@ pub enum Error {
     #[snafu(display("failed to fetch data from the Kubernetes API"))]
     KubeClientFetch { source: k8s::Error },
 
-    #[snafu(display("no namespace set for custom resource '{crd_name}'"))]
+    #[snafu(display("no namespace set for custom resource {crd_name:?}"))]
     CustomCrdNamespace { crd_name: String },
 
     #[snafu(display("failed to deserialize cluster conditions from JSON"))]
@@ -65,27 +64,27 @@ pub enum Error {
 /// namespaces are returned. If `namespace` is [`Some`], only stacklets installed
 /// in the specified namespace are returned. The `options` allow further
 /// customization of the returned information.
-pub async fn list_stacklets(namespace: Option<&str>) -> Result<Vec<Stacklet>, Error> {
-    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
-
-    let mut stacklets = list_stackable_stacklets(&kube_client, namespace).await?;
-    stacklets.extend(grafana::list(&kube_client, namespace).await?);
-    stacklets.extend(minio::list(&kube_client, namespace).await?);
-    stacklets.extend(opensearch::list(&kube_client, namespace).await?);
-    stacklets.extend(prometheus::list(&kube_client, namespace).await?);
+pub async fn list_stacklets(
+    client: &Client,
+    namespace: Option<&str>,
+) -> Result<Vec<Stacklet>, Error> {
+    let mut stacklets = list_stackable_stacklets(client, namespace).await?;
+    stacklets.extend(grafana::list(client, namespace).await?);
+    stacklets.extend(minio::list(client, namespace).await?);
+    stacklets.extend(opensearch::list(client, namespace).await?);
+    stacklets.extend(prometheus::list(client, namespace).await?);
 
     Ok(stacklets)
 }
 
 pub async fn get_credentials_for_product(
+    client: &Client,
     namespace: &str,
     object_name: &str,
     product_name: &str,
 ) -> Result<Option<credentials::Credentials>, Error> {
-    let kube_client = k8s::Client::new().await.context(KubeClientCreateSnafu)?;
-
     let product_gvk = gvk_from_product_name(product_name);
-    let product_cluster = match kube_client
+    let product_cluster = match client
         .get_namespaced_object(namespace, object_name, &product_gvk)
         .await
         .context(KubeClientFetchSnafu)?
@@ -99,11 +98,11 @@ pub async fn get_credentials_for_product(
         }
     };
 
-    let credentials = match credentials::get(&kube_client, product_name, &product_cluster).await {
+    let credentials = match credentials::get(client, product_name, &product_cluster).await {
         Ok(credentials) => credentials,
         Err(credentials::Error::NoSecret) => None,
         Err(credentials::Error::KubeClientFetch { source }) => {
-            return Err(Error::KubeClientFetch { source })
+            return Err(Error::KubeClientFetch { source });
         }
     };
 
@@ -111,14 +110,14 @@ pub async fn get_credentials_for_product(
 }
 
 async fn list_stackable_stacklets(
-    kube_client: &k8s::Client,
+    client: &Client,
     namespace: Option<&str>,
 ) -> Result<Vec<Stacklet>, Error> {
     let product_list = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = Vec::new();
 
     for (product_name, product_gvk) in product_list {
-        let objects = match kube_client
+        let objects = match client
             .list_objects(&product_gvk, namespace)
             .await
             .context(KubeClientFetchSnafu)?
@@ -148,7 +147,7 @@ async fn list_stackable_stacklets(
             };
 
             let endpoints =
-                service::get_endpoints(kube_client, product_name, &object_name, &object_namespace)
+                service::get_endpoints(client, product_name, &object_name, &object_namespace)
                     .await
                     .context(ServiceFetchSnafu)?;
 
@@ -169,30 +168,38 @@ fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, G
     let mut map = IndexMap::new();
 
     for product_name in product_names {
-        // Why? Just why? Can we please make this consistent?
-        if *product_name == "spark-history-server" {
-            map.insert(
-                *product_name,
-                GroupVersionKind {
-                    group: "spark.stackable.tech".into(),
-                    version: "v1alpha1".into(),
-                    kind: "SparkHistoryServer".into(),
-                },
-            );
-            continue;
+        // Note(techassi): Why? Just why? Can we please make this consistent?
+        // Note(sbernauer): I think it's legit that SparkHistoryServer and SparkConnectServer are in
+        // the api group spark.stackable.tech. All of this will probably be rewritten any as soon as
+        // we have versions different than v1alpha1.
+        if *product_name == "spark-history" {
+            map.insert(*product_name, GroupVersionKind {
+                group: "spark.stackable.tech".into(),
+                version: "v1alpha1".into(),
+                kind: "SparkHistoryServer".into(),
+            });
+        } else if *product_name == "spark-connect" {
+            map.insert(*product_name, GroupVersionKind {
+                group: "spark.stackable.tech".into(),
+                version: "v1alpha1".into(),
+                kind: "SparkConnectServer".into(),
+            });
+        } else {
+            map.insert(*product_name, gvk_from_product_name(product_name));
         }
-
-        map.insert(*product_name, gvk_from_product_name(product_name));
     }
 
     map
 }
 
-// FIXME: Support SparkApplication
+// FIXME: Support SparkApplication and SparkConnectServer
 fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
     GroupVersionKind {
         group: format!("{product_name}.stackable.tech"),
         version: "v1alpha1".into(),
-        kind: format!("{}Cluster", product_name.capitalize()),
+        kind: format!(
+            "{product_name}Cluster",
+            product_name = product_name.capitalize()
+        ),
     }
 }
