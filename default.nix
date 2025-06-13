@@ -6,8 +6,9 @@
       (import (sources.gomod2nix+"/overlay.nix"))
     ];
 }
+, release ? true
 , cargo ? import ./Cargo.nix {
-    inherit nixpkgs pkgs; release = false;
+    inherit nixpkgs pkgs release;
     defaultCrateOverrides = pkgs.defaultCrateOverrides // {
       stackable-cockpit-web = attrs: {
         nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs_20 ];
