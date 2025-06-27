@@ -86,16 +86,15 @@ pub struct OperatorDescribeArgs {
 pub struct OperatorInstallArgs {
     /// Operator(s) to install
     #[arg(name = "OPERATORS", required = true)]
-    #[arg(long_help = "Operator(s) to install
+    #[arg(long_help = "Operator(s) to install (space separated)
 
-Must have the form 'name[=version]'. If no version is specified the latest
-nightly version - build from the main branch - will be used. Possible valid
-values are:
+Each must have the form 'name[=version]'.
+If no version is specified the latest nightly version - built from the main branch - will be used.
+Possible valid values are:
 
-- superset
-- superset=0.3.0
-- superset=0.3.0-nightly
-- superset=0.3.0-pr123
+- superset (equivalent to superset=0.0.0-dev)
+- superset=25.3.0
+- superset=0.0.0-pr123 (Pull Request build)
 
 Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
