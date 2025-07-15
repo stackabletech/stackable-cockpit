@@ -18,6 +18,13 @@ Do not cache the remote (default) demo, stack and release files
 Cached files are saved at \*(Aq$XDG_CACHE_HOME/stackablectl\*(Aq, which is usually
 \*(Aq$HOME/.cache/stackablectl\*(Aq when not explicitly set.
 .TP
+\fB\-h\fR, \fB\-\-help\fR
+Print help (see a summary with \*(Aq\-h\*(Aq)
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version
+.SH "FILE OPTIONS"
+.TP
 \fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILE\fR
 Provide one or more additional (custom) demo file(s)
 
@@ -51,6 +58,7 @@ definition will be used.
 
 Use "stackablectl [OPTIONS] <COMMAND> \-r path/to/releases1.yaml \-r path/to/releases2.yaml"
 to provide multiple additional release files.
+.SH "HELM REPOSITORY OPTIONS"
 .TP
 \fB\-\-helm\-repo\-stable\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-stable/]
 Provide a custom Helm stable repository URL
@@ -73,12 +81,6 @@ oci: OCI registry
 .IP \(bu 2
 repo: index.yaml\-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator\-specific
 .RE
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-Print help (see a summary with \*(Aq\-h\*(Aq)
-.TP
-\fB\-V\fR, \fB\-\-version\fR
-Print version
 .SH SUBCOMMANDS
 .TP
 stackablectl\-operator(1)
