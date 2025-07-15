@@ -51,7 +51,7 @@ pub enum Error {
     GVKDiscoveryRun { source: kube::error::Error },
 
     #[snafu(display("failed to deploy manifest because type of object {object:?} is not set"))]
-    ObjectType { object: DynamicObject },
+    ObjectType { object: Box<DynamicObject> },
 
     // Using output close to Display for ObjectRef https://docs.rs/kube-runtime/0.99.0/src/kube_runtime/reflector/object_ref.rs.html#292-296
     #[snafu(display("failed to resolve GVK: {kind}.{version}.{group}",
@@ -440,13 +440,16 @@ impl Client {
     pub async fn create_namespace(&self, name: String) -> Result<()> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
         namespace_api
-            .create(&PostParams::default(), &Namespace {
-                metadata: ObjectMeta {
-                    name: Some(name),
+            .create(
+                &PostParams::default(),
+                &Namespace {
+                    metadata: ObjectMeta {
+                        name: Some(name),
+                        ..Default::default()
+                    },
                     ..Default::default()
                 },
-                ..Default::default()
-            })
+            )
             .await
             .context(KubeClientPatchSnafu)?;
 

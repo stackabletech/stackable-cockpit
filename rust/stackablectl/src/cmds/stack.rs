@@ -135,7 +135,7 @@ pub enum CmdError {
 
     #[snafu(display("failed to install stack {stack_name:?}"))]
     InstallStack {
-        source: stack::Error,
+        source: Box<stack::Error>,
         stack_name: String,
     },
 
@@ -143,7 +143,7 @@ pub enum CmdError {
     BuildLabels { source: LabelError },
 
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    KubeClientCreate { source: Box<k8s::Error> },
 }
 
 impl StackArgs {
@@ -159,9 +159,10 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
-                    release
-                });
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
 
                 if release == "dev" {
                     "main".to_string()
@@ -171,7 +172,7 @@ impl StackArgs {
             }
             None => {
                 let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
-                format!("release-{release}", release = release_name,)
+                format!("release-{release_name}")
             }
         };
 
@@ -334,7 +335,10 @@ async fn install_cmd(
                 .await
                 .context(InstallClusterSnafu)?;
 
-            let client = Client::new().await.context(KubeClientCreateSnafu)?;
+            let client = Client::new()
+                .await
+                .map_err(Box::new)
+                .context(KubeClientCreateSnafu)?;
 
             // Construct labels which get attached to all dynamic objects which
             // are part of the stack.
@@ -359,6 +363,7 @@ async fn install_cmd(
             stack_spec
                 .install(release_list, install_parameters, &client, transfer_client)
                 .await
+                .map_err(Box::new)
                 .context(InstallStackSnafu {
                     stack_name: args.stack_name.clone(),
                 })?;

@@ -42,10 +42,10 @@ pub struct Stacklet {
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    KubeClientCreate { source: Box<k8s::Error> },
 
     #[snafu(display("failed to fetch data from the Kubernetes API"))]
-    KubeClientFetch { source: k8s::Error },
+    KubeClientFetch { source: Box<k8s::Error> },
 
     #[snafu(display("no namespace set for custom resource {crd_name:?}"))]
     CustomCrdNamespace { crd_name: String },
@@ -87,6 +87,7 @@ pub async fn get_credentials_for_product(
     let product_cluster = match client
         .get_namespaced_object(namespace, object_name, &product_gvk)
         .await
+        .map_err(Box::new)
         .context(KubeClientFetchSnafu)?
     {
         Some(obj) => obj,
@@ -124,6 +125,7 @@ async fn list_stackable_stacklets(
         let objects = match client
             .list_objects(&product_gvk, namespace)
             .await
+            .map_err(Box::new)
             .context(KubeClientFetchSnafu)?
         {
             Some(obj) => obj,

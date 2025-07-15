@@ -88,11 +88,8 @@ impl Cli {
     /// the default demo file URL constructed from [`DEMOS_REPOSITORY_URL_BASE`] and the provided branch, files provided
     /// by the ENV variable [`ENV_KEY_DEMO_FILES`], and lastly, files provided by the CLI argument `--demo-file`.
     pub fn get_demo_files(&self, branch: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let branch_url = format!(
-            "{base}/{branch}/{demos}",
-            base = DEMOS_REPOSITORY_URL_BASE,
-            demos = DEMOS_REPOSITORY_DEMOS_SUBPATH
-        );
+        let branch_url =
+            format!("{DEMOS_REPOSITORY_URL_BASE}/{branch}/{DEMOS_REPOSITORY_DEMOS_SUBPATH}");
 
         let mut files = get_files(&branch_url, ENV_KEY_DEMO_FILES)?;
 
@@ -106,11 +103,8 @@ impl Cli {
     /// the default stack file URL constructed from [`DEMOS_REPOSITORY_URL_BASE`] and the provided branch, files provided
     /// by the ENV variable [`ENV_KEY_STACK_FILES`], and lastly, files provided by the CLI argument `--stack-file`.
     pub fn get_stack_files(&self, branch: &str) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        let branch_url = format!(
-            "{base}/{branch}/{stacks}",
-            base = DEMOS_REPOSITORY_URL_BASE,
-            stacks = DEMOS_REPOSITORY_STACKS_SUBPATH
-        );
+        let branch_url =
+            format!("{DEMOS_REPOSITORY_URL_BASE}/{branch}/{DEMOS_REPOSITORY_STACKS_SUBPATH}");
 
         let mut files = get_files(&branch_url, ENV_KEY_STACK_FILES)?;
 

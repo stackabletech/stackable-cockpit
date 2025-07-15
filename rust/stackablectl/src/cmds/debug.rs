@@ -36,7 +36,7 @@ pub enum CmdError {
 
     #[snafu(display("failed to get {pod}"))]
     GetPod {
-        source: kube::Error,
+        source: Box<kube::Error>,
         pod: ObjectRef<Pod>,
     },
 
@@ -48,15 +48,15 @@ pub enum CmdError {
 
     #[snafu(display("failed to create ephemeral debug container {container:?} on {pod}"))]
     CreateDebugContainer {
-        source: kube::Error,
-        pod: ObjectRef<Pod>,
+        source: Box<kube::Error>,
+        pod: Box<ObjectRef<Pod>>,
         container: String,
     },
 
     #[snafu(display("debug container {container:?} on {pod} never became ready"))]
     AwaitDebugContainerReadiness {
-        source: kube::runtime::wait::Error,
-        pod: ObjectRef<Pod>,
+        source: Box<kube::runtime::wait::Error>,
+        pod: Box<ObjectRef<Pod>>,
         container: String,
     },
 
@@ -68,8 +68,8 @@ pub enum CmdError {
 
     #[snafu(display("failed to attach to container {container:?} on {pod}"))]
     AttachContainer {
-        source: kube::Error,
-        pod: ObjectRef<Pod>,
+        source: Box<kube::Error>,
+        pod: Box<ObjectRef<Pod>>,
         container: String,
     },
 
@@ -149,6 +149,7 @@ impl DebugArgs {
             let pod = pods
                 .get(&self.pod)
                 .await
+                .map_err(Box::new)
                 .with_context(|_| GetPodSnafu { pod: pod_ref() })?;
             let template_container = pod
                 .spec
@@ -192,6 +193,7 @@ impl DebugArgs {
                 &kube::api::Patch::Strategic(pod_patch),
             )
             .await
+            .map_err(Box::new)
             .with_context(|_| CreateDebugContainerSnafu {
                 pod: pod_ref(),
                 container: &self.container,
@@ -212,6 +214,7 @@ impl DebugArgs {
                 },
             )
             .await
+            .map_err(Box::new)
             .with_context(|_| AwaitDebugContainerReadinessSnafu {
                 pod: pod_ref(),
                 container: &self.container,
@@ -241,6 +244,7 @@ impl DebugArgs {
                     &AttachParams::interactive_tty().container(debug_container_name),
                 )
                 .await
+                .map_err(Box::new)
                 .with_context(|_| AttachContainerSnafu {
                     pod: pod_ref(),
                     container: &self.container,

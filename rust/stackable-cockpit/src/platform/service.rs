@@ -18,7 +18,7 @@ use crate::utils::k8s::{self, Client, ListParamsExt};
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to fetch data from Kubernetes API"))]
-    KubeClientFetch { source: k8s::Error },
+    KubeClientFetch { source: Box<k8s::Error> },
 
     #[snafu(display("missing namespace for service {service:?}"))]
     MissingServiceNamespace { service: String },
@@ -62,6 +62,7 @@ pub async fn get_endpoints(
         }
         Err(err) => Err(err),
     }
+    .map_err(Box::new)
     .context(KubeClientFetchSnafu)?;
 
     let mut endpoints = IndexMap::new();
@@ -95,6 +96,7 @@ pub async fn get_endpoints(
     let services = client
         .list_services(Some(object_namespace), &list_params)
         .await
+        .map_err(Box::new)
         .context(KubeClientFetchSnafu)?;
 
     for service in services {
@@ -161,6 +163,7 @@ pub async fn get_endpoint_urls_for_nodeport(
     let endpoints = client
         .get_endpoints(service_namespace, service_name)
         .await
+        .map_err(Box::new)
         .context(KubeClientFetchSnafu)?;
 
     let node_name = match &endpoints.subsets {
@@ -288,7 +291,11 @@ async fn get_node_ip(client: &Client, node_name: &str) -> Result<String, Error> 
 // TODO(sbernauer): Add caching. Not going to do so now, as listener-op
 // will replace this code entirely anyway.
 async fn get_node_name_ip_mapping(client: &Client) -> Result<HashMap<String, String>, Error> {
-    let nodes = client.list_nodes().await.context(KubeClientFetchSnafu)?;
+    let nodes = client
+        .list_nodes()
+        .await
+        .map_err(Box::new)
+        .context(KubeClientFetchSnafu)?;
 
     let mut result = HashMap::new();
     for node in nodes {

@@ -17,6 +17,7 @@ pub(super) async fn list(client: &Client, namespace: Option<&str>) -> Result<Vec
     let services = client
         .list_services(namespace, &params)
         .await
+        .map_err(Box::new)
         .context(KubeClientFetchSnafu)?;
 
     for service in services {

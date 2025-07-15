@@ -156,7 +156,7 @@ pub enum CmdError {
     SerializeJsonOutput { source: serde_json::Error },
 
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    KubeClientCreate { source: Box<k8s::Error> },
 
     #[snafu(display("failed to create namespace {namespace:?}"))]
     NamespaceCreate {
@@ -317,7 +317,10 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
         .await
         .context(CommonClusterArgsSnafu)?;
 
-    let client = Client::new().await.context(KubeClientCreateSnafu)?;
+    let client = Client::new()
+        .await
+        .map_err(Box::new)
+        .context(KubeClientCreateSnafu)?;
 
     namespace::create_if_needed(&client, args.operator_namespace.clone())
         .await

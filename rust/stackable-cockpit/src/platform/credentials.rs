@@ -11,7 +11,7 @@ pub type Result<T, E = Error> = std::result::Result<T, E>;
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to fetch data from Kubernetes API"))]
-    KubeClientFetch { source: k8s::Error },
+    KubeClientFetch { source: Box<k8s::Error> },
 
     #[snafu(display("no credentials secret found"))]
     NoSecret,
@@ -69,6 +69,7 @@ pub async fn get(
                     "adminUser.password",
                 )
                 .await
+                .map_err(Box::new)
                 .context(KubeClientFetchSnafu)?
         }
         "nifi" => {
@@ -84,6 +85,7 @@ pub async fn get(
                     "password",
                 )
                 .await
+                .map_err(Box::new)
                 .context(KubeClientFetchSnafu)?
         }
         _ => return Ok(None),
