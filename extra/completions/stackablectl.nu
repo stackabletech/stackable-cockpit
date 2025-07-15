@@ -8,9 +8,9 @@ module completions {
   export extern stackablectl [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -27,9 +27,9 @@ module completions {
   export extern "stackablectl operator" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -51,9 +51,9 @@ module completions {
     --output(-o): string@"nu-complete stackablectl operator list output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -76,9 +76,9 @@ module completions {
     --output(-o): string@"nu-complete stackablectl operator describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -106,9 +106,9 @@ module completions {
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -128,9 +128,9 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -154,9 +154,9 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -201,9 +201,9 @@ module completions {
   export extern "stackablectl release" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -225,9 +225,9 @@ module completions {
     --output(-o): string@"nu-complete stackablectl release list output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -250,9 +250,9 @@ module completions {
     --output(-o): string@"nu-complete stackablectl release describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -282,9 +282,9 @@ module completions {
     --cluster-cp-nodes: string # Number of control plane nodes in the local cluster
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -304,9 +304,9 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -328,9 +328,9 @@ module completions {
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -376,9 +376,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -401,9 +401,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -427,9 +427,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -463,9 +463,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -502,9 +502,9 @@ module completions {
   export extern "stackablectl stacklet" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -524,9 +524,9 @@ module completions {
     --namespace(-n): string   # Namespace in the cluster used to deploy the products
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -552,9 +552,9 @@ module completions {
     --product-ns: string      # Namespace where the stacks or demos are deployed
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -588,9 +588,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -613,9 +613,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -639,9 +639,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -675,9 +675,9 @@ module completions {
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -714,9 +714,9 @@ module completions {
   export extern "stackablectl completions" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -733,9 +733,9 @@ module completions {
   export extern "stackablectl completions bash" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -752,9 +752,9 @@ module completions {
   export extern "stackablectl completions elvish" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -771,9 +771,9 @@ module completions {
   export extern "stackablectl completions fish" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -790,9 +790,9 @@ module completions {
   export extern "stackablectl completions nushell" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -809,9 +809,9 @@ module completions {
   export extern "stackablectl completions zsh" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -856,9 +856,9 @@ module completions {
   export extern "stackablectl cache" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -875,9 +875,9 @@ module completions {
   export extern "stackablectl cache list" [
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -896,9 +896,9 @@ module completions {
     --outdated                # Only remove outdated files in the cache
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -936,9 +936,9 @@ module completions {
     ...cmd: string            # The command to run in the debug container
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
-    --demo-file(-d): string   # Provide one or more additional (custom) demo file(s)
-    --stack-file(-s): string  # Provide one or more additional (custom) stack file(s)
-    --release-file(-r): string # Provide one or more additional (custom) release file(s)
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL

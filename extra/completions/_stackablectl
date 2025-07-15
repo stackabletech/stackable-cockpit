@@ -15,8 +15,8 @@ _stackablectl() {
 
     local context curcontext="$curcontext" state line
     _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -44,8 +44,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
         case $line[1] in
             (operator)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -82,8 +82,8 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -112,8 +112,8 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -130,22 +130,22 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':OPERATOR -- Operator to describe:' \
+':OPERATOR -- Operator to describe:_default' \
 && ret=0
 ;;
 (install)
 _arguments "${_arguments_options[@]}" : \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
-'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
-'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
-'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME:_default' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES:_default' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -162,15 +162,15 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-'*::OPERATORS -- Operator(s) to install:' \
+'*::OPERATORS -- Operator(s) to install:_default' \
 && ret=0
 ;;
 (uninstall)
 _arguments "${_arguments_options[@]}" : \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -187,7 +187,7 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-'*::operators -- One or more operators to uninstall:' \
+'*::operators -- One or more operators to uninstall:_default' \
 && ret=0
 ;;
 (installed)
@@ -200,10 +200,10 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -268,8 +268,8 @@ esac
 ;;
 (release)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -306,8 +306,8 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -336,8 +336,8 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -354,26 +354,26 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':RELEASE:' \
+':RELEASE:_default' \
 && ret=0
 ;;
 (install)
 _arguments "${_arguments_options[@]}" : \
-'*-i+[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
-'*--include=[Whitelist of product operators to install]:INCLUDED_PRODUCTS: ' \
-'*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
-'*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
+'*-i+[Whitelist of product operators to install]:INCLUDED_PRODUCTS:_default' \
+'*--include=[Whitelist of product operators to install]:INCLUDED_PRODUCTS:_default' \
+'*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS:_default' \
+'*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS:_default' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
-'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
-'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
-'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME:_default' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES:_default' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -390,15 +390,15 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':RELEASE -- Release to install:' \
+':RELEASE -- Release to install:_default' \
 && ret=0
 ;;
 (uninstall)
 _arguments "${_arguments_options[@]}" : \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -415,19 +415,19 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':RELEASE -- Name of the release to uninstall:' \
+':RELEASE -- Name of the release to uninstall:_default' \
 && ret=0
 ;;
 (upgrade)
 _arguments "${_arguments_options[@]}" : \
-'*-i+[List of product operators to upgrade]:INCLUDED_PRODUCTS: ' \
-'*--include=[List of product operators to upgrade]:INCLUDED_PRODUCTS: ' \
-'*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
-'*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS: ' \
-'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'*-i+[List of product operators to upgrade]:INCLUDED_PRODUCTS:_default' \
+'*--include=[List of product operators to upgrade]:INCLUDED_PRODUCTS:_default' \
+'*-e+[Blacklist of product operators to install]:EXCLUDED_PRODUCTS:_default' \
+'*--exclude=[Blacklist of product operators to install]:EXCLUDED_PRODUCTS:_default' \
+'--operator-namespace=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace in the cluster used to deploy the operators]:OPERATOR_NAMESPACE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -444,7 +444,7 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':RELEASE -- Upgrade to the specified release:' \
+':RELEASE -- Upgrade to the specified release:_default' \
 && ret=0
 ;;
 (help)
@@ -493,9 +493,9 @@ esac
 ;;
 (stack)
 _arguments "${_arguments_options[@]}" : \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -532,9 +532,9 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -563,9 +563,9 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -582,28 +582,28 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':stack_name -- Name of the stack to describe:' \
+':stack_name -- Name of the stack to describe:_default' \
 && ret=0
 ;;
 (install)
 _arguments "${_arguments_options[@]}" : \
-'*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
-'*--parameters=[List of parameters to use when installing the stack]:PARAMETERS: ' \
+'*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS:_default' \
+'*--parameters=[List of parameters to use when installing the stack]:PARAMETERS:_default' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
-'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
-'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
-'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
-'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME:_default' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES:_default' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES:_default' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -621,7 +621,7 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':stack_name -- Name of the stack to describe:' \
+':stack_name -- Name of the stack to describe:_default' \
 && ret=0
 ;;
 (help)
@@ -662,8 +662,8 @@ esac
 ;;
 (stacklet)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -692,10 +692,10 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
         case $line[1] in
             (credentials)
 _arguments "${_arguments_options[@]}" : \
-'-n+[Namespace in the cluster used to deploy the products]:NAMESPACE: ' \
-'--namespace=[Namespace in the cluster used to deploy the products]:NAMESPACE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-n+[Namespace in the cluster used to deploy the products]:NAMESPACE:_default' \
+'--namespace=[Namespace in the cluster used to deploy the products]:NAMESPACE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -712,8 +712,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':product_name -- The name of the product, for example '\''superset'\'':' \
-':stacklet_name -- The name of the stacklet, for example '\''superset'\'':' \
+':product_name -- The name of the product, for example '\''superset'\'':_default' \
+':stacklet_name -- The name of the stacklet, for example '\''superset'\'':_default' \
 && ret=0
 ;;
 (list)
@@ -726,13 +726,13 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -785,9 +785,9 @@ esac
 ;;
 (demo)
 _arguments "${_arguments_options[@]}" : \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -824,9 +824,9 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -855,9 +855,9 @@ yaml\:"Print output formatted as YAML"))' \
 table\:"Print output formatted as a table"
 json\:"Print output formatted as JSON"
 yaml\:"Print output formatted as YAML"))' \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -874,28 +874,28 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':DEMO -- Demo to describe:' \
+':DEMO -- Demo to describe:_default' \
 && ret=0
 ;;
 (install)
 _arguments "${_arguments_options[@]}" : \
-'*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS: ' \
-'*--parameters=[List of parameters to use when installing the demo]:PARAMETERS: ' \
+'*--stack-parameters=[List of parameters to use when installing the stack]:STACK_PARAMETERS:_default' \
+'*--parameters=[List of parameters to use when installing the demo]:PARAMETERS:_default' \
 '-c+[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
 '--cluster=[Type of local cluster to use for testing]:CLUSTER_TYPE:((kind\:"Use a kind cluster, see <https\://docs.stackable.tech/home/getting_started.html#_installing_kubernetes_using_kind>"
 minikube\:"Use a minikube cluster"))' \
-'--cluster-name=[Name of the local cluster]:CLUSTER_NAME: ' \
-'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES: ' \
-'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES: ' \
-'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE: ' \
-'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE: ' \
-'--release=[Target a specific Stackable release]:RELEASE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'--cluster-name=[Name of the local cluster]:CLUSTER_NAME:_default' \
+'--cluster-nodes=[Number of total nodes in the local cluster]:CLUSTER_NODES:_default' \
+'--cluster-cp-nodes=[Number of control plane nodes in the local cluster]:CLUSTER_CP_NODES:_default' \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -913,7 +913,7 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':DEMO -- Demo to install:' \
+':DEMO -- Demo to install:_default' \
 && ret=0
 ;;
 (help)
@@ -954,8 +954,8 @@ esac
 ;;
 (completions)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -984,8 +984,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
         case $line[1] in
             (bash)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1006,8 +1006,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ;;
 (elvish)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1028,8 +1028,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ;;
 (fish)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1050,8 +1050,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ;;
 (nushell)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1072,8 +1072,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ;;
 (zsh)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1138,8 +1138,8 @@ esac
 ;;
 (cache)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1168,8 +1168,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
         case $line[1] in
             (list)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1190,8 +1190,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ;;
 (clean)
 _arguments "${_arguments_options[@]}" : \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1246,13 +1246,13 @@ esac
 ;;
 (experimental-debug)
 _arguments "${_arguments_options[@]}" : \
-'-n+[The namespace of the Pod being debugged]:NAMESPACE: ' \
-'--namespace=[The namespace of the Pod being debugged]:NAMESPACE: ' \
-'-c+[The target container to debug]:CONTAINER: ' \
-'--container=[The target container to debug]:CONTAINER: ' \
-'--image=[The debug container image]:IMAGE: ' \
-'-l+[Log level this application uses]:LOG_LEVEL: ' \
-'--log-level=[Log level this application uses]:LOG_LEVEL: ' \
+'-n+[The namespace of the Pod being debugged]:NAMESPACE:_default' \
+'--namespace=[The namespace of the Pod being debugged]:NAMESPACE:_default' \
+'-c+[The target container to debug]:CONTAINER:_default' \
+'--container=[The target container to debug]:CONTAINER:_default' \
+'--image=[The debug container image]:IMAGE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
 '*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
 '*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
@@ -1269,8 +1269,8 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':pod -- The Pod to debug:' \
-'*::cmd -- The command to run in the debug container:' \
+':pod -- The Pod to debug:_default' \
+'*::cmd -- The command to run in the debug container:_default' \
 && ret=0
 ;;
 (help)
