@@ -1,19 +1,16 @@
 use indexmap::IndexMap;
 use kube::{ResourceExt, core::GroupVersionKind};
 use serde::Serialize;
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::status::condition::ClusterCondition;
 use tracing::info;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 
 use crate::{
-    constants::PRODUCT_NAMES,
+    constants::PRODUCTS,
     platform::{credentials, service},
-    utils::{
-        k8s::{self, Client, ConditionsExt},
-        string::Casing,
-    },
+    utils::k8s::{self, Client, ConditionsExt},
 };
 
 mod grafana;
@@ -58,6 +55,9 @@ pub enum Error {
 
     #[snafu(display("failed to receive service information"))]
     ServiceFetch { source: service::Error },
+
+    #[snafu(display("product name {product_name:?} not found"))]
+    GetProduct { product_name: String },
 }
 
 /// Lists all installed stacklets. If `namespace` is [`None`], stacklets from ALL
@@ -83,7 +83,7 @@ pub async fn get_credentials_for_product(
     object_name: &str,
     product_name: &str,
 ) -> Result<Option<credentials::Credentials>, Error> {
-    let product_gvk = gvk_from_product_name(product_name);
+    let product_gvk = gvk_from_product_name(product_name)?;
     let product_cluster = match client
         .get_namespaced_object(namespace, object_name, &product_gvk)
         .await
@@ -113,10 +113,14 @@ async fn list_stackable_stacklets(
     client: &Client,
     namespace: Option<&str>,
 ) -> Result<Vec<Stacklet>, Error> {
-    let product_list = build_products_gvk_list(PRODUCT_NAMES);
     let mut stacklets = Vec::new();
 
-    for (product_name, product_gvk) in product_list {
+    for (product_name, group, version, kind) in PRODUCTS {
+        let product_gvk = GroupVersionKind {
+            group: group.to_string(),
+            version: version.to_string(),
+            kind: kind.to_string(),
+        };
         let objects = match client
             .list_objects(&product_gvk, namespace)
             .await
@@ -164,42 +168,15 @@ async fn list_stackable_stacklets(
     Ok(stacklets)
 }
 
-fn build_products_gvk_list<'a>(product_names: &[&'a str]) -> IndexMap<&'a str, GroupVersionKind> {
-    let mut map = IndexMap::new();
+fn gvk_from_product_name(product_name: &str) -> Result<GroupVersionKind, Error> {
+    let (_, group, version, kind) = PRODUCTS
+        .iter()
+        .find(|(other_product_name, _, _, _)| product_name == *other_product_name)
+        .context(GetProductSnafu { product_name })?;
 
-    for product_name in product_names {
-        // Note(techassi): Why? Just why? Can we please make this consistent?
-        // Note(sbernauer): I think it's legit that SparkHistoryServer and SparkConnectServer are in
-        // the api group spark.stackable.tech. All of this will probably be rewritten any as soon as
-        // we have versions different than v1alpha1.
-        if *product_name == "spark-history" {
-            map.insert(*product_name, GroupVersionKind {
-                group: "spark.stackable.tech".into(),
-                version: "v1alpha1".into(),
-                kind: "SparkHistoryServer".into(),
-            });
-        } else if *product_name == "spark-connect" {
-            map.insert(*product_name, GroupVersionKind {
-                group: "spark.stackable.tech".into(),
-                version: "v1alpha1".into(),
-                kind: "SparkConnectServer".into(),
-            });
-        } else {
-            map.insert(*product_name, gvk_from_product_name(product_name));
-        }
-    }
-
-    map
-}
-
-// FIXME: Support SparkApplication and SparkConnectServer
-fn gvk_from_product_name(product_name: &str) -> GroupVersionKind {
-    GroupVersionKind {
-        group: format!("{product_name}.stackable.tech"),
-        version: "v1alpha1".into(),
-        kind: format!(
-            "{product_name}Cluster",
-            product_name = product_name.capitalize()
-        ),
-    }
+    Ok(GroupVersionKind {
+        group: group.to_string(),
+        version: version.to_string(),
+        kind: kind.to_string(),
+    })
 }
