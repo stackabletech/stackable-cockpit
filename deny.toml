@@ -1,3 +1,4 @@
+[graph]
 targets = [
     { triple = "x86_64-unknown-linux-gnu" },
     { triple = "aarch64-unknown-linux-gnu" },
@@ -7,34 +8,24 @@ targets = [
 ]
 
 [advisories]
-vulnerability = "warn"
-unmaintained = "allow"
-unsound = "warn"
+unmaintained = "workspace"
 yanked = "warn"
-notice = "warn"
 
 [bans]
 multiple-versions = "allow"
 
 [licenses]
-unlicensed = "deny"
-copyleft = "deny"
-allow-osi-fsf-free = "neither"
-default = "deny"
 confidence-threshold = 1.0
 allow = [
     "Apache-2.0",
     "BSD-2-Clause",
     "BSD-3-Clause",
-    "CC0-1.0",
     "ISC",
-    "LicenseRef-ring",
-    "LicenseRef-webpki",
     "MIT",
     "MPL-2.0",
-    "Unicode-DFS-2016",
-    "Zlib",
+    "Unicode-3.0",
     "Unlicense",
+    "Zlib",
 ]
 private = { ignore = true }
 
