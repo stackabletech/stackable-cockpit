@@ -28,9 +28,9 @@ pub const HELM_OCI_REGISTRY: &str = "oci://oci.stackable.tech/sdp-charts";
 pub const HELM_DEFAULT_CHART_VERSION: &str = "0.0.0-dev";
 
 /// Tuple of (product name, group, version, kind)
-/// Group is usually "<product name>.stackable.tech".
-/// The version is currently hard-coded to "v1alpha1".
-/// Kind is usually "<product name with a capitalized first letter>Cluster".
+/// Group is usually `<product name>.stackable.tech`.
+/// The version is currently hard-coded to `v1alpha1`.
+/// Kind is usually `<product name with a capitalized first letter>Cluster`.
 /// But there are exceptions.
 pub const PRODUCTS: &[(&str, &str, &str, &str)] = &[
     (
@@ -46,23 +46,23 @@ pub const PRODUCTS: &[(&str, &str, &str, &str)] = &[
     ("kafka", "kafka.stackable.tech", "v1alpha1", "KafkaCluster"),
     ("nifi", "nifi.stackable.tech", "v1alpha1", "NifiCluster"),
     ("opa", "opa.stackable.tech", "v1alpha1", "OpaCluster"),
-    // Kind is "OpenSearchCluster" instead of "OpensearchCluster".
+    // Kind is `OpenSearchCluster` instead of `OpensearchCluster`.
     (
         "opensearch",
         "opensearch.stackable.tech",
         "v1alpha1",
         "OpenSearchCluster",
     ),
-    // Group is "spark.stackable.tech" instead of "spark-connect.stackable.tech".
-    // Kind is "SparkConnectServer" instead of "Spark-connectCluster".
+    // Group is `spark.stackable.tech` instead of `spark-connect.stackable.tech`.
+    // Kind is `SparkConnectServer` instead of `Spark-connectCluster`.
     (
         "spark-connect",
         "spark.stackable.tech",
         "v1alpha1",
         "SparkConnectServer",
     ),
-    // Group is "spark.stackable.tech" instead of "spark-history.stackable.tech".
-    // Kind is "SparkHistoryServer" instead of "Spark-historyCluster".
+    // Group is `spark.stackable.tech` instead of `spark-history.stackable.tech`.
+    // Kind is `SparkHistoryServer` instead of `Spark-historyCluster`.
     (
         "spark-history",
         "spark.stackable.tech",
