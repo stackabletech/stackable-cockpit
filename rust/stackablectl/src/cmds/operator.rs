@@ -156,7 +156,10 @@ pub enum CmdError {
     SerializeJsonOutput { source: serde_json::Error },
 
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    KubeClientCreate {
+        #[snafu(source(from(k8s::Error, Box::new)))]
+        source: Box<k8s::Error>,
+    },
 
     #[snafu(display("failed to create namespace {namespace:?}"))]
     NamespaceCreate {

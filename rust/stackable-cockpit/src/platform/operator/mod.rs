@@ -26,6 +26,7 @@ pub const VALID_OPERATORS: &[&str] = &[
     "listener",
     "nifi",
     "opa",
+    "opensearch",
     "secret",
     "spark-k8s",
     "superset",
@@ -92,9 +93,10 @@ impl FromStr for OperatorSpec {
         ensure!(len <= 2, InvalidEqualSignCountSnafu);
 
         // Check if the provided operator name is in the list of valid operators
-        ensure!(VALID_OPERATORS.contains(&parts[0]), InvalidNameSnafu {
-            name: parts[0]
-        });
+        ensure!(
+            VALID_OPERATORS.contains(&parts[0]),
+            InvalidNameSnafu { name: parts[0] }
+        );
 
         // If there is only one part, the input didn't include
         // the optional version identifier

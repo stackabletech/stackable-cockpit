@@ -173,9 +173,10 @@ impl DemoArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
-                    release
-                });
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
 
                 if release == "dev" {
                     "main".to_string()
@@ -185,7 +186,7 @@ impl DemoArgs {
             }
             None => {
                 let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
-                format!("release-{release}", release = release_name,)
+                format!("release-{release_name}")
             }
         };
 

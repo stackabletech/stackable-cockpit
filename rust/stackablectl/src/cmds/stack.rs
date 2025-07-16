@@ -135,7 +135,8 @@ pub enum CmdError {
 
     #[snafu(display("failed to install stack {stack_name:?}"))]
     InstallStack {
-        source: stack::Error,
+        #[snafu(source(from(stack::Error, Box::new)))]
+        source: Box<stack::Error>,
         stack_name: String,
     },
 
@@ -143,7 +144,10 @@ pub enum CmdError {
     BuildLabels { source: LabelError },
 
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    KubeClientCreate {
+        #[snafu(source(from(k8s::Error, Box::new)))]
+        source: Box<k8s::Error>,
+    },
 }
 
 impl StackArgs {
@@ -159,9 +163,10 @@ impl StackArgs {
 
         let release_branch = match &self.release {
             Some(release) => {
-                ensure!(release_list.contains_key(release), NoSuchReleaseSnafu {
-                    release
-                });
+                ensure!(
+                    release_list.contains_key(release),
+                    NoSuchReleaseSnafu { release }
+                );
 
                 if release == "dev" {
                     "main".to_string()
@@ -171,7 +176,7 @@ impl StackArgs {
             }
             None => {
                 let (release_name, _) = release_list.first().context(LatestReleaseSnafu)?;
-                format!("release-{release}", release = release_name,)
+                format!("release-{release_name}")
             }
         };
 

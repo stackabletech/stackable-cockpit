@@ -36,7 +36,8 @@ pub enum CmdError {
 
     #[snafu(display("failed to get {pod}"))]
     GetPod {
-        source: kube::Error,
+        #[snafu(source(from(kube::Error, Box::new)))]
+        source: Box<kube::Error>,
         pod: ObjectRef<Pod>,
     },
 
@@ -48,15 +49,17 @@ pub enum CmdError {
 
     #[snafu(display("failed to create ephemeral debug container {container:?} on {pod}"))]
     CreateDebugContainer {
-        source: kube::Error,
-        pod: ObjectRef<Pod>,
+        #[snafu(source(from(kube::Error, Box::new)))]
+        source: Box<kube::Error>,
+        pod: Box<ObjectRef<Pod>>,
         container: String,
     },
 
     #[snafu(display("debug container {container:?} on {pod} never became ready"))]
     AwaitDebugContainerReadiness {
-        source: kube::runtime::wait::Error,
-        pod: ObjectRef<Pod>,
+        #[snafu(source(from(kube::runtime::wait::Error, Box::new)))]
+        source: Box<kube::runtime::wait::Error>,
+        pod: Box<ObjectRef<Pod>>,
         container: String,
     },
 
@@ -68,8 +71,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to attach to container {container:?} on {pod}"))]
     AttachContainer {
-        source: kube::Error,
-        pod: ObjectRef<Pod>,
+        #[snafu(source(from(kube::Error, Box::new)))]
+        source: Box<kube::Error>,
+        pod: Box<ObjectRef<Pod>>,
         container: String,
     },
 

@@ -66,22 +66,22 @@ File options:
           to provide multiple additional release files.
 
 Helm repository options:
-  --helm-repo-stable <URL>
+      --helm-repo-stable <URL>
           Provide a custom Helm stable repository URL
 
           [default: https://repo.stackable.tech/repository/helm-stable/]
 
-  --helm-repo-test <URL>
+      --helm-repo-test <URL>
           Provide a custom Helm test repository URL
 
           [default: https://repo.stackable.tech/repository/helm-test/]
 
-  --helm-repo-dev <URL>
+      --helm-repo-dev <URL>
           Provide a custom Helm dev repository URL
 
           [default: https://repo.stackable.tech/repository/helm-dev/]
 
-  --chart-source <CHART_SOURCE>
+      --chart-source <CHART_SOURCE>
           Source the charts from either a OCI registry or from index.yaml-based repositories.
 
           [default: oci]

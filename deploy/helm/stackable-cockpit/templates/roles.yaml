@@ -21,6 +21,7 @@ rules:
       - kafka.stackable.tech
       - nifi.stackable.tech
       - opa.stackable.tech
+      - opensearch.stackable.tech
       - spark.stackable.tech
       - superset.stackable.tech
       - trino.stackable.tech

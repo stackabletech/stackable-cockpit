@@ -5,7 +5,7 @@ use crate::utils::k8s::{self, Client};
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: k8s::Error },
+    KubeClientCreate { source: Box<k8s::Error> },
 
     #[snafu(display(
         "permission denied - try to create the namespace manually or choose an already existing one to which you have access to"
@@ -24,9 +24,11 @@ pub async fn create_if_needed(client: &Client, name: String) -> Result<(), Error
             k8s::Error::KubeClientCreate { source } => match source {
                 kube::Error::Api(err) if err.code == 401 => Error::PermissionDenied,
                 _ => Error::KubeClientCreate {
-                    source: k8s::Error::KubeClientCreate { source },
+                    source: Box::new(k8s::Error::KubeClientCreate { source }),
                 },
             },
-            _ => Error::KubeClientCreate { source: err },
+            _ => Error::KubeClientCreate {
+                source: Box::new(err),
+            },
         })
 }

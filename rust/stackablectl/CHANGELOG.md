@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add OpenSearch to the list of supported products ([#400]).
+
 ### Fixed
 
 - nix: Update nixpkgs and upgrade nodejs-18 to nodejs_20 ([#384]).
@@ -15,6 +19,7 @@ All notable changes to this project will be documented in this file.
 [#384]: https://github.com/stackabletech/stackable-cockpit/pull/384
 [#386]: https://github.com/stackabletech/stackable-cockpit/pull/386
 [#388]: https://github.com/stackabletech/stackable-cockpit/pull/388
+[#400]: https://github.com/stackabletech/stackable-cockpit/pull/400
 
 ## [1.0.0] - 2025-06-02
 

@@ -18,7 +18,10 @@ use crate::utils::k8s::{self, Client, ListParamsExt};
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to fetch data from Kubernetes API"))]
-    KubeClientFetch { source: k8s::Error },
+    KubeClientFetch {
+        #[snafu(source(from(k8s::Error, Box::new)))]
+        source: Box<k8s::Error>,
+    },
 
     #[snafu(display("missing namespace for service {service:?}"))]
     MissingServiceNamespace { service: String },

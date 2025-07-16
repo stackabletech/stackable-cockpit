@@ -141,9 +141,12 @@ impl Cluster {
             .await
             .context(CommandFailedToRunSnafu)?;
 
-        ensure!(output.status.success(), CommandErroredOutSnafu {
-            error: String::from_utf8_lossy(&output.stderr)
-        });
+        ensure!(
+            output.status.success(),
+            CommandErroredOutSnafu {
+                error: String::from_utf8_lossy(&output.stderr)
+            }
+        );
 
         let output = String::from_utf8_lossy(&output.stdout);
         Ok(output.lines().any(|name| name == cluster_name))

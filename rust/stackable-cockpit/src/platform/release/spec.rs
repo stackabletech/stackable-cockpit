@@ -49,7 +49,10 @@ pub enum Error {
     BackgroundTask { source: JoinError },
 
     #[snafu(display("failed to deploy manifests using the kube client"))]
-    DeployManifest { source: k8s::Error },
+    DeployManifest {
+        #[snafu(source(from(k8s::Error, Box::new)))]
+        source: Box<k8s::Error>,
+    },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]

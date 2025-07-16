@@ -27,20 +27,61 @@ pub const HELM_OCI_REGISTRY: &str = "oci://oci.stackable.tech/sdp-charts";
 
 pub const HELM_DEFAULT_CHART_VERSION: &str = "0.0.0-dev";
 
-pub const PRODUCT_NAMES: &[&str] = &[
-    "airflow",
-    "druid",
-    "hbase",
-    "hdfs",
-    "hive",
-    "kafka",
-    "nifi",
-    "opa",
-    "spark-connect",
-    "spark-history",
-    "superset",
-    "trino",
-    "zookeeper",
+/// Tuple of (product name, group, version, kind)
+/// Group is usually `<product name>.stackable.tech`.
+/// The version is currently hard-coded to `v1alpha1`.
+/// Kind is usually `<product name with a capitalized first letter>Cluster`.
+/// But there are exceptions.
+pub const PRODUCTS: &[(&str, &str, &str, &str)] = &[
+    (
+        "airflow",
+        "airflow.stackable.tech",
+        "v1alpha1",
+        "AirflowCluster",
+    ),
+    ("druid", "druid.stackable.tech", "v1alpha1", "DruidCluster"),
+    ("hbase", "hbase.stackable.tech", "v1alpha1", "HbaseCluster"),
+    ("hdfs", "hdfs.stackable.tech", "v1alpha1", "HdfsCluster"),
+    ("hive", "hive.stackable.tech", "v1alpha1", "HiveCluster"),
+    ("kafka", "kafka.stackable.tech", "v1alpha1", "KafkaCluster"),
+    ("nifi", "nifi.stackable.tech", "v1alpha1", "NifiCluster"),
+    ("opa", "opa.stackable.tech", "v1alpha1", "OpaCluster"),
+    // Kind is `OpenSearchCluster` instead of `OpensearchCluster`.
+    (
+        "opensearch",
+        "opensearch.stackable.tech",
+        "v1alpha1",
+        "OpenSearchCluster",
+    ),
+    // Group is `spark.stackable.tech` instead of `spark-connect.stackable.tech`.
+    // Kind is `SparkConnectServer` instead of `Spark-connectCluster`.
+    (
+        "spark-connect",
+        "spark.stackable.tech",
+        "v1alpha1",
+        "SparkConnectServer",
+    ),
+    // Group is `spark.stackable.tech` instead of `spark-history.stackable.tech`.
+    // Kind is `SparkHistoryServer` instead of `Spark-historyCluster`.
+    (
+        "spark-history",
+        "spark.stackable.tech",
+        "v1alpha1",
+        "SparkHistoryServer",
+    ),
+    (
+        "superset",
+        "superset.stackable.tech",
+        "v1alpha1",
+        "SupersetCluster",
+    ),
+    ("trino", "trino.stackable.tech", "v1alpha1", "TrinoCluster"),
+    (
+        "zookeeper",
+        "zookeeper.stackable.tech",
+        "v1alpha1",
+        "ZookeeperCluster",
+    ),
 ];
 
 pub const OCI_INDEX_PAGE_SIZE: usize = 20;
