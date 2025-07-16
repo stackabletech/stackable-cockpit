@@ -49,7 +49,10 @@ pub enum Error {
     BackgroundTask { source: JoinError },
 
     #[snafu(display("failed to deploy manifests using the kube client"))]
-    DeployManifest { source: Box<k8s::Error> },
+    DeployManifest {
+        #[snafu(source(from(k8s::Error, Box::new)))]
+        source: Box<k8s::Error>,
+    },
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -195,7 +198,6 @@ impl ReleaseSpec {
                 k8s_client
                     .replace_crds(&crd_manifests)
                     .await
-                    .map_err(Box::new)
                     .context(DeployManifestSnafu)?;
 
                 info!("Upgraded {product_name}-operator CRDs");

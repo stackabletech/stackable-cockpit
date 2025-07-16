@@ -135,6 +135,7 @@ pub enum CmdError {
 
     #[snafu(display("failed to install stack {stack_name:?}"))]
     InstallStack {
+        #[snafu(source(from(stack::Error, Box::new)))]
         source: Box<stack::Error>,
         stack_name: String,
     },
@@ -143,7 +144,10 @@ pub enum CmdError {
     BuildLabels { source: LabelError },
 
     #[snafu(display("failed to create Kubernetes client"))]
-    KubeClientCreate { source: Box<k8s::Error> },
+    KubeClientCreate {
+        #[snafu(source(from(k8s::Error, Box::new)))]
+        source: Box<k8s::Error>,
+    },
 }
 
 impl StackArgs {
@@ -335,10 +339,7 @@ async fn install_cmd(
                 .await
                 .context(InstallClusterSnafu)?;
 
-            let client = Client::new()
-                .await
-                .map_err(Box::new)
-                .context(KubeClientCreateSnafu)?;
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
             // Construct labels which get attached to all dynamic objects which
             // are part of the stack.
@@ -363,7 +364,6 @@ async fn install_cmd(
             stack_spec
                 .install(release_list, install_parameters, &client, transfer_client)
                 .await
-                .map_err(Box::new)
                 .context(InstallStackSnafu {
                     stack_name: args.stack_name.clone(),
                 })?;
