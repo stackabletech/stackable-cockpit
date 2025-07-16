@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-07-16
+
 ### Added
 
 - Add OpenSearch to the list of supported products ([#400]).
