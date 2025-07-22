@@ -1,6 +1,7 @@
 * xref:index.adoc[stackablectl]
 ** xref:installation.adoc[Installation]
 ** xref:quickstart.adoc[Quickstart]
+** xref:release-notes.adoc[Release notes]
 ** xref:commands/index.adoc[Commands]
 *** xref:commands/cache.adoc[cache]
 *** xref:commands/completions.adoc[completions]
