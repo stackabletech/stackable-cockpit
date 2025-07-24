@@ -5,6 +5,8 @@
 A full list of changes is available directly in https://github.com/stackabletech/stackable-cockpit/blob/main/rust/stackablectl/CHANGELOG.md[stackablectl's changelog].
 
 // WARNING: Please keep the empty newlines, otherwise headings are broken.
+include::partial$release-notes/release-1.1.0.adoc[]
+
 include::partial$release-notes/release-1.0.0.adoc[]
 
 include::partial$release-notes/releases-old.adoc[]
