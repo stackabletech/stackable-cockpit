@@ -1,7 +1,7 @@
 == 1.1.0
 
 * We now support idempotent Helm installations for demos and stacks.
-  See https://github.com/stackabletech/stackable-cockpit/pull/386[stackable-cokcpit#386].
+  See https://github.com/stackabletech/stackable-cockpit/pull/386[stackable-cockpit#386].
 * Ignore failed re-application of Jobs due to immutability in demo and stack installations.
   The user is now asked if these be deleted or recreated.
-  See https://github.com/stackabletech/stackable-cockpit/pull/386[stackable-cokcpit#386].
+  See https://github.com/stackabletech/stackable-cockpit/pull/386[stackable-cockpit#386].

@@ -5,4 +5,4 @@
   See https://github.com/stackabletech/stackable-cockpit/pull/376[stackable-cockpit#376].
 * Releases can now be upgraded with the new `release upgrade` command.
   This makes it easier to upgrade installed operators to a newer SDP release.
-  See https://github.com/stackabletech/stackable-cockpit/pull/379[stackable-cokcpit#379].
+  See https://github.com/stackabletech/stackable-cockpit/pull/379[stackable-cockpit#379].
