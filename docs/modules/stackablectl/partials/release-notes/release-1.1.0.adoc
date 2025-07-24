@@ -5,3 +5,5 @@
 * Ignore failed re-application of Jobs due to immutability in demo and stack installations.
   The user is now asked if these be deleted or recreated.
   See https://github.com/stackabletech/stackable-cockpit/pull/386[stackable-cockpit#386].
+* Default to release build for nix users.
+  See https://github.com/stackabletech/stackable-cockpit/pull/388[stackable-cockpit#388].
