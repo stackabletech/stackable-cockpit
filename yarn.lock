@@ -3269,15 +3269,15 @@ semver@^7.3.2, semver@^7.3.7, semver@^7.3.8, semver@^7.5.3:
   resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.2.tgz#1e3b34759f896e8f14d6134732ce798aeb0c6e13"
   integrity sha512-FNAIBWCx9qcRhoHcgcJ0gvU7SN1lYU2ZXuSfl04bSC5OpvDHFyJCjdNHomPXxjQlCBU67YW64PzY7/VIEH7F2w==
 
-seroval-plugins@^1.0.3:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/seroval-plugins/-/seroval-plugins-1.0.5.tgz#eeded50d736d5e1dba142a72b0188df9f4e42b6d"
-  integrity sha512-8+pDC1vOedPXjKG7oz8o+iiHrtF2WswaMQJ7CKFpccvSYfrzmvKY9zOJWCg+881722wIHfwkdnRmiiDm9ym+zQ==
+seroval-plugins@~1.3.0:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/seroval-plugins/-/seroval-plugins-1.3.2.tgz#4200b538d699853c9bf5c3b7155c498c7c263a6a"
+  integrity sha512-0QvCV2lM3aj/U3YozDiVwx9zpH0q8A60CTWIv4Jszj/givcudPb48B+rkU5D51NJ0pTpweGMttHjboPa9/zoIQ==
 
-seroval@^1.0.4:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.0.5.tgz#d71ee540d936babaed92f56eda3e52d8e2a3deed"
-  integrity sha512-TM+Z11tHHvQVQKeNlOUonOWnsNM+2IBwZ4vwoi4j3zKzIpc5IDw8WPwCfcc8F17wy6cBcJGbZbFOR0UCuTZHQA==
+seroval@~1.3.0:
+  version "1.3.2"
+  resolved "https://registry.yarnpkg.com/seroval/-/seroval-1.3.2.tgz#7e5be0dc1a3de020800ef013ceae3a313f20eca7"
+  integrity sha512-RbcPH1n5cfwKrru7v7+zrZvjLurgHhGyso3HTyGtRivGWgYjbOmGuivCQaORNELjNONoK35nj28EoWul9sb1zQ==
 
 set-function-length@^1.2.1:
   version "1.2.2"
@@ -3355,13 +3355,13 @@ solid-headless@^0.13.1:
     solid-use "^0.6.2"
 
 solid-js@^1.7.4:
-  version "1.8.17"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.8.17.tgz#780ed6f0fd8633009d1b3c29d56bf6b6bb33bd50"
-  integrity sha512-E0FkUgv9sG/gEBWkHr/2XkBluHb1fkrHywUgA6o6XolPDCJ4g1HaLmQufcBBhiF36ee40q+HpG/vCZu7fLpI3Q==
+  version "1.9.7"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.9.7.tgz#96ff7800648a30f22d29275264375589f3a725e9"
+  integrity sha512-/saTKi8iWEM233n5OSi1YHCCuh66ZIQ7aK2hsToPe4tqGm7qAejU1SwNuTPivbWAYq7SjuHVVYxxuZQNRbICiw==
   dependencies:
     csstype "^3.1.0"
-    seroval "^1.0.4"
-    seroval-plugins "^1.0.3"
+    seroval "~1.3.0"
+    seroval-plugins "~1.3.0"
 
 solid-refresh@^0.6.3:
   version "0.6.3"
