@@ -21,40 +21,52 @@ As of writing a `stacks.yaml` file could look as follows:
 [source,yaml]
 ----
 stacks:
-   mycorp-warehouse:
+  mycorp-warehouse:
     description: Internal stack we use to build our warehouses
-    stackableRelease: 22.09 # or use your custom release mycorp-release1
+    stackableRelease: 25.7 # or use your custom release mycorp-release1
+    stackableOperators:
+      - commons
+      - listener
+      - secret
+      - trino
+      - superset
     labels:
       - mycorp
       - warehouse
     manifests:
-      # We have Superset in out Stack, which needs a postgresql instance
+      # We have Superset in our Stack, which needs a postgresql instance
       # So let's install that first
-      - helmChart: &template-postgresql-superset
-        releaseName: postgresql-superset
-        name: postgresql
-        repo:
-            name: bitnami
-            url: https://charts.bitnami.com/bitnami/
-        version: 11.0.0
-        options:
-          global:
-            security:
-              allowInsecureImages: true
-          image:
-            repository: bitnamilegacy/postgresql
-          volumePermissions:
-            image:
-              repository: bitnamilegacy/os-shell
-          metrics:
-            image:
-              repository: bitnamilegacy/postgres-exporter
-          auth:
-            username: superset
-            password: superset
-            database: superset
+      - helmChart: https://my.corp/stacks/mycorp-warehouse/postgresql.yaml
       - plainYaml: https://my.corp/stacks/mycorp-warehouse/trino.yaml
       - plainYaml: https://my.corp/stacks/mycorp-warehouse/superset.yaml
+----
+
+The referenced `helmChart` file above could look like the following:
+
+[source,yaml]
+----
+releaseName: postgresql-superset
+name: postgresql
+repo:
+    name: bitnami
+    url: https://charts.bitnami.com/bitnami/
+version: 16.7.21
+options:
+  global:
+    security:
+      allowInsecureImages: true
+  image:
+    repository: bitnamilegacy/postgresql
+  volumePermissions:
+    image:
+      repository: bitnamilegacy/os-shell
+  metrics:
+    image:
+      repository: bitnamilegacy/postgres-exporter
+  auth:
+    username: superset
+    password: superset
+    database: superset
 ----
 
 == 2. Using the Custom `stacks.yaml` File
