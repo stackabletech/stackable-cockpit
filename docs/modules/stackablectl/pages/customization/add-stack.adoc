@@ -28,7 +28,7 @@ stacks:
       - mycorp
       - warehouse
     manifests:
-      # We have Superset in out Stack, which needs a postgressql instance
+      # We have Superset in out Stack, which needs a postgresql instance
       # So let's install that first
       - helmChart: &template-postgresql-superset
         releaseName: postgresql-superset
@@ -38,7 +38,18 @@ stacks:
             url: https://charts.bitnami.com/bitnami/
         version: 11.0.0
         options:
-            auth:
+          global:
+            security:
+              allowInsecureImages: true
+          image:
+            repository: bitnamilegacy/postgresql
+          volumePermissions:
+            image:
+              repository: bitnamilegacy/os-shell
+          metrics:
+            image:
+              repository: bitnamilegacy/postgres-exporter
+          auth:
             username: superset
             password: superset
             database: superset
