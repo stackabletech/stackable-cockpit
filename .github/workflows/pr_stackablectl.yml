@@ -37,10 +37,19 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # We intentionally don't use ubuntu-latest because we want to build against an old glibc version.
+          # (18.04 has glibc 2.27, 20.04 has glibc 2.31, 22.04 has glibc 2.35, 24.04 has glibc 2.39).
+          #
+          # A Rust binary will only run on systems that have the same or a newer glibc version!
+          # By building on a "modern" version we break the pre-build binaries for everyone that isn't
+          # (e.g. debian is normally behind Ubuntu).
+          #
+          # To achieve this we pick the oldest Ubuntu version that works out of the box.
           - target: x86_64-unknown-linux-gnu
-            os: ubuntu-24.04
+            os: ubuntu-22.04
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-24.04-arm
+            os: ubuntu-22.04-arm
+          # Technically it would be better to pin this versions, but so far this didn't cause any problems
           - target: x86_64-apple-darwin
             os: macos-latest
           - target: aarch64-apple-darwin
