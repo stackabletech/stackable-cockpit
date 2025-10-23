@@ -16,6 +16,7 @@ openapi = ["dep:utoipa"]
 helm-sys = { path = "../helm-sys" }
 
 bcrypt.workspace = true
+clap.workspace = true
 indexmap.workspace = true
 k8s-openapi.workspace = true
 kube.workspace = true

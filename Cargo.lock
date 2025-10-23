@@ -3438,6 +3438,7 @@ name = "stackable-cockpit"
 version = "0.0.0-dev"
 dependencies = [
  "bcrypt",
+ "clap",
  "futures",
  "helm-sys",
  "indexmap 2.11.4",
