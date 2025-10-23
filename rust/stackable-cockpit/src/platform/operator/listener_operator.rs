@@ -74,9 +74,9 @@ enum KubernetesEnvironment {
 
 /// Tries to guess what Kubernetes environment stackablectl is connecting to.
 ///
-/// Returns an `Err(())` in case anything goes wrong. This could e.g. be the case in case no
+/// Returns an error in case anything goes wrong. This could e.g. be the case in case no
 /// Kubernetes context is configured, stackablectl is missing RBAC permission to retrieve nodes or
-/// simply a network error,
+/// simply a network error.
 #[instrument]
 async fn guess_kubernetes_environment() -> Result<KubernetesEnvironment, snafu::Whatever> {
     let client = Client::try_default()
