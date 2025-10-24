@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use listener_operator::LISTENER_OPERATOR_PRESET;
+use listener_operator::LISTENER_CLASS_PRESET;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu, ensure};
@@ -213,7 +213,7 @@ impl OperatorSpec {
         let mut helm_values = None;
         if self.name == "listener" {
             helm_values = Some(
-                LISTENER_OPERATOR_PRESET.get()
+                LISTENER_CLASS_PRESET.get()
                     .expect("At this point LISTENER_OPERATOR_PRESET must be set by determine_and_store_listener_operator_preset")
                     .as_helm_values()
             );

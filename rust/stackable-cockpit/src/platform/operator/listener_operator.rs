@@ -17,7 +17,7 @@ pub enum ListenerClassPreset {
     EphemeralNodes,
 }
 
-impl ListenerOperatorPreset {
+impl ListenerClassPreset {
     pub fn as_helm_values(&self) -> String {
         let preset_value = match self {
             Self::None => "none",
@@ -29,9 +29,7 @@ impl ListenerOperatorPreset {
 }
 
 #[instrument]
-pub async fn determine_and_store_listener_class_preset(
-    from_cli: Option<&ListenerClassPreset>,
-) {
+pub async fn determine_and_store_listener_class_preset(from_cli: Option<&ListenerClassPreset>) {
     if let Some(from_cli) = from_cli {
         LISTENER_CLASS_PRESET
             .set(*from_cli)

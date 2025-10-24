@@ -1,5 +1,5 @@
 use clap::Args;
-use stackable_cockpit::platform::operator::listener_operator::ListenerOperatorPreset;
+use stackable_cockpit::platform::operator::listener_operator::ListenerClassPreset;
 
 #[derive(Debug, Args)]
 #[command(next_help_heading = "Operator specific configurations")]
@@ -13,5 +13,5 @@ pub struct CommonOperatorConfigsArgs {
     /// This argument is likely temporary until we support setting arbitrary helm values for the
     /// operators!
     #[arg(long, global = true)]
-    pub listener_class_presets: Option<ListenerOperatorPreset>,
+    pub listener_class_presets: Option<ListenerClassPreset>,
 }
