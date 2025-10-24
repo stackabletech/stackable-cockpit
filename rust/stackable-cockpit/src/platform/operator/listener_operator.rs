@@ -61,7 +61,7 @@ pub async fn determine_and_store_listener_operator_preset(
 
     LISTENER_OPERATOR_PRESET
         .set(listener_operator_preset)
-        .expect("We are the only function setting LISTENER_OPERATOR_PRESET");
+        .expect("LISTENER_CLASS_PRESET should be unset");
 }
 
 #[derive(Debug)]
