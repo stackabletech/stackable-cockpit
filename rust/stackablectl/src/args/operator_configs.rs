@@ -13,5 +13,5 @@ pub struct CommonOperatorConfigsArgs {
     /// This argument is likely temporary until we support setting arbitrary helm values for the
     /// operators!
     #[arg(long, global = true)]
-    pub listener_class_presets: Option<ListenerClassPreset>,
+    pub listener_class_preset: Option<ListenerClassPreset>,
 }
