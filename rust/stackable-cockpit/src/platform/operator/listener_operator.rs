@@ -7,10 +7,11 @@ use stackable_operator::{
 use tokio::sync::OnceCell;
 use tracing::{debug, info, instrument};
 
-pub static LISTENER_OPERATOR_PRESET: OnceCell<ListenerOperatorPreset> = OnceCell::const_new();
+pub static LISTENER_CLASS_PRESET: OnceCell<ListenerClassPreset> = OnceCell::const_new();
 
+/// Represents the `preset` value in the Listener Operator Helm Chart
 #[derive(Copy, Clone, Debug, ValueEnum)]
-pub enum ListenerOperatorPreset {
+pub enum ListenerClassPreset {
     None,
     StableNodes,
     EphemeralNodes,
@@ -28,13 +29,13 @@ impl ListenerOperatorPreset {
 }
 
 #[instrument]
-pub async fn determine_and_store_listener_operator_preset(
-    from_cli: Option<&ListenerOperatorPreset>,
+pub async fn determine_and_store_listener_class_preset(
+    from_cli: Option<&ListenerClassPreset>,
 ) {
     if let Some(from_cli) = from_cli {
-        LISTENER_OPERATOR_PRESET
+        LISTENER_CLASS_PRESET
             .set(*from_cli)
-            .expect("We are the only function setting LISTENER_OPERATOR_PRESET");
+            .expect("LISTENER_CLASS_PRESET should be unset");
         return;
     }
 
@@ -42,25 +43,25 @@ pub async fn determine_and_store_listener_operator_preset(
         info!("failed to determine Kubernetes environment, using defaults: {err:#?}");
         KubernetesEnvironment::Unknown
     });
-    let listener_operator_preset = match kubernetes_environment {
+    let listener_class_preset = match kubernetes_environment {
         // Kind does not support LoadBalancers out of the box, so avoid that
-        KubernetesEnvironment::Kind => ListenerOperatorPreset::StableNodes,
+        KubernetesEnvironment::Kind => ListenerClassPreset::StableNodes,
         // LoadBalancer support in k3s is optional, so let's be better safe than sorry and not use
         // them
-        KubernetesEnvironment::K3s => ListenerOperatorPreset::StableNodes,
+        KubernetesEnvironment::K3s => ListenerClassPreset::StableNodes,
         // Weekly node rotations and LoadBalancer support
-        KubernetesEnvironment::Ionos => ListenerOperatorPreset::EphemeralNodes,
+        KubernetesEnvironment::Ionos => ListenerClassPreset::EphemeralNodes,
         // Don't pin nodes and assume we have LoadBalancer support
-        KubernetesEnvironment::Unknown => ListenerOperatorPreset::EphemeralNodes,
+        KubernetesEnvironment::Unknown => ListenerClassPreset::EphemeralNodes,
     };
     debug!(
-        preset = ?listener_operator_preset,
+        preset = ?listener_class_preset,
         kubernetes.environment = ?kubernetes_environment,
-        "Using listener-operator preset"
+        "Using ListenerClass preset"
     );
 
-    LISTENER_OPERATOR_PRESET
-        .set(listener_operator_preset)
+    LISTENER_CLASS_PRESET
+        .set(listener_class_preset)
         .expect("LISTENER_CLASS_PRESET should be unset");
 }
 
