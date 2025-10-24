@@ -9,9 +9,6 @@ pub struct CommonOperatorConfigsArgs {
     /// This maps to the listener-operator Helm Chart preset value, see
     /// [the listener-operator documentation](https://docs.stackable.tech/home/nightly/listener-operator/listenerclass/#presets)
     /// for details.
-    ///
-    /// This argument is likely temporary until we support setting arbitrary helm values for the
-    /// operators!
     #[arg(long, global = true)]
     pub listener_class_preset: Option<ListenerClassPreset>,
 }
