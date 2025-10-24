@@ -4,7 +4,7 @@ use stackable_cockpit::platform::operator::listener_operator::ListenerClassPrese
 #[derive(Debug, Args)]
 #[command(next_help_heading = "Operator specific configurations")]
 pub struct CommonOperatorConfigsArgs {
-    /// Choose the ListenerClass presets (`none`, `ephemeral-nodes` or `stable-nodes`).
+    /// Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`).
     ///
     /// This maps to the listener-operator preset, see
     /// [the listener-operator documentation](https://docs.stackable.tech/home/nightly/listener-operator/listenerclass/#presets)
