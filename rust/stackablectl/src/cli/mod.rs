@@ -192,7 +192,7 @@ impl Cli {
         cache.auto_purge().await.unwrap();
 
         determine_and_store_listener_operator_preset(
-            self.operator_configs.listener_operator_preset.as_ref(),
+            self.operator_configs.listener_class_presets.as_ref(),
         )
         .await;
 

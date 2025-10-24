@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Automatically detect Kubernetes environment (e.g. kind, k3s or IONOS) and choose a sensible [listener-operator preset] by default ([#414]).
-- Support configuring the [listener-operator preset] using `--listener-operator-preset` ([#414]).
+- Support configuring the [listener-operator preset] using `--listener-class-presets` ([#414]).
 
 [#414]: https://github.com/stackabletech/stackable-cockpit/pull/414
 [listener-operator preset]: https://docs.stackable.tech/home/nightly/listener-operator/listenerclass/#presets
