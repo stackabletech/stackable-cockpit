@@ -1,5 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
+use listener_operator::LISTENER_CLASS_PRESET;
 use semver::Version;
 use serde::Serialize;
 use snafu::{ResultExt, Snafu, ensure};
@@ -13,6 +14,8 @@ use crate::{
     helm,
     utils::operator_chart_name,
 };
+
+pub mod listener_operator;
 
 pub const VALID_OPERATORS: &[&str] = &[
     "airflow",
@@ -93,10 +96,9 @@ impl FromStr for OperatorSpec {
         ensure!(len <= 2, InvalidEqualSignCountSnafu);
 
         // Check if the provided operator name is in the list of valid operators
-        ensure!(
-            VALID_OPERATORS.contains(&parts[0]),
-            InvalidNameSnafu { name: parts[0] }
-        );
+        ensure!(VALID_OPERATORS.contains(&parts[0]), InvalidNameSnafu {
+            name: parts[0]
+        });
 
         // If there is only one part, the input didn't include
         // the optional version identifier
@@ -208,6 +210,15 @@ impl OperatorSpec {
             ChartSourceType::Repo => self.helm_repo_name(),
         };
 
+        let mut helm_values = None;
+        if self.name == "listener" {
+            helm_values = Some(
+                LISTENER_CLASS_PRESET.get()
+                    .expect("At this point LISTENER_CLASS_PRESET must be set by determine_and_store_listener_class_preset")
+                    .as_helm_values()
+            );
+        };
+
         // Install using Helm
         helm::install_release_from_repo_or_registry(
             &helm_name,
@@ -216,7 +227,7 @@ impl OperatorSpec {
                 chart_name: &helm_name,
                 chart_source: &chart_source,
             },
-            None,
+            helm_values.as_deref(),
             namespace,
             true,
         )?;

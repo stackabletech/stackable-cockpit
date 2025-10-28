@@ -6,7 +6,9 @@ use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
-    platform::operator::ChartSourceType,
+    platform::operator::{
+        ChartSourceType, listener_operator::determine_and_store_listener_class_preset,
+    },
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
@@ -15,7 +17,7 @@ use stackable_cockpit::{
 use tracing::{Level, instrument};
 
 use crate::{
-    args::{CommonFileArgs, CommonRepoArgs},
+    args::{CommonFileArgs, CommonOperatorConfigsArgs, CommonRepoArgs},
     cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
     constants::{
         DEMOS_REPOSITORY_DEMOS_SUBPATH, DEMOS_REPOSITORY_STACKS_SUBPATH, DEMOS_REPOSITORY_URL_BASE,
@@ -78,6 +80,9 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
 
     #[command(flatten)]
     pub repos: CommonRepoArgs,
+
+    #[command(flatten)]
+    pub operator_configs: CommonOperatorConfigsArgs,
 
     #[command(subcommand)]
     pub subcommand: Commands,
@@ -185,6 +190,11 @@ impl Cli {
 
         // TODO (Techassi): Do we still want to auto purge when running cache commands?
         cache.auto_purge().await.unwrap();
+
+        determine_and_store_listener_class_preset(
+            self.operator_configs.listener_class_preset.as_ref(),
+        )
+        .await;
 
         match &self.subcommand {
             Commands::Operator(args) => args.run(self).await.context(OperatorSnafu),
