@@ -214,7 +214,7 @@ impl OperatorSpec {
         if self.name == "listener" {
             helm_values = Some(
                 LISTENER_CLASS_PRESET.get()
-                    .expect("At this point LISTENER_OPERATOR_PRESET must be set by determine_and_store_listener_operator_preset")
+                    .expect("At this point LISTENER_CLASS_PRESET must be set by determine_and_store_listener_class_preset")
                     .as_helm_values()
             );
         };
