@@ -95,11 +95,19 @@ Helm repository options:
       --chart-source <CHART_SOURCE>
           Source the charts from either a OCI registry or from index.yaml-based repositories.
 
-          [default: oci]
-
           Possible values:
           - oci:  OCI registry
           - repo: index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific
+
+          [default: oci]
+
+Operator specific configurations:
+      --listener-class-preset <LISTENER_CLASS_PRESET>
+          Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`).
+
+          This maps to the listener-operator Helm Chart preset value, see [the listener-operator documentation](https://docs.stackable.tech/home/nightly/listener-operator/listenerclass/#presets) for details.
+
+          [possible values: none, stable-nodes, ephemeral-nodes]
 ```
 
 ## Dev Setup

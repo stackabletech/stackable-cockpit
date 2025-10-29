@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-10-29
+
 ### Added
 
 - Automatically detect Kubernetes environment (e.g. kind, k3s or IONOS) and choose a sensible [ListenerClass preset] by default ([#414]).

@@ -28,6 +28,7 @@ _stackablectl() {
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -57,6 +58,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -95,6 +97,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -125,6 +128,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -157,6 +161,7 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -182,6 +187,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -215,6 +221,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -281,6 +288,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -319,6 +327,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -349,6 +358,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -385,6 +395,7 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -410,6 +421,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -439,6 +451,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -507,6 +520,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -546,6 +560,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -577,6 +592,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -615,6 +631,7 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--skip-release[Skip the installation of the release during the stack install process]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -675,6 +692,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -707,6 +725,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -744,6 +763,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -799,6 +819,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -838,6 +859,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -869,6 +891,7 @@ yaml\:"Print output formatted as YAML"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -907,6 +930,7 @@ minikube\:"Use a minikube cluster"))' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--skip-release[Skip the installation of the release during the stack install process]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -967,6 +991,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -997,6 +1022,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1019,6 +1045,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1041,6 +1068,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1063,6 +1091,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1085,6 +1114,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1151,6 +1181,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1181,6 +1212,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1203,6 +1235,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--old[Only remove outdated files in the cache]' \
 '--outdated[Only remove outdated files in the cache]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
@@ -1264,6 +1297,7 @@ _arguments "${_arguments_options[@]}" : \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
 '--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
