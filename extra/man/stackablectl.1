@@ -1,15 +1,15 @@
 .ie \n(.g .ds Aq \(aq
 .el .ds Aq '
-.TH stackablectl 1  "stackablectl 1.1.0" 
+.TH stackablectl 1  "stackablectl 1.2.0" 
 .SH NAME
 stackablectl \- Command line tool to interact with the Stackable Data Platform
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-\-chart\-source\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-\-chart\-source\fR] [\fB\-\-listener\-class\-preset\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 Command line tool to interact with the Stackable Data Platform
 .SH OPTIONS
 .TP
-\fB\-l\fR, \fB\-\-log\-level\fR=\fILOG_LEVEL\fR
+\fB\-l\fR, \fB\-\-log\-level\fR \fI<LOG_LEVEL>\fR
 Log level this application uses
 .TP
 \fB\-\-no\-cache\fR
@@ -25,7 +25,7 @@ Print help (see a summary with \*(Aq\-h\*(Aq)
 Print version
 .SH "FILE OPTIONS"
 .TP
-\fB\-d\fR, \fB\-\-demo\-file\fR=\fIDEMO_FILE\fR
+\fB\-d\fR, \fB\-\-demo\-file\fR \fI<DEMO_FILE>\fR
 Provide one or more additional (custom) demo file(s)
 
 Demos are loaded in the following order: Remote (default) demo file, custom
@@ -36,7 +36,7 @@ demos with the same name, the last demo definition will be used.
 Use "stackablectl [OPTIONS] <COMMAND> \-d path/to/demos1.yaml \-d path/to/demos2.yaml"
 to provide multiple additional demo files.
 .TP
-\fB\-s\fR, \fB\-\-stack\-file\fR=\fISTACK_FILE\fR
+\fB\-s\fR, \fB\-\-stack\-file\fR \fI<STACK_FILE>\fR
 Provide one or more additional (custom) stack file(s)
 
 Stacks are loaded in the following order: Remote (default) stack file, custom
@@ -47,7 +47,7 @@ stacks with the same name, the last stack definition will be used.
 Use "stackablectl [OPTIONS] <COMMAND> \-s path/to/stacks1.yaml \-s path/to/stacks2.yaml"
 to provide multiple additional stack files.
 .TP
-\fB\-r\fR, \fB\-\-release\-file\fR=\fIRELEASE_FILE\fR
+\fB\-r\fR, \fB\-\-release\-file\fR \fI<RELEASE_FILE>\fR
 Provide one or more additional (custom) release file(s)
 
 Releases are loaded in the following order: Remote (default) release file,
@@ -60,16 +60,16 @@ Use "stackablectl [OPTIONS] <COMMAND> \-r path/to/releases1.yaml \-r path/to/rel
 to provide multiple additional release files.
 .SH "HELM REPOSITORY OPTIONS"
 .TP
-\fB\-\-helm\-repo\-stable\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-stable/]
+\fB\-\-helm\-repo\-stable\fR \fI<URL>\fR [default: https://repo.stackable.tech/repository/helm\-stable/]
 Provide a custom Helm stable repository URL
 .TP
-\fB\-\-helm\-repo\-test\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-test/]
+\fB\-\-helm\-repo\-test\fR \fI<URL>\fR [default: https://repo.stackable.tech/repository/helm\-test/]
 Provide a custom Helm test repository URL
 .TP
-\fB\-\-helm\-repo\-dev\fR=\fIURL\fR [default: https://repo.stackable.tech/repository/helm\-dev/]
+\fB\-\-helm\-repo\-dev\fR \fI<URL>\fR [default: https://repo.stackable.tech/repository/helm\-dev/]
 Provide a custom Helm dev repository URL
 .TP
-\fB\-\-chart\-source\fR=\fICHART_SOURCE\fR [default: oci]
+\fB\-\-chart\-source\fR \fI<CHART_SOURCE>\fR [default: oci]
 Source the charts from either a OCI registry or from index.yaml\-based repositories.
 .br
 
@@ -81,6 +81,16 @@ oci: OCI registry
 .IP \(bu 2
 repo: index.yaml\-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator\-specific
 .RE
+.SH "OPERATOR SPECIFIC CONFIGURATIONS"
+.TP
+\fB\-\-listener\-class\-preset\fR \fI<LISTENER_CLASS_PRESET>\fR
+Choose the ListenerClass preset (`none`, `ephemeral\-nodes` or `stable\-nodes`).
+
+This maps to the listener\-operator Helm Chart preset value, see [the listener\-operator documentation](https://docs.stackable.tech/home/nightly/listener\-operator/listenerclass/#presets) for details.
+.br
+
+.br
+[\fIpossible values: \fRnone, stable\-nodes, ephemeral\-nodes]
 .SH SUBCOMMANDS
 .TP
 stackablectl\-operator(1)
@@ -110,6 +120,6 @@ EXPERIMENTAL: Launch a debug container for a Pod
 stackablectl\-help(1)
 Print this message or the help of the given subcommand(s)
 .SH VERSION
-v1.1.0
+v1.2.0
 .SH AUTHORS
 Stackable GmbH <info@stackable.tech>

@@ -1,6 +1,6 @@
 # Print an optspec for argparse to handle cmd's options that are independent of any subcommand.
 function __fish_stackablectl_global_optspecs
-	string join \n l/log-level= no-cache d/demo-file= s/stack-file= r/release-file= helm-repo-stable= helm-repo-test= helm-repo-dev= chart-source= h/help V/version
+	string join \n l/log-level= no-cache d/demo-file= s/stack-file= r/release-file= helm-repo-stable= helm-repo-test= helm-repo-dev= chart-source= listener-class-preset= h/help V/version
 end
 
 function __fish_stackablectl_needs_command
@@ -33,6 +33,9 @@ complete -c stackablectl -n "__fish_stackablectl_needs_command" -l helm-repo-tes
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_needs_command" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -s V -l version -d 'Print version'
@@ -54,6 +57,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s V -l version -d 'Print version'
@@ -76,6 +82,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
@@ -92,6 +101,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
@@ -110,6 +122,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
@@ -123,6 +138,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -s V -l version -d 'Print version'
@@ -140,6 +158,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -s V -l version -d 'Print version'
@@ -158,6 +179,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and n
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -s V -l version -d 'Print version'
@@ -180,6 +204,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
@@ -196,6 +223,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
@@ -216,6 +246,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
@@ -229,6 +262,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -s V -l version -d 'Print version'
@@ -244,6 +280,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -s V -l version -d 'Print version'
@@ -263,6 +302,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s V -l version -d 'Print version'
@@ -284,6 +326,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
@@ -301,6 +346,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
@@ -323,6 +371,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l skip-release -d 'Skip the installation of the release during the stack install process'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -340,6 +391,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s V -l version -d 'Print version'
@@ -356,6 +410,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s V -l version -d 'Print version'
@@ -374,6 +431,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
@@ -390,6 +450,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s V -l version -d 'Print version'
@@ -411,6 +474,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
@@ -428,6 +494,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -s V -l version -d 'Print version'
@@ -450,6 +519,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l skip-release -d 'Skip the installation of the release during the stack install process'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -467,6 +539,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s V -l version -d 'Print version'
@@ -485,6 +560,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s V -l version -d 'Print version'
@@ -497,6 +575,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -s V -l version -d 'Print version'
@@ -509,6 +590,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s V -l version -d 'Print version'
@@ -521,6 +605,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s V -l version -d 'Print version'
@@ -533,6 +620,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s V -l version -d 'Print version'
@@ -551,6 +641,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s V -l version -d 'Print version'
@@ -566,6 +659,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -s V -l version -d 'Print version'
@@ -578,6 +674,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l old -l outdated -d 'Only remove outdated files in the cache'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -597,6 +696,9 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-d
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s V -l version -d 'Print version'

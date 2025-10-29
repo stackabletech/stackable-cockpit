@@ -4,6 +4,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Command line tool to interact with the Stackable Data Platform
   export extern stackablectl [
     --log-level(-l): string   # Log level this application uses
@@ -15,12 +19,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl operator chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl operator listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Interact with single operator instead of the full platform
@@ -34,6 +43,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl operator chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl operator listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -44,6 +54,10 @@ module completions {
 
   def "nu-complete stackablectl operator list chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl operator list listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List available operators
@@ -58,6 +72,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl operator list chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl operator list listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -68,6 +83,10 @@ module completions {
 
   def "nu-complete stackablectl operator describe chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl operator describe listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Print out detailed operator information
@@ -83,6 +102,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl operator describe chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl operator describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -93,6 +113,10 @@ module completions {
 
   def "nu-complete stackablectl operator install chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl operator install listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Install one or more operators
@@ -113,12 +137,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl operator install chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl operator install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl operator uninstall chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl operator uninstall listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Uninstall one or more operators
@@ -135,6 +164,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl operator uninstall chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl operator uninstall listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -145,6 +175,10 @@ module completions {
 
   def "nu-complete stackablectl operator installed chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl operator installed listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List installed operators
@@ -161,6 +195,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl operator installed chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl operator installed listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -197,6 +232,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl release listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Interact with all operators of the platform which are released together
   export extern "stackablectl release" [
     --log-level(-l): string   # Log level this application uses
@@ -208,6 +247,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl release chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl release listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -218,6 +258,10 @@ module completions {
 
   def "nu-complete stackablectl release list chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl release list listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List available releases
@@ -232,6 +276,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl release list chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl release list listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -242,6 +287,10 @@ module completions {
 
   def "nu-complete stackablectl release describe chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl release describe listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Print out detailed release information
@@ -257,6 +306,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl release describe chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl release describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -267,6 +317,10 @@ module completions {
 
   def "nu-complete stackablectl release install chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl release install listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Install a specific release
@@ -289,12 +343,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl release install chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl release install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl release uninstall chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl release uninstall listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Uninstall a release
@@ -311,12 +370,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl release uninstall chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl release uninstall listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl release upgrade chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl release upgrade listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Upgrade a release
@@ -335,6 +399,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl release upgrade chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl release upgrade listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -371,6 +436,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl stack listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Interact with stacks, which are ready-to-use product combinations
   export extern "stackablectl stack" [
     --release: string         # Target a specific Stackable release
@@ -383,6 +452,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stack chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stack listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -393,6 +463,10 @@ module completions {
 
   def "nu-complete stackablectl stack list chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl stack list listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List available stacks
@@ -408,6 +482,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stack list chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stack list listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -418,6 +493,10 @@ module completions {
 
   def "nu-complete stackablectl stack describe chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl stack describe listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Describe a specific stack
@@ -434,6 +513,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stack describe chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stack describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -444,6 +524,10 @@ module completions {
 
   def "nu-complete stackablectl stack install chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl stack install listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Install a specific stack
@@ -470,6 +554,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stack install chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stack install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -498,6 +583,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl stacklet listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Interact with deployed stacklets, which are bundles of resources and containers required to run the product
   export extern "stackablectl stacklet" [
     --log-level(-l): string   # Log level this application uses
@@ -509,12 +598,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stacklet chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stacklet listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl stacklet credentials chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl stacklet credentials listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Display credentials for a stacklet
@@ -531,6 +625,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stacklet credentials chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stacklet credentials listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -541,6 +636,10 @@ module completions {
 
   def "nu-complete stackablectl stacklet list chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl stacklet list listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List deployed stacklets
@@ -559,6 +658,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl stacklet list chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stacklet list listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -583,6 +683,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl demo listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform
   export extern "stackablectl demo" [
     --release: string         # Target a specific Stackable release
@@ -595,6 +699,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl demo chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl demo listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -605,6 +710,10 @@ module completions {
 
   def "nu-complete stackablectl demo list chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl demo list listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List available demos
@@ -620,6 +729,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl demo list chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl demo list listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -630,6 +740,10 @@ module completions {
 
   def "nu-complete stackablectl demo describe chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl demo describe listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Print out detailed demo information
@@ -646,6 +760,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl demo describe chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl demo describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -656,6 +771,10 @@ module completions {
 
   def "nu-complete stackablectl demo install chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl demo install listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Install a specific demo
@@ -682,6 +801,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl demo install chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl demo install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -710,6 +830,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl completions listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Generate shell completions for this tool
   export extern "stackablectl completions" [
     --log-level(-l): string   # Log level this application uses
@@ -721,12 +845,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl completions chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl completions listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl completions bash chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl completions bash listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Generate shell completions for Bash
@@ -740,12 +869,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl completions bash chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl completions bash listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl completions elvish chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl completions elvish listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Generate shell completions for Elvish
@@ -759,12 +893,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl completions elvish chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl completions elvish listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl completions fish chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl completions fish listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Generate shell completions for Fish
@@ -778,12 +917,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl completions fish chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl completions fish listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl completions nushell chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl completions nushell listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Generate shell completions for Nushell
@@ -797,12 +941,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl completions nushell chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl completions nushell listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl completions zsh chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl completions zsh listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Generate shell completions for ZSH
@@ -816,6 +965,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl completions zsh chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl completions zsh listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -852,6 +1002,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl cache listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # Interact with locally cached files
   export extern "stackablectl cache" [
     --log-level(-l): string   # Log level this application uses
@@ -863,12 +1017,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl cache chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl cache listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl cache list chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl cache list listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # List cached files
@@ -882,12 +1041,17 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl cache list chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl cache list listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
 
   def "nu-complete stackablectl cache clean chart_source" [] {
     [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl cache clean listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
   }
 
   # Clean cached files
@@ -903,6 +1067,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl cache clean chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl cache clean listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
@@ -927,6 +1092,10 @@ module completions {
     [ "oci" "repo" ]
   }
 
+  def "nu-complete stackablectl experimental-debug listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
   # EXPERIMENTAL: Launch a debug container for a Pod
   export extern "stackablectl experimental-debug" [
     --namespace(-n): string   # The namespace of the Pod being debugged
@@ -943,6 +1112,7 @@ module completions {
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
     --chart-source: string@"nu-complete stackablectl experimental-debug chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl experimental-debug listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
   ]
