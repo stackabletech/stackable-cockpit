@@ -47,7 +47,7 @@ WORKDIR /
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain 1.68.2
 ## PATCH: cargo-cyclonedx@0.3.7 uses libcargo 0.64 (Cargo 1.63), while our build uses features from Cargo 1.64
 ## See https://github.com/CycloneDX/cyclonedx-rust-cargo/discussions/416
-#  && . "$HOME/.cargo/env" && cargo install cargo-cyclonedx@0.3.7 cargo-auditable@0.6.1
+#  && . "$HOME/.cargo/env" && cargo install --locked cargo-cyclonedx@0.3.7 cargo-auditable@0.6.1
 
 # Build artifacts will be available in /app.
 RUN mkdir /app
