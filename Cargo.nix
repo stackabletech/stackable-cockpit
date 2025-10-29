@@ -11303,6 +11303,11 @@ rec {
             packageId = "bcrypt";
           }
           {
+            name = "clap";
+            packageId = "clap";
+            features = [ "derive" "env" ];
+          }
+          {
             name = "futures";
             packageId = "futures";
           }
@@ -11987,7 +11992,7 @@ rec {
       };
       "stackablectl" = rec {
         crateName = "stackablectl";
-        version = "1.1.0";
+        version = "1.2.0";
         edition = "2021";
         crateBin = [
           {
