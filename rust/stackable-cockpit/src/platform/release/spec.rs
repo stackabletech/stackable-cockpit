@@ -200,8 +200,8 @@ impl ReleaseSpec {
                             // Ignore 404, as CRD versioning is rolled out to operators.
                             // Starting with secret-operator 25.11.0, the CRD is maintained by the operator,
                             // making this entire functionality obsolete.
-                            // As only some of the operators are migrated yet, some operator crds.yaml's are gone
-                            // (hence the 404) a 404, some won't.
+                            // As only some of the operators are migrated yet, some operator crds.yaml's
+                            // return a 404, other don't.
                             debug!(
                                 product = product_name,
                                 // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-client-span
