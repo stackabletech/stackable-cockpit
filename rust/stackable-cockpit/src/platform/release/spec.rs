@@ -1,9 +1,10 @@
 use futures::{StreamExt as _, TryStreamExt};
 use indexmap::IndexMap;
+use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
-use tracing::{Instrument, Span, info, instrument};
+use tracing::{Instrument, Span, debug, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
@@ -181,18 +182,38 @@ impl ReleaseSpec {
                     }
                 };
 
-                let request_url = &format!(
+                let request_url_string = &format!(
                     "https://raw.githubusercontent.com/stackabletech/{product_name}-operator/{release_branch}/deploy/helm/{product_name}-operator/crds/crds.yaml"
                 );
-                let request_url = request_url.into_path_or_url().context(ParsePathOrUrlSnafu {
-                    path_or_url: request_url.clone(),
+                let request_url = request_url_string.into_path_or_url().context(ParsePathOrUrlSnafu {
+                    path_or_url: request_url_string,
                 })?;
 
                 // Get CRD manifests from request_url
-                let crd_manifests: String = transfer_client
+                let crd_manifests = transfer_client
                     .get(&request_url, &Text)
-                    .await
-                    .context(FileTransferSnafu)?;
+                    .await;
+                let crd_manifests = match crd_manifests {
+                        Ok(crd_manifests) => crd_manifests,
+                        Err(crate::xfer::Error::FetchRemoteContent{source: reqwest_error})
+                            if reqwest_error.status() == Some(StatusCode::NOT_FOUND) => {
+                            // Ignore 404, as CRD versioning is rolled out to operators.
+                            // Starting with secret-operator 25.11.0, the CRD is maintained by the operator,
+                            // making this entire functionality obsolete.
+                            // As only some of the operators are migrated yet, some operator crds.yaml's are gone
+                            // (hence the 404) a 404, some won't.
+                            debug!(
+                                product = product_name,
+                                // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-client-span
+                                url.full = request_url_string,
+                                "Skipped updating CRD, as it doesn't exist in the upstream GitHub repo (as CRD versioning was introduced)"
+                            );
+                            return Ok(());
+                        },
+                        Err(err) => {
+                            return Err(Error::FileTransfer { source: err });
+                        },
+                    };
 
                 // Upgrade CRDs
                 k8s_client
