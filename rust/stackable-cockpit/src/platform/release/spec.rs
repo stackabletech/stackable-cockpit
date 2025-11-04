@@ -206,7 +206,7 @@ impl ReleaseSpec {
                                 product = product_name,
                                 // https://opentelemetry.io/docs/specs/semconv/http/http-spans/#http-client-span
                                 url.full = request_url_string,
-                                "Skipped updating CRD, as it doesn't exist in the upstream GitHub repo (as CRD versioning was introduced)"
+                                "Skipped updating CRD, as it doesn't exist in the upstream GitHub repo because the operator most likely uses CRD versioning"
                             );
                             return Ok(());
                         },
