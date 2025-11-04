@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+
+- Don't crash during `release upgrade` for SDP 25.11.
+  Previously it errored with `HTTP status client error (404 Not Found) for url (https://raw.githubusercontent.com/stackabletech/secret-operator/main/deploy/helm/secret-operator/crds/crds.yaml)`, as the secret-operator now maintains the CRD itself ([#418]).
+
+[#418]: https://github.com/stackabletech/stackable-cockpit/pull/418
+
 ## [1.2.0] - 2025-10-29
 
 ### Added
