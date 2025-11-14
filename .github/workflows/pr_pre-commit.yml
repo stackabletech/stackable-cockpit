@@ -23,7 +23,7 @@ jobs:
           node-version: 18
           cache: yarn
       - run: yarn install --frozen-lockfile
-      - uses: stackabletech/actions/run-pre-commit@5901c3b1455488820c4be367531e07c3c3e82538 # v0.4.0
+      - uses: stackabletech/actions/run-pre-commit@976e8c293cb59f391dbf8563ab28e965e79ca36d # v0.10.4
         with:
           rust: ${{ env.RUST_TOOLCHAIN_VERSION }}
           hadolint: ${{ env.HADOLINT_VERSION }}
