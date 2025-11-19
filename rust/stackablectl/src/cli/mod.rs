@@ -188,11 +188,10 @@ impl Cli {
         }
 
         let xdg_directories = Cli::xdg_directories()?;
+        // TODO (@Techassi): Move this file name to a constant
         let user_config_path = xdg_directories.config_dir().join("config.toml");
 
-        let _user_config = UserConfig::from_file(user_config_path)
-            .unwrap()
-            .unwrap_or_default();
+        let _user_config = UserConfig::from_file_or_default(user_config_path).unwrap();
         dbg!(_user_config);
 
         let cache = self

@@ -29,18 +29,16 @@ pub enum Error {
 }
 
 impl UserConfig {
-    pub fn from_file<P>(path: P) -> Result<Option<Self>, Error>
+    /// Reads [`UserConfig`] from `path` or if not found, falls back to the default config.
+    pub fn from_file_or_default<P>(path: P) -> Result<Self, Error>
     where
         P: AsRef<Path>,
     {
         let path = path.as_ref();
 
         match std::fs::read_to_string(path) {
-            Ok(contents) => {
-                let config = toml::from_str(&contents).context(DeserializeSnafu { path })?;
-                Ok(Some(config))
-            }
-            Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(None),
+            Ok(contents) => toml::from_str(&contents).context(DeserializeSnafu { path }),
+            Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
             Err(err) => Err(Error::Read {
                 path: path.to_path_buf(),
                 source: err,
