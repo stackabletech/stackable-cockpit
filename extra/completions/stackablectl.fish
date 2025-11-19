@@ -47,6 +47,7 @@ complete -c stackablectl -n "__fish_stackablectl_needs_command" -f -a "demo" -d 
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -f -a "completions" -d 'Generate shell completions for this tool'
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -f -a "cache" -d 'Interact with locally cached files'
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -f -a "experimental-debug" -d 'EXPERIMENTAL: Launch a debug container for a Pod'
+complete -c stackablectl -n "__fish_stackablectl_needs_command" -f -a "version" -d 'Retrieve version data of the stackablectl installation'
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
@@ -702,15 +703,50 @@ ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "operator" -d 'Interact with single operator instead of the full platform'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "release" -d 'Interact with all operators of the platform which are released together'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "stack" -d 'Interact with stacks, which are ready-to-use product combinations'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "stacklet" -d 'Interact with deployed stacklets, which are bundles of resources and containers required to run the product'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "demo" -d 'Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "completions" -d 'Generate shell completions for this tool'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "cache" -d 'Interact with locally cached files'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "experimental-debug" -d 'EXPERIMENTAL: Launch a debug container for a Pod'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
+repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -f -a "check" -d 'Check if there is a new version available'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
+repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from help" -f -a "check" -d 'Check if there is a new version available'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "operator" -d 'Interact with single operator instead of the full platform'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "release" -d 'Interact with all operators of the platform which are released together'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "stack" -d 'Interact with stacks, which are ready-to-use product combinations'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "stacklet" -d 'Interact with deployed stacklets, which are bundles of resources and containers required to run the product'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "demo" -d 'Interact with demos, which are end-to-end usage demonstrations of the Stackable data platform'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "completions" -d 'Generate shell completions for this tool'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "cache" -d 'Interact with locally cached files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "experimental-debug" -d 'EXPERIMENTAL: Launch a debug container for a Pod'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "version" -d 'Retrieve version data of the stackablectl installation'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and not __fish_seen_subcommand_from operator release stack stacklet demo completions cache experimental-debug version help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from operator" -f -a "list" -d 'List available operators'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from operator" -f -a "describe" -d 'Print out detailed operator information'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from operator" -f -a "install" -d 'Install one or more operators'
@@ -736,3 +772,4 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "zsh" -d 'Generate shell completions for ZSH'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from cache" -f -a "list" -d 'List cached files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from cache" -f -a "clean" -d 'Clean cached files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from version" -f -a "check" -d 'Check if there is a new version available'

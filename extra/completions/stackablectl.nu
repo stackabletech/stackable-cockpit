@@ -1117,6 +1117,66 @@ module completions {
     --version(-V)             # Print version
   ]
 
+  def "nu-complete stackablectl version chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl version listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
+  # Retrieve version data of the stackablectl installation
+  export extern "stackablectl version" [
+    --log-level(-l): string   # Log level this application uses
+    --no-cache                # Do not cache the remote (default) demo, stack and release files
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --helm-repo-stable: string # Provide a custom Helm stable repository URL
+    --helm-repo-test: string  # Provide a custom Helm test repository URL
+    --helm-repo-dev: string   # Provide a custom Helm dev repository URL
+    --chart-source: string@"nu-complete stackablectl version chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl version listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
+    --help(-h)                # Print help (see more with '--help')
+    --version(-V)             # Print version
+  ]
+
+  def "nu-complete stackablectl version check chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl version check listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
+  # Check if there is a new version available
+  export extern "stackablectl version check" [
+    --log-level(-l): string   # Log level this application uses
+    --no-cache                # Do not cache the remote (default) demo, stack and release files
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --helm-repo-stable: string # Provide a custom Helm stable repository URL
+    --helm-repo-test: string  # Provide a custom Helm test repository URL
+    --helm-repo-dev: string   # Provide a custom Helm dev repository URL
+    --chart-source: string@"nu-complete stackablectl version check chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl version check listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
+    --help(-h)                # Print help (see more with '--help')
+    --version(-V)             # Print version
+  ]
+
+  # Print this message or the help of the given subcommand(s)
+  export extern "stackablectl version help" [
+  ]
+
+  # Check if there is a new version available
+  export extern "stackablectl version help check" [
+  ]
+
+  # Print this message or the help of the given subcommand(s)
+  export extern "stackablectl version help help" [
+  ]
+
   # Print this message or the help of the given subcommand(s)
   export extern "stackablectl help" [
   ]
@@ -1251,6 +1311,14 @@ module completions {
 
   # EXPERIMENTAL: Launch a debug container for a Pod
   export extern "stackablectl help experimental-debug" [
+  ]
+
+  # Retrieve version data of the stackablectl installation
+  export extern "stackablectl help version" [
+  ]
+
+  # Check if there is a new version available
+  export extern "stackablectl help version check" [
   ]
 
   # Print this message or the help of the given subcommand(s)

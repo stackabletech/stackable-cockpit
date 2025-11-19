@@ -3,6 +3,7 @@ pub mod cli;
 pub mod cmds;
 pub mod constants;
 pub mod output;
+pub mod release_check;
 pub mod utils;
 
 pub mod built_info {

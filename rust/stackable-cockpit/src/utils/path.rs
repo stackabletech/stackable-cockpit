@@ -25,18 +25,6 @@ impl<T: AsRef<str>> IntoPathOrUrl for T {
     }
 }
 
-impl IntoPathOrUrl for PathOrUrl {
-    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
-        Ok(self)
-    }
-}
-
-impl IntoPathOrUrl for &PathOrUrl {
-    fn into_path_or_url(self) -> Result<PathOrUrl, PathOrUrlParseError> {
-        Ok(self.to_owned())
-    }
-}
-
 pub trait IntoPathsOrUrls: Sized {
     fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError>;
 }
@@ -51,18 +39,6 @@ impl<T: AsRef<str>> IntoPathsOrUrls for Vec<T> {
         }
 
         Ok(paths_or_urls)
-    }
-}
-
-impl IntoPathsOrUrls for PathOrUrl {
-    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        Ok(vec![self])
-    }
-}
-
-impl IntoPathsOrUrls for &PathOrUrl {
-    fn into_paths_or_urls(self) -> Result<Vec<PathOrUrl>, PathOrUrlParseError> {
-        Ok(vec![self.to_owned()])
     }
 }
 
