@@ -49,7 +49,7 @@ where
 
         for file in files {
             let specs = transfer_client
-                .get(file, &Yaml::<L>::new())
+                .get(file, &Yaml::<L>::default())
                 .await
                 .context(FileTransferSnafu)?;
 

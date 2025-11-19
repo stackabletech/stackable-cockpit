@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use clap::{Args, Subcommand};
 use comfy_table::{
     ContentArrangement, Table,
@@ -16,7 +18,7 @@ use stackable_cockpit::{
         k8s::{self, Client},
         path::PathOrUrlParseError,
     },
-    xfer::{self, cache::Cache},
+    xfer,
 };
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{Span, debug, info, instrument};
@@ -151,10 +153,12 @@ pub enum CmdError {
 }
 
 impl StackArgs {
-    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(
+        &self,
+        cli: &Cli,
+        transfer_client: Arc<xfer::Client>,
+    ) -> Result<String, CmdError> {
         debug!("Handle stack args");
-
-        let transfer_client = xfer::Client::new_with(cache);
 
         let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
         let release_list = release::ReleaseList::build(&release_files, &transfer_client)
@@ -188,8 +192,8 @@ impl StackArgs {
             .context(BuildListSnafu)?;
 
         match &self.subcommand {
-            StackCommands::List(args) => list_cmd(args, cli, stack_list),
-            StackCommands::Describe(args) => describe_cmd(args, cli, stack_list),
+            StackCommands::List(args) => list_cmd(args, stack_list),
+            StackCommands::Describe(args) => describe_cmd(args, stack_list),
             StackCommands::Install(args) => {
                 install_cmd(args, cli, stack_list, &transfer_client).await
             }
@@ -198,11 +202,7 @@ impl StackArgs {
 }
 
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-fn list_cmd(
-    args: &StackListArgs,
-    cli: &Cli,
-    stack_list: stack::StackList,
-) -> Result<String, CmdError> {
+fn list_cmd(args: &StackListArgs, stack_list: stack::StackList) -> Result<String, CmdError> {
     info!("Listing stacks");
     Span::current().pb_set_message("Fetching stack information");
 
@@ -228,7 +228,7 @@ fn list_cmd(
                 ]);
             }
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(
@@ -251,7 +251,6 @@ fn list_cmd(
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
 fn describe_cmd(
     args: &StackDescribeArgs,
-    cli: &Cli,
     stack_list: stack::StackList,
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Describing stack");
@@ -292,7 +291,7 @@ fn describe_cmd(
                     .add_row(vec!["LABELS", stack.labels.join(", ").as_str()])
                     .add_row(vec!["PARAMETERS", parameter_table.to_string().as_str()]);
 
-                let mut result = cli.result();
+                let mut result = Cli::result();
 
                 result
                     .with_command_hint(
@@ -331,7 +330,7 @@ async fn install_cmd(
 
     match stack_list.get(&args.stack_name) {
         Some(stack_spec) => {
-            let mut output = cli.result();
+            let mut output = Cli::result();
 
             // Install local cluster if needed
             args.local_cluster

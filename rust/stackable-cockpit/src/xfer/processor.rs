@@ -78,8 +78,8 @@ where
     }
 }
 
-impl<T> Yaml<T> {
-    pub fn new() -> Self {
+impl<T> Default for Yaml<T> {
+    fn default() -> Self {
         Self(PhantomData)
     }
 }
@@ -99,8 +99,8 @@ where
     }
 }
 
-impl<T> Json<T> {
-    pub fn new() -> Self {
+impl<T> Default for Json<T> {
+    fn default() -> Self {
         Self(PhantomData)
     }
 }

@@ -38,7 +38,7 @@ async fn fetch_latest_release_version_from_github(
     let url = PathOrUrl::from_str(URL).expect("constant URL must be a valid URL");
 
     let releases: Vec<Release> = client
-        .get(&url, &xfer::processor::Json::new())
+        .get(&url, &xfer::processor::Json::default())
         .await
         .context(RetrieveReleasesSnafu)?;
 

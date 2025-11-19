@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use clap::{Args, Subcommand};
 use comfy_table::{
     ContentArrangement, Row, Table,
@@ -16,7 +18,7 @@ use stackable_cockpit::{
         k8s::{self, Client},
         path::PathOrUrlParseError,
     },
-    xfer::{self, cache::Cache},
+    xfer,
 };
 use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{Span, debug, info, instrument};
@@ -161,10 +163,12 @@ pub enum CmdError {
 
 impl DemoArgs {
     #[instrument(skip_all, fields(with_cache = !cli.no_cache))]
-    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(
+        &self,
+        cli: &Cli,
+        transfer_client: Arc<xfer::Client>,
+    ) -> Result<String, CmdError> {
         debug!("Handle demo args");
-
-        let transfer_client = xfer::Client::new_with(cache);
 
         let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
         let release_list = release::ReleaseList::build(&release_files, &transfer_client)
@@ -201,8 +205,8 @@ impl DemoArgs {
             .context(BuildListSnafu)?;
 
         match &self.subcommand {
-            DemoCommands::List(args) => list_cmd(args, cli, list).await,
-            DemoCommands::Describe(args) => describe_cmd(args, cli, list).await,
+            DemoCommands::List(args) => list_cmd(args, list).await,
+            DemoCommands::Describe(args) => describe_cmd(args, list).await,
             DemoCommands::Install(args) => {
                 install_cmd(args, cli, list, &transfer_client, &release_branch).await
             }
@@ -212,7 +216,7 @@ impl DemoArgs {
 
 /// Print out a list of demos, either as a table (plain), JSON or YAML
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<String, CmdError> {
+async fn list_cmd(args: &DemoListArgs, list: demo::List) -> Result<String, CmdError> {
     info!("Listing demos");
     Span::current().pb_set_message("Fetching demo information");
 
@@ -239,7 +243,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
                 table.add_row(row);
             }
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(
@@ -261,11 +265,7 @@ async fn list_cmd(args: &DemoListArgs, cli: &Cli, list: demo::List) -> Result<St
 
 /// Describe a specific demo by printing out a table (plain), JSON or YAML
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-async fn describe_cmd(
-    args: &DemoDescribeArgs,
-    cli: &Cli,
-    list: demo::List,
-) -> Result<String, CmdError> {
+async fn describe_cmd(args: &DemoDescribeArgs, list: demo::List) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Describing demo");
     Span::current().pb_set_message("Fetching demo information");
 
@@ -299,7 +299,7 @@ async fn describe_cmd(
 
             // TODO (Techassi): Add parameter output
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(
@@ -337,7 +337,7 @@ async fn install_cmd(
     Span::current().pb_set_message("Installing demo");
 
     // Init result output and progress output
-    let mut output = cli.result();
+    let mut output = Cli::result();
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),
