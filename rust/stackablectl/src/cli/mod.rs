@@ -232,6 +232,8 @@ impl Cli {
             check_version_in_background,
             true,
         );
+        let release_check_future =
+            tokio::time::timeout(std::time::Duration::from_secs(2), release_check_future);
 
         #[rustfmt::skip]
         let command_future = async move {
@@ -255,14 +257,14 @@ impl Cli {
         let (release_check_result, command_result) =
             tokio::join!(release_check_future, command_future);
 
-        // NOTE (@Techassi): This is feaking ugly (I'm sorry) but there seems to be no other better
+        // NOTE (@Techassi): This is freaking ugly (I'm sorry) but there seems to be no other better
         // way to achieve what we want without reworking the entire output handling/rendering
         // mechanism.
         // FIXME (@Techassi): This currently messes up any structured output. This is also not
         // trivially solved as explained above.
         match command_result {
             Ok(command_output) => {
-                let output = if let Ok(Some(release_check_output)) = release_check_result {
+                let output = if let Ok(Ok(Some(release_check_output))) = release_check_result {
                     format!("{command_output}\n\n{release_check_output}")
                 } else {
                     command_output
@@ -271,7 +273,7 @@ impl Cli {
                 Ok(output)
             }
             Err(err) => {
-                if let Ok(Some(release_check_output)) = release_check_result {
+                if let Ok(Ok(Some(release_check_output))) = release_check_result {
                     indicatif_eprintln!("{release_check_output}\n");
                 }
 
