@@ -1,8 +1,8 @@
-use std::{env, sync::Arc};
+use std::{env, path::Path, sync::Arc};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
-use snafu::{ResultExt, Snafu};
+use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_cockpit::{
     constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
     helm,
@@ -20,6 +20,7 @@ use tracing_indicatif::indicatif_eprintln;
 use crate::{
     args::{CommonFileArgs, CommonOperatorConfigsArgs, CommonRepoArgs},
     cmds::{cache, completions, debug, demo, operator, release, stack, stacklet, version},
+    config::UserConfig,
     constants::{
         DEMOS_REPOSITORY_DEMOS_SUBPATH, DEMOS_REPOSITORY_STACKS_SUBPATH, DEMOS_REPOSITORY_URL_BASE,
         ENV_KEY_DEMO_FILES, ENV_KEY_RELEASE_FILES, ENV_KEY_STACK_FILES, REMOTE_RELEASE_FILE,
@@ -69,6 +70,9 @@ pub enum Error {
 
     #[snafu(display("failed to initialize transfer client"))]
     InitializeTransferClient { source: xfer::Error },
+
+    #[snafu(display("failed to retrieve XDG directories"))]
+    RetrieveXdgDirectories,
 }
 
 #[derive(Debug, Snafu)]
@@ -169,25 +173,27 @@ impl Cli {
         Ok(())
     }
 
-    pub fn cache_settings(&self) -> Result<Settings, CacheSettingsError> {
+    fn cache_settings(&self, cache_directory: &Path) -> Result<Settings, CacheSettingsError> {
         if self.no_cache {
             tracing::debug!("Cache disabled");
             Ok(Settings::disabled())
         } else {
-            let project_dir = ProjectDirs::from(
-                USER_DIR_QUALIFIER,
-                USER_DIR_ORGANIZATION_NAME,
-                USER_DIR_APPLICATION_NAME,
-            )
-            .ok_or(CacheSettingsError::UserDir)?;
-
-            let cache_dir = project_dir.cache_dir();
             tracing::debug!(
-                cache_dir = %cache_dir.to_string_lossy(),
+                cache_directory = %cache_directory.to_string_lossy(),
                 "Setting cache directory"
             );
-            Ok(Settings::disk(cache_dir))
+            Ok(Settings::disk(cache_directory))
         }
+    }
+
+    #[allow(clippy::result_large_err)]
+    fn xdg_directories() -> Result<ProjectDirs, Error> {
+        ProjectDirs::from(
+            USER_DIR_QUALIFIER,
+            USER_DIR_ORGANIZATION_NAME,
+            USER_DIR_APPLICATION_NAME,
+        )
+        .context(RetrieveXdgDirectoriesSnafu)
     }
 
     #[instrument(skip_all)]
@@ -202,7 +208,15 @@ impl Cli {
             _ => self.add_helm_repos().context(AddHelmReposSnafu)?,
         }
 
-        let cache_settings = self.cache_settings().context(RetrieveCacheSettingsSnafu)?;
+        let xdg_directories = Cli::xdg_directories()?;
+        // TODO (@Techassi): Move this file name to a constant
+        let user_config_path = xdg_directories.config_dir().join("config.toml");
+
+        let user_config = UserConfig::from_file_or_default(user_config_path).unwrap();
+
+        let cache_settings = self
+            .cache_settings(xdg_directories.cache_dir())
+            .context(RetrieveCacheSettingsSnafu)?;
         let transfer_client = xfer::Client::new(cache_settings)
             .await
             .context(InitializeTransferClientSnafu)?;
@@ -225,13 +239,12 @@ impl Cli {
         .await;
 
         // Only run the version check in the background if the user runs ANY other command than
-        // the version command. Also only report if the current version is outdated.
-        let check_version_in_background = !matches!(self.subcommand, Command::Version(_));
-        let release_check_future = release_check::version_notice_output(
-            transfer_client.clone(),
-            check_version_in_background,
-            true,
-        );
+        // the version command and the check isn't disabled via the user config. Also only report
+        // if the current version is outdated.
+        let check_version =
+            !matches!(self.subcommand, Command::Version(_)) && user_config.version.check_enabled;
+        let release_check_future =
+            release_check::version_notice_output(transfer_client.clone(), check_version, true);
         let release_check_future =
             tokio::time::timeout(std::time::Duration::from_secs(2), release_check_future);
 
