@@ -64,6 +64,7 @@ impl Client {
             .await
             .context(CacheSettingsSnafu)?;
 
+        // Some servers require this (eg: GitHub API)
         let client = reqwest::Client::builder()
             .user_agent("stackable-cockpit")
             .build()

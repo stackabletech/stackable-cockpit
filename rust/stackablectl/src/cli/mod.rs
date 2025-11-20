@@ -55,7 +55,7 @@ pub enum Error {
     #[snafu(display("failed to execute debug (sub)command"))]
     Debug { source: debug::CmdError },
 
-    #[snafu(display("failed to execute self (sub)command"))]
+    #[snafu(display("failed to execute version (sub)command"))]
     Version { source: version::CmdError },
 
     #[snafu(display("failed to add Helm repositories"))]
