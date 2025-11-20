@@ -372,7 +372,7 @@ async fn install_cmd(
     }
 }
 
-// #[instrument(skip_all, fields(indicatif.pb_show = true))]
+#[instrument(skip_all, fields(indicatif.pb_show = true))]
 async fn upgrade_cmd(
     args: &ReleaseUpgradeArgs,
     cli: &Cli,
