@@ -44,6 +44,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand completions 'Generate shell completions for this tool'
             cand cache 'Interact with locally cached files'
             cand experimental-debug 'EXPERIMENTAL: Launch a debug container for a Pod'
+            cand version 'Retrieve version data of the stackablectl installation'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;operator'= {
@@ -946,6 +947,56 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand -V 'Print version'
             cand --version 'Print version'
         }
+        &'stackablectl;version'= {
+            cand -l 'Log level this application uses'
+            cand --log-level 'Log level this application uses'
+            cand -d 'Provide one or more additional (custom) demo file(s)'
+            cand --demo-file 'Provide one or more additional (custom) demo file(s)'
+            cand -s 'Provide one or more additional (custom) stack file(s)'
+            cand --stack-file 'Provide one or more additional (custom) stack file(s)'
+            cand -r 'Provide one or more additional (custom) release file(s)'
+            cand --release-file 'Provide one or more additional (custom) release file(s)'
+            cand --helm-repo-stable 'Provide a custom Helm stable repository URL'
+            cand --helm-repo-test 'Provide a custom Helm test repository URL'
+            cand --helm-repo-dev 'Provide a custom Helm dev repository URL'
+            cand --chart-source 'Source the charts from either a OCI registry or from index.yaml-based repositories'
+            cand --listener-class-preset 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)'
+            cand --no-cache 'Do not cache the remote (default) demo, stack and release files'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand -V 'Print version'
+            cand --version 'Print version'
+            cand check 'Check if there is a new version available'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'stackablectl;version;check'= {
+            cand -l 'Log level this application uses'
+            cand --log-level 'Log level this application uses'
+            cand -d 'Provide one or more additional (custom) demo file(s)'
+            cand --demo-file 'Provide one or more additional (custom) demo file(s)'
+            cand -s 'Provide one or more additional (custom) stack file(s)'
+            cand --stack-file 'Provide one or more additional (custom) stack file(s)'
+            cand -r 'Provide one or more additional (custom) release file(s)'
+            cand --release-file 'Provide one or more additional (custom) release file(s)'
+            cand --helm-repo-stable 'Provide a custom Helm stable repository URL'
+            cand --helm-repo-test 'Provide a custom Helm test repository URL'
+            cand --helm-repo-dev 'Provide a custom Helm dev repository URL'
+            cand --chart-source 'Source the charts from either a OCI registry or from index.yaml-based repositories'
+            cand --listener-class-preset 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)'
+            cand --no-cache 'Do not cache the remote (default) demo, stack and release files'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand -V 'Print version'
+            cand --version 'Print version'
+        }
+        &'stackablectl;version;help'= {
+            cand check 'Check if there is a new version available'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'stackablectl;version;help;check'= {
+        }
+        &'stackablectl;version;help;help'= {
+        }
         &'stackablectl;help'= {
             cand operator 'Interact with single operator instead of the full platform'
             cand release 'Interact with all operators of the platform which are released together'
@@ -955,6 +1006,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand completions 'Generate shell completions for this tool'
             cand cache 'Interact with locally cached files'
             cand experimental-debug 'EXPERIMENTAL: Launch a debug container for a Pod'
+            cand version 'Retrieve version data of the stackablectl installation'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;help;operator'= {
@@ -1047,6 +1099,11 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;help;cache;clean'= {
         }
         &'stackablectl;help;experimental-debug'= {
+        }
+        &'stackablectl;help;version'= {
+            cand check 'Check if there is a new version available'
+        }
+        &'stackablectl;help;version;check'= {
         }
         &'stackablectl;help;help'= {
         }

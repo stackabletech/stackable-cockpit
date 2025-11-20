@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use clap::{Args, Subcommand};
 use comfy_table::{
     ContentArrangement, Table,
@@ -18,7 +20,7 @@ use stackable_cockpit::{
         k8s::{self, Client},
         path::PathOrUrlParseError,
     },
-    xfer::{self, cache::Cache},
+    xfer,
 };
 use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
@@ -166,10 +168,13 @@ pub enum CmdError {
 }
 
 impl ReleaseArgs {
-    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(
+        &self,
+        cli: &Cli,
+        transfer_client: Arc<xfer::Client>,
+    ) -> Result<String, CmdError> {
         debug!("Handle release args");
 
-        let transfer_client = xfer::Client::new_with(cache);
         let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
         let release_list = release::ReleaseList::build(&files, &transfer_client)
             .await
@@ -180,10 +185,10 @@ impl ReleaseArgs {
         }
 
         match &self.subcommand {
-            ReleaseCommands::List(args) => list_cmd(args, cli, release_list).await,
-            ReleaseCommands::Describe(args) => describe_cmd(args, cli, release_list).await,
+            ReleaseCommands::List(args) => list_cmd(args, release_list).await,
+            ReleaseCommands::Describe(args) => describe_cmd(args, release_list).await,
             ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
-            ReleaseCommands::Uninstall(args) => uninstall_cmd(args, cli, release_list).await,
+            ReleaseCommands::Uninstall(args) => uninstall_cmd(args, release_list).await,
             ReleaseCommands::Upgrade(args) => {
                 upgrade_cmd(args, cli, release_list, &transfer_client).await
             }
@@ -191,10 +196,9 @@ impl ReleaseArgs {
     }
 }
 
-#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
+#[instrument(skip(release_list), fields(indicatif.pb_show = true))]
 async fn list_cmd(
     args: &ReleaseListArgs,
-    cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!("Listing releases");
@@ -226,7 +230,7 @@ async fn list_cmd(
                 ]);
             }
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(
@@ -246,10 +250,9 @@ async fn list_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
+#[instrument(skip(release_list), fields(indicatif.pb_show = true))]
 async fn describe_cmd(
     args: &ReleaseDescribeArgs,
-    cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Describing release");
@@ -289,7 +292,7 @@ async fn describe_cmd(
                         product_table.to_string().as_str(),
                     ]);
 
-                let mut result = cli.result();
+                let mut result = Cli::result();
 
                 result
                     .with_command_hint(
@@ -324,7 +327,7 @@ async fn install_cmd(
 
     match release_list.get(&args.release) {
         Some(release) => {
-            let mut output = cli.result();
+            let mut output = Cli::result();
 
             // Install local cluster if needed
             args.local_cluster
@@ -381,7 +384,7 @@ async fn upgrade_cmd(
 
     match release_list.get(&args.release) {
         Some(release) => {
-            let mut output = cli.result();
+            let mut output = Cli::result();
             let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
             // Get all currently installed operators to only upgrade those
@@ -455,10 +458,9 @@ async fn upgrade_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
+#[instrument(skip(release_list), fields(indicatif.pb_show = true))]
 async fn uninstall_cmd(
     args: &ReleaseUninstallArgs,
-    cli: &Cli,
     release_list: release::ReleaseList,
 ) -> Result<String, CmdError> {
     Span::current().pb_set_message("Uninstalling release");
@@ -469,7 +471,7 @@ async fn uninstall_cmd(
                 .uninstall(&Vec::new(), &Vec::new(), &args.operator_namespace)
                 .context(ReleaseUninstallSnafu)?;
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint("stackablectl release list", "list available releases")

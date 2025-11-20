@@ -19,7 +19,7 @@ use tracing_subscriber::{
 #[tokio::main]
 async fn main() -> Result<(), Error> {
     // Parse the CLI args and commands
-    let app = Cli::parse();
+    let cli = Cli::parse();
 
     // Construct the tracing subscriber
     let format = fmt::format()
@@ -35,7 +35,7 @@ async fn main() -> Result<(), Error> {
         )
         .with_progress_style(PROGRESS_SPINNER_STYLE.clone());
 
-    if let Some(level) = app.log_level {
+    if let Some(level) = cli.log_level {
         tracing_subscriber::registry()
             .with(
                 fmt::layer()
@@ -62,10 +62,10 @@ async fn main() -> Result<(), Error> {
         }
     }
 
-    match app.run().await {
+    match cli.run().await {
         Ok(result) => indicatif_println!("{result}"),
         Err(err) => {
-            let mut output = app.error();
+            let mut output = Cli::error();
             output.with_error_report(err);
 
             indicatif_eprintln!("{error}", error = output.render());

@@ -12,6 +12,9 @@ pub enum ProcessorError {
     #[snafu(display("failed to deserialize YAML content"))]
     DeserializeYaml { source: serde_yaml::Error },
 
+    #[snafu(display("failed to deserialize JSON content"))]
+    DeserializeJson { source: serde_json::Error },
+
     #[snafu(display("failed to render templated content"))]
     RenderTemplate { source: tera::Error },
 }
@@ -81,9 +84,24 @@ impl<T> Default for Yaml<T> {
     }
 }
 
-impl<T> Yaml<T> {
-    pub fn new() -> Self {
-        Self::default()
+#[derive(Debug)]
+pub struct Json<T>(PhantomData<T>);
+
+impl<T> Processor for Json<T>
+where
+    T: DeserializeOwned,
+{
+    type Input = String;
+    type Output = T;
+
+    fn process(&self, input: Self::Input) -> Result<Self::Output> {
+        serde_json::from_str(&input).context(DeserializeJsonSnafu)
+    }
+}
+
+impl<T> Default for Json<T> {
+    fn default() -> Self {
+        Self(PhantomData)
     }
 }
 

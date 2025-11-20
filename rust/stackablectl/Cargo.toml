@@ -39,3 +39,6 @@ indicatif.workspace = true
 termion.workspace = true
 urlencoding.workspace = true
 libc.workspace = true
+
+[build-dependencies]
+built.workspace = true

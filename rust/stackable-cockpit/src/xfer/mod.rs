@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::SystemTime};
 
 use snafu::{ResultExt, Snafu};
 use tokio::fs;
@@ -10,7 +10,7 @@ pub mod processor;
 use crate::{
     utils::path::PathOrUrl,
     xfer::{
-        cache::{Cache, Settings, Status},
+        cache::{Cache, DeleteFilter, Settings, Status},
         processor::{Processor, ProcessorError},
     },
 };
@@ -31,8 +31,14 @@ pub enum Error {
     #[snafu(display("failed to store file in cache"))]
     CacheStore { source: cache::Error },
 
-    #[snafu(display("failed to retrieve file from cache"))]
+    #[snafu(display("failed to retrieve file(s) from cache"))]
     CacheRetrieve { source: cache::Error },
+
+    #[snafu(display("failed to purge cached files"))]
+    CachePurge { source: cache::Error },
+
+    #[snafu(display("failed to initialize http client"))]
+    InitializeClient { source: reqwest::Error },
 
     #[snafu(display("failed to build http request"))]
     BuildRequest { source: reqwest::Error },
@@ -57,14 +63,14 @@ impl Client {
             .try_into_cache()
             .await
             .context(CacheSettingsSnafu)?;
-        let client = reqwest::Client::new();
+
+        // Some servers require this (eg: GitHub API)
+        let client = reqwest::Client::builder()
+            .user_agent("stackable-cockpit")
+            .build()
+            .context(InitializeClientSnafu)?;
 
         Ok(Self { client, cache })
-    }
-
-    pub fn new_with(cache: Cache) -> Self {
-        let client = reqwest::Client::new();
-        Self { client, cache }
     }
 
     /// Retrieves data from `path_or_url` which can either be a [`PathBuf`]
@@ -82,6 +88,30 @@ impl Client {
                 .process(self.get_from_cache_or_remote(url).await?)
                 .context(ProcessFileContentSnafu),
         }
+    }
+
+    /// Lists all currently cached files.
+    ///
+    /// This function does not make any requests to remote resources.
+    pub async fn list_cached_files(&self) -> Result<Vec<(PathBuf, SystemTime)>> {
+        self.cache.list().await.context(CacheRetrieveSnafu)
+    }
+
+    /// Purges currently cached files selected by the [`DeleteFilter`].
+    ///
+    /// This function does not make any requests to remote resources.
+    pub async fn purge_cached_files(&self, delete_filter: DeleteFilter) -> Result<()> {
+        self.cache
+            .purge(delete_filter)
+            .await
+            .context(CachePurgeSnafu)
+    }
+
+    /// Auto-purges the underlying cache.
+    ///
+    /// This function does not make any requests to remote resources.
+    pub async fn auto_purge(&self) -> Result<()> {
+        self.cache.auto_purge().await.context(CachePurgeSnafu)
     }
 
     async fn get_from_local_file(&self, path: &PathBuf) -> Result<String> {

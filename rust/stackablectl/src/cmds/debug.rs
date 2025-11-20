@@ -27,8 +27,6 @@ use tokio::{
 };
 use tracing::{Instrument, error, info, info_span, warn};
 
-use crate::cli::Cli;
-
 #[derive(Debug, Snafu)]
 pub enum CmdError {
     #[snafu(display("failed to create Kubernetes client"))]
@@ -136,7 +134,7 @@ pub struct DebugArgs {
 }
 
 impl DebugArgs {
-    pub async fn run(&self, _cli: &Cli) -> Result<String, CmdError> {
+    pub async fn run(&self) -> Result<String, CmdError> {
         let kube = kube::Client::try_default()
             .await
             .context(KubeClientCreateSnafu)?;

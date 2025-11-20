@@ -22,6 +22,7 @@ axum = { version = "0.7", features = ["http2"] }
 axum-extra = { version = "0.9", features = ["typed-header"] }
 bcrypt = "0.15"
 bindgen = "0.70.1"
+built = "0.8.0"
 cc = "1.0.106"
 clap = { version = "4.5", features = ["derive", "env"] }
 clap_complete = "4.5"

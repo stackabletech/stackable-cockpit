@@ -1542,6 +1542,22 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "std" ];
       };
+      "built" = rec {
+        crateName = "built";
+        version = "0.8.0";
+        edition = "2021";
+        sha256 = "0r5f08lpjsr6j5ajkbmd0ymfmajpq8ddbfvi8ji8rx48y88qzbgl";
+        authors = [
+          "Lukas Lueg <lukas.lueg@gmail.com>"
+        ];
+        features = {
+          "cargo-lock" = [ "dep:cargo-lock" ];
+          "chrono" = [ "dep:chrono" ];
+          "dependency-tree" = [ "cargo-lock/dependency-tree" ];
+          "git2" = [ "dep:git2" ];
+          "semver" = [ "dep:semver" ];
+        };
+      };
       "bumpalo" = rec {
         crateName = "bumpalo";
         version = "3.19.0";
@@ -12150,6 +12166,12 @@ rec {
           {
             name = "urlencoding";
             packageId = "urlencoding";
+          }
+        ];
+        buildDependencies = [
+          {
+            name = "built";
+            packageId = "built";
           }
         ];
 

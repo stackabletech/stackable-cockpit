@@ -98,7 +98,10 @@ pub trait InstallManifestsExt {
                     })?;
 
                     let helm_chart: helm::Chart = transfer_client
-                        .get(&helm_file, &Template::new(&parameters).then(Yaml::new()))
+                        .get(
+                            &helm_file,
+                            &Template::new(&parameters).then(Yaml::default()),
+                        )
                         .await
                         .context(FileTransferSnafu)?;
 

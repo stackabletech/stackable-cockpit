@@ -183,8 +183,8 @@ impl OperatorArgs {
             OperatorCommands::List(args) => list_cmd(args, cli).await,
             OperatorCommands::Describe(args) => describe_cmd(args, cli).await,
             OperatorCommands::Install(args) => install_cmd(args, cli).await,
-            OperatorCommands::Uninstall(args) => uninstall_cmd(args, cli),
-            OperatorCommands::Installed(args) => installed_cmd(args, cli),
+            OperatorCommands::Uninstall(args) => uninstall_cmd(args),
+            OperatorCommands::Installed(args) => installed_cmd(args),
         }
     }
 }
@@ -227,7 +227,7 @@ async fn list_cmd(args: &OperatorListArgs, cli: &Cli) -> Result<String, CmdError
                 ]);
             }
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(
@@ -290,7 +290,7 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
                 .add_row(vec!["TEST VERSIONS", test_versions_string.as_str()])
                 .add_row(vec!["DEV VERSIONS", dev_versions_string.as_str()]);
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(
@@ -340,7 +340,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
         indicatif_println!("Installed {operator} operator");
     }
 
-    let mut result = cli.result();
+    let mut result = Cli::result();
 
     result
         .with_command_hint(
@@ -361,7 +361,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
 }
 
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdError> {
+fn uninstall_cmd(args: &OperatorUninstallArgs) -> Result<String, CmdError> {
     info!("Uninstalling operator(s)");
     Span::current().pb_set_message("Uninstalling operator(s)");
 
@@ -371,7 +371,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
             .context(HelmSnafu)?;
     }
 
-    let mut result = cli.result();
+    let mut result = Cli::result();
 
     result
         .with_command_hint(
@@ -392,7 +392,7 @@ fn uninstall_cmd(args: &OperatorUninstallArgs, cli: &Cli) -> Result<String, CmdE
 }
 
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdError> {
+fn installed_cmd(args: &OperatorInstalledArgs) -> Result<String, CmdError> {
     info!("Listing installed operators");
     Span::current().pb_set_message("Fetching operator information");
 
@@ -443,7 +443,7 @@ fn installed_cmd(args: &OperatorInstalledArgs, cli: &Cli) -> Result<String, CmdE
                 ]);
             }
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(

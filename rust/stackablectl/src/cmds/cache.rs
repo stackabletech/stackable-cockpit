@@ -1,9 +1,9 @@
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 
 use clap::{Args, Subcommand};
 use comfy_table::{ColumnConstraint, Table, Width, presets::UTF8_FULL};
 use snafu::{ResultExt, Snafu};
-use stackable_cockpit::xfer::cache::{self, Cache, DeleteFilter};
+use stackable_cockpit::xfer::{self, cache::DeleteFilter};
 use tracing::{info, instrument};
 
 use crate::cli::Cli;
@@ -35,26 +35,29 @@ pub struct CacheCleanArgs {
 #[derive(Debug, Snafu)]
 pub enum CmdError {
     #[snafu(display("failed to list cached files"))]
-    ListCachedFiles { source: cache::Error },
+    ListCachedFiles { source: xfer::Error },
 
     #[snafu(display("failed to purge cached files"))]
-    PurgeCachedFiles { source: cache::Error },
+    PurgeCachedFiles { source: xfer::Error },
 }
 
 impl CacheArgs {
-    pub async fn run(&self, cli: &Cli, cache: Cache) -> Result<String, CmdError> {
+    pub async fn run(&self, transfer_client: Arc<xfer::Client>) -> Result<String, CmdError> {
         match &self.subcommand {
-            CacheCommands::List => list_cmd(cache, cli).await,
-            CacheCommands::Clean(args) => clean_cmd(args, cache).await,
+            CacheCommands::List => list_cmd(transfer_client).await,
+            CacheCommands::Clean(args) => clean_cmd(args, transfer_client).await,
         }
     }
 }
 
 #[instrument(skip_all)]
-async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
+async fn list_cmd(transfer_client: Arc<xfer::Client>) -> Result<String, CmdError> {
     info!("Listing cached files");
 
-    let files = cache.list().await.context(ListCachedFilesSnafu)?;
+    let files = transfer_client
+        .list_cached_files()
+        .await
+        .context(ListCachedFilesSnafu)?;
 
     if files.is_empty() {
         return Ok("No cached files".into());
@@ -77,7 +80,7 @@ async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
         table.add_row(vec![file_path, format!("{modified} seconds ago")]);
     }
 
-    let mut result = cli.result();
+    let mut result = Cli::result();
 
     result
         .with_command_hint("stackablectl cache clean", "to clean all cached files")
@@ -87,7 +90,10 @@ async fn list_cmd(cache: Cache, cli: &Cli) -> Result<String, CmdError> {
 }
 
 #[instrument(skip_all)]
-async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CmdError> {
+async fn clean_cmd(
+    args: &CacheCleanArgs,
+    transfer_client: Arc<xfer::Client>,
+) -> Result<String, CmdError> {
     info!("Cleaning cached files");
 
     let delete_filter = if args.only_remove_old_files {
@@ -96,8 +102,8 @@ async fn clean_cmd(args: &CacheCleanArgs, cache: Cache) -> Result<String, CmdErr
         DeleteFilter::All
     };
 
-    cache
-        .purge(delete_filter)
+    transfer_client
+        .purge_cached_files(delete_filter)
         .await
         .context(PurgeCachedFilesSnafu)?;
 

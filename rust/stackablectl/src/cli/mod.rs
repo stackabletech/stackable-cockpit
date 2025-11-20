@@ -1,4 +1,4 @@
-use std::{env, path::Path};
+use std::{env, path::Path, sync::Arc};
 
 use clap::{Parser, Subcommand, ValueEnum};
 use directories::ProjectDirs;
@@ -12,13 +12,14 @@ use stackable_cockpit::{
     utils::path::{
         IntoPathOrUrl, IntoPathsOrUrls, ParsePathsOrUrls, PathOrUrl, PathOrUrlParseError,
     },
-    xfer::cache::Settings,
+    xfer::{self, cache::Settings},
 };
 use tracing::{Level, instrument};
+use tracing_indicatif::indicatif_eprintln;
 
 use crate::{
     args::{CommonFileArgs, CommonOperatorConfigsArgs, CommonRepoArgs},
-    cmds::{cache, completions, debug, demo, operator, release, stack, stacklet},
+    cmds::{cache, completions, debug, demo, operator, release, stack, stacklet, version},
     config::UserConfig,
     constants::{
         DEMOS_REPOSITORY_DEMOS_SUBPATH, DEMOS_REPOSITORY_STACKS_SUBPATH, DEMOS_REPOSITORY_URL_BASE,
@@ -26,6 +27,7 @@ use crate::{
         USER_DIR_APPLICATION_NAME, USER_DIR_ORGANIZATION_NAME, USER_DIR_QUALIFIER,
     },
     output::{ErrorContext, Output, ResultContext},
+    release_check,
 };
 
 #[derive(Debug, Snafu)]
@@ -42,23 +44,42 @@ pub enum Error {
     #[snafu(display("failed to execute stacklet (sub)command"))]
     Stacklet { source: stacklet::CmdError },
 
-    #[snafu(display("demo command error"))]
+    #[snafu(display("failed to execute demo (sub)command"))]
     Demo { source: demo::CmdError },
 
-    #[snafu(display("completions command error"))]
+    #[snafu(display("failed to execute completions (sub)command"))]
     Completions { source: completions::CmdError },
 
-    #[snafu(display("cache command error"))]
+    #[snafu(display("failed to execute cache (sub)command"))]
     Cache { source: cache::CmdError },
 
-    #[snafu(display("debug command error"))]
+    #[snafu(display("failed to execute debug (sub)command"))]
     Debug { source: debug::CmdError },
 
-    #[snafu(display("helm error"))]
-    Helm { source: helm::Error },
+    #[snafu(display("failed to execute version (sub)command"))]
+    Version { source: version::CmdError },
+
+    #[snafu(display("failed to add Helm repositories"))]
+    AddHelmRepos { source: helm::Error },
+
+    #[snafu(display("failed to retrieve cache settings"))]
+    RetrieveCacheSettings { source: CacheSettingsError },
+
+    #[snafu(display("failed to auto-purge cache"))]
+    AutoPurgeCache { source: xfer::Error },
+
+    #[snafu(display("failed to initialize transfer client"))]
+    InitializeTransferClient { source: xfer::Error },
 
     #[snafu(display("failed to retrieve XDG directories"))]
     RetrieveXdgDirectories,
+}
+
+#[derive(Debug, Snafu)]
+#[snafu(module)]
+pub enum CacheSettingsError {
+    #[snafu(display("unable to resolve user directories"))]
+    UserDir,
 }
 
 #[derive(Debug, Parser)]
@@ -89,7 +110,7 @@ Cached files are saved at '$XDG_CACHE_HOME/stackablectl', which is usually
     pub operator_configs: CommonOperatorConfigsArgs,
 
     #[command(subcommand)]
-    pub subcommand: Commands,
+    pub subcommand: Command,
 }
 
 impl Cli {
@@ -176,15 +197,15 @@ impl Cli {
     }
 
     #[instrument(skip_all)]
-    pub async fn run(&self) -> Result<String, Error> {
+    pub async fn run(self) -> Result<String, Error> {
         // FIXME (Techassi): There might be a better way to handle this with
         // the match later in this function.
 
         // Add Helm repos only when required
         match &self.subcommand {
-            Commands::Completions(_) => (),
-            Commands::Cache(_) => (),
-            _ => self.add_helm_repos().context(HelmSnafu)?,
+            Command::Completions(_) => (),
+            Command::Cache(_) => (),
+            _ => self.add_helm_repos().context(AddHelmReposSnafu)?,
         }
 
         let xdg_directories = Cli::xdg_directories()?;
@@ -194,39 +215,94 @@ impl Cli {
         let _user_config = UserConfig::from_file_or_default(user_config_path).unwrap();
         dbg!(_user_config);
 
-        let cache = self
+        let cache_settings = self
             .cache_settings(xdg_directories.cache_dir())
-            .unwrap()
-            .try_into_cache()
+            .context(RetrieveCacheSettingsSnafu)?;
+        let transfer_client = xfer::Client::new(cache_settings)
             .await
-            .unwrap();
+            .context(InitializeTransferClientSnafu)?;
 
-        // TODO (Techassi): Do we still want to auto purge when running cache commands?
-        cache.auto_purge().await.unwrap();
+        // Only run the cache auto-purge when the user executes ANY command other than the cache
+        // commands.
+        if !matches!(self.subcommand, Command::Cache(_)) {
+            transfer_client
+                .auto_purge()
+                .await
+                .context(AutoPurgeCacheSnafu)?;
+        }
+
+        // Make transfer client sharable across multiple futures/threads
+        let transfer_client = Arc::new(transfer_client);
 
         determine_and_store_listener_class_preset(
             self.operator_configs.listener_class_preset.as_ref(),
         )
         .await;
 
-        match &self.subcommand {
-            Commands::Operator(args) => args.run(self).await.context(OperatorSnafu),
-            Commands::Release(args) => args.run(self, cache).await.context(ReleaseSnafu),
-            Commands::Stack(args) => args.run(self, cache).await.context(StackSnafu),
-            Commands::Stacklet(args) => args.run(self).await.context(StackletSnafu),
-            Commands::Demo(args) => args.run(self, cache).await.context(DemoSnafu),
-            Commands::Completions(args) => args.run().context(CompletionsSnafu),
-            Commands::Cache(args) => args.run(self, cache).await.context(CacheSnafu),
-            Commands::ExperimentalDebug(args) => args.run(self).await.context(DebugSnafu),
+        // Only run the version check in the background if the user runs ANY other command than
+        // the version command. Also only report if the current version is outdated.
+        let check_version_in_background = !matches!(self.subcommand, Command::Version(_));
+        let release_check_future = release_check::version_notice_output(
+            transfer_client.clone(),
+            check_version_in_background,
+            true,
+        );
+        let release_check_future =
+            tokio::time::timeout(std::time::Duration::from_secs(2), release_check_future);
+
+        #[rustfmt::skip]
+        let command_future = async move {
+            match self.subcommand {
+                Command::Operator(ref args) => args.run(&self).await.context(OperatorSnafu),
+                Command::Release(ref args) => args.run(&self, transfer_client).await.context(ReleaseSnafu),
+                Command::Stack(ref args) => args.run(&self, transfer_client).await.context(StackSnafu),
+                Command::Stacklet(ref args) => args.run().await.context(StackletSnafu),
+                Command::Demo(ref args) => args.run(&self, transfer_client).await.context(DemoSnafu),
+                Command::Completions(ref args) => args.run().context(CompletionsSnafu),
+                Command::Cache(ref args) => args.run(transfer_client).await.context(CacheSnafu),
+                Command::ExperimentalDebug(ref args) => args.run().await.context(DebugSnafu),
+                Command::Version(ref args) => args.run(transfer_client).await.context(VersionSnafu),
+            }
+        };
+
+        // Run the version check and the actual command in parallel and not sequentially. This is
+        // done to not abort/stall execution when the version check couldn't be performed (because
+        // of network issues for example). We also optimistically run the version check and don't
+        // hard-error below when the check failed.
+        let (release_check_result, command_result) =
+            tokio::join!(release_check_future, command_future);
+
+        // NOTE (@Techassi): This is freaking ugly (I'm sorry) but there seems to be no other better
+        // way to achieve what we want without reworking the entire output handling/rendering
+        // mechanism.
+        // FIXME (@Techassi): This currently messes up any structured output. This is also not
+        // trivially solved as explained above.
+        match command_result {
+            Ok(command_output) => {
+                let output = if let Ok(Ok(Some(release_check_output))) = release_check_result {
+                    format!("{command_output}\n\n{release_check_output}")
+                } else {
+                    command_output
+                };
+
+                Ok(output)
+            }
+            Err(err) => {
+                if let Ok(Ok(Some(release_check_output))) = release_check_result {
+                    indicatif_eprintln!("{release_check_output}\n");
+                }
+
+                Err(err)
+            }
         }
     }
 
     // Output utility functions
-    pub fn result(&self) -> Output<ResultContext> {
+    pub fn result() -> Output<ResultContext> {
         Output::new(ResultContext::default(), true).expect("Failed to create output renderer")
     }
 
-    pub fn error(&self) -> Output<ErrorContext> {
+    pub fn error() -> Output<ErrorContext> {
         Output::new(ErrorContext::default(), true).expect("Failed to create output renderer")
     }
 
@@ -236,7 +312,7 @@ impl Cli {
 }
 
 #[derive(Debug, Subcommand)]
-pub enum Commands {
+pub enum Command {
     /// Interact with single operator instead of the full platform
     #[command(alias("op"))]
     Operator(operator::OperatorArgs),
@@ -277,6 +353,9 @@ CRDs."
 
 This container will have access to the same data volumes as the primary container.")]
     ExperimentalDebug(debug::DebugArgs),
+
+    /// Retrieve version data of the stackablectl installation
+    Version(version::VersionArguments),
 }
 
 #[derive(Clone, Debug, Default, ValueEnum)]
@@ -293,13 +372,6 @@ pub enum OutputType {
 
     /// Print output formatted as YAML
     Yaml,
-}
-
-#[derive(Debug, Snafu)]
-#[snafu(module)]
-pub enum CacheSettingsError {
-    #[snafu(display("unable to resolve user directories"))]
-    UserDir,
 }
 
 /// Returns a list of paths or urls based on the default (remote) file and
