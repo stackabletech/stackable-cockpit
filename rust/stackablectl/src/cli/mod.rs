@@ -212,8 +212,7 @@ impl Cli {
         // TODO (@Techassi): Move this file name to a constant
         let user_config_path = xdg_directories.config_dir().join("config.toml");
 
-        let _user_config = UserConfig::from_file_or_default(user_config_path).unwrap();
-        dbg!(_user_config);
+        let user_config = UserConfig::from_file_or_default(user_config_path).unwrap();
 
         let cache_settings = self
             .cache_settings(xdg_directories.cache_dir())
@@ -240,13 +239,12 @@ impl Cli {
         .await;
 
         // Only run the version check in the background if the user runs ANY other command than
-        // the version command. Also only report if the current version is outdated.
-        let check_version_in_background = !matches!(self.subcommand, Command::Version(_));
-        let release_check_future = release_check::version_notice_output(
-            transfer_client.clone(),
-            check_version_in_background,
-            true,
-        );
+        // the version command and the check isn't disabled via the user config. Also only report
+        // if the current version is outdated.
+        let check_version =
+            !matches!(self.subcommand, Command::Version(_)) && user_config.version.check_enabled;
+        let release_check_future =
+            release_check::version_notice_output(transfer_client.clone(), check_version, true);
         let release_check_future =
             tokio::time::timeout(std::time::Duration::from_secs(2), release_check_future);
 
