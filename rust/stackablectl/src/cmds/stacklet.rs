@@ -82,16 +82,16 @@ pub enum CmdError {
 }
 
 impl StackletArgs {
-    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
+    pub async fn run(&self) -> Result<String, CmdError> {
         match &self.subcommand {
-            StackletCommands::List(args) => list_cmd(args, cli).await,
+            StackletCommands::List(args) => list_cmd(args).await,
             StackletCommands::Credentials(args) => credentials_cmd(args).await,
         }
     }
 }
 
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError> {
+async fn list_cmd(args: &StackletListArgs) -> Result<String, CmdError> {
     info!("Listing installed stacklets");
     Span::current().pb_set_message("Fetching stacklet information");
 
@@ -105,7 +105,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
         .context(StackletListSnafu)?;
 
     if stacklets.is_empty() {
-        let mut result = cli.result();
+        let mut result = Cli::result();
 
         result
             .with_command_hint(
@@ -181,7 +181,7 @@ async fn list_cmd(args: &StackletListArgs, cli: &Cli) -> Result<String, CmdError
                 }
             }
 
-            let mut result = cli.result();
+            let mut result = Cli::result();
 
             result
                 .with_command_hint(

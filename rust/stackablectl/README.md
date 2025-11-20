@@ -23,6 +23,7 @@ Commands:
   completions         Generate shell completions for this tool
   cache               Interact with locally cached files
   experimental-debug  EXPERIMENTAL: Launch a debug container for a Pod
+  version             Retrieve version data of the stackablectl installation
   help                Print this message or the help of the given subcommand(s)
 
 Options:

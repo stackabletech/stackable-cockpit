@@ -6,3 +6,4 @@ pub mod operator;
 pub mod release;
 pub mod stack;
 pub mod stacklet;
+pub mod version;
