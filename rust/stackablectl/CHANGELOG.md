@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.2.2] - 2025-12-03
+
+### Added
+
+- Add the option for users to customize the behaviour of `stackablectl` through a user config located at
+  `$HOME/.config/stackablectl/config.toml` ([#422]).
+  - The first supported option is `version.check_enabled` which can be set to `true` or `false`.
+- Add a new release check which is used in two different ways ([#421]):
+  - A new `stackablectl version check` command can be used to check if the current installation is up-to-date
+  - A check automatically runs for all other commands (in parallel to not block the commands) and the status is reported
+    as part of the final command output.
+
+[#421]: https://github.com/stackabletech/stackable-cockpit/pull/421
+[#422]: https://github.com/stackabletech/stackable-cockpit/pull/422
+
+## [1.2.1] - 2025-11-18
+
 ### Fixed
 
 - Don't crash during `release upgrade` for SDP 25.11.
