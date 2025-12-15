@@ -55,7 +55,7 @@ where
         let mut report = String::new();
 
         // Print top most error
-        write!(report, "An unrecoverable error occured: {self}\n\n")?;
+        write!(report, "An unrecoverable error occurred: {self}\n\n")?;
         writeln!(
             report,
             "Caused by these errors (recent errors listed first):"
