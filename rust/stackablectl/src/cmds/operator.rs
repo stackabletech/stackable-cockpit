@@ -8,7 +8,6 @@ use comfy_table::{
 use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
-use serde_yaml::Value;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     constants::{
@@ -25,7 +24,7 @@ use stackable_cockpit::{
         chartsource::ChartSourceMetadata,
         k8s::{self, Client},
         path::PathOrUrlParseError,
-        yaml::deep_merge,
+        yaml::merged_values_for_operator,
     },
     xfer,
 };
@@ -351,18 +350,8 @@ async fn install_cmd(
         .await
         .context(FileTransferSnafu)?;
 
-    let common_values = operator_values
-        .get("common")
-        .and_then(Value::as_mapping)
-        .cloned()
-        .unwrap_or_default();
     for operator in &args.operators {
-        let operator_specific = operator_values
-            .get(format!("{}-operator", &operator.name))
-            .and_then(Value::as_mapping)
-            .cloned()
-            .unwrap_or_default();
-        let merged_values = deep_merge(common_values.clone(), operator_specific);
+        let merged_values = merged_values_for_operator(&operator_values, &operator.name);
 
         operator
             .install(
