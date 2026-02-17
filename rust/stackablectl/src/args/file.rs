@@ -42,4 +42,32 @@ definition will be used.
 Use \"stackablectl [OPTIONS] <COMMAND> -r path/to/releases1.yaml -r path/to/releases2.yaml\"
 to provide multiple additional release files.")]
     pub release_files: Vec<String>,
+
+    /// Path to a Helm values file that will be used for the installation of operators
+    #[arg(short = 'f', long, value_name = "VALUES_FILE", value_hint = ValueHint::FilePath, global = true)]
+    #[arg(
+        long_help = "Path to a Helm values file that will be used for the installation of operators
+
+The file is a YAML file containing Helm values used to deploy operators. It
+supports a 'common' key for values shared across all operators, as well as
+operator-specific keys (e.g. 'airflow-operator', 'zookeeper-operator') for
+values that only apply to a single operator. Operator-specific values are
+merged with common values, with operator-specific values taking precedence.
+
+Example values file:
+
+  common:
+    tolerations:
+      - key: \"example\"
+        operator: \"Exists\"
+        effect: \"NoSchedule\"
+  airflow-operator:
+    replicas: 2
+  zookeeper-operator:
+    replicas: 3
+
+Use \"stackablectl [OPTIONS] <COMMAND> -f path/to/values.yaml\" to provide a
+values file."
+    )]
+    pub operator_values: Option<String>,
 }

@@ -27,6 +27,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
     cli::{Cli, OutputType},
+    utils::load_operator_values,
 };
 
 #[derive(Debug, Args)]
@@ -159,6 +160,9 @@ pub enum CmdError {
 
     #[snafu(display("failed to create Kubernetes client"))]
     KubeClientCreate { source: k8s::Error },
+
+    #[snafu(display("failed to load operator values"))]
+    FileTransfer { source: crate::utils::Error },
 }
 
 impl DemoArgs {
@@ -378,6 +382,11 @@ async fn install_cmd(
         .parse_insert(("stackable.tech/stack", &demo.stack))
         .context(BuildLabelsSnafu)?;
 
+    let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
+    let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
+        .await
+        .context(FileTransferSnafu)?;
+
     let install_parameters = DemoInstallParameters {
         operator_namespace: args.namespaces.operator_namespace.clone(),
         demo_namespace: args.namespaces.namespace.clone(),
@@ -387,6 +396,7 @@ async fn install_cmd(
         stack_labels,
         labels,
         chart_source: ChartSourceType::from(cli.chart_type()),
+        operator_values,
     };
 
     demo.install(

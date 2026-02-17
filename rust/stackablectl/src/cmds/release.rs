@@ -28,6 +28,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
     cli::{Cli, OutputType},
+    utils::load_operator_values,
 };
 
 #[derive(Debug, Args)]
@@ -165,6 +166,9 @@ pub enum CmdError {
         source: namespace::Error,
         namespace: String,
     },
+
+    #[snafu(display("failed to load operator values"))]
+    FileTransfer { source: crate::utils::Error },
 }
 
 impl ReleaseArgs {
@@ -187,7 +191,9 @@ impl ReleaseArgs {
         match &self.subcommand {
             ReleaseCommands::List(args) => list_cmd(args, release_list).await,
             ReleaseCommands::Describe(args) => describe_cmd(args, release_list).await,
-            ReleaseCommands::Install(args) => install_cmd(args, cli, release_list).await,
+            ReleaseCommands::Install(args) => {
+                install_cmd(args, cli, release_list, &transfer_client).await
+            }
             ReleaseCommands::Uninstall(args) => uninstall_cmd(args, release_list).await,
             ReleaseCommands::Upgrade(args) => {
                 upgrade_cmd(args, cli, release_list, &transfer_client).await
@@ -316,11 +322,12 @@ async fn describe_cmd(
     }
 }
 
-#[instrument(skip(cli, release_list), fields(indicatif.pb_show = true))]
+#[instrument(skip(cli, release_list, transfer_client), fields(indicatif.pb_show = true))]
 async fn install_cmd(
     args: &ReleaseInstallArgs,
     cli: &Cli,
     release_list: release::ReleaseList,
+    transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!(release = %args.release, "Installing release");
     Span::current().pb_set_message("Installing release");
@@ -344,12 +351,18 @@ async fn install_cmd(
                     namespace: args.operator_namespace.clone(),
                 })?;
 
+            let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
+            let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
+                .await
+                .context(FileTransferSnafu)?;
+
             release
                 .install(
                     &args.included_products,
                     &args.excluded_products,
                     &args.operator_namespace,
                     &ChartSourceType::from(cli.chart_type()),
+                    &operator_values,
                 )
                 .await
                 .context(ReleaseInstallSnafu)?;
@@ -429,6 +442,11 @@ async fn upgrade_cmd(
                 .await
                 .context(CrdUpgradeSnafu)?;
 
+            let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
+            let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
+                .await
+                .context(FileTransferSnafu)?;
+
             // Install the new operator release
             release
                 .install(
@@ -436,6 +454,7 @@ async fn upgrade_cmd(
                     &args.excluded_products,
                     &args.operator_namespace,
                     &ChartSourceType::from(cli.chart_type()),
+                    &operator_values,
                 )
                 .await
                 .context(ReleaseInstallSnafu)?;

@@ -1,11 +1,26 @@
 use std::env;
 
-use snafu::Snafu;
-use stackable_cockpit::constants::{
-    HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST,
+use serde_yaml::{Mapping, Value};
+use snafu::{ResultExt, Snafu};
+use stackable_cockpit::{
+    constants::{HELM_REPO_NAME_DEV, HELM_REPO_NAME_STABLE, HELM_REPO_NAME_TEST},
+    utils::path::PathOrUrl,
+    xfer::{self, processor::Yaml},
 };
 
 use crate::constants::{HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TEST};
+
+#[derive(Debug, Snafu)]
+pub enum Error {
+    #[snafu(display("failed to transfer values file"))]
+    FileTransfer { source: xfer::Error },
+
+    #[snafu(display("operator values file must be a YAML mapping at the top level"))]
+    InvalidValueType,
+
+    #[snafu(display("value for key '{key}' must be a YAML mapping"))]
+    InvalidEntryType { key: String },
+}
 
 #[derive(Debug, Snafu)]
 #[snafu(display("Invalid Helm repo name ({name}), cannot resolve to repo URL"))]
@@ -37,4 +52,44 @@ where
 /// factor in terminal support.
 pub fn use_colored_output(use_color: bool) -> bool {
     use_color && env::var_os("NO_COLOR").is_none()
+}
+
+/// Loads operator helm values from a YAML file.
+///
+/// The file should contain a YAML mapping of operator names to their helm values:
+/// ```yaml
+/// common:
+///   key: value
+/// airflow-operator:
+///   key: value
+/// zookeeper-operator:
+///   key: value
+/// ```
+pub async fn load_operator_values(
+    values_file: Option<&PathOrUrl>,
+    transfer_client: &xfer::Client,
+) -> Result<Mapping, Error> {
+    let value = match values_file {
+        Some(file) => transfer_client
+            .get(file, &Yaml::<Value>::default())
+            .await
+            .context(FileTransferSnafu)?,
+        None => return Ok(Mapping::new()),
+    };
+
+    let mapping = match value {
+        Value::Mapping(mapping) => mapping,
+        _ => return InvalidValueTypeSnafu.fail(),
+    };
+
+    for (key, value) in &mapping {
+        if !value.is_mapping() {
+            return InvalidEntryTypeSnafu {
+                key: key.as_str().unwrap_or("<non-string key>").to_string(),
+            }
+            .fail();
+        }
+    }
+
+    Ok(mapping)
 }

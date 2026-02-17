@@ -78,6 +78,30 @@ File options:
           Use "stackablectl [OPTIONS] <COMMAND> -r path/to/releases1.yaml -r path/to/releases2.yaml"
           to provide multiple additional release files.
 
+  -f, --operator-values <VALUES_FILE>
+          Path to a Helm values file that will be used for the installation of operators
+
+          The file is a YAML file containing Helm values used to deploy operators. It
+          supports a 'common' key for values shared across all operators, as well as
+          operator-specific keys (e.g. 'airflow-operator', 'zookeeper-operator') for
+          values that only apply to a single operator. Operator-specific values are
+          merged with common values, with operator-specific values taking precedence.
+
+          Example values file:
+
+            common:
+              tolerations:
+                - key: "example"
+                  operator: "Exists"
+                  effect: "NoSchedule"
+            airflow-operator:
+              replicas: 2
+            zookeeper-operator:
+              replicas: 3
+
+          Use "stackablectl [OPTIONS] <COMMAND> -f path/to/values.yaml" to provide a
+          values file.
+
 Helm repository options:
       --helm-repo-stable <URL>
           Provide a custom Helm stable repository URL
@@ -106,6 +130,8 @@ Helm repository options:
 Operator specific configurations:
       --listener-class-preset <LISTENER_CLASS_PRESET>
           Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`).
+
+          This takes precedence over values provided via the '-f/--operator-values' flag.
 
           This maps to the listener-operator Helm Chart preset value, see [the listener-operator documentation](https://docs.stackable.tech/home/nightly/listener-operator/listenerclass/#presets) for details.
 

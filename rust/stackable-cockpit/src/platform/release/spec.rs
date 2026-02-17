@@ -2,6 +2,7 @@ use futures::{StreamExt as _, TryStreamExt};
 use indexmap::IndexMap;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+use serde_yaml::{Mapping, Value};
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
 use tracing::{Instrument, Span, debug, info, instrument};
@@ -18,6 +19,7 @@ use crate::{
     utils::{
         k8s::{self, Client},
         path::{IntoPathOrUrl as _, PathOrUrlParseError},
+        yaml::deep_merge,
     },
     xfer::{self, processor::Text},
 };
@@ -85,6 +87,7 @@ impl ReleaseSpec {
         exclude_products: &[String],
         namespace: &str,
         chart_source: &ChartSourceType,
+        operator_values: &Mapping,
     ) -> Result<()> {
         info!("Installing release");
         Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
@@ -101,6 +104,11 @@ impl ReleaseSpec {
         Span::current().pb_set_length(operators.len() as u64);
 
         let namespace = namespace.to_string();
+        let common_values = operator_values
+            .get("common")
+            .and_then(Value::as_mapping)
+            .cloned()
+            .unwrap_or_default();
         futures::stream::iter(operators)
             .map(|(product_name, product)| {
                 let task_span =
@@ -108,6 +116,12 @@ impl ReleaseSpec {
 
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
+                let operator_specific = operator_values
+                    .get(format!("{product_name}-operator"))
+                    .and_then(Value::as_mapping)
+                    .cloned()
+                    .unwrap_or_default();
+                let merged_values = deep_merge(common_values.clone(), operator_specific);
                 // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
                 // get useful parallelism.
                 tokio::spawn(
@@ -122,7 +136,7 @@ impl ReleaseSpec {
 
                         // Install operator
                         operator
-                            .install(&namespace, &chart_source)
+                            .install(&namespace, &chart_source, &merged_values)
                             .context(HelmInstallSnafu)?;
 
                         info!("Installed {product_name}-operator");

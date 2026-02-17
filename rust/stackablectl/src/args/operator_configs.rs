@@ -6,6 +6,8 @@ use stackable_cockpit::platform::operator::listener_operator::ListenerClassPrese
 pub struct CommonOperatorConfigsArgs {
     /// Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`).
     ///
+    /// This takes precedence over values provided via the '-f/--operator-values' flag.
+    ///
     /// This maps to the listener-operator Helm Chart preset value, see
     /// [the listener-operator documentation](https://docs.stackable.tech/home/nightly/listener-operator/listenerclass/#presets)
     /// for details.

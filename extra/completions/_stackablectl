@@ -23,6 +23,8 @@ _stackablectl() {
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -53,6 +55,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -92,6 +96,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -123,6 +129,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -156,6 +164,8 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -182,6 +192,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -216,6 +228,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -283,6 +297,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -322,6 +338,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -353,6 +371,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -390,6 +410,8 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -416,6 +438,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -446,6 +470,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -515,6 +541,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -555,6 +583,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -587,6 +617,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -626,6 +658,8 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -687,6 +721,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -720,6 +756,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -758,6 +796,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -814,6 +854,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -854,6 +896,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -886,6 +930,8 @@ yaml\:"Print output formatted as YAML"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -925,6 +971,8 @@ minikube\:"Use a minikube cluster"))' \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -986,6 +1034,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1017,6 +1067,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1040,6 +1092,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1063,6 +1117,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1086,6 +1142,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1109,6 +1167,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1176,6 +1236,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1207,6 +1269,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1230,6 +1294,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1292,6 +1358,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1317,6 +1385,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
@@ -1348,6 +1418,8 @@ _arguments "${_arguments_options[@]}" : \
 '*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
 '*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
 '*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
 '--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
 '--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
 '--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use clap::{Args, Subcommand};
 use comfy_table::{
@@ -8,6 +8,7 @@ use comfy_table::{
 use indexmap::IndexMap;
 use semver::Version;
 use serde::Serialize;
+use serde_yaml::Value;
 use snafu::{ResultExt, Snafu};
 use stackable_cockpit::{
     constants::{
@@ -23,7 +24,10 @@ use stackable_cockpit::{
         self,
         chartsource::ChartSourceMetadata,
         k8s::{self, Client},
+        path::PathOrUrlParseError,
+        yaml::deep_merge,
     },
+    xfer,
 };
 use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
@@ -31,7 +35,7 @@ use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
     cli::{Cli, OutputType},
-    utils::{InvalidRepoNameError, helm_repo_name_to_repo_url},
+    utils::{InvalidRepoNameError, helm_repo_name_to_repo_url, load_operator_values},
 };
 
 const INSTALL_AFTER_HELP_TEXT: &str = "Examples:
@@ -169,6 +173,12 @@ pub enum CmdError {
 
     #[snafu(display("OCI error"))]
     OciError { source: oci::Error },
+
+    #[snafu(display("path/url parse error"))]
+    PathOrUrlParse { source: PathOrUrlParseError },
+
+    #[snafu(display("failed to load operator values"))]
+    FileTransfer { source: crate::utils::Error },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -178,11 +188,15 @@ pub enum CmdError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
+    pub async fn run(
+        &self,
+        cli: &Cli,
+        transfer_client: Arc<xfer::Client>,
+    ) -> Result<String, CmdError> {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args, cli).await,
             OperatorCommands::Describe(args) => describe_cmd(args, cli).await,
-            OperatorCommands::Install(args) => install_cmd(args, cli).await,
+            OperatorCommands::Install(args) => install_cmd(args, cli, transfer_client).await,
             OperatorCommands::Uninstall(args) => uninstall_cmd(args),
             OperatorCommands::Installed(args) => installed_cmd(args),
         }
@@ -311,7 +325,11 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 }
 
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
+async fn install_cmd(
+    args: &OperatorInstallArgs,
+    cli: &Cli,
+    transfer_client: Arc<xfer::Client>,
+) -> Result<String, CmdError> {
     info!("Installing operator(s)");
     Span::current().pb_set_message("Installing operator(s)");
 
@@ -328,11 +346,29 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             namespace: args.operator_namespace.clone(),
         })?;
 
+    let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
+    let operator_values = load_operator_values(values_file.as_ref(), &transfer_client)
+        .await
+        .context(FileTransferSnafu)?;
+
+    let common_values = operator_values
+        .get("common")
+        .and_then(Value::as_mapping)
+        .cloned()
+        .unwrap_or_default();
     for operator in &args.operators {
+        let operator_specific = operator_values
+            .get(format!("{}-operator", &operator.name))
+            .and_then(Value::as_mapping)
+            .cloned()
+            .unwrap_or_default();
+        let merged_values = deep_merge(common_values.clone(), operator_specific);
+
         operator
             .install(
                 &args.operator_namespace,
                 &ChartSourceType::from(cli.chart_type()),
+                &merged_values,
             )
             .context(HelmSnafu)?;
 
