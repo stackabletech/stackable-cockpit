@@ -177,7 +177,7 @@ pub enum CmdError {
     PathOrUrlParse { source: PathOrUrlParseError },
 
     #[snafu(display("failed to load operator values"))]
-    FileTransfer { source: crate::utils::Error },
+    LoadOperatorValues { source: crate::utils::Error },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -348,7 +348,7 @@ async fn install_cmd(
     let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
     let operator_values = load_operator_values(values_file.as_ref(), &transfer_client)
         .await
-        .context(FileTransferSnafu)?;
+        .context(LoadOperatorValuesSnafu)?;
 
     for operator in &args.operators {
         let merged_values = merged_values_for_operator(&operator_values, &operator.name);

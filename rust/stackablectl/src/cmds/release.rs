@@ -168,7 +168,7 @@ pub enum CmdError {
     },
 
     #[snafu(display("failed to load operator values"))]
-    FileTransfer { source: crate::utils::Error },
+    LoadOperatorValues { source: crate::utils::Error },
 }
 
 impl ReleaseArgs {
@@ -354,7 +354,7 @@ async fn install_cmd(
             let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
             let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
                 .await
-                .context(FileTransferSnafu)?;
+                .context(LoadOperatorValuesSnafu)?;
 
             release
                 .install(
@@ -445,7 +445,7 @@ async fn upgrade_cmd(
             let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
             let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
                 .await
-                .context(FileTransferSnafu)?;
+                .context(LoadOperatorValuesSnafu)?;
 
             // Install the new operator release
             release
