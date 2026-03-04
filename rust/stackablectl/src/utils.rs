@@ -67,10 +67,12 @@ pub fn use_colored_output(use_color: bool) -> bool {
 ///     - key: "example"
 ///       operator: "Exists"
 ///       effect: "NoSchedule"
-///   replicas: 2
+///   podAnnotations:
+///     example.com/team: "data-engineering"
 /// zookeeper-operator:
 ///   tolerations: *default-tolerations
-///   replicas: 3
+///   podAnnotations:
+///     example.com/team: "platform"
 /// ```
 pub async fn load_operator_values(
     values_file: Option<&PathOrUrl>,

@@ -60,10 +60,12 @@ Example values file:
       - key: \"example\"
         operator: \"Exists\"
         effect: \"NoSchedule\"
-    replicas: 2
+    podAnnotations:
+      example.com/team: \"data-engineering\"
   zookeeper-operator:
     tolerations: *default-tolerations
-    replicas: 3
+    podAnnotations:
+      example.com/team: \"platform\"
 
 Use \"stackablectl [OPTIONS] <COMMAND> -f path/to/values.yaml\" to provide a
 values file."
