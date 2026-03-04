@@ -12,14 +12,17 @@ use crate::constants::{HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TE
 
 #[derive(Debug, Snafu)]
 pub enum Error {
-    #[snafu(display("failed to transfer values file"))]
-    FileTransfer { source: xfer::Error },
+    #[snafu(display("failed to open or transfer values file '{path}'"))]
+    FileTransfer {
+        source: xfer::Error,
+        path: String,
+    },
 
-    #[snafu(display("operator values file must be a YAML mapping at the top level"))]
-    InvalidValueType,
+    #[snafu(display("operator values file '{path}' must be a YAML mapping at the top level"))]
+    InvalidValueType { path: String },
 
-    #[snafu(display("value for key '{key}' must be a YAML mapping"))]
-    InvalidEntryType { key: String },
+    #[snafu(display("value for key '{key}' in operator values file '{path}' must be a YAML mapping"))]
+    InvalidEntryType { key: String, path: String },
 }
 
 #[derive(Debug, Snafu)]
@@ -73,23 +76,36 @@ pub async fn load_operator_values(
     values_file: Option<&PathOrUrl>,
     transfer_client: &xfer::Client,
 ) -> Result<Mapping, Error> {
-    let value = match values_file {
-        Some(file) => transfer_client
-            .get(file, &Yaml::<Value>::default())
-            .await
-            .context(FileTransferSnafu)?,
+    let file = match values_file {
+        Some(file) => file,
         None => return Ok(Mapping::new()),
     };
 
+    let path = match file {
+        PathOrUrl::Path(p) => p.display().to_string(),
+        PathOrUrl::Url(u) => u.to_string(),
+    };
+
+    let value = transfer_client
+        .get(file, &Yaml::<Value>::default())
+        .await
+        .context(FileTransferSnafu { path: path.clone() })?;
+
     let mapping = match value {
         Value::Mapping(mapping) => mapping,
-        _ => return InvalidValueTypeSnafu.fail(),
+        _ => {
+            return InvalidValueTypeSnafu {
+                path: path.clone(),
+            }
+            .fail()
+        }
     };
 
     for (key, value) in &mapping {
         if !value.is_mapping() {
             return InvalidEntryTypeSnafu {
                 key: key.as_str().unwrap_or("<non-string key>").to_string(),
+                path: path.clone(),
             }
             .fail();
         }
