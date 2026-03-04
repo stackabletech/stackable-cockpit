@@ -56,14 +56,18 @@ pub fn use_colored_output(use_color: bool) -> bool {
 
 /// Loads operator helm values from a YAML file.
 ///
-/// The file should contain a YAML mapping of operator names to their helm values:
+/// The file should contain a YAML mapping of operator names to their helm values.
+/// Use YAML anchors and aliases to share values across operators:
 /// ```yaml
-/// common:
-///   key: value
 /// airflow-operator:
-///   key: value
+///   tolerations: &default-tolerations
+///     - key: "example"
+///       operator: "Exists"
+///       effect: "NoSchedule"
+///   replicas: 2
 /// zookeeper-operator:
-///   key: value
+///   tolerations: *default-tolerations
+///   replicas: 3
 /// ```
 pub async fn load_operator_values(
     values_file: Option<&PathOrUrl>,

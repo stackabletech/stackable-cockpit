@@ -48,22 +48,21 @@ to provide multiple additional release files.")]
     #[arg(
         long_help = "Path to a Helm values file that will be used for the installation of operators
 
-The file is a YAML file containing Helm values used to deploy operators. It
-supports a 'common' key for values shared across all operators, as well as
-operator-specific keys (e.g. 'airflow-operator', 'zookeeper-operator') for
-values that only apply to a single operator. Operator-specific values are
-merged with common values, with operator-specific values taking precedence.
+The file is a YAML file containing Helm values used to deploy operators.
+Operator-specific keys (e.g. 'airflow-operator', 'zookeeper-operator') map
+to the Helm values for that operator. Use YAML anchors and aliases to share
+values across operators.
 
 Example values file:
 
-  common:
-    tolerations:
+  airflow-operator:
+    tolerations: &default-tolerations
       - key: \"example\"
         operator: \"Exists\"
         effect: \"NoSchedule\"
-  airflow-operator:
     replicas: 2
   zookeeper-operator:
+    tolerations: *default-tolerations
     replicas: 3
 
 Use \"stackablectl [OPTIONS] <COMMAND> -f path/to/values.yaml\" to provide a

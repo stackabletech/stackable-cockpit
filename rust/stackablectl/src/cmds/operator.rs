@@ -24,7 +24,7 @@ use stackable_cockpit::{
         chartsource::ChartSourceMetadata,
         k8s::{self, Client},
         path::PathOrUrlParseError,
-        yaml::merged_values_for_operator,
+        yaml::values_for_operator,
     },
     xfer,
 };
@@ -351,13 +351,13 @@ async fn install_cmd(
         .context(LoadOperatorValuesSnafu)?;
 
     for operator in &args.operators {
-        let merged_values = merged_values_for_operator(&operator_values, &operator.name);
+        let operator_helm_values = values_for_operator(&operator_values, &operator.name);
 
         operator
             .install(
                 &args.operator_namespace,
                 &ChartSourceType::from(cli.chart_type()),
-                &merged_values,
+                &operator_helm_values,
             )
             .context(HelmSnafu)?;
 

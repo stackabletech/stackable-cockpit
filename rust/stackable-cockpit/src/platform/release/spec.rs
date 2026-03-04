@@ -19,7 +19,7 @@ use crate::{
     utils::{
         k8s::{self, Client},
         path::{IntoPathOrUrl as _, PathOrUrlParseError},
-        yaml::merged_values_for_operator,
+        yaml::values_for_operator,
     },
     xfer::{self, processor::Text},
 };
@@ -111,7 +111,7 @@ impl ReleaseSpec {
 
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
-                let merged_values = merged_values_for_operator(operator_values, &product_name);
+                let operator_helm_values = values_for_operator(operator_values, &product_name);
                 // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
                 // get useful parallelism.
                 tokio::spawn(
@@ -126,7 +126,7 @@ impl ReleaseSpec {
 
                         // Install operator
                         operator
-                            .install(&namespace, &chart_source, &merged_values)
+                            .install(&namespace, &chart_source, &operator_helm_values)
                             .context(HelmInstallSnafu)?;
 
                         info!("Installed {product_name}-operator");
