@@ -13,15 +13,14 @@ use crate::constants::{HELM_REPO_URL_DEV, HELM_REPO_URL_STABLE, HELM_REPO_URL_TE
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to open or transfer values file '{path}'"))]
-    FileTransfer {
-        source: xfer::Error,
-        path: String,
-    },
+    FileTransfer { source: xfer::Error, path: String },
 
     #[snafu(display("operator values file '{path}' must be a YAML mapping at the top level"))]
     InvalidValueType { path: String },
 
-    #[snafu(display("value for key '{key}' in operator values file '{path}' must be a YAML mapping"))]
+    #[snafu(display(
+        "value for key '{key}' in operator values file '{path}' must be a YAML mapping"
+    ))]
     InvalidEntryType { key: String, path: String },
 }
 
@@ -95,12 +94,7 @@ pub async fn load_operator_values(
 
     let mapping = match value {
         Value::Mapping(mapping) => mapping,
-        _ => {
-            return InvalidValueTypeSnafu {
-                path: path.clone(),
-            }
-            .fail()
-        }
+        _ => return InvalidValueTypeSnafu { path: path.clone() }.fail(),
     };
 
     for (key, value) in &mapping {
