@@ -225,7 +225,10 @@ impl OperatorSpec {
         let helm_values_yaml = if helm_values.is_empty() {
             None
         } else {
-            Some(serde_yaml::to_string(&helm_values).expect("serializing a small YAML Mapping back to a YAML string can't fail"))
+            Some(
+                serde_yaml::to_string(&helm_values)
+                    .expect("serializing a small YAML Mapping back to a YAML string can't fail"),
+            )
         };
 
         // Install using Helm
