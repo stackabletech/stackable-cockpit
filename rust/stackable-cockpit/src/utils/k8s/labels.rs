@@ -1,4 +1,4 @@
-use kube::api::ListParams;
+use stackable_operator::kube::api::ListParams;
 
 pub enum ProductLabel {
     Both,

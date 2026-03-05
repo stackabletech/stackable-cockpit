@@ -18,8 +18,6 @@ helm-sys = { path = "../helm-sys" }
 bcrypt.workspace = true
 clap.workspace = true
 indexmap.workspace = true
-k8s-openapi.workspace = true
-kube.workspace = true
 rand.workspace = true
 reqwest.workspace = true
 semver.workspace = true

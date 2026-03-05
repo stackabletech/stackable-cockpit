@@ -1,18 +1,21 @@
 use std::{collections::BTreeMap, string::FromUtf8Error};
 
-use k8s_openapi::api::{
-    apps::v1::{Deployment, StatefulSet},
-    core::v1::{Endpoints, Namespace, Node, Secret, Service},
-};
-use kube::{
-    Api, Discovery, ResourceExt,
-    api::{ListParams, Patch, PatchParams, PostParams},
-    core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
-    discovery::{ApiCapabilities, ApiResource, Scope},
-};
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use stackable_operator::{commons::listener::Listener, kvp::Labels};
+use stackable_operator::{
+    crd::listener::v1alpha1::Listener,
+    k8s_openapi::api::{
+        apps::v1::{Deployment, StatefulSet},
+        core::v1::{Endpoints, Namespace, Node, Secret, Service},
+    },
+    kube::{
+        self, Api, Discovery, ResourceExt,
+        api::{ListParams, Patch, PatchParams, PostParams},
+        core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
+        discovery::{ApiCapabilities, ApiResource, Scope},
+    },
+    kvp::Labels,
+};
 use tokio::sync::RwLock;
 use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};

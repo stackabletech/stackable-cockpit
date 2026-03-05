@@ -1,5 +1,5 @@
-use kube::{ResourceExt, api::ListParams};
 use snafu::ResultExt;
+use stackable_operator::kube::{ResourceExt, api::ListParams};
 
 use crate::{
     platform::{

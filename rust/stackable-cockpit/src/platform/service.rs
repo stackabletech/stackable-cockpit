@@ -8,9 +8,11 @@
 use std::collections::HashMap;
 
 use indexmap::IndexMap;
-use k8s_openapi::api::core::v1::{Service, ServiceSpec};
-use kube::{ResourceExt, api::ListParams};
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::{
+    k8s_openapi::api::core::v1::{Service, ServiceSpec},
+    kube::{self, ResourceExt, api::ListParams},
+};
 use tracing::{debug, warn};
 
 use crate::utils::k8s::{self, Client, ListParamsExt};

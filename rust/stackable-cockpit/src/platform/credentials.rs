@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use kube::{ResourceExt, core::DynamicObject};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kube::{ResourceExt, core::DynamicObject};
 
 use crate::utils::k8s::{self, Client};
 

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use bcrypt::DEFAULT_COST;
-use rand::distributions::{Alphanumeric, DistString};
+use rand::distr::{Alphanumeric, SampleString};
 use serde::de::DeserializeOwned;
 use tera::{Context, Function, Tera, Value};
 
@@ -44,7 +44,7 @@ where
 
 fn random_password() -> impl Function {
     |_args: &HashMap<String, Value>| -> tera::Result<Value> {
-        let password = Alphanumeric.sample_string(&mut rand::thread_rng(), PASSWORD_LENGTH);
+        let password = Alphanumeric.sample_string(&mut rand::rng(), PASSWORD_LENGTH);
         Ok(password.into())
     }
 }

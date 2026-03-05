@@ -1,9 +1,11 @@
 use std::fmt::Display;
 
-use k8s_openapi::apimachinery::pkg::api::resource::Quantity;
 use serde::{Deserialize, Serialize};
 use snafu::{ResultExt, Snafu};
-use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
+use stackable_operator::{
+    cpu::CpuQuantity, k8s_openapi::apimachinery::pkg::api::resource::Quantity,
+    memory::MemoryQuantity,
+};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 

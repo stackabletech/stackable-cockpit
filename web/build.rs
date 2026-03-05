@@ -42,7 +42,7 @@ fn main() {
                 .to_str()
                 .expect("asset filename must be valid UTF-8")
                 .to_string(),
-            &format!("include_bytes!({asset_file_path:?})"),
+            format!("include_bytes!({asset_file_path:?})"),
         );
     }
     write!(
