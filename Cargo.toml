@@ -41,6 +41,7 @@ phf_codegen = "0.13"
 rand = "0.10"
 regex = "1.10"
 reqwest = { version = "0.13", default-features = false, features = ["json", "rustls"] }
+rustls = "0.23"
 rstest = "0.26"
 semver = { version = "1.0", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }

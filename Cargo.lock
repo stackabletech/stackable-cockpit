@@ -3745,6 +3745,7 @@ dependencies = [
  "libc",
  "rand 0.10.0",
  "reqwest 0.13.2",
+ "rustls",
  "semver",
  "serde",
  "serde_json",

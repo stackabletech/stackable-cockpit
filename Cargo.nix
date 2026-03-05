@@ -10323,7 +10323,7 @@ rec {
           "std" = [ "webpki/std" "pki-types/std" "once_cell/std" ];
           "zlib" = [ "dep:zlib-rs" ];
         };
-        resolvedDefaultFeatures = [ "aws-lc-rs" "aws_lc_rs" "log" "logging" "ring" "std" "tls12" ];
+        resolvedDefaultFeatures = [ "aws-lc-rs" "aws_lc_rs" "default" "log" "logging" "prefer-post-quantum" "ring" "std" "tls12" ];
       };
       "rustls-native-certs" = rec {
         crateName = "rustls-native-certs";
@@ -12468,6 +12468,10 @@ rec {
             packageId = "reqwest 0.13.2";
             usesDefaultFeatures = false;
             features = [ "json" "rustls" ];
+          }
+          {
+            name = "rustls";
+            packageId = "rustls";
           }
           {
             name = "semver";
