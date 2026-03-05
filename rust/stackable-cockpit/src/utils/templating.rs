@@ -12,7 +12,7 @@ use crate::constants::PASSWORD_LENGTH;
 /// output. Available helper functions are:
 ///
 /// - `random_password`: Returns a random password with a relatively secure RNG.
-///   See [`rand::thread_rng`] for more information.
+///   See [`rand::rng`] for more information.
 /// - `bcrypt`: Returns the bcyrpt hash of the provided `password` parameter.
 pub fn render(content: &str, parameters: &HashMap<String, String>) -> Result<String, tera::Error> {
     // Create templating context

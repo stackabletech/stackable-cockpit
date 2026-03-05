@@ -38,7 +38,7 @@ impl Display for Credentials {
 }
 
 /// Retrieves the credentials looking up a secret identified by `secret_name`
-/// in `secret_namespace`. The function returns [`Ok(None)`] if `username_key`
+/// in `secret_namespace`. The function returns `Ok(None)` if `username_key`
 /// and/or `password_key` are not found or the product does not provide
 /// any credentials.
 pub async fn get(

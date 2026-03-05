@@ -238,7 +238,7 @@ impl Client {
     }
 
     /// Lists objects by looking up a GVK via the discovery. It returns an
-    /// optional list of dynamic objects. The method returns [`Ok(None)`]
+    /// optional list of dynamic objects. The method returns `Ok(None)`
     /// if the client was unable to resolve the GVK. An error is returned
     /// when the client failed to list the objects.
     pub async fn list_objects(
@@ -333,7 +333,7 @@ impl Client {
 
     /// Retrieves user credentials consisting of username and password from a
     /// secret identified by `secret_name` inside the `secret_namespace`. If
-    /// either one of the values is missing, [`Ok(None)`] is returned. An error
+    /// either one of the values is missing, `Ok(None)` is returned. An error
     /// is returned if the client failed to get the secret.
     pub async fn get_credentials_from_secret(
         &self,
