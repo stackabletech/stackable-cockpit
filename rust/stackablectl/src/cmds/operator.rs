@@ -315,7 +315,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     info!("Installing operator(s)");
     Span::current().pb_set_message("Installing operator(s)");
 
-    let operators: Vec<operator::OperatorSpec> = args
+    let operators: Vec<&operator::OperatorSpec> = args
         .operators
         .iter()
         .filter_map(|operator| match operator {
@@ -323,7 +323,7 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
                 indicatif_println!("{}", coffee::COFFEE_ASCII_ART);
                 None
             }
-            coffee::OperatorOrCoffee::Operator(spec) => Some(spec.clone()),
+            coffee::OperatorOrCoffee::Operator(spec) => Some(spec),
         })
         .collect();
 
