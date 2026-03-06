@@ -51,7 +51,10 @@ pub enum SpecParseError {
     #[snafu(display("empty operator spec input"))]
     EmptyInput,
 
-    #[snafu(display("invalid operator name {name:?}"))]
+    #[snafu(display(
+        "invalid operator name {name:?}. \
+        It could be the case that this version of stackablectl is too old to know about this particular operator"
+    ))]
     InvalidName { name: String },
 }
 

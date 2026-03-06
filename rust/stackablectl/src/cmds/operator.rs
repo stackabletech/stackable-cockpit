@@ -38,18 +38,6 @@ const INSTALL_AFTER_HELP_TEXT: &str = "Examples:
 
 Use \"stackablectl operator install <OPERATOR> -c <OPTION>\" to create a local cluster";
 
-const COFFEE_ASCII_ART: &str = r#"
-      ) )
-     ( (
-   .------.
-   |      |]
-   \      /
-    `----'
-
-  Psst... "coffee" is not an operator, but we get it.
-  Stackable runs on coffee too. Have a great day! ☕
-"#;
-
 #[derive(Debug, Args)]
 pub struct OperatorArgs {
     #[command(subcommand)]
@@ -110,7 +98,7 @@ Possible valid values are:
 
 Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
-    operators: Vec<String>,
+    operators: Vec<coffee::OperatorOrCoffee>,
 
     /// Namespace in the cluster used to deploy the operators
     #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
@@ -181,9 +169,6 @@ pub enum CmdError {
 
     #[snafu(display("OCI error"))]
     OciError { source: oci::Error },
-
-    #[snafu(display("failed to parse operator spec"))]
-    ParseOperatorSpec { source: operator::SpecParseError },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -333,15 +318,14 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
     let operators: Vec<operator::OperatorSpec> = args
         .operators
         .iter()
-        .filter_map(|operator| match operator.as_str() {
-            "coffee" | "coffe" => {
-                indicatif_println!("{COFFEE_ASCII_ART}");
+        .filter_map(|operator| match operator {
+            coffee::OperatorOrCoffee::Coffee => {
+                indicatif_println!("{}", coffee::COFFEE_ASCII_ART);
                 None
             }
-            _ => Some(operator),
+            coffee::OperatorOrCoffee::Operator(spec) => Some(spec.clone()),
         })
-        .map(|s| s.parse().context(ParseOperatorSpecSnafu))
-        .collect::<Result<_, _>>()?;
+        .collect();
 
     // In case no operators need to be installed (e.g. coffee was already installed), there is no
     // need to connect to Kubernetes and potentially produce error messages.
@@ -629,5 +613,38 @@ where
             Ok(versions.iter().map(|version| version.to_string()).collect())
         }
         None => Ok(vec![]),
+    }
+}
+
+mod coffee {
+    use std::str::FromStr;
+
+    pub const COFFEE_ASCII_ART: &str = r#"
+      ) )
+     ( (
+   .------.
+   |      |]
+   \      /
+    `----'
+
+  Psst... "coffee" is not an operator, but we get it.
+  Stackable runs on coffee too. Have a great day! ☕
+"#;
+
+    #[derive(Clone, Debug)]
+    pub enum OperatorOrCoffee {
+        Operator(super::operator::OperatorSpec),
+        Coffee,
+    }
+
+    impl FromStr for OperatorOrCoffee {
+        type Err = super::operator::SpecParseError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            match s {
+                "coffee" | "coffe" => Ok(OperatorOrCoffee::Coffee),
+                _ => s.parse().map(OperatorOrCoffee::Operator),
+            }
+        }
     }
 }
