@@ -7,6 +7,7 @@ on:
       - "stackablectl-[0-9]+.[0-9]+.[0-9]+**"
 
 env:
+  CARGO_CYCLONEDX_VERSION: 0.5.7
   RUST_VERSION: 1.87.0
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
@@ -50,14 +51,25 @@ jobs:
         with:
           go-version: '^1.22.2'
 
+      - name: Install cargo-cyclonedx
+        run: cargo install --locked cargo-cyclonedx@${{ env.CARGO_CYCLONEDX_VERSION }}
+
       - name: Build Binary
         if: matrix.os != 'windows-latest'
         run: cargo build --target ${{ matrix.target }} --release --package stackablectl
 
+      - name: Generate SBOM
+        run: cargo cyclonedx --all --spec-version 1.5 --describe binaries
+
       - name: Rename Binary
         run: mv target/${{ matrix.target }}/release/stackablectl${{ matrix.file-suffix }} stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
 
-      - name: Upload Release Binary
+      - name: Rename SBOM
+        run: mv rust/stackablectl/stackablectl_bin.cdx.xml stackablectl-${{ matrix.target }}.cdx.xml
+
+      - name: Upload Release Binary and SBOM
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
         with:
-          files: stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
+          files: |
+            stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
+            stackablectl-${{ matrix.target }}.cdx.xml
