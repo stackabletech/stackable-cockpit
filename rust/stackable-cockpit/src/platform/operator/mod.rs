@@ -53,7 +53,8 @@ pub enum SpecParseError {
 
     #[snafu(display(
         "invalid operator name {name:?}. \
-        It could be the case that this version of stackablectl is too old to know about this particular operator"
+        It could be the case that this version of stackablectl is too old to know about this particular operator, \
+        in which case you should update it."
     ))]
     InvalidName { name: String },
 }
