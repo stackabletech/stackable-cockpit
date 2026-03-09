@@ -3216,16 +3216,6 @@ rec {
         features = {
         };
       };
-      "env_home" = rec {
-        crateName = "env_home";
-        version = "0.1.0";
-        edition = "2015";
-        sha256 = "1zn08mk95rjh97831rky1n944k024qrwjhbcgb0xv9zhrh94xy67";
-        authors = [
-          "Peter Tripp <peter.tripp@gmail.com>"
-        ];
-
-      };
       "equivalent" = rec {
         crateName = "equivalent";
         version = "1.0.2";
@@ -6093,10 +6083,10 @@ rec {
       };
       "k8s-openapi" = rec {
         crateName = "k8s-openapi";
-        version = "0.27.0";
+        version = "0.27.1";
         edition = "2021";
-        links = "k8s-openapi-0.27.0";
-        sha256 = "038zxrklpni04rpaww9dr7v8ln8zj8p7mgdd68bx5l8sc7rxd9h5";
+        links = "k8s-openapi-0.27.1";
+        sha256 = "0pldsxbxd4ckq94p8rkck4s862w33gfns6rclxr5imcx47sjdcsi";
         libName = "k8s_openapi";
         authors = [
           "Arnav Singh <me@arnavion.dev>"
@@ -6146,8 +6136,8 @@ rec {
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         libName = "k8s_version";
@@ -6783,9 +6773,9 @@ rec {
       };
       "libc" = rec {
         crateName = "libc";
-        version = "0.2.182";
+        version = "0.2.183";
         edition = "2021";
-        sha256 = "04k1w1mq9f4cxv520dbr5xw1i7xkbc9fcrvaggyjy25jdkdvl038";
+        sha256 = "17c9gyia7rrzf9gsssvk3vq9ca2jp6rh32fsw6ciarpn5djlddmm";
         authors = [
           "The Rust Project Developers"
         ];
@@ -8676,9 +8666,9 @@ rec {
       };
       "quinn-proto" = rec {
         crateName = "quinn-proto";
-        version = "0.11.13";
+        version = "0.11.14";
         edition = "2021";
-        sha256 = "0cca3mgja9p4w66f6sl1kfhj8rdf4mwsg1jxzssh9g63n14np47i";
+        sha256 = "1660jkxhzi1pnywzs13ifczwrlv6ds9qds111vsnxjciqpz44js3";
         libName = "quinn_proto";
         dependencies = [
           {
@@ -10248,7 +10238,7 @@ rec {
           "thread" = [ "linux-raw-sys/prctl" ];
           "use-libc" = [ "libc_errno" "libc" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "fs" "std" "stdio" "termios" ];
+        resolvedDefaultFeatures = [ "alloc" "std" "stdio" "termios" ];
       };
       "rustls" = rec {
         crateName = "rustls";
@@ -11611,9 +11601,9 @@ rec {
       };
       "socket2" = rec {
         crateName = "socket2";
-        version = "0.6.2";
+        version = "0.6.3";
         edition = "2021";
-        sha256 = "1q073zkvz96h216mfz6niqk2kjqrgqv2va6zj34qh84zv4xamx46";
+        sha256 = "0gkjjcyn69hqhhlh5kl8byk5m0d7hyrp2aqwzbs3d33q208nwxis";
         authors = [
           "Alex Crichton <alex@alexcrichton.com>"
           "Thomas de Zeeuw <thomasdezeeuw@gmail.com>"
@@ -11622,11 +11612,11 @@ rec {
           {
             name = "libc";
             packageId = "libc";
-            target = { target, features }: (target."unix" or false);
+            target = { target, features }: ((target."unix" or false) || ("wasi" == target."os" or null));
           }
           {
             name = "windows-sys";
-            packageId = "windows-sys 0.60.2";
+            packageId = "windows-sys 0.61.2";
             target = { target, features }: (target."windows" or false);
             features = [ "Win32_Foundation" "Win32_Networking_WinSock" "Win32_System_IO" "Win32_System_Threading" "Win32_System_WindowsProgramming" ];
           }
@@ -11725,7 +11715,7 @@ rec {
             name = "stackable-operator";
             packageId = "stackable-operator";
             usesDefaultFeatures = false;
-            features = [ "kube-ws" ];
+            features = [ "crds" "kube-ws" ];
           }
           {
             name = "tera";
@@ -11896,12 +11886,12 @@ rec {
       };
       "stackable-operator" = rec {
         crateName = "stackable-operator";
-        version = "0.106.2";
+        version = "0.107.0";
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         libName = "stackable_operator";
@@ -12019,6 +12009,7 @@ rec {
           {
             name = "stackable-versioned";
             packageId = "stackable-versioned";
+            optional = true;
           }
           {
             name = "strum";
@@ -12051,12 +12042,14 @@ rec {
         ];
         features = {
           "certs" = [ "dep:stackable-certs" ];
-          "full" = [ "certs" "time" "webhook" "kube-ws" ];
+          "crds" = [ "dep:stackable-versioned" ];
+          "default" = [ "crds" ];
+          "full" = [ "crds" "certs" "time" "webhook" "kube-ws" ];
           "kube-ws" = [ "kube/ws" ];
           "time" = [ "stackable-shared/time" ];
           "webhook" = [ "dep:stackable-webhook" ];
         };
-        resolvedDefaultFeatures = [ "kube-ws" ];
+        resolvedDefaultFeatures = [ "crds" "kube-ws" ];
       };
       "stackable-operator-derive" = rec {
         crateName = "stackable-operator-derive";
@@ -12064,8 +12057,8 @@ rec {
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         procMacro = true;
@@ -12099,8 +12092,8 @@ rec {
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         libName = "stackable_shared";
@@ -12176,12 +12169,12 @@ rec {
       };
       "stackable-telemetry" = rec {
         crateName = "stackable-telemetry";
-        version = "0.6.1";
+        version = "0.6.2";
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         libName = "stackable_telemetry";
@@ -12290,8 +12283,8 @@ rec {
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         libName = "stackable_versioned";
@@ -12334,8 +12327,8 @@ rec {
         edition = "2024";
         workspace_member = null;
         src = pkgs.fetchgit {
-          url = "https://github.com/stackabletech//operator-rs.git";
-          rev = "86b1d13f30efe540330376642dbbd66cc1690932";
+          url = "https://github.com/stackabletech/operator-rs.git";
+          rev = "a16cafb151202948e79925a58662b14b8b004cd7";
           sha256 = "01krcfa4jfhrvl2skgmq35a9fx9zrjm82ymmplr6fsp354fqdzdq";
         };
         procMacro = true;
@@ -12505,7 +12498,7 @@ rec {
             name = "stackable-operator";
             packageId = "stackable-operator";
             usesDefaultFeatures = false;
-            features = [ "kube-ws" ];
+            features = [ "crds" "kube-ws" ];
           }
           {
             name = "tera";
@@ -13491,9 +13484,9 @@ rec {
       };
       "toml" = rec {
         crateName = "toml";
-        version = "1.0.4+spec-1.1.0";
+        version = "1.0.6+spec-1.1.0";
         edition = "2021";
-        sha256 = "0iyvh263q0qyhk308vyjr23ivik2i06ky4yz81klf4s424hk6k69";
+        sha256 = "1z3gd04jal7r2jhnww4qvln5g4h1wlhvlsqwhdk6gqf9lcj136rr";
         dependencies = [
           {
             name = "indexmap";
@@ -14992,9 +14985,9 @@ rec {
       };
       "uuid" = rec {
         crateName = "uuid";
-        version = "1.21.0";
+        version = "1.22.0";
         edition = "2021";
-        sha256 = "1nsxfd17gfkvl1jmwcy5lnq6z32b8kf19is04byl6b95an2k6wmn";
+        sha256 = "0dvsfn44sddhyhlhk7m3i559wyb125h86799fm5abky0067kr3d6";
         authors = [
           "Ashley Mannix<ashleymannix@live.com.au>"
           "Dylan DPC<dylan.dpc@gmail.com>"
@@ -16096,38 +16089,23 @@ rec {
       };
       "which" = rec {
         crateName = "which";
-        version = "8.0.0";
+        version = "8.0.2";
         edition = "2021";
-        sha256 = "07dsqyvvyaqp3dbj4cdl3ib5fxhdf29l6vihm3pcihq666avpynk";
+        sha256 = "0nf4c067qvw5zzk0lr9iadzfnaprr9kkrj0cgmxf8smgmapmz6c1";
         authors = [
           "Harry Fei <tiziyuanfang@gmail.com>, Jacob Kiesel <jake@bitcrafters.co>"
         ];
         dependencies = [
           {
-            name = "env_home";
-            packageId = "env_home";
+            name = "libc";
+            packageId = "libc";
             optional = true;
-            target = { target, features }: ((target."windows" or false) || (target."unix" or false) || ("redox" == target."os" or null));
-          }
-          {
-            name = "rustix";
-            packageId = "rustix";
-            optional = true;
-            usesDefaultFeatures = false;
             target = { target, features }: ((target."unix" or false) || ("wasi" == target."os" or null) || ("redox" == target."os" or null));
-            features = [ "fs" "std" ];
-          }
-          {
-            name = "winsafe";
-            packageId = "winsafe";
-            optional = true;
-            target = { target, features }: (target."windows" or false);
-            features = [ "kernel" ];
           }
         ];
         features = {
           "default" = [ "real-sys" ];
-          "real-sys" = [ "dep:env_home" "dep:rustix" "dep:winsafe" ];
+          "real-sys" = [ "dep:libc" ];
           "regex" = [ "dep:regex" ];
           "tracing" = [ "dep:tracing" ];
         };
@@ -17134,7 +17112,7 @@ rec {
           "Win32_Web" = [ "Win32" ];
           "Win32_Web_InternetExplorer" = [ "Win32_Web" ];
         };
-        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_System" "Win32_System_IO" "Win32_System_Threading" "Win32_System_WindowsProgramming" "default" ];
+        resolvedDefaultFeatures = [ "Win32" "Win32_Foundation" "Win32_Networking" "Win32_Networking_WinSock" "Win32_System" "Win32_System_IO" "default" ];
       };
       "windows-sys 0.61.2" = rec {
         crateName = "windows-sys";
@@ -17788,9 +17766,9 @@ rec {
       };
       "winnow" = rec {
         crateName = "winnow";
-        version = "0.7.14";
+        version = "0.7.15";
         edition = "2021";
-        sha256 = "0a88ahjqhyn2ln1yplq2xsigm09kxqkdkkk2c2mfxkbzszln8lss";
+        sha256 = "0i9rkl2rqpbnnxlgs20gmkj3nd0b2k8q55mjmpc2ybb84xwxjyfz";
         dependencies = [
           {
             name = "memchr";
@@ -17807,32 +17785,6 @@ rec {
           "unstable-doc" = [ "alloc" "std" "simd" "unstable-recover" ];
         };
         resolvedDefaultFeatures = [ "alloc" "default" "std" ];
-      };
-      "winsafe" = rec {
-        crateName = "winsafe";
-        version = "0.0.19";
-        edition = "2021";
-        sha256 = "0169xy9mjma8dys4m8v4x0xhw2gkbhv2v1wsbvcjl9bhnxxd2dfi";
-        authors = [
-          "Rodrigo Cesar de Freitas Dias <rcesar@gmail.com>"
-        ];
-        features = {
-          "comctl" = [ "ole" ];
-          "dshow" = [ "oleaut" ];
-          "dwm" = [ "uxtheme" ];
-          "dxgi" = [ "ole" ];
-          "gdi" = [ "user" ];
-          "gui" = [ "comctl" "shell" "uxtheme" ];
-          "mf" = [ "oleaut" ];
-          "ole" = [ "user" ];
-          "oleaut" = [ "ole" ];
-          "shell" = [ "oleaut" ];
-          "taskschd" = [ "oleaut" ];
-          "user" = [ "kernel" ];
-          "uxtheme" = [ "gdi" "ole" ];
-          "version" = [ "kernel" ];
-        };
-        resolvedDefaultFeatures = [ "kernel" ];
       };
       "wit-bindgen" = rec {
         crateName = "wit-bindgen";
@@ -18299,9 +18251,9 @@ rec {
       };
       "zerocopy" = rec {
         crateName = "zerocopy";
-        version = "0.8.40";
+        version = "0.8.41";
         edition = "2021";
-        sha256 = "1r9j2mlb54q1l9pgall3mk0gg6cprhdncvbbgsgxnxmmj3jcd2d7";
+        sha256 = "0k95f1hszgda7s7drfdcz6wpvigk8igrmi9n10jzckbkh72kpqcn";
         authors = [
           "Joshua Liebow-Feeser <joshlf@google.com>"
           "Jack Wrenn <jswrenn@amazon.com>"
@@ -18335,9 +18287,9 @@ rec {
       };
       "zerocopy-derive" = rec {
         crateName = "zerocopy-derive";
-        version = "0.8.40";
+        version = "0.8.41";
         edition = "2021";
-        sha256 = "0lsrhg5nvf0c40z644a014l2nrvh7xw0ff3i9744k9vif2d4hp7n";
+        sha256 = "075cbz826mip7jhgbph7j0cx6vsmq5a9pngwm6xvjanihsgfli9m";
         procMacro = true;
         libName = "zerocopy_derive";
         authors = [
