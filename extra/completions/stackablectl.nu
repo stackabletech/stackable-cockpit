@@ -15,6 +15,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -39,6 +40,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -68,6 +70,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -97,6 +100,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -132,6 +136,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -159,6 +164,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -191,6 +197,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -243,6 +250,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -272,6 +280,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -301,6 +310,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -338,6 +348,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -365,6 +376,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -394,6 +406,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -448,6 +461,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -478,6 +492,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -508,6 +523,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -549,6 +565,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -594,6 +611,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -619,6 +637,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -654,6 +673,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -695,6 +715,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -725,6 +746,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -755,6 +777,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -796,6 +819,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -841,6 +865,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -865,6 +890,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -889,6 +915,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -913,6 +940,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -937,6 +965,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -961,6 +990,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1013,6 +1043,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1037,6 +1068,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1063,6 +1095,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1106,6 +1139,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1132,6 +1166,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1156,6 +1191,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
