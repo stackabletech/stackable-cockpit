@@ -4,7 +4,7 @@
 .SH NAME
 stackablectl \- Command line tool to interact with the Stackable Data Platform
 .SH SYNOPSIS
-\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-\-chart\-source\fR] [\fB\-\-listener\-class\-preset\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
+\fBstackablectl\fR [\fB\-l\fR|\fB\-\-log\-level\fR] [\fB\-\-no\-cache\fR] [\fB\-d\fR|\fB\-\-demo\-file\fR] [\fB\-s\fR|\fB\-\-stack\-file\fR] [\fB\-r\fR|\fB\-\-release\-file\fR] [\fB\-f\fR|\fB\-\-operator\-values\fR] [\fB\-\-helm\-repo\-stable\fR] [\fB\-\-helm\-repo\-test\fR] [\fB\-\-helm\-repo\-dev\fR] [\fB\-\-chart\-source\fR] [\fB\-\-listener\-class\-preset\fR] [\fB\-h\fR|\fB\-\-help\fR] [\fB\-V\fR|\fB\-\-version\fR] <\fIsubcommands\fR>
 .SH DESCRIPTION
 Command line tool to interact with the Stackable Data Platform
 .SH OPTIONS
@@ -58,6 +58,31 @@ definition will be used.
 
 Use "stackablectl [OPTIONS] <COMMAND> \-r path/to/releases1.yaml \-r path/to/releases2.yaml"
 to provide multiple additional release files.
+.TP
+\fB\-f\fR, \fB\-\-operator\-values\fR \fI<VALUES_FILE>\fR
+Path to a Helm values file that will be used for the installation of operators
+
+The file is a YAML file containing Helm values used to deploy operators.
+Operator\-specific keys (e.g. \*(Aqairflow\-operator\*(Aq, \*(Aqzookeeper\-operator\*(Aq) map
+to the Helm values for that operator. Use YAML anchors and aliases to share
+values across operators.
+
+Example values file:
+
+  airflow\-operator:
+    tolerations: &default\-tolerations
+      \- key: "example"
+        operator: "Exists"
+        effect: "NoSchedule"
+    podAnnotations:
+      example.com/team: "data\-engineering"
+  zookeeper\-operator:
+    tolerations: *default\-tolerations
+    podAnnotations:
+      example.com/team: "platform"
+
+Use "stackablectl [OPTIONS] <COMMAND> \-f path/to/values.yaml" to provide a
+values file.
 .SH "HELM REPOSITORY OPTIONS"
 .TP
 \fB\-\-helm\-repo\-stable\fR \fI<URL>\fR [default: https://repo.stackable.tech/repository/helm\-stable/]
@@ -85,6 +110,8 @@ repo: index.yaml\-based repositories: resolution (dev, test, stable) is based on
 .TP
 \fB\-\-listener\-class\-preset\fR \fI<LISTENER_CLASS_PRESET>\fR
 Choose the ListenerClass preset (`none`, `ephemeral\-nodes` or `stable\-nodes`).
+
+This takes precedence over values provided via the \*(Aq\-f/\-\-operator\-values\*(Aq flag.
 
 This maps to the listener\-operator Helm Chart preset value, see [the listener\-operator documentation](https://docs.stackable.tech/home/nightly/listener\-operator/listenerclass/#presets) for details.
 .br

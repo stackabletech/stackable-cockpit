@@ -156,6 +156,14 @@ impl Cli {
         Ok(files)
     }
 
+    pub fn get_values_file(&self) -> Result<Option<PathOrUrl>, PathOrUrlParseError> {
+        if let Some(operator_values) = self.files.operator_values.clone() {
+            Ok(Some(operator_values.into_path_or_url()?))
+        } else {
+            Ok(None)
+        }
+    }
+
     /// Adds the default (or custom) Helm repository URLs. Internally this calls the Helm SDK written in Go through the
     /// `go-helm-wrapper`.
     pub fn add_helm_repos(&self) -> Result<(), helm::Error> {
@@ -251,7 +259,7 @@ impl Cli {
         #[rustfmt::skip]
         let command_future = async move {
             match self.subcommand {
-                Command::Operator(ref args) => args.run(&self).await.context(OperatorSnafu),
+                Command::Operator(ref args) => args.run(&self, transfer_client).await.context(OperatorSnafu),
                 Command::Release(ref args) => args.run(&self, transfer_client).await.context(ReleaseSnafu),
                 Command::Stack(ref args) => args.run(&self, transfer_client).await.context(StackSnafu),
                 Command::Stacklet(ref args) => args.run().await.context(StackletSnafu),

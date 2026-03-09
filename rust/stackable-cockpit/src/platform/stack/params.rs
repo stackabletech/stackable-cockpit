@@ -1,3 +1,4 @@
+use serde_yaml::Mapping;
 use stackable_operator::kvp::Labels;
 
 use crate::platform::operator::ChartSourceType;
@@ -14,4 +15,5 @@ pub struct StackInstallParameters {
     pub skip_release: bool,
     pub labels: Labels,
     pub chart_source: ChartSourceType,
+    pub operator_values: Mapping,
 }

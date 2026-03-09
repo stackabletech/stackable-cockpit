@@ -27,6 +27,7 @@ use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
     cli::{Cli, OutputType},
+    utils::load_operator_values,
 };
 
 #[derive(Debug, Args)]
@@ -150,6 +151,9 @@ pub enum CmdError {
         #[snafu(source(from(k8s::Error, Box::new)))]
         source: Box<k8s::Error>,
     },
+
+    #[snafu(display("failed to load operator values"))]
+    LoadOperatorValues { source: crate::utils::Error },
 }
 
 impl StackArgs {
@@ -349,6 +353,11 @@ async fn install_cmd(
             ])
             .context(BuildLabelsSnafu)?;
 
+            let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
+            let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
+                .await
+                .context(LoadOperatorValuesSnafu)?;
+
             let install_parameters = StackInstallParameters {
                 operator_namespace: args.namespaces.operator_namespace.clone(),
                 stack_namespace: args.namespaces.namespace.clone(),
@@ -358,6 +367,7 @@ async fn install_cmd(
                 demo_name: None,
                 labels,
                 chart_source: ChartSourceType::from(cli.chart_type()),
+                operator_values,
             };
 
             stack_spec
