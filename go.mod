@@ -2,14 +2,12 @@ module rust/stackable/go-helm-wrapper
 
 go 1.26.0
 
+// We can not bump to helm 4 yet:
+// > go.mod:8:2: require helm.sh/helm/v3: version "v4.1.1" invalid: should be v3, not v4
+// Related helm 4 issue: https://github.com/stackabletech/issues/issues/814
 require (
 	github.com/mittwald/go-helm-client v0.12.19
-
-	# We can not bump to helm 4 yet:
-	# > go.mod:8:2: require helm.sh/helm/v3: version "v4.1.1" invalid: should be v3, not v4
-	# Related helm 4 issue: https://github.com/stackabletech/issues/issues/814
 	helm.sh/helm/v3 v3.20.0
-
 	k8s.io/client-go v0.35.2
 )
 
