@@ -1,8 +1,10 @@
 use indexmap::IndexMap;
-use kube::{ResourceExt, core::GroupVersionKind};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use stackable_operator::status::condition::ClusterCondition;
+use stackable_operator::{
+    kube::{ResourceExt, core::GroupVersionKind},
+    status::condition::ClusterCondition,
+};
 use tracing::info;
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;

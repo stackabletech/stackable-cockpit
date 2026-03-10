@@ -10,7 +10,7 @@ pub fn router() -> Router {
 
 /// Retrieves all demos.
 #[utoipa::path(get, path = "/demos", responses(
-    (status = 200, description = "Retrieving a list of demos succeeded", body = [DemoSpecV2]),
+    (status = 200, description = "Retrieving a list of demos succeeded", body = [DemoSpec]),
     (status = 404, description = "Retrieving a list of demos failed")
 ))]
 pub async fn get_demos() -> Json<Vec<DemoSpec>> {
@@ -19,7 +19,7 @@ pub async fn get_demos() -> Json<Vec<DemoSpec>> {
 
 /// Retrieves one demo identified by `name`.
 #[utoipa::path(get, path = "/demos/{name}", responses(
-    (status = 200, description = "Retrieving the demo with 'name' succeeded", body = DemoSpecV2),
+    (status = 200, description = "Retrieving the demo with 'name' succeeded", body = DemoSpec),
     (status = 404, description = "Retrieving the demo with 'name' failed")
 ))]
 pub async fn get_demo(Path(_name): Path<String>) -> Json<DemoSpec> {

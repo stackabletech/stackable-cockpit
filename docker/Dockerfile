@@ -25,7 +25,7 @@ WORKDIR /
 
 ##PATCH: Install go (for Helm wrapper)
 WORKDIR /opt/go
-RUN GO_VERSION=1.22.5 \
+RUN GO_VERSION=1.26.0 \
     ARCH=$(arch | sed 's/^x86_64$/amd64/' | sed 's/^aarch64$/arm64/') \
     && curl --location "https://repo.stackable.tech/repository/packages/go/go${GO_VERSION}.linux-${ARCH}.tar.gz" | tar xvz --strip-components=1 \
     && ln -s /opt/go/bin/go /usr/local/bin
