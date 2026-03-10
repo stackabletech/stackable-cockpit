@@ -101,7 +101,7 @@ Possible valid values are:
 
 Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
-    operators: Vec<operator::OperatorSpec>,
+    operators: Vec<coffee::OperatorOrCoffee>,
 
     /// Namespace in the cluster used to deploy the operators
     #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
@@ -332,6 +332,24 @@ async fn install_cmd(
     info!("Installing operator(s)");
     Span::current().pb_set_message("Installing operator(s)");
 
+    let operators: Vec<&operator::OperatorSpec> = args
+        .operators
+        .iter()
+        .filter_map(|operator| match operator {
+            coffee::OperatorOrCoffee::Coffee => {
+                indicatif_println!("{}", coffee::COFFEE_ASCII_ART);
+                None
+            }
+            coffee::OperatorOrCoffee::Operator(spec) => Some(spec),
+        })
+        .collect();
+
+    // In case no operators need to be installed (e.g. coffee was already installed), there is no
+    // need to connect to Kubernetes and potentially produce error messages.
+    if operators.is_empty() {
+        return Ok(String::new());
+    }
+
     args.local_cluster
         .install_if_needed()
         .await
@@ -350,7 +368,7 @@ async fn install_cmd(
         .await
         .context(LoadOperatorValuesSnafu)?;
 
-    for operator in &args.operators {
+    for operator in &operators {
         let operator_helm_values = values_for_operator(&operator_values, &operator.name);
 
         operator
@@ -374,8 +392,8 @@ async fn install_cmd(
         )
         .with_output(format!(
             "Installed {num_of_operators} {suffix}",
-            num_of_operators = args.operators.len(),
-            suffix = if args.operators.len() == 1 {
+            num_of_operators = operators.len(),
+            suffix = if operators.len() == 1 {
                 "operator"
             } else {
                 "operators"
@@ -620,5 +638,38 @@ where
             Ok(versions.iter().map(|version| version.to_string()).collect())
         }
         None => Ok(vec![]),
+    }
+}
+
+mod coffee {
+    use std::str::FromStr;
+
+    pub const COFFEE_ASCII_ART: &str = r#"
+      ) )
+     ( (
+   .------.
+   |      |]
+   \      /
+    `----'
+
+  Psst... "coffee" is not an operator, but we get it.
+  Stackable runs on coffee too. Have a great day! ☕
+"#;
+
+    #[derive(Clone, Debug)]
+    pub enum OperatorOrCoffee {
+        Operator(super::operator::OperatorSpec),
+        Coffee,
+    }
+
+    impl FromStr for OperatorOrCoffee {
+        type Err = super::operator::SpecParseError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            match s {
+                "coffee" | "coffe" => Ok(OperatorOrCoffee::Coffee),
+                _ => s.parse().map(OperatorOrCoffee::Operator),
+            }
+        }
     }
 }
