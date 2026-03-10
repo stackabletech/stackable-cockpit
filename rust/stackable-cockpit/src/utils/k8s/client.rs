@@ -1,18 +1,21 @@
 use std::{collections::BTreeMap, string::FromUtf8Error};
 
-use k8s_openapi::api::{
-    apps::v1::{Deployment, StatefulSet},
-    core::v1::{Endpoints, Namespace, Node, Secret, Service},
-};
-use kube::{
-    Api, Discovery, ResourceExt,
-    api::{ListParams, Patch, PatchParams, PostParams},
-    core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
-    discovery::{ApiCapabilities, ApiResource, Scope},
-};
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use stackable_operator::{commons::listener::Listener, kvp::Labels};
+use stackable_operator::{
+    crd::listener::v1alpha1::Listener,
+    k8s_openapi::api::{
+        apps::v1::{Deployment, StatefulSet},
+        core::v1::{Endpoints, Namespace, Node, Secret, Service},
+    },
+    kube::{
+        self, Api, Discovery, ResourceExt,
+        api::{ListParams, Patch, PatchParams, PostParams},
+        core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
+        discovery::{ApiCapabilities, ApiResource, Scope},
+    },
+    kvp::Labels,
+};
 use tokio::sync::RwLock;
 use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};
@@ -235,7 +238,7 @@ impl Client {
     }
 
     /// Lists objects by looking up a GVK via the discovery. It returns an
-    /// optional list of dynamic objects. The method returns [`Ok(None)`]
+    /// optional list of dynamic objects. The method returns `Ok(None)`
     /// if the client was unable to resolve the GVK. An error is returned
     /// when the client failed to list the objects.
     pub async fn list_objects(
@@ -330,7 +333,7 @@ impl Client {
 
     /// Retrieves user credentials consisting of username and password from a
     /// secret identified by `secret_name` inside the `secret_namespace`. If
-    /// either one of the values is missing, [`Ok(None)`] is returned. An error
+    /// either one of the values is missing, `Ok(None)` is returned. An error
     /// is returned if the client failed to get the secret.
     pub async fn get_credentials_from_secret(
         &self,

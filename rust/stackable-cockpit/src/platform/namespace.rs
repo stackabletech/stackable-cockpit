@@ -1,4 +1,5 @@
 use snafu::Snafu;
+use stackable_operator::kube;
 
 use crate::utils::k8s::{self, Client};
 

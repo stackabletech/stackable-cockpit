@@ -1,9 +1,11 @@
-use k8s_openapi::{
-    api::apps::v1::{DeploymentCondition, StatefulSetCondition},
-    apimachinery::pkg::apis::meta::v1::Condition,
-};
 use serde::Serialize;
-use stackable_operator::status::condition::ClusterCondition;
+use stackable_operator::{
+    k8s_openapi::{
+        api::apps::v1::{DeploymentCondition, StatefulSetCondition},
+        apimachinery::pkg::apis::meta::v1::Condition,
+    },
+    status::condition::ClusterCondition,
+};
 #[cfg(feature = "openapi")]
 use utoipa::ToSchema;
 

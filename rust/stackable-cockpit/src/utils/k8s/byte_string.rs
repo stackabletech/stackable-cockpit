@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display, string::FromUtf8Error};
 
-use k8s_openapi::ByteString;
+use stackable_operator::k8s_openapi::ByteString;
 
 /// The [`ByteStringExt`] enables [`ByteString`] to be converted to a [`String`].
 pub trait ByteStringExt {

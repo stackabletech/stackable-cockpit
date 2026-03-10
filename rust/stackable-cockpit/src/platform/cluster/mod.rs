@@ -1,7 +1,8 @@
-use k8s_openapi::api::core::v1::Node;
-use kube::core::ObjectList;
 use snafu::{ResultExt, Snafu};
-use stackable_operator::{cpu::CpuQuantity, memory::MemoryQuantity};
+use stackable_operator::{
+    cpu::CpuQuantity, k8s_openapi::api::core::v1::Node, kube::core::ObjectList,
+    memory::MemoryQuantity,
+};
 
 mod resource_request;
 

@@ -1,3 +1,8 @@
+# This file is the source of truth for all our repos!
+# This includes repos not templated by operator-templating, please copy/paste the file for this repos.
+
+# TIP: Use "cargo deny check" to check if everything is fine
+
 [graph]
 targets = [
     { triple = "x86_64-unknown-linux-gnu" },
@@ -8,40 +13,77 @@ targets = [
 ]
 
 [advisories]
-unmaintained = "workspace"
-yanked = "warn"
+yanked = "deny"
+ignore = [
+    # https://rustsec.org/advisories/RUSTSEC-2023-0071
+    # "rsa" crate: Marvin Attack: potential key recovery through timing sidechannel
+    #
+    # No patch is yet available, however work is underway to migrate to a fully constant-time implementation
+    # So we need to accept this, as of SDP 25.3 we are not using the rsa crate to create certificates used in production
+    # setups.
+    #
+    # https://github.com/RustCrypto/RSA/issues/19 is the tracking issue
+    "RUSTSEC-2023-0071",
+
+    # https://rustsec.org/advisories/RUSTSEC-2024-0436
+    # The "paste" crate is no longer maintained because the owner states that the implementation is
+    # finished. There are at least two (forked) alternatives which state to be maintained. They'd
+    # need to be vetted before a potential switch. Additionally, they'd need to be in a maintained
+    # state for a couple of years to provide any benefit over using "paste".
+    #
+    # This crate is only used in a single place in the xtask package inside the declarative
+    # "write_crd" macro. The impact of vulnerabilities, if any, should be fairly minimal.
+    #
+    # See thread: https://users.rust-lang.org/t/paste-alternatives/126787/4
+    #
+    # This can only be removed again if we decide to use a different crate.
+    "RUSTSEC-2024-0436",
+]
 
 [bans]
 multiple-versions = "allow"
 
 [licenses]
+unused-allowed-license = "allow"
 confidence-threshold = 1.0
 allow = [
     "Apache-2.0",
     "BSD-2-Clause",
     "BSD-3-Clause",
+    "CC0-1.0",
     "ISC",
+    "LicenseRef-ring",
+    "LicenseRef-webpki",
     "MIT",
     "MPL-2.0",
+    "OpenSSL", # Needed for the ring and/or aws-lc-sys crate. See https://github.com/stackabletech/operator-templating/pull/464 for details
     "Unicode-3.0",
-    "Unlicense",
+    "Unicode-DFS-2016",
     "Zlib",
+    "Unlicense",
 ]
 private = { ignore = true }
 
 [[licenses.clarify]]
 name = "ring"
 expression = "LicenseRef-ring"
-license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
+license-files = [
+    { path = "LICENSE", hash = 0xbd0eed23 },
+]
 
 [[licenses.clarify]]
 name = "webpki"
 expression = "LicenseRef-webpki"
-license-files = [{ path = "LICENSE", hash = 0x001c7e6c }]
+license-files = [
+    { path = "LICENSE", hash = 0x001c7e6c },
+]
 
 [sources]
 unknown-registry = "deny"
 unknown-git = "deny"
+allow-git = [
+    "https://github.com/kube-rs/kube-rs",
+]
 
 [sources.allow-org]
 github = ["stackabletech"]

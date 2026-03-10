@@ -3,6 +3,7 @@ use std::{fmt::Display, str::FromStr};
 use listener_operator::LISTENER_CLASS_PRESET;
 use semver::Version;
 use serde::Serialize;
+use serde_yaml::{Mapping, Value};
 use snafu::{ResultExt, Snafu, ensure};
 use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
@@ -200,6 +201,7 @@ impl OperatorSpec {
         &self,
         namespace: &str,
         chart_source: &ChartSourceType,
+        values: &Mapping,
     ) -> Result<(), helm::Error> {
         info!(operator = %self, "Installing operator");
         Span::current()
@@ -215,13 +217,22 @@ impl OperatorSpec {
             ChartSourceType::Repo => self.helm_repo_name(),
         };
 
-        let mut helm_values = None;
+        let mut helm_values = values.clone();
         if self.name == "listener" {
-            helm_values = Some(
-                LISTENER_CLASS_PRESET.get()
-                    .expect("At this point LISTENER_CLASS_PRESET must be set by determine_and_store_listener_class_preset")
-                    .as_helm_values()
-            );
+            let preset = LISTENER_CLASS_PRESET
+                .get()
+                .expect("LISTENER_CLASS_PRESET must have been set")
+                .as_helm_value();
+            helm_values.insert(Value::String("preset".to_string()), preset);
+        }
+
+        let helm_values_yaml = if helm_values.is_empty() {
+            None
+        } else {
+            Some(
+                serde_yaml::to_string(&helm_values)
+                    .expect("serializing a small YAML Mapping back to a YAML string can't fail"),
+            )
         };
 
         // Install using Helm
@@ -232,7 +243,7 @@ impl OperatorSpec {
                 chart_name: &helm_name,
                 chart_source: &chart_source,
             },
-            helm_values.as_deref(),
+            helm_values_yaml.as_deref(),
             namespace,
             true,
         )?;

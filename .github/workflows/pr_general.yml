@@ -4,8 +4,8 @@ name: Pull Request General
 on: workflow_call
 
 env:
-  RUST_VERSION: 1.87.0
-  GO_VERSION: '^1.22.5'
+  RUST_VERSION: 1.93.0
+  GO_VERSION: '^1.26.0'
   CARGO_TERM_COLOR: always
   CARGO_INCREMENTAL: "0"
   CARGO_PROFILE_DEV_DEBUG: "0"
@@ -59,7 +59,7 @@ jobs:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
         with:
           submodules: recursive
-      - uses: EmbarkStudios/cargo-deny-action@30f817c6f72275c6d54dc744fbca09ebc958599f # v2.0.12
+      - uses: EmbarkStudios/cargo-deny-action@3fd3802e88374d3fe9159b834c7714ec57d6c979 # v2.0.15
         with:
           command: check ${{ matrix.checks }}
 

@@ -1,4 +1,5 @@
 use clap::ValueEnum;
+use serde_yaml::Value;
 use snafu::ResultExt;
 use stackable_operator::{
     k8s_openapi::api::core::v1::Node,
@@ -18,13 +19,13 @@ pub enum ListenerClassPreset {
 }
 
 impl ListenerClassPreset {
-    pub fn as_helm_values(&self) -> String {
+    pub fn as_helm_value(&self) -> Value {
         let preset_value = match self {
             Self::None => "none",
             Self::StableNodes => "stable-nodes",
             Self::EphemeralNodes => "ephemeral-nodes",
         };
-        format!("preset: {preset_value}")
+        Value::String(preset_value.to_string())
     }
 }
 

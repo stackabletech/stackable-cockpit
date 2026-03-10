@@ -1,6 +1,6 @@
 # Print an optspec for argparse to handle cmd's options that are independent of any subcommand.
 function __fish_stackablectl_global_optspecs
-	string join \n l/log-level= no-cache d/demo-file= s/stack-file= r/release-file= helm-repo-stable= helm-repo-test= helm-repo-dev= chart-source= listener-class-preset= h/help V/version
+	string join \n l/log-level= no-cache d/demo-file= s/stack-file= r/release-file= f/operator-values= helm-repo-stable= helm-repo-test= helm-repo-dev= chart-source= listener-class-preset= h/help V/version
 end
 
 function __fish_stackablectl_needs_command
@@ -28,6 +28,7 @@ complete -c stackablectl -n "__fish_stackablectl_needs_command" -s l -l log-leve
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_needs_command" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_needs_command" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -53,6 +54,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and not __fish_seen_subcommand_from list describe install uninstall installed help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -78,6 +80,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -97,6 +100,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -118,6 +122,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -134,6 +139,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -154,6 +160,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand operator; and __fish_seen_subcommand_from installed" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -175,6 +182,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and n
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and not __fish_seen_subcommand_from list describe install uninstall upgrade help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -200,6 +208,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -219,6 +228,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -242,6 +252,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -258,6 +269,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -276,6 +288,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from upgrade" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -298,6 +311,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -322,6 +336,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -342,6 +357,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -367,6 +383,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -387,6 +404,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -406,6 +424,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from credentials" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -427,6 +446,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -446,6 +466,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -470,6 +491,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -490,6 +512,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from describe" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -515,6 +538,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -535,6 +559,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -556,6 +581,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from bash" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -571,6 +597,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from elvish" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -586,6 +613,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from fish" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -601,6 +629,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from nushell" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -616,6 +645,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; a
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and __fish_seen_subcommand_from zsh" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -637,6 +667,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and not __fish_seen_subcommand_from list clean help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -655,6 +686,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from list" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -670,6 +702,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand cache; and __fish_seen_subcommand_from clean" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -692,6 +725,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-d
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand experimental-debug" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -707,6 +741,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and n
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and not __fish_seen_subcommand_from check help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
@@ -724,6 +759,7 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand version; and __fish_seen_subcommand_from check" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
