@@ -1,7 +1,7 @@
-use kube::api::{ApiResource, GroupVersionKind};
 use serde::{Deserialize, Serialize};
 use serde_yaml::Mapping;
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kube::api::{ApiResource, GroupVersionKind};
 use tracing::{Span, debug, info, instrument, log::warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
@@ -248,14 +248,17 @@ impl StackSpec {
 
         // Delete remaining objects not namespace scoped
         client
-            .delete_all_objects_with_label("stackable.tech/stack", &uninstall_parameters.stack_name, None)
+            .delete_all_objects_with_label(
+                "stackable.tech/stack",
+                &uninstall_parameters.stack_name,
+                None,
+            )
             .await
             .context(DeleteObjectSnafu)?;
 
         // Delete operators and the operator namespace
         if !uninstall_parameters.skip_operators {
-            self
-                .uninstall_release(release_list, &uninstall_parameters.operator_namespace)
+            self.uninstall_release(release_list, &uninstall_parameters.operator_namespace)
                 .await?;
 
             client

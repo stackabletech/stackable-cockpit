@@ -21,9 +21,7 @@ use stackable_cockpit::{
     },
     xfer,
 };
-use stackable_operator::{
-    kvp::{LabelError, Labels},
-};
+use stackable_operator::kvp::{LabelError, Labels};
 use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
@@ -499,8 +497,8 @@ async fn uninstall_cmd(
                         stack_name: args.stack_name.clone(),
                         operator_namespace: args.namespaces.operator_namespace.clone(),
                         stack_namespace: args.namespaces.namespace.clone(),
-                        skip_operators: args.skip_operators_and_crds.clone(),
-                        skip_crds: args.skip_operators_and_crds.clone(),
+                        skip_operators: args.skip_operators_and_crds,
+                        skip_crds: args.skip_operators_and_crds,
                     },
                     &client,
                     transfer_client,

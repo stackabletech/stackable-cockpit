@@ -26,5 +26,5 @@ pub struct DemoUninstallParameters {
     pub demo_namespace: String,
 
     pub skip_operators: bool,
-    pub skip_crds: bool
+    pub skip_crds: bool,
 }

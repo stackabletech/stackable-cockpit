@@ -3,23 +3,26 @@ use std::{collections::BTreeMap, string::FromUtf8Error};
 use reqwest::StatusCode;
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
-use tokio::{
-    sync::RwLock,
-    time::{self, sleep},
-};
 use stackable_operator::{
     crd::listener::v1alpha1::Listener,
-    k8s_openapi::api::{
-        apps::v1::{Deployment, StatefulSet},
-        core::v1::{Endpoints, Namespace, Node, Secret, Service},
+    k8s_openapi::{
+        api::{
+            apps::v1::{Deployment, StatefulSet},
+            core::v1::{Endpoints, Namespace, Node, Secret, Service},
+        },
+        apiextensions_apiserver::pkg::apis::apiextensions::v1::CustomResourceDefinition,
     },
     kube::{
         self, Api, Discovery, ResourceExt,
         api::{DeleteParams, ListParams, Patch, PatchParams, PostParams},
         core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
-        discovery::{ApiCapabilities, ApiResource, Scope},
+        discovery::{self, ApiCapabilities, ApiResource, Scope},
     },
     kvp::Labels,
+};
+use tokio::{
+    sync::RwLock,
+    time::{self, sleep},
 };
 use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};

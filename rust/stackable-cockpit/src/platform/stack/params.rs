@@ -24,5 +24,5 @@ pub struct StackUninstallParameters {
     pub stack_namespace: String,
 
     pub skip_operators: bool,
-    pub skip_crds: bool
+    pub skip_crds: bool,
 }
