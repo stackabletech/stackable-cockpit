@@ -1,3 +1,4 @@
+use kube::api::{ApiResource, GroupVersionKind};
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{Span, debug, info, instrument, log::warn};
@@ -13,10 +14,10 @@ use crate::{
         namespace,
         operator::ChartSourceType,
         release,
-        stack::StackInstallParameters,
+        stack::{StackInstallParameters, StackUninstallParameters},
     },
     utils::{
-        k8s::Client,
+        k8s::{self, Client},
         params::{
             IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
         },
@@ -44,6 +45,10 @@ pub enum Error {
     #[snafu(display("failed to install release"))]
     InstallRelease { source: release::Error },
 
+    /// This error indicates that the release failed to uninstall.
+    #[snafu(display("failed to uninstall release"))]
+    UninstallRelease { source: release::Error },
+
     #[snafu(display("stack resource requests error"), context(false))]
     StackResourceRequests { source: ResourceRequestsError },
 
@@ -63,6 +68,12 @@ pub enum Error {
 
     #[snafu(display("failed to install stack manifests"))]
     InstallManifests { source: manifests::Error },
+
+    #[snafu(display("failed to uninstall Helm manifests"))]
+    UninstallHelmManifests { source: manifests::Error },
+
+    #[snafu(display("failed to delete object"))]
+    DeleteObject { source: k8s::Error },
 }
 
 /// This struct describes a stack with the v2 spec
@@ -70,7 +81,7 @@ pub enum Error {
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "openapi", derive(ToSchema))]
 pub struct StackSpec {
-    /// A short description of the demo
+    /// A short description of the stack
     pub description: String,
 
     /// The release used by the stack, e.g. 23.4
@@ -149,10 +160,7 @@ impl StackSpec {
     // TODO (Techassi): Can we get rid of the release list and just use the release spec instead
     #[instrument(skip_all, fields(
         stack_name = %install_parameters.stack_name,
-        // NOTE (@NickLarsenNZ): Option doesn't impl Display, so we need to call
-        // display for the inner type if it exists. Otherwise we gte the Debug
-        // impl for the whole Option.
-        demo_name = install_parameters.demo_name.as_ref().map(tracing::field::display),
+        stack_namespace = %install_parameters.stack_namespace,
     ))]
     pub async fn install(
         &self,
@@ -176,7 +184,6 @@ impl StackSpec {
             self.install_release(
                 release_list,
                 &install_parameters.operator_namespace,
-                &install_parameters.stack_namespace,
                 &install_parameters.chart_source,
             )
             .await?;
@@ -195,12 +202,90 @@ impl StackSpec {
             .await
     }
 
+    #[instrument(skip_all, fields(
+        stack_name = %uninstall_parameters.stack_name,
+        stack_namespace = %uninstall_parameters.stack_namespace,
+    ))]
+    pub async fn uninstall(
+        &self,
+        release_list: release::ReleaseList,
+        uninstall_parameters: StackUninstallParameters,
+        client: &Client,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        // Uninstall Helm Charts
+        let parameters = &mut Vec::new()
+            .into_params(self.parameters.clone())
+            .context(ParseParametersSnafu)?;
+
+        // We add the STACK parameter, so that stacks can use that to render e.g. the stack label
+        parameters.insert("STACK".to_owned(), uninstall_parameters.stack_name.clone());
+
+        Self::uninstall_helm_manifests(
+            &self.manifests,
+            parameters,
+            &uninstall_parameters.stack_namespace.to_owned(),
+            transfer_client,
+        )
+        .await
+        .context(UninstallHelmManifestsSnafu)?;
+
+        // Delete stack namespace
+        client
+            .delete_object(
+                &uninstall_parameters.stack_namespace,
+                &ApiResource::from_gvk(&GroupVersionKind {
+                    group: "".to_owned(),
+                    version: "v1".to_owned(),
+                    kind: "Namespace".to_owned(),
+                }),
+                None,
+            )
+            .await
+            .context(DeleteObjectSnafu)?;
+
+        // Delete remaining objects not namespace scoped
+        client
+            .delete_all_objects_with_label("stackable.tech/stack", &uninstall_parameters.stack_name, None)
+            .await
+            .context(DeleteObjectSnafu)?;
+
+        // Delete operators and the operator namespace
+        if !uninstall_parameters.skip_operators {
+            self
+                .uninstall_release(release_list, &uninstall_parameters.operator_namespace)
+                .await?;
+
+            client
+                .delete_object(
+                    &uninstall_parameters.operator_namespace,
+                    &ApiResource::from_gvk(&GroupVersionKind {
+                        group: "".to_owned(),
+                        version: "v1".to_owned(),
+                        kind: "Namespace".to_owned(),
+                    }),
+                    None,
+                )
+                .await
+                .context(DeleteObjectSnafu)?;
+        }
+
+        // Delete CRDs
+        if !uninstall_parameters.skip_crds {
+            client
+                .delete_crds_with_group_suffix("stackable.tech")
+                .await
+                .context(DeleteObjectSnafu)?;
+        }
+
+        Ok(())
+    }
+
     #[instrument(skip_all, fields(release = %self.release, %operator_namespace, indicatif.pb_show = true))]
     pub async fn install_release(
         &self,
         release_list: release::ReleaseList,
         operator_namespace: &str,
-        _namespace: &str, // TODO (@NickLarsenNZ): remove this field
         chart_source: &ChartSourceType,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
@@ -220,27 +305,52 @@ impl StackSpec {
             .context(InstallReleaseSnafu)
     }
 
+    #[instrument(skip_all, fields(release = %self.release, %operator_namespace, indicatif.pb_show = true))]
+    pub async fn uninstall_release(
+        &self,
+        release_list: release::ReleaseList,
+        operator_namespace: &str,
+    ) -> Result<(), Error> {
+        info!(self.release, "Trying to uninstall release");
+        Span::current().pb_set_message("Uninstalling operators");
+
+        // Get the release by name
+        let release = release_list
+            .get(&self.release)
+            .context(NoSuchReleaseSnafu {
+                name: self.release.clone(),
+            })?;
+
+        // Uninstall the release
+        release
+            .uninstall(&self.operators, &[], operator_namespace)
+            .context(UninstallReleaseSnafu)
+    }
+
     #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub async fn prepare_manifests(
         &self,
-        install_params: StackInstallParameters,
+        install_parameters: StackInstallParameters,
         client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing stack manifests");
         Span::current().pb_set_message("Installing manifests");
 
-        let parameters = install_params
+        let mut parameters = install_parameters
             .parameters
             .to_owned()
             .into_params(&self.parameters)
             .context(ParseParametersSnafu)?;
 
+        // We add the STACK parameter, so that stacks can use that to render e.g. the stack label
+        parameters.insert("STACK".to_owned(), install_parameters.stack_name);
+
         Self::install_manifests(
             &self.manifests,
             &parameters,
-            &install_params.stack_namespace,
-            install_params.labels,
+            &install_parameters.stack_namespace,
+            install_parameters.labels,
             client,
             transfer_client,
         )

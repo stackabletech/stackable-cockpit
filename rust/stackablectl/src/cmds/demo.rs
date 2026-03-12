@@ -5,12 +5,13 @@ use comfy_table::{
     ContentArrangement, Row, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use dialoguer::Confirm;
 use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
     constants::{DEFAULT_NAMESPACE, DEFAULT_OPERATOR_NAMESPACE},
     platform::{
-        demo::{self, DemoInstallParameters},
+        demo::{self, DemoInstallParameters, DemoUninstallParameters},
         operator::ChartSourceType,
         release, stack,
     },
@@ -20,9 +21,11 @@ use stackable_cockpit::{
     },
     xfer,
 };
-use stackable_operator::kvp::{LabelError, Labels};
+use stackable_operator::{
+    kvp::{LabelError, Labels},
+};
 use tracing::{Span, debug, info, instrument};
-use tracing_indicatif::span_ext::IndicatifSpanExt as _;
+use tracing_indicatif::{self, span_ext::IndicatifSpanExt as _};
 
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
@@ -52,6 +55,11 @@ pub enum DemoCommands {
     /// Install a specific demo
     #[command(aliases(["i", "in"]))]
     Install(DemoInstallArgs),
+
+    /// Uninstall a specific stack. Caution: This will delete the provided stack namespace,
+    /// the operators and provided operator namespace, and all Stackable CRDs
+    #[command(aliases(["u", "un"]))]
+    Uninstall(DemoUninstallArgs),
 }
 
 #[derive(Debug, Args)]
@@ -117,7 +125,17 @@ to specify operator versions."
 }
 
 #[derive(Debug, Args)]
-pub struct DemoUninstallArgs {}
+pub struct DemoUninstallArgs {
+    /// Demo to uninstall
+    demo_name: String,
+
+    #[command(flatten)]
+    namespaces: CommonNamespaceArgs,
+
+    /// Skip uninstalling Stackable operators and CRDs
+    #[arg(long)]
+    skip_operators_and_crds: bool,
+}
 
 #[derive(Debug, Snafu)]
 pub enum CmdError {
@@ -150,6 +168,15 @@ pub enum CmdError {
 
     #[snafu(display("failed to install demo {demo_name:?}"))]
     InstallDemo {
+        source: demo::Error,
+        demo_name: String,
+    },
+
+    #[snafu(display("failed to confirm user input"))]
+    ConfirmDialog { source: dialoguer::Error },
+
+    #[snafu(display("failed to uninstall demo {demo_name:?}"))]
+    UninstallDemo {
         source: demo::Error,
         demo_name: String,
     },
@@ -209,6 +236,9 @@ impl DemoArgs {
             DemoCommands::Describe(args) => describe_cmd(args, list).await,
             DemoCommands::Install(args) => {
                 install_cmd(args, cli, list, &transfer_client, &release_branch).await
+            }
+            DemoCommands::Uninstall(args) => {
+                uninstall_cmd(args, cli, list, &transfer_client, &release_branch).await
             }
         }
     }
@@ -334,7 +364,7 @@ async fn install_cmd(
     release_branch: &str,
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Installing demo");
-    Span::current().pb_set_message("Installing demo");
+    Span::current().pb_set_message(&format!("Installing demo {}", args.demo_name));
 
     // Init result output and progress output
     let mut output = Cli::result();
@@ -378,9 +408,37 @@ async fn install_cmd(
         .parse_insert(("stackable.tech/stack", &demo.stack))
         .context(BuildLabelsSnafu)?;
 
+    // `stackablectl demo uninstall` relies on namespace deletion, suggest installing in a non-default namespace
+    // It should still be possible to skip that if either uninstall is not needed
+    // or installing an older version of the demo which only supports the 'default' namespace
+    let demo_namespace = tracing_indicatif::suspend_tracing_indicatif(
+        || -> Result<String, CmdError> {
+            if args.namespaces.namespace == DEFAULT_NAMESPACE {
+                if Confirm::new()
+                .with_prompt(
+                    format!(
+                        "Demos installed in the '{DEFAULT_NAMESPACE}' namespace cannot be deleted with stackablectl. Install the demo in the '{demo_namespace}' namespace instead?",
+                    demo_namespace = args.demo_name.clone())
+                )
+                .default(true)
+                .interact()
+                .context(ConfirmDialogSnafu)? {
+                    // User selected to install in suggested namespace
+                    Ok(args.demo_name.clone())
+                } else {
+                    // User selected to install in default namespace
+                    Ok(args.namespaces.namespace.clone())
+                }
+            } else {
+                Ok(args.namespaces.namespace.clone())
+            }
+        },
+    )?;
+
     let install_parameters = DemoInstallParameters {
+        demo_name: args.demo_name.clone(),
         operator_namespace: args.namespaces.operator_namespace.clone(),
-        demo_namespace: args.namespaces.namespace.clone(),
+        demo_namespace: demo_namespace.clone(),
         stack_parameters: args.stack_parameters.clone(),
         parameters: args.parameters.clone(),
         skip_release: args.skip_release,
@@ -415,11 +473,8 @@ async fn install_cmd(
 
     let stacklet_cmd = format!(
         "stackablectl stacklet list{option}",
-        option = if args.namespaces.namespace != DEFAULT_NAMESPACE {
-            format!(
-                " --namespace {namespace}",
-                namespace = args.namespaces.namespace
-            )
+        option = if demo_namespace != DEFAULT_NAMESPACE {
+            format!(" --namespace {namespace}", namespace = demo_namespace)
         } else {
             "".into()
         }
@@ -432,6 +487,73 @@ async fn install_cmd(
             "Installed demo {demo_name:?}",
             demo_name = args.demo_name
         ));
+
+    Ok(output.render())
+}
+
+#[instrument(skip_all, fields(
+    demo_name = %args.demo_name,
+    %release_branch,
+    indicatif.pb_show = true
+))]
+async fn uninstall_cmd(
+    args: &DemoUninstallArgs,
+    cli: &Cli,
+    list: demo::List,
+    transfer_client: &xfer::Client,
+    release_branch: &str,
+) -> Result<String, CmdError> {
+    info!(demo_name = %args.demo_name, "Uninstalling demo");
+    Span::current().pb_set_message(&format!("Uninstalling demo {}", args.demo_name));
+
+    // Init result output and progress output
+    let mut output = Cli::result();
+
+    let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
+        name: args.demo_name.clone(),
+    })?;
+
+    let stack_files = cli
+        .get_stack_files(release_branch)
+        .context(PathOrUrlParseSnafu)?;
+    let stack_list = stack::StackList::build(&stack_files, transfer_client)
+        .await
+        .context(BuildListSnafu)?;
+
+    // Get the stack spec based on the name defined in the demo spec
+    let stack = stack_list.get(&demo.stack).context(NoSuchStackSnafu {
+        name: demo.stack.clone(),
+    })?;
+
+    let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
+    let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+    let release_list = release::ReleaseList::build(&release_files, transfer_client)
+        .await
+        .context(BuildListSnafu)?;
+
+    demo.uninstall(
+        release_list,
+        DemoUninstallParameters {
+            demo_name: args.demo_name.clone(),
+            operator_namespace: args.namespaces.operator_namespace.clone(),
+            demo_namespace: args.namespaces.namespace.clone(),
+            skip_operators: args.skip_operators_and_crds.clone(),
+            skip_crds: args.skip_operators_and_crds.clone(),
+        },
+        &client,
+        transfer_client,
+        stack.to_owned(),
+    )
+    .await
+    .context(UninstallDemoSnafu {
+        demo_name: args.demo_name.clone(),
+    })?;
+
+    output.with_output(format!(
+        "Uninstalled demo {demo_name:?}",
+        demo_name = args.demo_name
+    ));
 
     Ok(output.render())
 }
