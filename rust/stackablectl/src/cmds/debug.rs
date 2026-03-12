@@ -9,7 +9,7 @@ use futures::{
     FutureExt, SinkExt, TryFutureExt,
     channel::mpsc::{self, Sender},
 };
-use rand::Rng;
+use rand::RngExt;
 use snafu::{OptionExt, ResultExt, Snafu, futures::TryFutureExt as _};
 use stackable_operator::{
     builder::pod::security::SecurityContextBuilder,
@@ -283,10 +283,10 @@ impl DebugArgs {
 }
 
 fn generate_debug_container_name() -> String {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     let mut name = "stackablectl-debug-".to_string();
     for _ in 0..5 {
-        name.push(rng.gen_range('a'..='z'));
+        name.push(rng.random_range('a'..='z'));
     }
     name
 }

@@ -22,7 +22,6 @@ axum-extra.workspace = true
 bcrypt.workspace = true
 clap.workspace = true
 futures.workspace = true
-k8s-openapi.workspace = true
 serde.workspace = true
 snafu.workspace = true
 tokio.workspace = true

@@ -1,5 +1,6 @@
 use kube::api::{ApiResource, GroupVersionKind};
 use serde::{Deserialize, Serialize};
+use serde_yaml::Mapping;
 use snafu::{OptionExt, ResultExt, Snafu};
 use tracing::{Span, debug, info, instrument, log::warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
@@ -185,6 +186,7 @@ impl StackSpec {
                 release_list,
                 &install_parameters.operator_namespace,
                 &install_parameters.chart_source,
+                &install_parameters.operator_values,
             )
             .await?;
         }
@@ -287,6 +289,7 @@ impl StackSpec {
         release_list: release::ReleaseList,
         operator_namespace: &str,
         chart_source: &ChartSourceType,
+        operator_values: &Mapping,
     ) -> Result<(), Error> {
         info!(self.release, "Trying to install release");
         Span::current().pb_set_message("Installing operators");
@@ -300,7 +303,13 @@ impl StackSpec {
 
         // Install the release
         release
-            .install(&self.operators, &[], operator_namespace, chart_source)
+            .install(
+                &self.operators,
+                &[],
+                operator_namespace,
+                chart_source,
+                operator_values,
+            )
             .await
             .context(InstallReleaseSnafu)
     }

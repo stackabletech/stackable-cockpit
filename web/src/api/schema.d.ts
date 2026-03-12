@@ -54,7 +54,7 @@ export interface components {
       manifests?: components["schemas"]["ManifestSpec"][];
       /** @description A variable number of supported parameters */
       parameters?: components["schemas"]["Parameter"][];
-      resourceRequests?: components["schemas"]["ResourceRequests"] | null;
+      resourceRequests?: null | components["schemas"]["ResourceRequests"];
       /** @description The name of the underlying stack */
       stackableStack: string;
       /**
@@ -97,7 +97,7 @@ export interface components {
       description: string;
       /** @description List of products and their version in this release */
       products: {
-        [key: string]: components["schemas"]["product.ProductSpec"];
+        [key: string]: components["schemas"]["ProductSpec"];
       };
       /** @description Date this released was released */
       releaseDate: string;
@@ -119,7 +119,7 @@ export interface components {
     SessionToken: string;
     Stacklet: {
       /** @description Multiple cluster conditions. */
-      conditions: components["schemas"]["k8s.DisplayCondition"][];
+      conditions: components["schemas"]["DisplayCondition"][];
       /**
        * @description Endpoint addresses the product is reachable at.
        * The key is the service name (e.g. `web-ui`), the value is the URL.
@@ -154,7 +154,7 @@ export interface operations {
       /** @description Retrieving a list of demos succeeded */
       200: {
         content: {
-          "application/json": components["schemas"]["DemoSpecV2"][];
+          "application/json": components["schemas"]["DemoSpec"][];
         };
       };
       /** @description Retrieving a list of demos failed */
@@ -169,7 +169,7 @@ export interface operations {
       /** @description Retrieving the demo with 'name' succeeded */
       200: {
         content: {
-          "application/json": components["schemas"]["DemoSpecV2"];
+          "application/json": components["schemas"]["DemoSpec"];
         };
       };
       /** @description Retrieving the demo with 'name' failed */

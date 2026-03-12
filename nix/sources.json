@@ -5,10 +5,10 @@
         "homepage": "",
         "owner": "kolloch",
         "repo": "crate2nix",
-        "rev": "151122427d030874ebef3517cda766a6984e6ed6",
-        "sha256": "0clqy88nhd0w316957scnczzwrklazkfxbycxf0h17z7jrw1px6a",
+        "rev": "26b698e804dd32dc5bb1995028fef00cc87d603a",
+        "sha256": "13jgy25yjd1m42xam6zri8vwx0n2qbwvpad2cmkhkrlx913n79ni",
         "type": "tarball",
-        "url": "https://github.com/kolloch/crate2nix/archive/151122427d030874ebef3517cda766a6984e6ed6.tar.gz",
+        "url": "https://github.com/kolloch/crate2nix/archive/26b698e804dd32dc5bb1995028fef00cc87d603a.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "gomod2nix": {
@@ -17,10 +17,10 @@
         "homepage": "",
         "owner": "nix-community",
         "repo": "gomod2nix",
-        "rev": "5d387097aa716f35dd99d848dc26d8d5b62a104c",
-        "sha256": "1mdwyjz43nnh7gfq4rc54kql6fy65hw17w0p4gwklnfqciwrkax2",
+        "rev": "1201ddd1279c35497754f016ef33d5e060f3da8d",
+        "sha256": "0c037y00sajzbfi5d5ai1w4z7ijrgiv71dvpidxbwnbr6wxzs768",
         "type": "tarball",
-        "url": "https://github.com/nix-community/gomod2nix/archive/5d387097aa716f35dd99d848dc26d8d5b62a104c.tar.gz",
+        "url": "https://github.com/nix-community/gomod2nix/archive/1201ddd1279c35497754f016ef33d5e060f3da8d.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz",
         "version": "1.5.0"
     },
@@ -30,10 +30,10 @@
         "homepage": "",
         "owner": "canva-public",
         "repo": "js2nix",
-        "rev": "d37912f6cc824e7f41bea7a481af1739ca195c8f",
-        "sha256": "075hw89h6dvrz5h1iz56yksv6a41hgh35f1wcgisnvsy2l8z8sq6",
+        "rev": "8cd32b5c87767b019e0960b27599f6b9d195ddb0",
+        "sha256": "0mp62ai0n6k57cx8sn118qis37xvfylskagghxja00gdcank3nxr",
         "type": "tarball",
-        "url": "https://github.com/canva-public/js2nix/archive/d37912f6cc824e7f41bea7a481af1739ca195c8f.tar.gz",
+        "url": "https://github.com/canva-public/js2nix/archive/8cd32b5c87767b019e0960b27599f6b9d195ddb0.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
@@ -42,10 +42,10 @@
         "homepage": "",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "5929de975bcf4c7c8d8b5ca65c8cd9ef9e44523e",
-        "sha256": "0ngai9c0z9ail3w2zwkriby2nckw4shmb8cln1i569a2g5ya0y84",
+        "rev": "400de68cd101e8cfebffea121397683caf7f5a34",
+        "sha256": "10a8ry1cjcphydsskcxya7kdlvzlr9nlw6gk0303d5qwrdy6bfgr",
         "type": "tarball",
-        "url": "https://github.com/NixOS/nixpkgs/archive/5929de975bcf4c7c8d8b5ca65c8cd9ef9e44523e.tar.gz",
+        "url": "https://github.com/NixOS/nixpkgs/archive/400de68cd101e8cfebffea121397683caf7f5a34.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     }
 }

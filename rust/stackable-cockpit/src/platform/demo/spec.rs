@@ -171,6 +171,7 @@ impl DemoSpec {
             skip_release: install_parameters.skip_release,
             stack_name: self.stack.clone(),
             chart_source: install_parameters.chart_source.clone(),
+            operator_values: install_parameters.operator_values.clone(),
         };
 
         stack

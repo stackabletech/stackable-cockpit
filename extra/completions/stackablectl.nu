@@ -15,6 +15,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -39,6 +40,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -68,6 +70,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -91,13 +94,13 @@ module completions {
 
   # Print out detailed operator information
   export extern "stackablectl operator describe" [
-    OPERATOR: string          # Operator to describe
     --output(-o): string@"nu-complete stackablectl operator describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -105,6 +108,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl operator describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    OPERATOR: string          # Operator to describe
   ]
 
   def "nu-complete stackablectl operator install cluster_type" [] {
@@ -121,7 +125,6 @@ module completions {
 
   # Install one or more operators
   export extern "stackablectl operator install" [
-    ...OPERATORS: string      # Operator(s) to install
     --operator-namespace: string # Namespace in the cluster used to deploy the operators
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --cluster(-c): string@"nu-complete stackablectl operator install cluster_type" # Type of local cluster to use for testing
@@ -133,6 +136,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -140,6 +144,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl operator install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    ...OPERATORS: string      # Operator(s) to install
   ]
 
   def "nu-complete stackablectl operator uninstall chart_source" [] {
@@ -152,7 +157,6 @@ module completions {
 
   # Uninstall one or more operators
   export extern "stackablectl operator uninstall" [
-    ...operators: string      # One or more operators to uninstall
     --operator-namespace: string # Namespace in the cluster used to deploy the operators
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
@@ -160,6 +164,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -167,6 +172,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl operator uninstall listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    ...operators: string      # One or more operators to uninstall
   ]
 
   def "nu-complete stackablectl operator installed output_type" [] {
@@ -191,6 +197,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -243,6 +250,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -272,6 +280,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -295,13 +304,13 @@ module completions {
 
   # Print out detailed release information
   export extern "stackablectl release describe" [
-    RELEASE: string
     --output(-o): string@"nu-complete stackablectl release describe output_type"
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -309,6 +318,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl release describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    RELEASE: string
   ]
 
   def "nu-complete stackablectl release install cluster_type" [] {
@@ -325,7 +335,6 @@ module completions {
 
   # Install a specific release
   export extern "stackablectl release install" [
-    RELEASE: string           # Release to install
     --include(-i): string     # Whitelist of product operators to install
     --exclude(-e): string     # Blacklist of product operators to install
     --operator-namespace: string # Namespace in the cluster used to deploy the operators
@@ -339,6 +348,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -346,6 +356,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl release install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    RELEASE: string           # Release to install
   ]
 
   def "nu-complete stackablectl release uninstall chart_source" [] {
@@ -358,7 +369,6 @@ module completions {
 
   # Uninstall a release
   export extern "stackablectl release uninstall" [
-    RELEASE: string           # Name of the release to uninstall
     --operator-namespace: string # Namespace in the cluster used to deploy the operators
     --operator-ns: string     # Namespace in the cluster used to deploy the operators
     --log-level(-l): string   # Log level this application uses
@@ -366,6 +376,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -373,6 +384,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl release uninstall listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    RELEASE: string           # Name of the release to uninstall
   ]
 
   def "nu-complete stackablectl release upgrade chart_source" [] {
@@ -385,7 +397,6 @@ module completions {
 
   # Upgrade a release
   export extern "stackablectl release upgrade" [
-    RELEASE: string           # Upgrade to the specified release
     --include(-i): string     # List of product operators to upgrade
     --exclude(-e): string     # Blacklist of product operators to install
     --operator-namespace: string # Namespace in the cluster used to deploy the operators
@@ -395,6 +406,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -402,6 +414,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl release upgrade listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    RELEASE: string           # Upgrade to the specified release
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -448,6 +461,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -478,6 +492,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -501,7 +516,6 @@ module completions {
 
   # Describe a specific stack
   export extern "stackablectl stack describe" [
-    stack_name: string        # Name of the stack to describe
     --output(-o): string@"nu-complete stackablectl stack describe output_type"
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
@@ -509,6 +523,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -516,6 +531,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl stack describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    stack_name: string        # Name of the stack to describe
   ]
 
   def "nu-complete stackablectl stack install cluster_type" [] {
@@ -532,7 +548,6 @@ module completions {
 
   # Install a specific stack
   export extern "stackablectl stack install" [
-    stack_name: string        # Name of the stack to describe
     --skip-release            # Skip the installation of the release during the stack install process
     --stack-parameters: string # List of parameters to use when installing the stack
     --parameters: string      # List of parameters to use when installing the stack
@@ -550,6 +565,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -557,6 +573,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl stack install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    stack_name: string        # Name of the stack to describe
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -594,6 +611,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -613,14 +631,13 @@ module completions {
 
   # Display credentials for a stacklet
   export extern "stackablectl stacklet credentials" [
-    product_name: string      # The name of the product, for example 'superset'
-    stacklet_name: string     # The name of the stacklet, for example 'superset'
     --namespace(-n): string   # Namespace in the cluster used to deploy the products
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -628,6 +645,8 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl stacklet credentials listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    product_name: string      # The name of the product, for example 'superset'
+    stacklet_name: string     # The name of the stacklet, for example 'superset'
   ]
 
   def "nu-complete stackablectl stacklet list output_type" [] {
@@ -654,6 +673,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -695,6 +715,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -725,6 +746,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -748,7 +770,6 @@ module completions {
 
   # Print out detailed demo information
   export extern "stackablectl demo describe" [
-    DEMO: string              # Demo to describe
     --output(-o): string@"nu-complete stackablectl demo describe output_type"
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
@@ -756,6 +777,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -763,6 +785,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl demo describe listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    DEMO: string              # Demo to describe
   ]
 
   def "nu-complete stackablectl demo install cluster_type" [] {
@@ -779,7 +802,6 @@ module completions {
 
   # Install a specific demo
   export extern "stackablectl demo install" [
-    DEMO: string              # Demo to install
     --skip-release            # Skip the installation of the release during the stack install process
     --stack-parameters: string # List of parameters to use when installing the stack
     --parameters: string      # List of parameters to use when installing the demo
@@ -797,6 +819,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -804,6 +827,7 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl demo install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    DEMO: string              # Demo to install
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -841,6 +865,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -865,6 +890,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -889,6 +915,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -913,6 +940,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -937,6 +965,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -961,6 +990,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1013,6 +1043,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1037,6 +1068,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1063,6 +1095,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1099,15 +1132,14 @@ module completions {
   # EXPERIMENTAL: Launch a debug container for a Pod
   export extern "stackablectl experimental-debug" [
     --namespace(-n): string   # The namespace of the Pod being debugged
-    pod: string               # The Pod to debug
     --container(-c): string   # The target container to debug
     --image: string           # The debug container image
-    ...cmd: string            # The command to run in the debug container
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1115,6 +1147,8 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl experimental-debug listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
+    pod: string               # The Pod to debug
+    ...cmd: string            # The command to run in the debug container
   ]
 
   def "nu-complete stackablectl version chart_source" [] {
@@ -1132,6 +1166,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL
@@ -1156,6 +1191,7 @@ module completions {
     --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
     --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
     --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
     --helm-repo-stable: string # Provide a custom Helm stable repository URL
     --helm-repo-test: string  # Provide a custom Helm test repository URL
     --helm-repo-dev: string   # Provide a custom Helm dev repository URL

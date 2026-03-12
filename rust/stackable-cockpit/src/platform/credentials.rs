@@ -1,8 +1,8 @@
 use std::fmt::Display;
 
-use kube::{ResourceExt, core::DynamicObject};
 use serde::Serialize;
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kube::{ResourceExt, core::DynamicObject};
 
 use crate::utils::k8s::{self, Client};
 
@@ -38,7 +38,7 @@ impl Display for Credentials {
 }
 
 /// Retrieves the credentials looking up a secret identified by `secret_name`
-/// in `secret_namespace`. The function returns [`Ok(None)`] if `username_key`
+/// in `secret_namespace`. The function returns `Ok(None)` if `username_key`
 /// and/or `password_key` are not found or the product does not provide
 /// any credentials.
 pub async fn get(

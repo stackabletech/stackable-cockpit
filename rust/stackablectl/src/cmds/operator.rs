@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use clap::{Args, Subcommand};
 use comfy_table::{
@@ -23,7 +23,10 @@ use stackable_cockpit::{
         self,
         chartsource::ChartSourceMetadata,
         k8s::{self, Client},
+        path::PathOrUrlParseError,
+        yaml::values_for_operator,
     },
+    xfer,
 };
 use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
@@ -31,7 +34,7 @@ use tracing_indicatif::{indicatif_println, span_ext::IndicatifSpanExt};
 use crate::{
     args::{CommonClusterArgs, CommonClusterArgsError},
     cli::{Cli, OutputType},
-    utils::{InvalidRepoNameError, helm_repo_name_to_repo_url},
+    utils::{InvalidRepoNameError, helm_repo_name_to_repo_url, load_operator_values},
 };
 
 const INSTALL_AFTER_HELP_TEXT: &str = "Examples:
@@ -98,7 +101,7 @@ Possible valid values are:
 
 Use \"stackablectl operator list\" to list available versions for all operators
 Use \"stackablectl operator describe <OPERATOR>\" to get available versions for one operator")]
-    operators: Vec<operator::OperatorSpec>,
+    operators: Vec<coffee::OperatorOrCoffee>,
 
     /// Namespace in the cluster used to deploy the operators
     #[arg(long, default_value = DEFAULT_OPERATOR_NAMESPACE, visible_aliases(["operator-ns"]))]
@@ -169,6 +172,12 @@ pub enum CmdError {
 
     #[snafu(display("OCI error"))]
     OciError { source: oci::Error },
+
+    #[snafu(display("path/url parse error"))]
+    PathOrUrlParse { source: PathOrUrlParseError },
+
+    #[snafu(display("failed to load operator values"))]
+    LoadOperatorValues { source: crate::utils::Error },
 }
 
 /// This list contains a list of operator version grouped by stable, test and
@@ -178,11 +187,15 @@ pub enum CmdError {
 pub struct OperatorVersionList(HashMap<String, Vec<String>>);
 
 impl OperatorArgs {
-    pub async fn run(&self, cli: &Cli) -> Result<String, CmdError> {
+    pub async fn run(
+        &self,
+        cli: &Cli,
+        transfer_client: Arc<xfer::Client>,
+    ) -> Result<String, CmdError> {
         match &self.subcommand {
             OperatorCommands::List(args) => list_cmd(args, cli).await,
             OperatorCommands::Describe(args) => describe_cmd(args, cli).await,
-            OperatorCommands::Install(args) => install_cmd(args, cli).await,
+            OperatorCommands::Install(args) => install_cmd(args, cli, transfer_client).await,
             OperatorCommands::Uninstall(args) => uninstall_cmd(args),
             OperatorCommands::Installed(args) => installed_cmd(args),
         }
@@ -311,9 +324,31 @@ async fn describe_cmd(args: &OperatorDescribeArgs, cli: &Cli) -> Result<String, 
 }
 
 #[instrument(skip_all, fields(indicatif.pb_show = true))]
-async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, CmdError> {
+async fn install_cmd(
+    args: &OperatorInstallArgs,
+    cli: &Cli,
+    transfer_client: Arc<xfer::Client>,
+) -> Result<String, CmdError> {
     info!("Installing operator(s)");
     Span::current().pb_set_message("Installing operator(s)");
+
+    let operators: Vec<&operator::OperatorSpec> = args
+        .operators
+        .iter()
+        .filter_map(|operator| match operator {
+            coffee::OperatorOrCoffee::Coffee => {
+                indicatif_println!("{}", coffee::COFFEE_ASCII_ART);
+                None
+            }
+            coffee::OperatorOrCoffee::Operator(spec) => Some(spec),
+        })
+        .collect();
+
+    // In case no operators need to be installed (e.g. coffee was already installed), there is no
+    // need to connect to Kubernetes and potentially produce error messages.
+    if operators.is_empty() {
+        return Ok(String::new());
+    }
 
     args.local_cluster
         .install_if_needed()
@@ -328,11 +363,19 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
             namespace: args.operator_namespace.clone(),
         })?;
 
-    for operator in &args.operators {
+    let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
+    let operator_values = load_operator_values(values_file.as_ref(), &transfer_client)
+        .await
+        .context(LoadOperatorValuesSnafu)?;
+
+    for operator in &operators {
+        let operator_helm_values = values_for_operator(&operator_values, &operator.name);
+
         operator
             .install(
                 &args.operator_namespace,
                 &ChartSourceType::from(cli.chart_type()),
+                &operator_helm_values,
             )
             .context(HelmSnafu)?;
 
@@ -349,8 +392,8 @@ async fn install_cmd(args: &OperatorInstallArgs, cli: &Cli) -> Result<String, Cm
         )
         .with_output(format!(
             "Installed {num_of_operators} {suffix}",
-            num_of_operators = args.operators.len(),
-            suffix = if args.operators.len() == 1 {
+            num_of_operators = operators.len(),
+            suffix = if operators.len() == 1 {
                 "operator"
             } else {
                 "operators"
@@ -595,5 +638,38 @@ where
             Ok(versions.iter().map(|version| version.to_string()).collect())
         }
         None => Ok(vec![]),
+    }
+}
+
+mod coffee {
+    use std::str::FromStr;
+
+    pub const COFFEE_ASCII_ART: &str = r#"
+      ) )
+     ( (
+   .------.
+   |      |]
+   \      /
+    `----'
+
+  Psst... "coffee" is not an operator, but we get it.
+  Stackable runs on coffee too. Have a great day! ☕
+"#;
+
+    #[derive(Clone, Debug)]
+    pub enum OperatorOrCoffee {
+        Operator(super::operator::OperatorSpec),
+        Coffee,
+    }
+
+    impl FromStr for OperatorOrCoffee {
+        type Err = super::operator::SpecParseError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            match s {
+                "coffee" | "coffe" => Ok(OperatorOrCoffee::Coffee),
+                _ => s.parse().map(OperatorOrCoffee::Operator),
+            }
+        }
     }
 }

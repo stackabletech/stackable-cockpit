@@ -2,6 +2,7 @@ use futures::{StreamExt as _, TryStreamExt};
 use indexmap::IndexMap;
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
+use serde_yaml::Mapping;
 use snafu::{ResultExt, Snafu};
 use tokio::task::JoinError;
 use tracing::{Instrument, Span, debug, info, instrument};
@@ -18,6 +19,7 @@ use crate::{
     utils::{
         k8s::{self, Client},
         path::{IntoPathOrUrl as _, PathOrUrlParseError},
+        yaml::values_for_operator,
     },
     xfer::{self, processor::Text},
 };
@@ -85,6 +87,7 @@ impl ReleaseSpec {
         exclude_products: &[String],
         namespace: &str,
         chart_source: &ChartSourceType,
+        operator_values: &Mapping,
     ) -> Result<()> {
         info!("Installing release");
         Span::current().pb_set_style(&PROGRESS_BAR_STYLE);
@@ -108,6 +111,7 @@ impl ReleaseSpec {
 
                 let namespace = namespace.clone();
                 let chart_source = chart_source.clone();
+                let operator_helm_values = values_for_operator(operator_values, &product_name);
                 // Helm installs currently `block_in_place`, so we need to spawn each job onto a separate task to
                 // get useful parallelism.
                 tokio::spawn(
@@ -122,7 +126,7 @@ impl ReleaseSpec {
 
                         // Install operator
                         operator
-                            .install(&namespace, &chart_source)
+                            .install(&namespace, &chart_source, &operator_helm_values)
                             .context(HelmInstallSnafu)?;
 
                         info!("Installed {product_name}-operator");
