@@ -4,12 +4,24 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-13
+
+### Added
+
+- Allow specifying Helm values for operator installations ([#425]).
+
 ### Changed
 
 - Bump Rust to `1.93.0` as well as dependencies ([#426]).
 - Bump Go to `1.26.0` as well as dependencies ([#426]).
 
+### Miscellaneous
+
+- Publish SBOM alongside artifacts ([#428]).
+
+[#425]: https://github.com/stackabletech/stackable-cockpit/pull/425
 [#426]: https://github.com/stackabletech/stackable-cockpit/pull/426
+[#428]: https://github.com/stackabletech/stackable-cockpit/pull/428
 
 ## [1.2.2] - 2025-12-03
 
