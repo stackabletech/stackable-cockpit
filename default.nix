@@ -50,6 +50,7 @@
     ];
   }
 , goHelmWrapper ? pkgs.buildGoApplication {
+    go = pkgs.go_1_26;
     pname = "go-helm-wrapper";
     version = "0.0";
     src = pkgs.runCommand "go-helm-wrapper-src" {}
