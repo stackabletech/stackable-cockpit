@@ -4,6 +4,8 @@ use stackable_operator::kvp::Labels;
 use crate::platform::operator::ChartSourceType;
 
 pub struct DemoInstallParameters {
+    pub demo_name: String,
+
     pub operator_namespace: String,
     pub demo_namespace: String,
 
@@ -15,4 +17,14 @@ pub struct DemoInstallParameters {
     pub labels: Labels,
     pub chart_source: ChartSourceType,
     pub operator_values: Mapping,
+}
+
+pub struct DemoUninstallParameters {
+    pub demo_name: String,
+
+    pub operator_namespace: String,
+    pub demo_namespace: String,
+
+    pub skip_operators: bool,
+    pub skip_crds: bool,
 }

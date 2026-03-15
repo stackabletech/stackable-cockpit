@@ -2838,6 +2838,42 @@ rec {
         };
         resolvedDefaultFeatures = [ "alloc" "default" ];
       };
+      "dialoguer" = rec {
+        crateName = "dialoguer";
+        version = "0.12.0";
+        edition = "2021";
+        sha256 = "15mdq2cp838yiq9fs1jkhvskixvlqz5p8f8dipkn88xz06sh9w95";
+        dependencies = [
+          {
+            name = "console";
+            packageId = "console";
+          }
+          {
+            name = "shell-words";
+            packageId = "shell-words";
+          }
+          {
+            name = "tempfile";
+            packageId = "tempfile";
+            optional = true;
+          }
+          {
+            name = "zeroize";
+            packageId = "zeroize";
+            optional = true;
+          }
+        ];
+        features = {
+          "default" = [ "editor" "password" ];
+          "editor" = [ "tempfile" ];
+          "fuzzy-matcher" = [ "dep:fuzzy-matcher" ];
+          "fuzzy-select" = [ "fuzzy-matcher" ];
+          "password" = [ "zeroize" ];
+          "tempfile" = [ "dep:tempfile" ];
+          "zeroize" = [ "dep:zeroize" ];
+        };
+        resolvedDefaultFeatures = [ "default" "editor" "password" "tempfile" "zeroize" ];
+      };
       "digest" = rec {
         crateName = "digest";
         version = "0.10.7";
@@ -3382,7 +3418,7 @@ rec {
           "js" = [ "std" "getrandom" ];
           "std" = [ "alloc" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "std" ];
+        resolvedDefaultFeatures = [ "alloc" "default" "std" ];
       };
       "find-msvc-tools" = rec {
         crateName = "find-msvc-tools";
@@ -10238,7 +10274,7 @@ rec {
           "thread" = [ "linux-raw-sys/prctl" ];
           "use-libc" = [ "libc_errno" "libc" ];
         };
-        resolvedDefaultFeatures = [ "alloc" "std" "stdio" "termios" ];
+        resolvedDefaultFeatures = [ "alloc" "default" "fs" "std" "stdio" "termios" ];
       };
       "rustls" = rec {
         crateName = "rustls";
@@ -11268,6 +11304,20 @@ rec {
           "loom" = [ "dep:loom" ];
         };
       };
+      "shell-words" = rec {
+        crateName = "shell-words";
+        version = "1.1.1";
+        edition = "2015";
+        sha256 = "0xzd5p53xl0ndnk63r0by52rhdrh6pd37szfxszkg73zb6ffcvyw";
+        libName = "shell_words";
+        authors = [
+          "Tomasz Miąsko <tomasz.miasko@gmail.com>"
+        ];
+        features = {
+          "default" = [ "std" ];
+        };
+        resolvedDefaultFeatures = [ "default" "std" ];
+      };
       "shlex" = rec {
         crateName = "shlex";
         version = "1.3.0";
@@ -11656,6 +11706,10 @@ rec {
             name = "clap";
             packageId = "clap";
             features = [ "derive" "env" ];
+          }
+          {
+            name = "either";
+            packageId = "either";
           }
           {
             name = "futures";
@@ -12424,6 +12478,10 @@ rec {
             features = [ "custom_styling" ];
           }
           {
+            name = "dialoguer";
+            packageId = "dialoguer";
+          }
+          {
             name = "directories";
             packageId = "directories";
           }
@@ -12740,6 +12798,54 @@ rec {
           "proc-macro" = [ "proc-macro2/proc-macro" "syn/proc-macro" "quote/proc-macro" ];
         };
         resolvedDefaultFeatures = [ "default" "proc-macro" ];
+      };
+      "tempfile" = rec {
+        crateName = "tempfile";
+        version = "3.23.0";
+        edition = "2021";
+        sha256 = "05igl2gml6z6i2va1bv49f9f1wb3f752c2i63lvlb9s2vxxwfc9d";
+        authors = [
+          "Steven Allen <steven@stebalien.com>"
+          "The Rust Project Developers"
+          "Ashley Mannix <ashleymannix@live.com.au>"
+          "Jason White <me@jasonwhite.io>"
+        ];
+        dependencies = [
+          {
+            name = "fastrand";
+            packageId = "fastrand";
+          }
+          {
+            name = "getrandom";
+            packageId = "getrandom 0.3.4";
+            optional = true;
+            usesDefaultFeatures = false;
+            target = { target, features }: ((target."unix" or false) || (target."windows" or false) || ("wasi" == target."os" or null));
+          }
+          {
+            name = "once_cell";
+            packageId = "once_cell";
+            usesDefaultFeatures = false;
+            features = [ "std" ];
+          }
+          {
+            name = "rustix";
+            packageId = "rustix";
+            target = { target, features }: ((target."unix" or false) || ("wasi" == target."os" or null));
+            features = [ "fs" ];
+          }
+          {
+            name = "windows-sys";
+            packageId = "windows-sys 0.61.2";
+            target = { target, features }: (target."windows" or false);
+            features = [ "Win32_Storage_FileSystem" "Win32_Foundation" ];
+          }
+        ];
+        features = {
+          "default" = [ "getrandom" ];
+          "getrandom" = [ "dep:getrandom" ];
+        };
+        resolvedDefaultFeatures = [ "default" "getrandom" ];
       };
       "tera" = rec {
         crateName = "tera";

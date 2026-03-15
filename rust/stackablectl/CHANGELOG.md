@@ -4,12 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add `uninstall` subcommand for `demo`/`stack` commands ([#429]).
+
 ### Changed
 
 - Bump Rust to `1.93.0` as well as dependencies ([#426]).
 - Bump Go to `1.26.0` as well as dependencies ([#426]).
 
 [#426]: https://github.com/stackabletech/stackable-cockpit/pull/426
+[#429]: https://github.com/stackabletech/stackable-cockpit/pull/429
 
 ## [1.2.2] - 2025-12-03
 

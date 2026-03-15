@@ -1,22 +1,29 @@
 use std::{collections::BTreeMap, string::FromUtf8Error};
 
+use reqwest::StatusCode;
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{
     crd::listener::v1alpha1::Listener,
-    k8s_openapi::api::{
-        apps::v1::{Deployment, StatefulSet},
-        core::v1::{Endpoints, Namespace, Node, Secret, Service},
+    k8s_openapi::{
+        api::{
+            apps::v1::{Deployment, StatefulSet},
+            core::v1::{Endpoints, Namespace, Node, Secret, Service},
+        },
+        apiextensions_apiserver::pkg::apis::apiextensions::v1::CustomResourceDefinition,
     },
     kube::{
         self, Api, Discovery, ResourceExt,
-        api::{ListParams, Patch, PatchParams, PostParams},
+        api::{DeleteParams, ListParams, Patch, PatchParams, PostParams},
         core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
-        discovery::{ApiCapabilities, ApiResource, Scope},
+        discovery::{self, ApiCapabilities, ApiResource, Scope},
     },
     kvp::Labels,
 };
-use tokio::sync::RwLock;
+use tokio::{
+    sync::RwLock,
+    time::{self, sleep},
+};
 use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};
 
@@ -46,6 +53,9 @@ pub enum Error {
         source: kube::error::Error,
         gvk: GroupVersionKind,
     },
+
+    #[snafu(display("failed to delete object"))]
+    KubeClientDelete { source: kube::error::Error },
 
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
@@ -237,6 +247,28 @@ impl Client {
         Ok(())
     }
 
+    /// Deletes CRDs for the given group suffix
+    pub async fn delete_crds_with_group_suffix(&self, group_suffix: &str) -> Result<()> {
+        let api_client = Api::<CustomResourceDefinition>::all(self.client.clone());
+
+        for crd in api_client
+            .list(&ListParams::default())
+            .await
+            .context(KubeClientFetchSnafu)?
+        {
+            if crd.spec.group.ends_with(group_suffix) {
+                if let Some(name) = crd.metadata.name {
+                    api_client
+                        .delete(&name, &DeleteParams::default())
+                        .await
+                        .context(KubeClientDeleteSnafu)?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     /// Lists objects by looking up a GVK via the discovery. It returns an
     /// optional list of dynamic objects. The method returns `Ok(None)`
     /// if the client was unable to resolve the GVK. An error is returned
@@ -285,6 +317,116 @@ impl Client {
         Ok(Some(
             api.get(object_name).await.context(KubeClientFetchSnafu)?,
         ))
+    }
+
+    /// Deletes all objects with a given label in the provided namespace.
+    /// If no namespace is provided, deletes all clusterwide objects with the given label.
+    pub async fn delete_all_objects_with_label(
+        &self,
+        label_key: &str,
+        label_value: &str,
+        namespace: Option<&str>,
+    ) -> Result<(), Error> {
+        let api_resources = self
+            .get_api_resources()
+            .await
+            .into_iter()
+            .filter(|(_, capability)| {
+                capability.supports_operation(discovery::verbs::LIST)
+                    && match namespace {
+                        Some(_) => capability.scope == kube::discovery::Scope::Namespaced,
+                        None => capability.scope == kube::discovery::Scope::Cluster,
+                    }
+            });
+
+        for (api_resource, _) in api_resources {
+            let objects = self
+                .list_objects(
+                    &GroupVersionKind {
+                        group: api_resource.group.clone(),
+                        version: api_resource.version.clone(),
+                        kind: api_resource.kind.clone(),
+                    },
+                    namespace,
+                )
+                .await?;
+
+            if let Some(objectlist) = objects {
+                for object in objectlist {
+                    if let Some(value) = object.labels().get(label_key) {
+                        if value.eq(label_value) {
+                            self.delete_object(
+                                &object.metadata.name.unwrap(),
+                                &api_resource,
+                                object.metadata.namespace.as_deref(),
+                            )
+                            .await?;
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
+    pub async fn delete_object(
+        &self,
+        object_name: &str,
+        api_resource: &ApiResource,
+        namespace: Option<&str>,
+    ) -> Result<(), Error> {
+        let object_api = match namespace {
+            Some(namespace) => {
+                Api::<DynamicObject>::namespaced_with(self.client.clone(), namespace, api_resource)
+            }
+            None => Api::<DynamicObject>::all_with(self.client.clone(), api_resource),
+        };
+
+        let mut delete_request = object_api
+            .delete(object_name, &DeleteParams::foreground())
+            .await;
+
+        // Wait for object to be deleted
+        // Otherwise might result in race condition scenarios
+        while let Ok(delete_status) = delete_request {
+            match delete_status {
+                // Left side of Either, when deletion is in progress
+                either::Either::Left(_) => {
+                    Span::current()
+                        .pb_set_message(&format!("Deleting {} {}", api_resource.kind, object_name));
+                    // Short sleep to reduce number of requests
+                    sleep(time::Duration::from_millis(600)).await;
+                    // Resend request to get deletion status
+                    delete_request = object_api
+                        .delete(object_name, &DeleteParams::foreground())
+                        .await;
+                }
+                // Right side of Either, when deletion is done
+                either::Either::Right(_) => {
+                    return Ok(());
+                }
+            }
+        }
+
+        if let Err(error) = delete_request {
+            match error {
+                kube::Error::Api(ref error_response) => {
+                    // If object is already deleted/gone, delete operation is done
+                    if error_response.code == StatusCode::NOT_FOUND.as_u16() {
+                        return Ok(());
+                    } else {
+                        return Err(error).context(KubeClientDeleteSnafu);
+                    }
+                }
+                _ => {
+                    return Err(error).context(KubeClientDeleteSnafu);
+                }
+            }
+        }
+
+        Ok(())
     }
 
     /// Lists [`Service`]s by matching labels. The Services can be matched by
@@ -480,6 +622,16 @@ impl Client {
     pub async fn get_endpoints(&self, namespace: &str, name: &str) -> Result<Endpoints> {
         let endpoints_api: Api<Endpoints> = Api::namespaced(self.client.clone(), namespace);
         endpoints_api.get(name).await.context(KubeClientFetchSnafu)
+    }
+
+    pub async fn get_api_resources(&self) -> Vec<(ApiResource, ApiCapabilities)> {
+        let mut api_resources = Vec::new();
+
+        for group in self.discovery.read().await.groups() {
+            api_resources.append(group.recommended_resources().as_mut());
+        }
+
+        api_resources
     }
 
     /// Try to resolve the given [`GroupVersionKind`]. In case the resolution fails a discovery is run to pull in new
