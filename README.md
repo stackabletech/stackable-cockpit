@@ -77,3 +77,11 @@ hooks are:
 [pre-commit]: https://pre-commit.com/
 [web-readme]: ./web/README.md
 [lib-readme]: ./rust/stackable-cockpit/README.md
+
+### Templating variables
+
+| Variable    | Availability                                                                            | Content                                                                       |
+| ----------- | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `NAMESPACE` | Always                                                                                  | The namespace where the stack and demo (not the operators!) are deployed into |
+| `STACK`     | Always (both in stack and demo manifests)                                               | The name of the stack                                                         |
+| `DEMO`      | In demos manifests: Always<br>In stack manifests: Only when deployed as part of a demo! | The name of the demo                                                          |

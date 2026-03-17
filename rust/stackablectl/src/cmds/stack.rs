@@ -359,12 +359,13 @@ async fn install_cmd(
                 .context(LoadOperatorValuesSnafu)?;
 
             let install_parameters = StackInstallParameters {
+                stack_name: args.stack_name.clone(),
+                // There is no demo when installing only a stack
+                demo_name: None,
                 operator_namespace: args.namespaces.operator_namespace.clone(),
                 stack_namespace: args.namespaces.namespace.clone(),
-                stack_name: args.stack_name.clone(),
                 parameters: args.parameters.clone(),
                 skip_release: args.skip_release,
-                demo_name: None,
                 labels,
                 chart_source: ChartSourceType::from(cli.chart_type()),
                 operator_values,

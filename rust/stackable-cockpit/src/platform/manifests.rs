@@ -70,6 +70,8 @@ pub trait InstallManifestsExt {
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
         namespace: &str,
+        stack_name: &str,
+        demo_name: Option<&str>,
         labels: Labels,
         client: &Client,
         transfer_client: &xfer::Client,
@@ -80,9 +82,13 @@ pub trait InstallManifestsExt {
         Span::current().pb_set_length(manifests.len() as u64);
 
         let mut parameters = parameters.clone();
-        // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
-        // fqdn service names [which contain the namespace].
+        // We need some additional templating capabilities, e.g. the namespace, so that stacks/demos
+        // can use that to render e.g. the fqdn service names [which contain the namespace].
         parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
+        parameters.insert("STACK".to_owned(), stack_name.into());
+        if let Some(demo_name) = demo_name {
+            parameters.insert("DEMO".to_owned(), demo_name.into());
+        }
 
         for manifest in manifests {
             let parameters = parameters.clone();
