@@ -65,7 +65,7 @@ pub enum Error {
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
     #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
-    #[allow(async_fn_in_trait)]
+    #[allow(clippy::too_many_arguments, async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
