@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-03-18
+
 ### Added
 
-- Add `STACK` and `DEMO` templating parameters. Have a look at the README for details ([#432]).
+- Add `STACK` and `DEMO` templating parameters. Have a look at the `README.md` for details ([#432]).
 
 [#432]: https://github.com/stackabletech/stackable-cockpit/pull/432
 
