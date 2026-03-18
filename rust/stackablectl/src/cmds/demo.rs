@@ -388,6 +388,8 @@ async fn install_cmd(
         .context(LoadOperatorValuesSnafu)?;
 
     let install_parameters = DemoInstallParameters {
+        stack_name: demo.stack.clone(),
+        demo_name: args.demo_name.clone(),
         operator_namespace: args.namespaces.operator_namespace.clone(),
         demo_namespace: args.namespaces.namespace.clone(),
         stack_parameters: args.stack_parameters.clone(),

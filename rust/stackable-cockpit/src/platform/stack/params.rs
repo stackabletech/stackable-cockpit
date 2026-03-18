@@ -5,8 +5,12 @@ use crate::platform::operator::ChartSourceType;
 
 #[derive(Debug)]
 pub struct StackInstallParameters {
-    pub demo_name: Option<String>,
+    /// Name of the stack, which is always present
     pub stack_name: String,
+
+    /// Optional name of the demo, which is only present in case this stack is installed as part of
+    /// a demo. This is unset in case a stack is installed directly.
+    pub demo_name: Option<String>,
 
     pub operator_namespace: String,
     pub stack_namespace: String,

@@ -249,6 +249,8 @@ impl StackSpec {
             &self.manifests,
             &parameters,
             &install_params.stack_namespace,
+            &install_params.stack_name,
+            install_params.demo_name.as_deref(),
             install_params.labels,
             client,
             transfer_client,

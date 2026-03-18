@@ -153,13 +153,13 @@ impl DemoSpec {
             .await?;
 
         let stack_install_parameters = StackInstallParameters {
+            stack_name: self.stack.clone(),
+            demo_name: Some(install_parameters.demo_name.clone()),
             operator_namespace: install_parameters.operator_namespace.clone(),
             stack_namespace: install_parameters.demo_namespace.clone(),
             parameters: install_parameters.stack_parameters.clone(),
             labels: install_parameters.stack_labels.clone(),
             skip_release: install_parameters.skip_release,
-            stack_name: self.stack.clone(),
-            demo_name: None,
             chart_source: install_parameters.chart_source.clone(),
             operator_values: install_parameters.operator_values.clone(),
         };
@@ -204,6 +204,8 @@ impl DemoSpec {
             &self.manifests,
             &params,
             &install_params.demo_namespace,
+            &install_params.stack_name,
+            Some(&install_params.demo_name),
             install_params.labels,
             client,
             transfer_client,
