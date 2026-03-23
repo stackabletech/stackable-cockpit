@@ -1,22 +1,25 @@
-{ sources ? import ./nix/sources.nix # managed by https://github.com/nmattia/niv
-, nixpkgs ? sources.nixpkgs
-, pkgs ? import nixpkgs {
+{
+  sources ? import ./nix/sources.nix, # managed by https://github.com/nmattia/niv
+  nixpkgs ? sources.nixpkgs,
+  pkgs ? import nixpkgs {
     overlays = [
       # gomod2nix must be imported as a nixpkgs overlay
-      (import (sources.gomod2nix+"/overlay.nix"))
+      (import (sources.gomod2nix + "/overlay.nix"))
     ];
-}
-, release ? true
-, cargo ? import ./Cargo.nix {
+  },
+  release ? true,
+  cargo ? import ./Cargo.nix {
     inherit nixpkgs pkgs release;
     defaultCrateOverrides = pkgs.defaultCrateOverrides // {
       stackable-cockpit-web = attrs: {
-        nativeBuildInputs = [ pkgs.nodePackages.yarn pkgs.nodejs_20 ];
-        preConfigure =
-          ''
-            [[ ! -e node_modules ]] || rm -r node_modules
-            ln -s ${web.nodeModules} node_modules
-          '';
+        nativeBuildInputs = [
+          pkgs.nodePackages.yarn
+          pkgs.nodejs_20
+        ];
+        preConfigure = ''
+          [[ ! -e node_modules ]] || rm -r node_modules
+          ln -s ${web.nodeModules} node_modules
+        '';
       };
       helm-sys = attrs: {
         GO_HELM_WRAPPER = goHelmWrapper + "/bin";
@@ -26,17 +29,19 @@
       utoipa-swagger-ui = attrs: rec {
         # utoipa-swagger-ui tries to redownload swagger-ui, which is blocked by Nix's sandboxing
         # so we download it instead, and tell it to use that
-        SWAGGER_UI_DOWNLOAD_URL = "file://${pkgs.fetchurl {
-          url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.3.zip";
-          hash = "sha256-zrb8feuuDzt/g6y7Tucfh+Y2BWZov0soyNPR5LBqKx4=";
-        }}";
+        SWAGGER_UI_DOWNLOAD_URL = "file://${
+          pkgs.fetchurl {
+            url = "https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.3.zip";
+            hash = "sha256-zrb8feuuDzt/g6y7Tucfh+Y2BWZov0soyNPR5LBqKx4=";
+          }
+        }";
       };
     };
-  }
-, meta ? pkgs.lib.importJSON ./nix/meta.json
-, dockerName ? "oci.stackable.tech/sandbox/${meta.operator.name}"
-, dockerTag ? null
-, web ? js2nix.buildEnv {
+  },
+  meta ? pkgs.lib.importJSON ./nix/meta.json,
+  dockerName ? "oci.stackable.tech/sandbox/${meta.operator.name}",
+  dockerTag ? null,
+  web ? js2nix.buildEnv {
     # js2nix doesn't import peer dependencies, so we use overlays to patch them in explicitly
     # https://github.com/canva-public/js2nix/blob/d37912f6cc824e7f41bea7a481af1739ca195c8f/docs/usage.md#overriding
     package-json = ./web/package.json;
@@ -44,41 +49,46 @@
     overlays = [
       (self: super: {
         # TODO: remove once this https://github.com/canva-public/js2nix/issues/20 is resolved
-        buildNodeModule = pkgs.lib.makeOverridable
-          (args: (super.buildNodeModule args).override { doCheck = false; });
+        buildNodeModule = pkgs.lib.makeOverridable (
+          args: (super.buildNodeModule args).override { doCheck = false; }
+        );
       })
     ];
-  }
-, goHelmWrapper ? pkgs.buildGoApplication {
+  },
+  goHelmWrapper ? pkgs.buildGoApplication {
+    go = pkgs.go_1_26;
     pname = "go-helm-wrapper";
     version = "0.0";
-    src = pkgs.runCommand "go-helm-wrapper-src" {}
-      ''
-        mkdir $out
-        cp ${./go.mod} $out/go.mod
-        cp ${./go.sum} $out/go.sum
-        cp -r ${./rust/helm-sys/go-helm-wrapper} $out/go-helm-wrapper
-      '';
+    src = pkgs.runCommand "go-helm-wrapper-src" { } ''
+      mkdir $out
+      cp ${./go.mod} $out/go.mod
+      cp ${./go.sum} $out/go.sum
+      cp -r ${./rust/helm-sys/go-helm-wrapper} $out/go-helm-wrapper
+    '';
     pwd = ./rust/helm-sys/go-helm-wrapper;
     modules = ./gomod2nix.toml;
     ldflags = "-buildmode c-archive";
     allowGoReference = true;
-    postBuild =
-      ''
-        for pkg in $(getGoDirs ""); do
-          buildFlags="-buildmode c-archive -o $GOPATH/bin/libgo-helm-wrapper.a" buildGoDir build "$pkg"
-        done
-      '';
-  }
-, js2nix ? pkgs.callPackage sources.js2nix { nodejs = pkgs.nodejs_20; }
-, gomod2nix ? pkgs.callPackage sources.gomod2nix {}
+    postBuild = ''
+      for pkg in $(getGoDirs ""); do
+        buildFlags="-buildmode c-archive -o $GOPATH/bin/libgo-helm-wrapper.a" buildGoDir build "$pkg"
+      done
+    '';
+  },
+  js2nix ? pkgs.callPackage sources.js2nix { nodejs = pkgs.nodejs_20; },
+  gomod2nix ? pkgs.callPackage sources.gomod2nix { },
 }:
 rec {
-  inherit cargo sources pkgs meta;
+  inherit
+    cargo
+    sources
+    pkgs
+    meta
+    ;
   build = cargo.workspaceMembers.stackable-cockpitd.build.override {
     features = [ "ui" ];
   };
-  entrypoint = build+"/bin/stackable-cockpitd";
+  entrypoint = build + "/bin/stackable-cockpitd";
   # crds = pkgs.runCommand "${meta.operator.name}-crds.yaml" {}
   # ''
   #   ${entrypoint} crd > $out
@@ -89,7 +99,9 @@ rec {
     tag = dockerTag;
     contents = [
       # Common debugging tools
-      pkgs.bashInteractive pkgs.coreutils pkgs.util-linuxMinimal
+      pkgs.bashInteractive
+      pkgs.coreutils
+      pkgs.util-linuxMinimal
       # Kerberos 5 must be installed globally to load plugins correctly
       pkgs.krb5
       # Make the whole cargo workspace available on $PATH
@@ -101,9 +113,14 @@ rec {
           fileRefVars = {
             PRODUCT_CONFIG = deploy/config-spec/properties.yaml;
           };
-        in pkgs.lib.concatLists (pkgs.lib.mapAttrsToList (env: path: pkgs.lib.optional (pkgs.lib.pathExists path) "${env}=${path}") fileRefVars);
+        in
+        pkgs.lib.concatLists (
+          pkgs.lib.mapAttrsToList (
+            env: path: pkgs.lib.optional (pkgs.lib.pathExists path) "${env}=${path}"
+          ) fileRefVars
+        );
       Entrypoint = [ entrypoint ];
-      Cmd = [];
+      Cmd = [ ];
     };
   };
   docker = pkgs.linkFarm "stackable-cockpit-docker" [
@@ -130,18 +147,15 @@ rec {
   ];
 
   # need to use vendored crate2nix because of https://github.com/kolloch/crate2nix/issues/264
-  crate2nix = import sources.crate2nix {};
+  crate2nix = import sources.crate2nix { };
   tilt = pkgs.tilt;
 
-
-
-  regenerateNixLockfiles = pkgs.writeScriptBin "regenerate-nix-lockfiles"
-    ''
-      #!/usr/bin/env bash
-      set -euo pipefail
-      echo Running crate2nix
-      ${crate2nix}/bin/crate2nix generate
-      echo Running gomod2nix
-      ${gomod2nix}/bin/gomod2nix
-    '';
+  regenerateNixLockfiles = pkgs.writeScriptBin "regenerate-nix-lockfiles" ''
+    #!/usr/bin/env bash
+    set -euo pipefail
+    echo Running crate2nix
+    ${crate2nix}/bin/crate2nix generate
+    echo Running gomod2nix
+    ${gomod2nix}/bin/gomod2nix
+  '';
 }

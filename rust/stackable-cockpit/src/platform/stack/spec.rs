@@ -356,12 +356,14 @@ impl StackSpec {
             .context(ParseParametersSnafu)?;
 
         // We add the STACK parameter, so that stacks can use that to render e.g. the stack label
-        parameters.insert("STACK".to_owned(), install_parameters.stack_name);
+        parameters.insert("STACK".to_owned(), install_parameters.stack_name.clone());
 
         Self::install_manifests(
             &self.manifests,
             &parameters,
             &install_parameters.stack_namespace,
+            &install_parameters.stack_name,
+            install_parameters.demo_name.as_deref(),
             install_parameters.labels,
             client,
             transfer_client,

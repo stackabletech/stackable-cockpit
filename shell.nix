@@ -1,10 +1,20 @@
 let
-  self = import ./. {};
+  self = import ./. { };
   inherit (self) sources pkgs meta;
 
-  cargoDependencySetOfCrate = crate: [ crate ] ++ pkgs.lib.concatMap cargoDependencySetOfCrate (crate.dependencies ++ crate.buildDependencies);
-  cargoDependencySet = pkgs.lib.unique (pkgs.lib.flatten (pkgs.lib.mapAttrsToList (crateName: crate: cargoDependencySetOfCrate crate.build) self.cargo.workspaceMembers));
-in pkgs.mkShell rec {
+  cargoDependencySetOfCrate =
+    crate:
+    [ crate ]
+    ++ pkgs.lib.concatMap cargoDependencySetOfCrate (crate.dependencies ++ crate.buildDependencies);
+  cargoDependencySet = pkgs.lib.unique (
+    pkgs.lib.flatten (
+      pkgs.lib.mapAttrsToList (
+        crateName: crate: cargoDependencySetOfCrate crate.build
+      ) self.cargo.workspaceMembers
+    )
+  );
+in
+pkgs.mkShell rec {
   name = meta.operator.name;
 
   packages = with pkgs; [
@@ -16,25 +26,28 @@ in pkgs.mkShell rec {
     ## to ensure all the dependencies are caught.
     # cacert
     # vim nvim nano
+    crate2nix
   ];
 
   # derivation runtime dependencies
   buildInputs = pkgs.lib.concatMap (crate: crate.buildInputs) cargoDependencySet;
 
   # build time dependencies
-  nativeBuildInputs = pkgs.lib.concatMap (crate: crate.nativeBuildInputs) cargoDependencySet ++ (with pkgs; [
-    clang
-    git
-    # Replace llvmPackages with llvmPackages_X, where X is the latest LLVM version (at the time of writing, 16)
-    llvmPackages.bintools
-    rustup
+  nativeBuildInputs =
+    pkgs.lib.concatMap (crate: crate.nativeBuildInputs) cargoDependencySet
+    ++ (with pkgs; [
+      clang
+      git
+      # Replace llvmPackages with llvmPackages_X, where X is the latest LLVM version (at the time of writing, 16)
+      llvmPackages.bintools
+      rustup
 
-    # additions for this repo
-    yarn
-    typescript
-    vite
-    go
-  ]);
+      # additions for this repo
+      yarn
+      typescript
+      vite
+      go
+    ]);
 
   LIBCLANG_PATH = "${pkgs.libclang.lib}/lib";
   BINDGEN_EXTRA_CLANG_ARGS = "-I${pkgs.glibc.dev}/include -I${pkgs.clang}/resource-root/include";

@@ -164,12 +164,13 @@ impl DemoSpec {
             .await?;
 
         let stack_install_parameters = StackInstallParameters {
+            stack_name: self.stack.clone(),
+            demo_name: Some(install_parameters.demo_name.clone()),
             operator_namespace: install_parameters.operator_namespace.clone(),
             stack_namespace: install_parameters.demo_namespace.clone(),
             parameters: install_parameters.stack_parameters.clone(),
             labels: install_parameters.stack_labels.clone(),
             skip_release: install_parameters.skip_release,
-            stack_name: self.stack.clone(),
             chart_source: install_parameters.chart_source.clone(),
             operator_values: install_parameters.operator_values.clone(),
         };
@@ -313,12 +314,14 @@ impl DemoSpec {
             .context(ParseParametersSnafu)?;
 
         // We add the DEMO parameter, so that demos can use that to render e.g. the demo label
-        parameters.insert("DEMO".to_owned(), install_parameters.demo_name);
+        parameters.insert("DEMO".to_owned(), install_parameters.demo_name.clone());
 
         Self::install_manifests(
             &self.manifests,
             &parameters,
             &install_parameters.demo_namespace,
+            &install_parameters.stack_name,
+            Some(&install_parameters.demo_name),
             install_parameters.labels,
             client,
             transfer_client,
