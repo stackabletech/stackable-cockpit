@@ -394,7 +394,7 @@ async fn install_cmd(
                         if Confirm::new()
                         .with_prompt(
                             format!(
-                                "Stacks installed in the '{DEFAULT_NAMESPACE}' namespace cannot be deleted with stackablectl. Install the stack in the '{stack_namespace}' namespace instead?",
+                                "Stacks installed in the '{DEFAULT_NAMESPACE}' namespace cannot be uninstalled with stackablectl. Install the stack in the '{stack_namespace}' namespace instead?",
                             stack_namespace = args.stack_name.clone())
                         )
                         .default(true)
