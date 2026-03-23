@@ -73,13 +73,11 @@ pub enum Error {
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
     #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
-    #[allow(clippy::too_many_arguments, async_fn_in_trait)]
+    #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
         namespace: &str,
-        stack_name: &str,
-        demo_name: Option<&str>,
         labels: Labels,
         client: &Client,
         transfer_client: &xfer::Client,
@@ -93,10 +91,6 @@ pub trait InstallManifestsExt {
         // We need some additional templating capabilities, e.g. the namespace, so that stacks/demos
         // can use that to render e.g. the fqdn service names [which contain the namespace].
         parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
-        parameters.insert("STACK".to_owned(), stack_name.into());
-        if let Some(demo_name) = demo_name {
-            parameters.insert("DEMO".to_owned(), demo_name.into());
-        }
 
         for manifest in manifests {
             let parameters = parameters.clone();

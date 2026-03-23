@@ -313,15 +313,14 @@ impl DemoSpec {
             .into_params(&self.parameters)
             .context(ParseParametersSnafu)?;
 
-        // We add the DEMO parameter, so that demos can use that to render e.g. the demo label
-        parameters.insert("DEMO".to_owned(), install_parameters.demo_name.clone());
+        // We add the STACK and DEMO parameter, so that demos can use that to render e.g. the demo label
+        parameters.insert("STACK".to_owned(), install_parameters.stack_name);
+        parameters.insert("DEMO".to_owned(), install_parameters.demo_name);
 
         Self::install_manifests(
             &self.manifests,
             &parameters,
             &install_parameters.demo_namespace,
-            &install_parameters.stack_name,
-            Some(&install_parameters.demo_name),
             install_parameters.labels,
             client,
             transfer_client,
