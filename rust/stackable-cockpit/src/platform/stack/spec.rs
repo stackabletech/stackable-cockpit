@@ -220,8 +220,11 @@ impl StackSpec {
             .into_params(self.parameters.clone())
             .context(ParseParametersSnafu)?;
 
-        // We add the STACK parameter, so that stacks can use that to render e.g. the stack label
+        // We add the STACK and optionally DEMO parameter, so that stacks can use that to render e.g. the stack label
         parameters.insert("STACK".to_owned(), uninstall_parameters.stack_name.clone());
+        if let Some(demo_name) = uninstall_parameters.demo_name {
+            parameters.insert("DEMO".to_owned(), demo_name);
+        }
 
         Self::uninstall_helm_manifests(
             &self.manifests,

@@ -25,6 +25,10 @@ pub struct StackInstallParameters {
 pub struct StackUninstallParameters {
     pub stack_name: String,
 
+    /// Optional name of the demo, which is only present in case this stack is uninstalled as part of
+    /// a demo. This is unset in case a stack is uninstalled directly.
+    pub demo_name: Option<String>,
+
     pub operator_namespace: String,
     pub stack_namespace: String,
 

@@ -497,6 +497,8 @@ async fn uninstall_cmd(
                     release_list,
                     StackUninstallParameters {
                         stack_name: args.stack_name.clone(),
+                        // There is no demo when uninstalling only a stack
+                        demo_name: None,
                         operator_namespace: args.namespaces.operator_namespace.clone(),
                         stack_namespace: args.namespaces.namespace.clone(),
                         skip_operators: args.skip_operators_and_crds,
