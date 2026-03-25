@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml::Mapping;
 use snafu::{OptionExt, ResultExt, Snafu};
-use stackable_operator::kube::api::{ApiResource, GroupVersionKind};
 use tracing::{Span, debug, info, instrument, log::warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
@@ -237,15 +236,7 @@ impl StackSpec {
 
         // Delete stack namespace
         client
-            .delete_object(
-                &uninstall_parameters.stack_namespace,
-                &ApiResource::from_gvk(&GroupVersionKind {
-                    group: "".to_owned(),
-                    version: "v1".to_owned(),
-                    kind: "Namespace".to_owned(),
-                }),
-                None,
-            )
+            .delete_namespace(uninstall_parameters.stack_namespace)
             .await
             .context(DeleteObjectSnafu)?;
 
@@ -265,15 +256,7 @@ impl StackSpec {
                 .await?;
 
             client
-                .delete_object(
-                    &uninstall_parameters.operator_namespace,
-                    &ApiResource::from_gvk(&GroupVersionKind {
-                        group: "".to_owned(),
-                        version: "v1".to_owned(),
-                        kind: "Namespace".to_owned(),
-                    }),
-                    None,
-                )
+                .delete_namespace(uninstall_parameters.operator_namespace)
                 .await
                 .context(DeleteObjectSnafu)?;
         }

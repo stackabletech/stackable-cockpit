@@ -601,6 +601,20 @@ impl Client {
         Ok(())
     }
 
+    /// Deletes a [`Namespace`] with `name` in the cluster.
+    pub async fn delete_namespace(&self, name: String) -> Result<()> {
+        self.delete_object(
+            &name,
+            &ApiResource::from_gvk(&GroupVersionKind {
+                group: "".to_owned(),
+                version: "v1".to_owned(),
+                kind: "Namespace".to_owned(),
+            }),
+            None,
+        )
+        .await
+    }
+
     /// Creates a [`Namespace`] only if not already present in the current cluster.
     pub async fn create_namespace_if_needed(&self, name: String) -> Result<()> {
         if self.get_namespace(&name).await?.is_none() {
