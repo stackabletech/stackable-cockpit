@@ -99,7 +99,8 @@ pub trait InstallManifestsExt {
                 ManifestSpec::HelmChart(helm_file) => {
                     debug!(helm_file, "Installing manifest from Helm chart");
 
-                    let helm_chart = get_helmchart(helm_file, transfer_client, &parameters).await?;
+                    let helm_chart =
+                        get_helm_chart(helm_file, transfer_client, &parameters).await?;
 
                     info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
 
@@ -179,7 +180,7 @@ pub trait InstallManifestsExt {
                 ManifestSpec::HelmChart(helm_file) => {
                     debug!(helm_file, "Uninstalling manifest from Helm chart");
 
-                    let helm_chart = get_helmchart(helm_file, transfer_client, parameters).await?;
+                    let helm_chart = get_helm_chart(helm_file, transfer_client, parameters).await?;
 
                     info!(
                         helm_chart.name,
@@ -200,7 +201,7 @@ pub trait InstallManifestsExt {
     }
 }
 
-pub async fn get_helmchart(
+pub async fn get_helm_chart(
     helm_file: &str,
     transfer_client: &xfer::Client,
     parameters: &HashMap<String, String>,
