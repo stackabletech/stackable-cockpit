@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kvp::{Label, LabelError};
 use tracing::{Span, debug, info, instrument, warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
@@ -59,6 +60,9 @@ pub enum Error {
 
     #[snafu(display("failed to delete object"))]
     DeleteObject { source: k8s::Error },
+
+    #[snafu(display("failed to build label"))]
+    BuildLabel { source: LabelError },
 }
 
 impl InstallManifestsExt for DemoSpec {}
@@ -245,8 +249,8 @@ impl DemoSpec {
         // Delete remaining objects not namespace scoped
         client
             .delete_all_objects_with_label(
-                "stackable.tech/demo",
-                &uninstall_parameters.demo_name,
+                Label::try_from(("stackable.tech/demo", &uninstall_parameters.demo_name))
+                    .context(BuildLabelSnafu)?,
                 None,
             )
             .await

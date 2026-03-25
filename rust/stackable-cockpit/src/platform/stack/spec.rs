@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml::Mapping;
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kvp::{Label, LabelError};
 use tracing::{Span, debug, info, instrument, log::warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
@@ -74,6 +75,9 @@ pub enum Error {
 
     #[snafu(display("failed to delete object"))]
     DeleteObject { source: k8s::Error },
+
+    #[snafu(display("failed to build label"))]
+    BuildLabel { source: LabelError },
 }
 
 /// This struct describes a stack with the v2 spec
@@ -243,8 +247,8 @@ impl StackSpec {
         // Delete remaining objects not namespace scoped
         client
             .delete_all_objects_with_label(
-                "stackable.tech/stack",
-                &uninstall_parameters.stack_name,
+                Label::try_from(("stackable.tech/stack", &uninstall_parameters.stack_name))
+                    .context(BuildLabelSnafu)?,
                 None,
             )
             .await

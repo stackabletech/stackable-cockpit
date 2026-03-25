@@ -18,7 +18,7 @@ use stackable_operator::{
         core::{DynamicObject, GroupVersionKind, ObjectList, ObjectMeta, TypeMeta},
         discovery::{self, ApiCapabilities, ApiResource, Scope},
     },
-    kvp::Labels,
+    kvp::{Label, Labels},
 };
 use tokio::{
     sync::RwLock,
@@ -323,8 +323,7 @@ impl Client {
     /// If no namespace is provided, deletes all clusterwide objects with the given label.
     pub async fn delete_all_objects_with_label(
         &self,
-        label_key: &str,
-        label_value: &str,
+        label: Label,
         namespace: Option<&str>,
     ) -> Result<(), Error> {
         let api_resources = self
@@ -353,8 +352,8 @@ impl Client {
 
             if let Some(objectlist) = objects {
                 for object in objectlist {
-                    if let Some(value) = object.labels().get(label_key) {
-                        if value.eq(label_value) {
+                    if let Some(value) = object.labels().get(&label.key().to_string()) {
+                        if value.eq(&label.value().to_string()) {
                             self.delete_object(
                                 &object.metadata.name.unwrap(),
                                 &api_resource,
