@@ -353,17 +353,19 @@ impl Client {
                 )
                 .await?;
 
-            if let Some(objectlist) = objects {
-                for object in objectlist {
-                    if let Some(value) = object.labels().get(&label.key().to_string()) {
-                        if value.eq(&label.value().to_string()) {
-                            self.delete_object(
-                                &object.metadata.name.unwrap(),
-                                &api_resource,
-                                object.metadata.namespace.as_deref(),
-                            )
-                            .await?;
-                        }
+            let Some(object_list) = objects else {
+                continue;
+            };
+
+            for object in object_list {
+                if let Some(value) = object.labels().get(&label.key().to_string()) {
+                    if value.eq(&label.value().to_string()) {
+                        self.delete_object(
+                            &object.metadata.name.unwrap(),
+                            &api_resource,
+                            object.metadata.namespace.as_deref(),
+                        )
+                        .await?;
                     }
                 }
             }
