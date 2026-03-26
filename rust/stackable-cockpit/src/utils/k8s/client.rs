@@ -1,6 +1,5 @@
 use std::{collections::BTreeMap, string::FromUtf8Error};
 
-use reqwest::StatusCode;
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{
@@ -20,10 +19,7 @@ use stackable_operator::{
     },
     kvp::{Label, Labels},
 };
-use tokio::{
-    sync::RwLock,
-    time::{self, sleep},
-};
+use tokio::sync::RwLock;
 use tracing::{Span, info, instrument};
 use tracing_indicatif::{indicatif_eprintln, span_ext::IndicatifSpanExt as _};
 
@@ -55,7 +51,9 @@ pub enum Error {
     },
 
     #[snafu(display("failed to delete object"))]
-    KubeClientDelete { source: kube::error::Error },
+    KubeRuntimeDelete {
+        source: kube::runtime::wait::delete::Error,
+    },
 
     #[snafu(display("failed to deserialize YAML data"))]
     DeserializeYaml { source: serde_yaml::Error },
@@ -258,10 +256,13 @@ impl Client {
         {
             if crd.spec.group.ends_with(group_suffix) {
                 if let Some(name) = crd.metadata.name {
-                    api_client
-                        .delete(&name, &DeleteParams::default())
-                        .await
-                        .context(KubeClientDeleteSnafu)?;
+                    kube::runtime::wait::delete::delete_and_finalize(
+                        api_client.clone(),
+                        &name,
+                        &DeleteParams::default(),
+                    )
+                    .await
+                    .context(KubeRuntimeDeleteSnafu)?;
                 }
             }
         }
@@ -381,6 +382,8 @@ impl Client {
         api_resource: &ApiResource,
         namespace: Option<&str>,
     ) -> Result<(), Error> {
+        Span::current().pb_set_message(&format!("Deleting {} {}", api_resource.kind, object_name));
+
         let object_api = match namespace {
             Some(namespace) => {
                 Api::<DynamicObject>::namespaced_with(self.client.clone(), namespace, api_resource)
@@ -388,49 +391,13 @@ impl Client {
             None => Api::<DynamicObject>::all_with(self.client.clone(), api_resource),
         };
 
-        let mut delete_request = object_api
-            .delete(object_name, &DeleteParams::foreground())
-            .await;
-
-        // Wait for object to be deleted
-        // Otherwise might result in race condition scenarios
-        while let Ok(delete_status) = delete_request {
-            match delete_status {
-                // Left side of Either, when deletion is in progress
-                either::Either::Left(_) => {
-                    Span::current()
-                        .pb_set_message(&format!("Deleting {} {}", api_resource.kind, object_name));
-                    // Short sleep to reduce number of requests
-                    sleep(time::Duration::from_millis(600)).await;
-                    // Resend request to get deletion status
-                    delete_request = object_api
-                        .delete(object_name, &DeleteParams::foreground())
-                        .await;
-                }
-                // Right side of Either, when deletion is done
-                either::Either::Right(_) => {
-                    return Ok(());
-                }
-            }
-        }
-
-        if let Err(error) = delete_request {
-            match error {
-                kube::Error::Api(ref error_response) => {
-                    // If object is already deleted/gone, delete operation is done
-                    if error_response.code == StatusCode::NOT_FOUND.as_u16() {
-                        return Ok(());
-                    } else {
-                        return Err(error).context(KubeClientDeleteSnafu);
-                    }
-                }
-                _ => {
-                    return Err(error).context(KubeClientDeleteSnafu);
-                }
-            }
-        }
-
-        Ok(())
+        kube::runtime::wait::delete::delete_and_finalize(
+            object_api,
+            object_name,
+            &DeleteParams::foreground(),
+        )
+        .await
+        .context(KubeRuntimeDeleteSnafu)
     }
 
     /// Lists [`Service`]s by matching labels. The Services can be matched by
