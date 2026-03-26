@@ -111,7 +111,7 @@ Currently, some resources deployed by the stack are either still lingering after
 
 * All stacks
   ** MutatingWebhookConfiguration `restarter-sts-enricher.stackable.tech` is not deleted
-* argo-cd-git-ops, hdfs-hbase, jupyterhub-pyspark-hdfs
+* All stacks using HDFS
   ** ClusterroleBinding `hdfs-clusterrolebinding-nodes` is not deleted
 * argo-cd-git-ops
   ** Delete the ArgoCD Applications `airflow`, `airflow-postgres`, `minio`, and `sealed-secrets`

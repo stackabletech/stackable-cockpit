@@ -178,7 +178,7 @@ Currently, some resources deployed by the demo are either still lingering after 
 
 * All demos
   ** MutatingWebhookConfiguration `restarter-sts-enricher.stackable.tech` is not deleted
-* end-to-end-security, argo-cd-git-ops, hbase-hdfs-load-cycling-data, jupyterhub-pyspark-hdfs-anomaly-detection-taxi-data
+* All demos using HDFS
   ** ClusterroleBinding `hdfs-clusterrolebinding-nodes` is not deleted
 * argo-cd-git-ops
   ** Delete the ArgoCD Applications `airflow`, `airflow-postgres`, `minio`, and `sealed-secrets`
