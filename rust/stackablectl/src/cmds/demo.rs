@@ -419,7 +419,7 @@ async fn install_cmd(
                 if Confirm::new()
                 .with_prompt(
                     format!(
-                        "Demos installed in the '{DEFAULT_NAMESPACE}' namespace cannot be uninstalled with stackablectl. Install the demo in the '{demo_namespace}' namespace instead?",
+                        "Demos installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the demo in the {demo_namespace:?} namespace instead?",
                     demo_namespace = args.demo_name.clone())
                 )
                 .default(true)
