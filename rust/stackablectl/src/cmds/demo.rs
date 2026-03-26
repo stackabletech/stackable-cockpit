@@ -410,10 +410,13 @@ async fn install_cmd(
     // `stackablectl demo uninstall` relies on namespace deletion, suggest installing in a non-default namespace
     // It should still be possible to skip that if either uninstall is not needed
     // or installing an older version of the demo which only supports the 'default' namespace
-    let demo_namespace = tracing_indicatif::suspend_tracing_indicatif(
-        || -> Result<String, CmdError> {
-            if args.namespaces.namespace == DEFAULT_NAMESPACE {
-                if Confirm::new()
+    let demo_namespace;
+
+    if args.namespaces.namespace == DEFAULT_NAMESPACE {
+        // Ask to install in a non-default namespace, currently suggesting the demo name as namespace name
+        let use_non_default_namespace = tracing_indicatif::suspend_tracing_indicatif(
+            || -> Result<bool, CmdError> {
+                Confirm::new()
                 .with_prompt(
                     format!(
                         "Demos installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the demo in the {demo_namespace:?} namespace instead?",
@@ -421,18 +424,18 @@ async fn install_cmd(
                 )
                 .default(true)
                 .interact()
-                .context(ConfirmDialogSnafu)? {
-                    // User selected to install in suggested namespace
-                    Ok(args.demo_name.clone())
-                } else {
-                    // User selected to install in default namespace
-                    Ok(args.namespaces.namespace.clone())
-                }
-            } else {
-                Ok(args.namespaces.namespace.clone())
-            }
-        },
-    )?;
+                .context(ConfirmDialogSnafu)
+            },
+        )?;
+
+        if use_non_default_namespace {
+            demo_namespace = args.demo_name.clone();
+        } else {
+            demo_namespace = args.namespaces.namespace.clone();
+        }
+    } else {
+        demo_namespace = args.namespaces.namespace.clone();
+    }
 
     let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
     let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
@@ -509,11 +512,35 @@ async fn uninstall_cmd(
     transfer_client: &xfer::Client,
     release_branch: &str,
 ) -> Result<String, CmdError> {
-    info!(demo_name = %args.demo_name, "Uninstalling demo");
-    Span::current().pb_set_message(&format!("Uninstalling demo {}", args.demo_name));
-
     // Init result output and progress output
     let mut output = Cli::result();
+
+    let proceed_with_uninstall = tracing_indicatif::suspend_tracing_indicatif(
+        || -> Result<bool, CmdError> {
+            Confirm::new()
+            .with_prompt(
+                format!(
+                    "Uninstalling the demo {demo_name:?} will delete the {demo_namespace:?} namespace. This action cannot be undone. Proceed?",
+                demo_name = args.demo_name.clone(),
+                demo_namespace = args.namespaces.namespace.clone())
+            )
+            .default(true)
+            .interact()
+            .context(ConfirmDialogSnafu)
+        },
+    )?;
+
+    if !proceed_with_uninstall {
+        output.with_output(format!(
+            "Uninstalling demo {demo_name:?} canceled",
+            demo_name = args.demo_name.clone()
+        ));
+
+        return Ok(output.render());
+    }
+
+    info!(demo_name = %args.demo_name, "Uninstalling demo");
+    Span::current().pb_set_message(&format!("Uninstalling demo {}", args.demo_name));
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),

@@ -388,29 +388,32 @@ async fn install_cmd(
             // `stackablectl stack uninstall` relies on namespace deletion, suggest installing in a non-default namespace
             // It should still be possible to skip that if either uninstall is not needed
             // or installing an older version of the stack which only supports the 'default' namespace
-            let stack_namespace = tracing_indicatif::suspend_tracing_indicatif(
-                || -> Result<String, CmdError> {
-                    if args.namespaces.namespace == DEFAULT_NAMESPACE {
-                        if Confirm::new()
+            let stack_namespace;
+
+            if args.namespaces.namespace == DEFAULT_NAMESPACE {
+                // Ask to install in a non-default namespace, currently suggesting the stack name as namespace name
+                let use_non_default_namespace = tracing_indicatif::suspend_tracing_indicatif(
+                    || -> Result<bool, CmdError> {
+                        Confirm::new()
                         .with_prompt(
                             format!(
-                                "Stacks installed in the '{DEFAULT_NAMESPACE}' namespace cannot be uninstalled with stackablectl. Install the stack in the '{stack_namespace}' namespace instead?",
+                                "Stacks installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the stack in the {stack_namespace:?} namespace instead?",
                             stack_namespace = args.stack_name.clone())
                         )
                         .default(true)
                         .interact()
-                        .context(ConfirmDialogSnafu)? {
-                            // User selected to install in suggested namespace
-                            Ok(args.stack_name.clone())
-                        } else {
-                            // User selected to install in default namespace
-                            Ok(args.namespaces.namespace.clone())
-                        }
-                    } else {
-                        Ok(args.namespaces.namespace.clone())
-                    }
-                },
-            )?;
+                        .context(ConfirmDialogSnafu)
+                    },
+                )?;
+
+                if use_non_default_namespace {
+                    stack_namespace = args.stack_name.clone();
+                } else {
+                    stack_namespace = args.namespaces.namespace.clone();
+                }
+            } else {
+                stack_namespace = args.namespaces.namespace.clone();
+            }
 
             let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
             let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
@@ -479,12 +482,37 @@ async fn uninstall_cmd(
     stack_list: stack::StackList,
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
+    let mut output = Cli::result();
+
+    let proceed_with_uninstall = tracing_indicatif::suspend_tracing_indicatif(
+        || -> Result<bool, CmdError> {
+            Confirm::new()
+            .with_prompt(
+                format!(
+                    "Uninstalling the stack {stack_name:?} will delete the {stack_namespace:?} namespace. This action cannot be undone. Proceed?",
+                stack_name = args.stack_name.clone(),
+                stack_namespace = args.namespaces.namespace.clone())
+            )
+            .default(true)
+            .interact()
+            .context(ConfirmDialogSnafu)
+        },
+    )?;
+
+    if !proceed_with_uninstall {
+        output.with_output(format!(
+            "Uninstalling stack {stack_name:?} canceled",
+            stack_name = args.stack_name.clone()
+        ));
+
+        return Ok(output.render());
+    }
+
     info!(stack_name = %args.stack_name, "Uninstalling stack");
     Span::current().pb_set_message(&format!("Uninstalling stack {}", args.stack_name));
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => {
-            let mut output = Cli::result();
             let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
             let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
