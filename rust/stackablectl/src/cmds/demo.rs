@@ -147,9 +147,6 @@ pub enum CmdError {
     #[snafu(display("no demo with name {name:?}"))]
     NoSuchDemo { name: String },
 
-    #[snafu(display("no stack with name {name:?}"))]
-    NoSuchStack { name: String },
-
     #[snafu(display("no release {release:?}"))]
     NoSuchRelease { release: String },
 
@@ -529,11 +526,6 @@ async fn uninstall_cmd(
         .await
         .context(BuildListSnafu)?;
 
-    // Get the stack spec based on the name defined in the demo spec
-    let stack = stack_list.get(&demo.stack).context(NoSuchStackSnafu {
-        name: demo.stack.clone(),
-    })?;
-
     let client = Client::new().await.context(KubeClientCreateSnafu)?;
 
     let release_files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
@@ -542,6 +534,7 @@ async fn uninstall_cmd(
         .context(BuildListSnafu)?;
 
     demo.uninstall(
+        stack_list,
         release_list,
         DemoUninstallParameters {
             demo_name: args.demo_name.clone(),
@@ -552,7 +545,6 @@ async fn uninstall_cmd(
         },
         &client,
         transfer_client,
-        stack.to_owned(),
     )
     .await
     .context(UninstallDemoSnafu {

@@ -13,7 +13,7 @@ use crate::{
         demo::{DemoInstallParameters, DemoUninstallParameters},
         manifests::{self, InstallManifestsExt},
         release::ReleaseList,
-        stack::{self, StackInstallParameters, StackList, StackSpec},
+        stack::{self, StackInstallParameters, StackList},
     },
     utils::{
         k8s::{self, Client},
@@ -200,12 +200,17 @@ impl DemoSpec {
     ))]
     pub async fn uninstall(
         &self,
+        stack_list: StackList,
         release_list: ReleaseList,
         uninstall_parameters: DemoUninstallParameters,
         client: &Client,
         transfer_client: &xfer::Client,
-        stack: StackSpec,
     ) -> Result<(), Error> {
+        // Get the stack spec based on the name defined in the demo spec
+        let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
+            name: self.stack.clone(),
+        })?;
+
         // Uninstall Helm Charts
         let parameters = &mut Vec::new()
             .into_params(self.parameters.clone())
