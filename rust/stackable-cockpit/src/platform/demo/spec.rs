@@ -216,7 +216,8 @@ impl DemoSpec {
             .into_params(self.parameters.clone())
             .context(ParseParametersSnafu)?;
 
-        // We add the DEMO parameter, so that demos can use that to render e.g. the demo label
+        // We add the STACK and DEMO parameter, so that demos can use that to render e.g. the demo label
+        parameters.insert("STACK".to_owned(), self.stack.clone());
         parameters.insert("DEMO".to_owned(), uninstall_parameters.demo_name.clone());
 
         Self::uninstall_helm_manifests(
