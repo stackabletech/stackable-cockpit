@@ -360,7 +360,7 @@ impl Client {
 
             for object in object_list {
                 if let Some(value) = object.labels().get(&label.key().to_string()) {
-                    if value.eq(&label.value().to_string()) {
+                    if value.eq(label.value().deref()) {
                         self.delete_object(
                             &object.metadata.name.unwrap(),
                             &api_resource,
