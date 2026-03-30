@@ -334,12 +334,12 @@ impl Client {
             .filter(|(_, capability)| {
                 let listing_supported = capability.supports_operation(discovery::verbs::LIST);
 
-                let scope_matching = match namespace {
+                let capability_scope_matches = match namespace {
                     Some(_) => capability.scope == kube::discovery::Scope::Namespaced,
                     None => capability.scope == kube::discovery::Scope::Cluster,
                 };
 
-                listing_supported && scope_matching
+                listing_supported && capability_scope_matches
             });
 
         for (api_resource, _) in api_resources {
