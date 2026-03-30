@@ -160,6 +160,9 @@ pub trait InstallManifestsExt {
         Ok(())
     }
 
+    /// This function only handles uninstalling Helm Charts
+    ///
+    /// To delete objects installed through other manifests use [`Client::delete_namespace`] or [`Client::delete_all_objects_with_label`] instead.
     #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
     #[allow(async_fn_in_trait)]
     async fn uninstall_helm_manifests(
@@ -193,7 +196,9 @@ pub trait InstallManifestsExt {
                         },
                     )?;
                 }
-                ManifestSpec::PlainYaml(_) => {}
+                ManifestSpec::PlainYaml(_) => {
+                    // This function only handles uninstalling Helm Charts
+                }
             }
         }
 
