@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, string::FromUtf8Error};
+use std::{collections::BTreeMap, ops::Deref, string::FromUtf8Error};
 
 use serde::Deserialize;
 use snafu::{OptionExt, ResultExt, Snafu};
