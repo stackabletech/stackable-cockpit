@@ -388,22 +388,23 @@ async fn install_cmd(
             // `stackablectl stack uninstall` relies on namespace deletion, suggest installing in a non-default namespace
             // It should still be possible to skip that if either uninstall is not needed
             // or installing an older version of the stack which only supports the 'default' namespace
-            let stack_namespace;
-
-            if args.namespaces.namespace == DEFAULT_NAMESPACE {
+            let non_default_namespace_confirmation = || -> Result<bool, CmdError> {
                 // Ask to install in a non-default namespace, currently suggesting the stack name as namespace name
+                Confirm::new()
+                .with_prompt(
+                    format!(
+                        "Stacks installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the stack in the {stack_namespace:?} namespace instead?",
+                    stack_namespace = args.stack_name.clone())
+                )
+                .default(true)
+                .interact()
+                .context(ConfirmDialogSnafu)
+            };
+
+            let stack_namespace;
+            if args.namespaces.namespace == DEFAULT_NAMESPACE {
                 let use_non_default_namespace = tracing_indicatif::suspend_tracing_indicatif(
-                    || -> Result<bool, CmdError> {
-                        Confirm::new()
-                        .with_prompt(
-                            format!(
-                                "Stacks installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the stack in the {stack_namespace:?} namespace instead?",
-                            stack_namespace = args.stack_name.clone())
-                        )
-                        .default(true)
-                        .interact()
-                        .context(ConfirmDialogSnafu)
-                    },
+                    non_default_namespace_confirmation,
                 )?;
 
                 if use_non_default_namespace {
@@ -412,6 +413,7 @@ async fn install_cmd(
                     stack_namespace = args.namespaces.namespace.clone();
                 }
             } else {
+                // User provided a non-default namespace with command argument
                 stack_namespace = args.namespaces.namespace.clone();
             }
 

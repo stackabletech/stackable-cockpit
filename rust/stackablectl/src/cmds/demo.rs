@@ -410,23 +410,23 @@ async fn install_cmd(
     // `stackablectl demo uninstall` relies on namespace deletion, suggest installing in a non-default namespace
     // It should still be possible to skip that if either uninstall is not needed
     // or installing an older version of the demo which only supports the 'default' namespace
-    let demo_namespace;
-
-    if args.namespaces.namespace == DEFAULT_NAMESPACE {
+    let non_default_namespace_confirmation = || -> Result<bool, CmdError> {
         // Ask to install in a non-default namespace, currently suggesting the demo name as namespace name
-        let use_non_default_namespace = tracing_indicatif::suspend_tracing_indicatif(
-            || -> Result<bool, CmdError> {
-                Confirm::new()
-                .with_prompt(
-                    format!(
-                        "Demos installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the demo in the {demo_namespace:?} namespace instead?",
-                    demo_namespace = args.demo_name.clone())
-                )
-                .default(true)
-                .interact()
-                .context(ConfirmDialogSnafu)
-            },
-        )?;
+        Confirm::new()
+        .with_prompt(
+            format!(
+                "Demos installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the demo in the {demo_namespace:?} namespace instead?",
+            demo_namespace = args.demo_name.clone())
+        )
+        .default(true)
+        .interact()
+        .context(ConfirmDialogSnafu)
+    };
+
+    let demo_namespace;
+    if args.namespaces.namespace == DEFAULT_NAMESPACE {
+        let use_non_default_namespace =
+            tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)?;
 
         if use_non_default_namespace {
             demo_namespace = args.demo_name.clone();
@@ -434,6 +434,7 @@ async fn install_cmd(
             demo_namespace = args.namespaces.namespace.clone();
         }
     } else {
+        // User provided a non-default namespace with command argument
         demo_namespace = args.namespaces.namespace.clone();
     }
 
