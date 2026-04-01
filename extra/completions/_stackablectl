@@ -672,7 +672,40 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-':stack_name -- Name of the stack to describe:_default' \
+':stack_name -- Name of the stack to install:_default' \
+&& ret=0
+;;
+(uninstall)
+_arguments "${_arguments_options[@]}" : \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
+'--skip-operators-and-crds[Skip uninstalling Stackable operators and CRDs]' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':stack_name -- Name of the stack to uninstall:_default' \
 && ret=0
 ;;
 (help)
@@ -696,6 +729,10 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(uninstall)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -988,6 +1025,39 @@ repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based o
 ':DEMO -- Demo to install:_default' \
 && ret=0
 ;;
+(uninstall)
+_arguments "${_arguments_options[@]}" : \
+'--operator-namespace=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'--operator-ns=[Namespace where the operators are deployed]:OPERATOR_NAMESPACE:_default' \
+'-n+[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--namespace=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--product-ns=[Namespace where the stacks or demos are deployed]:NAMESPACE:_default' \
+'--release=[Target a specific Stackable release]:RELEASE:_default' \
+'-l+[Log level this application uses]:LOG_LEVEL:_default' \
+'--log-level=[Log level this application uses]:LOG_LEVEL:_default' \
+'*-d+[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*--demo-file=[Provide one or more additional (custom) demo file(s)]:DEMO_FILE:_files' \
+'*-s+[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*--stack-file=[Provide one or more additional (custom) stack file(s)]:STACK_FILE:_files' \
+'*-r+[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'*--release-file=[Provide one or more additional (custom) release file(s)]:RELEASE_FILE:_files' \
+'-f+[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--operator-values=[Path to a Helm values file that will be used for the installation of operators]:VALUES_FILE:_files' \
+'--helm-repo-stable=[Provide a custom Helm stable repository URL]:URL:_urls' \
+'--helm-repo-test=[Provide a custom Helm test repository URL]:URL:_urls' \
+'--helm-repo-dev=[Provide a custom Helm dev repository URL]:URL:_urls' \
+'--chart-source=[Source the charts from either a OCI registry or from index.yaml-based repositories]:CHART_SOURCE:((oci\:"OCI registry"
+repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
+'--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
+'--skip-operators-and-crds[Skip uninstalling Stackable operators and CRDs]' \
+'--no-cache[Do not cache the remote (default) demo, stack and release files]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'-V[Print version]' \
+'--version[Print version]' \
+':demo_name -- Demo to uninstall:_default' \
+&& ret=0
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 ":: :_stackablectl__demo__help_commands" \
@@ -1009,6 +1079,10 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(uninstall)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -1569,6 +1643,10 @@ _arguments "${_arguments_options[@]}" : \
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
+(uninstall)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
         esac
     ;;
 esac
@@ -1618,6 +1696,10 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(uninstall)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -1866,6 +1948,7 @@ _stackablectl__demo_commands() {
 'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
+'uninstall:Uninstall a specific stack. Caution\: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl demo commands' commands "$@"
@@ -1881,6 +1964,7 @@ _stackablectl__demo__help_commands() {
 'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
+'uninstall:Uninstall a specific stack. Caution\: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl demo help commands' commands "$@"
@@ -1905,6 +1989,11 @@ _stackablectl__demo__help__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl demo help list commands' commands "$@"
 }
+(( $+functions[_stackablectl__demo__help__uninstall_commands] )) ||
+_stackablectl__demo__help__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl demo help uninstall commands' commands "$@"
+}
 (( $+functions[_stackablectl__demo__install_commands] )) ||
 _stackablectl__demo__install_commands() {
     local commands; commands=()
@@ -1914,6 +2003,11 @@ _stackablectl__demo__install_commands() {
 _stackablectl__demo__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl demo list commands' commands "$@"
+}
+(( $+functions[_stackablectl__demo__uninstall_commands] )) ||
+_stackablectl__demo__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl demo uninstall commands' commands "$@"
 }
 (( $+functions[_stackablectl__experimental-debug_commands] )) ||
 _stackablectl__experimental-debug_commands() {
@@ -1996,6 +2090,7 @@ _stackablectl__help__demo_commands() {
 'list:List available demos' \
 'describe:Print out detailed demo information' \
 'install:Install a specific demo' \
+'uninstall:Uninstall a specific stack. Caution\: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs' \
     )
     _describe -t commands 'stackablectl help demo commands' commands "$@"
 }
@@ -2013,6 +2108,11 @@ _stackablectl__help__demo__install_commands() {
 _stackablectl__help__demo__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl help demo list commands' commands "$@"
+}
+(( $+functions[_stackablectl__help__demo__uninstall_commands] )) ||
+_stackablectl__help__demo__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl help demo uninstall commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__experimental-debug_commands] )) ||
 _stackablectl__help__experimental-debug_commands() {
@@ -2102,6 +2202,7 @@ _stackablectl__help__stack_commands() {
 'list:List available stacks' \
 'describe:Describe a specific stack' \
 'install:Install a specific stack' \
+'uninstall:Uninstall a specific stack. Caution\: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs' \
     )
     _describe -t commands 'stackablectl help stack commands' commands "$@"
 }
@@ -2119,6 +2220,11 @@ _stackablectl__help__stack__install_commands() {
 _stackablectl__help__stack__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl help stack list commands' commands "$@"
+}
+(( $+functions[_stackablectl__help__stack__uninstall_commands] )) ||
+_stackablectl__help__stack__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl help stack uninstall commands' commands "$@"
 }
 (( $+functions[_stackablectl__help__stacklet_commands] )) ||
 _stackablectl__help__stacklet_commands() {
@@ -2314,6 +2420,7 @@ _stackablectl__stack_commands() {
 'list:List available stacks' \
 'describe:Describe a specific stack' \
 'install:Install a specific stack' \
+'uninstall:Uninstall a specific stack. Caution\: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl stack commands' commands "$@"
@@ -2329,6 +2436,7 @@ _stackablectl__stack__help_commands() {
 'list:List available stacks' \
 'describe:Describe a specific stack' \
 'install:Install a specific stack' \
+'uninstall:Uninstall a specific stack. Caution\: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'stackablectl stack help commands' commands "$@"
@@ -2353,6 +2461,11 @@ _stackablectl__stack__help__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl stack help list commands' commands "$@"
 }
+(( $+functions[_stackablectl__stack__help__uninstall_commands] )) ||
+_stackablectl__stack__help__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl stack help uninstall commands' commands "$@"
+}
 (( $+functions[_stackablectl__stack__install_commands] )) ||
 _stackablectl__stack__install_commands() {
     local commands; commands=()
@@ -2362,6 +2475,11 @@ _stackablectl__stack__install_commands() {
 _stackablectl__stack__list_commands() {
     local commands; commands=()
     _describe -t commands 'stackablectl stack list commands' commands "$@"
+}
+(( $+functions[_stackablectl__stack__uninstall_commands] )) ||
+_stackablectl__stack__uninstall_commands() {
+    local commands; commands=()
+    _describe -t commands 'stackablectl stack uninstall commands' commands "$@"
 }
 (( $+functions[_stackablectl__stacklet_commands] )) ||
 _stackablectl__stacklet_commands() {

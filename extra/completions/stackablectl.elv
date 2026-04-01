@@ -430,6 +430,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand list 'List available stacks'
             cand describe 'Describe a specific stack'
             cand install 'Install a specific stack'
+            cand uninstall 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;stack;list'= {
@@ -518,10 +519,40 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand -V 'Print version'
             cand --version 'Print version'
         }
+        &'stackablectl;stack;uninstall'= {
+            cand --operator-namespace 'Namespace where the operators are deployed'
+            cand --operator-ns 'Namespace where the operators are deployed'
+            cand -n 'Namespace where the stacks or demos are deployed'
+            cand --namespace 'Namespace where the stacks or demos are deployed'
+            cand --product-ns 'Namespace where the stacks or demos are deployed'
+            cand --release 'Target a specific Stackable release'
+            cand -l 'Log level this application uses'
+            cand --log-level 'Log level this application uses'
+            cand -d 'Provide one or more additional (custom) demo file(s)'
+            cand --demo-file 'Provide one or more additional (custom) demo file(s)'
+            cand -s 'Provide one or more additional (custom) stack file(s)'
+            cand --stack-file 'Provide one or more additional (custom) stack file(s)'
+            cand -r 'Provide one or more additional (custom) release file(s)'
+            cand --release-file 'Provide one or more additional (custom) release file(s)'
+            cand -f 'Path to a Helm values file that will be used for the installation of operators'
+            cand --operator-values 'Path to a Helm values file that will be used for the installation of operators'
+            cand --helm-repo-stable 'Provide a custom Helm stable repository URL'
+            cand --helm-repo-test 'Provide a custom Helm test repository URL'
+            cand --helm-repo-dev 'Provide a custom Helm dev repository URL'
+            cand --chart-source 'Source the charts from either a OCI registry or from index.yaml-based repositories'
+            cand --listener-class-preset 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)'
+            cand --skip-operators-and-crds 'Skip uninstalling Stackable operators and CRDs'
+            cand --no-cache 'Do not cache the remote (default) demo, stack and release files'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand -V 'Print version'
+            cand --version 'Print version'
+        }
         &'stackablectl;stack;help'= {
             cand list 'List available stacks'
             cand describe 'Describe a specific stack'
             cand install 'Install a specific stack'
+            cand uninstall 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;stack;help;list'= {
@@ -529,6 +560,8 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;stack;help;describe'= {
         }
         &'stackablectl;stack;help;install'= {
+        }
+        &'stackablectl;stack;help;uninstall'= {
         }
         &'stackablectl;stack;help;help'= {
         }
@@ -646,6 +679,7 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand list 'List available demos'
             cand describe 'Print out detailed demo information'
             cand install 'Install a specific demo'
+            cand uninstall 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;demo;list'= {
@@ -734,10 +768,40 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand -V 'Print version'
             cand --version 'Print version'
         }
+        &'stackablectl;demo;uninstall'= {
+            cand --operator-namespace 'Namespace where the operators are deployed'
+            cand --operator-ns 'Namespace where the operators are deployed'
+            cand -n 'Namespace where the stacks or demos are deployed'
+            cand --namespace 'Namespace where the stacks or demos are deployed'
+            cand --product-ns 'Namespace where the stacks or demos are deployed'
+            cand --release 'Target a specific Stackable release'
+            cand -l 'Log level this application uses'
+            cand --log-level 'Log level this application uses'
+            cand -d 'Provide one or more additional (custom) demo file(s)'
+            cand --demo-file 'Provide one or more additional (custom) demo file(s)'
+            cand -s 'Provide one or more additional (custom) stack file(s)'
+            cand --stack-file 'Provide one or more additional (custom) stack file(s)'
+            cand -r 'Provide one or more additional (custom) release file(s)'
+            cand --release-file 'Provide one or more additional (custom) release file(s)'
+            cand -f 'Path to a Helm values file that will be used for the installation of operators'
+            cand --operator-values 'Path to a Helm values file that will be used for the installation of operators'
+            cand --helm-repo-stable 'Provide a custom Helm stable repository URL'
+            cand --helm-repo-test 'Provide a custom Helm test repository URL'
+            cand --helm-repo-dev 'Provide a custom Helm dev repository URL'
+            cand --chart-source 'Source the charts from either a OCI registry or from index.yaml-based repositories'
+            cand --listener-class-preset 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)'
+            cand --skip-operators-and-crds 'Skip uninstalling Stackable operators and CRDs'
+            cand --no-cache 'Do not cache the remote (default) demo, stack and release files'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand -V 'Print version'
+            cand --version 'Print version'
+        }
         &'stackablectl;demo;help'= {
             cand list 'List available demos'
             cand describe 'Print out detailed demo information'
             cand install 'Install a specific demo'
+            cand uninstall 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'stackablectl;demo;help;list'= {
@@ -745,6 +809,8 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
         &'stackablectl;demo;help;describe'= {
         }
         &'stackablectl;demo;help;install'= {
+        }
+        &'stackablectl;demo;help;uninstall'= {
         }
         &'stackablectl;demo;help;help'= {
         }
@@ -1119,12 +1185,15 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand list 'List available stacks'
             cand describe 'Describe a specific stack'
             cand install 'Install a specific stack'
+            cand uninstall 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
         }
         &'stackablectl;help;stack;list'= {
         }
         &'stackablectl;help;stack;describe'= {
         }
         &'stackablectl;help;stack;install'= {
+        }
+        &'stackablectl;help;stack;uninstall'= {
         }
         &'stackablectl;help;stacklet'= {
             cand credentials 'Display credentials for a stacklet'
@@ -1138,12 +1207,15 @@ set edit:completion:arg-completer[stackablectl] = {|@words|
             cand list 'List available demos'
             cand describe 'Print out detailed demo information'
             cand install 'Install a specific demo'
+            cand uninstall 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
         }
         &'stackablectl;help;demo;list'= {
         }
         &'stackablectl;help;demo;describe'= {
         }
         &'stackablectl;help;demo;install'= {
+        }
+        &'stackablectl;help;demo;uninstall'= {
         }
         &'stackablectl;help;completions'= {
             cand bash 'Generate shell completions for Bash'

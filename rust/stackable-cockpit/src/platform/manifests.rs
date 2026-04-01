@@ -40,10 +40,18 @@ pub enum Error {
         repo_name: String,
     },
 
-    /// This error indicates that the Hlm wrapper failed to install the Helm
+    /// This error indicates that the Helm wrapper failed to install the Helm
     /// release.
     #[snafu(display("failed to install Helm release {release_name}"))]
     InstallHelmRelease {
+        release_name: String,
+        source: helm::Error,
+    },
+
+    /// This error indicates that the Helm wrapper failed to uninstall the Helm
+    /// release.
+    #[snafu(display("failed to uninstall Helm chart"))]
+    UninstallHelmRelease {
         release_name: String,
         source: helm::Error,
     },
@@ -65,13 +73,11 @@ pub enum Error {
 pub trait InstallManifestsExt {
     // TODO (Techassi): This step shouldn't care about templating the manifests nor fetching them from remote
     #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
-    #[allow(clippy::too_many_arguments, async_fn_in_trait)]
+    #[allow(async_fn_in_trait)]
     async fn install_manifests(
         manifests: &[ManifestSpec],
         parameters: &HashMap<String, String>,
         namespace: &str,
-        stack_name: &str,
-        demo_name: Option<&str>,
         labels: Labels,
         client: &Client,
         transfer_client: &xfer::Client,
@@ -85,31 +91,16 @@ pub trait InstallManifestsExt {
         // We need some additional templating capabilities, e.g. the namespace, so that stacks/demos
         // can use that to render e.g. the fqdn service names [which contain the namespace].
         parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
-        parameters.insert("STACK".to_owned(), stack_name.into());
-        if let Some(demo_name) = demo_name {
-            parameters.insert("DEMO".to_owned(), demo_name.into());
-        }
 
         for manifest in manifests {
             let parameters = parameters.clone();
-            let labels = labels.clone();
 
             match manifest {
                 ManifestSpec::HelmChart(helm_file) => {
                     debug!(helm_file, "Installing manifest from Helm chart");
 
-                    // Read Helm chart YAML and apply templating
-                    let helm_file = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
-                        path_or_url: helm_file.clone(),
-                    })?;
-
-                    let helm_chart: helm::Chart = transfer_client
-                        .get(
-                            &helm_file,
-                            &Template::new(&parameters).then(Yaml::default()),
-                        )
-                        .await
-                        .context(FileTransferSnafu)?;
+                    let helm_chart =
+                        get_helm_chart(helm_file, transfer_client, &parameters).await?;
 
                     info!(helm_chart.name, helm_chart.version, "Installing Helm chart",);
 
@@ -168,4 +159,70 @@ pub trait InstallManifestsExt {
 
         Ok(())
     }
+
+    /// This function only handles uninstalling Helm Charts
+    ///
+    /// To delete objects installed through other manifests use [`Client::delete_namespace`] or [`Client::delete_all_objects_with_label`] instead.
+    #[instrument(skip_all, fields(%namespace, indicatif.pb_show = true))]
+    #[allow(async_fn_in_trait)]
+    async fn uninstall_helm_manifests(
+        manifests: &[ManifestSpec],
+        parameters: &mut HashMap<String, String>,
+        namespace: &str,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        debug!("Uninstalling Helm manifests");
+        Span::current().pb_set_message("Uninstalling Helm charts");
+
+        // We add the NAMESPACE parameter, so that stacks/demos can use that to render e.g. the
+        // fqdn service names [which contain the namespace].
+        parameters.insert("NAMESPACE".to_owned(), namespace.to_owned());
+
+        for manifest in manifests {
+            match manifest {
+                ManifestSpec::HelmChart(helm_file) => {
+                    debug!(helm_file, "Uninstalling manifest from Helm chart");
+
+                    let helm_chart = get_helm_chart(helm_file, transfer_client, parameters).await?;
+
+                    info!(
+                        helm_chart.name,
+                        helm_chart.version, "Uninstalling Helm chart",
+                    );
+
+                    helm::uninstall_release(&helm_chart.release_name, namespace, true).context(
+                        UninstallHelmReleaseSnafu {
+                            release_name: &helm_chart.release_name,
+                        },
+                    )?;
+                }
+                ManifestSpec::PlainYaml(_) => {
+                    // This function only handles uninstalling Helm Charts
+                }
+            }
+        }
+
+        Ok(())
+    }
+}
+
+pub async fn get_helm_chart(
+    helm_file: &str,
+    transfer_client: &xfer::Client,
+    parameters: &HashMap<String, String>,
+) -> Result<helm::Chart, Error> {
+    // Read Helm chart YAML and apply templating
+    let helm_file_location = helm_file.into_path_or_url().context(ParsePathOrUrlSnafu {
+        path_or_url: helm_file,
+    })?;
+
+    let helmchart = transfer_client
+        .get(
+            &helm_file_location,
+            &Template::new(parameters).then(Yaml::default()),
+        )
+        .await
+        .context(FileTransferSnafu)?;
+
+    Ok(helmchart)
 }

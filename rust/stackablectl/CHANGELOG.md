@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Add `uninstall` subcommand for `demo`/`stack` commands ([#429]).
+
+[#429]: https://github.com/stackabletech/stackable-cockpit/pull/429
+
 ## [1.4.0] - 2026-03-18
 
 ### Added

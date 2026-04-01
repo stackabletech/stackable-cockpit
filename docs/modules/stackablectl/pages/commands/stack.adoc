@@ -89,3 +89,39 @@ Installed stack logging
 Use "stackablectl operator installed" to display the installed operators
 Use "stackablectl stacklet list" to display the installed stacklets
 ----
+
+== Uninstalling a Stack
+
+To uninstall a stack, you can run the following command, specifying the namespace the stack was installed in.
+
+[source,console]
+----
+$ stackablectl stack uninstall logging -n <NAMESPACE>
+
+----
+
+[NOTE]
+====
+The uninstall command deletes the namespace the stack was installed in. Therefore it is not possible to uninstall stacks in the `default` namespace.
+====
+
+[WARNING]
+====
+Currently, some resources deployed by the stack are either still lingering after the deletion process or need to be deleted before running the uninstall command.
+
+* All stacks
+  ** MutatingWebhookConfiguration `restarter-sts-enricher.stackable.tech` is not deleted
+* argo-cd-git-ops, hdfs-hbase, jupyterhub-pyspark-hdfs
+  ** ClusterroleBinding `hdfs-clusterrolebinding-nodes` is not deleted
+* argo-cd-git-ops
+  ** Delete the ArgoCD Applications `airflow`, `airflow-postgres`, `minio`, and `sealed-secrets`
+  ** Then you can delete the namespaces `stackable-airflow`, `minio`, and `sealed-secrets`
+  ** Delete the ArgoCD ApplicationSet `stackable-operators` and wait for ArgoCD to delete the Applications of that ApplicationSet
+  ** Only after deleting the above, run the `stackablectl stack uninstall` command, otherwise the deletion might get stuck
+  ** `*.argoproj.io` CRDs and `sealedsecrets.bitnami.com` CRD are not deleted
+* monitoring
+  ** `*.monitoring.coreos.com` CRDs are not deleted
+* observability
+  ** Delete OpenTelemetryCollector `otel-collector-grpc-external` and `otel-collector-grpc`
+  ** Only after deleting the above, run the `stackablectl stack uninstall` command, otherwise the deletion might get stuck
+====
