@@ -423,20 +423,18 @@ async fn install_cmd(
         .context(ConfirmDialogSnafu)
     };
 
-    let demo_namespace;
-    if args.namespaces.namespace == DEFAULT_NAMESPACE {
-        let use_non_default_namespace =
-            tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)?;
-
-        if use_non_default_namespace {
-            demo_namespace = args.demo_name.clone();
+    let demo_namespace = if args.namespaces.namespace == DEFAULT_NAMESPACE {
+        if tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)? {
+            // User selected to install in suggested namespace
+            args.demo_name.clone()
         } else {
-            demo_namespace = args.namespaces.namespace.clone();
+            // User selected to install in default namespace
+            args.namespaces.namespace.clone()
         }
     } else {
         // User provided a non-default namespace with command argument
-        demo_namespace = args.namespaces.namespace.clone();
-    }
+        args.namespaces.namespace.clone()
+    };
 
     let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
     let operator_values = load_operator_values(values_file.as_ref(), transfer_client)

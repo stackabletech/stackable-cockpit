@@ -401,21 +401,19 @@ async fn install_cmd(
                 .context(ConfirmDialogSnafu)
             };
 
-            let stack_namespace;
-            if args.namespaces.namespace == DEFAULT_NAMESPACE {
-                let use_non_default_namespace = tracing_indicatif::suspend_tracing_indicatif(
-                    non_default_namespace_confirmation,
-                )?;
-
-                if use_non_default_namespace {
-                    stack_namespace = args.stack_name.clone();
+            let stack_namespace = if args.namespaces.namespace == DEFAULT_NAMESPACE {
+                if tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)?
+                {
+                    // User selected to install in suggested namespace
+                    args.stack_name.clone()
                 } else {
-                    stack_namespace = args.namespaces.namespace.clone();
+                    // User selected to install in default namespace
+                    args.namespaces.namespace.clone()
                 }
             } else {
                 // User provided a non-default namespace with command argument
-                stack_namespace = args.namespaces.namespace.clone();
-            }
+                args.namespaces.namespace.clone()
+            };
 
             let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
             let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
