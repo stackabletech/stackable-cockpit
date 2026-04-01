@@ -574,16 +574,17 @@ impl Client {
 
     /// Deletes a [`Namespace`] with `name` in the cluster.
     pub async fn delete_namespace(&self, name: String) -> Result<()> {
-        self.delete_object(
+        let namespace_api: Api<Namespace> = Api::all(self.client.clone());
+
+        kube::runtime::wait::delete::delete_and_finalize(
+            namespace_api,
             &name,
-            &ApiResource::from_gvk(&GroupVersionKind {
-                group: "".to_owned(),
-                version: "v1".to_owned(),
-                kind: "Namespace".to_owned(),
-            }),
-            None,
+            &DeleteParams::foreground(),
         )
         .await
+        .context(KubeRuntimeDeleteSnafu)?;
+
+        Ok(())
     }
 
     /// Creates a [`Namespace`] only if not already present in the current cluster.
