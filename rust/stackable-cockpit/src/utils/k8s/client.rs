@@ -5,6 +5,7 @@ use snafu::{OptionExt, ResultExt, Snafu};
 use stackable_operator::{
     crd::listener::v1alpha1::Listener,
     k8s_openapi::{
+        Resource,
         api::{
             apps::v1::{Deployment, StatefulSet},
             core::v1::{Endpoints, Namespace, Node, Secret, Service},
@@ -382,7 +383,10 @@ impl Client {
         api_resource: &ApiResource,
         namespace: Option<&str>,
     ) -> Result<(), Error> {
-        Span::current().pb_set_message(&format!("Deleting {} {}", api_resource.kind, object_name));
+        Span::current().pb_set_message(&format!(
+            "Deleting {kind} {object_name}",
+            kind = api_resource.kind
+        ));
 
         let object_api = match namespace {
             Some(namespace) => {
@@ -573,8 +577,11 @@ impl Client {
     }
 
     /// Deletes a [`Namespace`] with `name` in the cluster.
+    #[instrument(skip_all, fields(indicatif.pb_show = true))]
     pub async fn delete_namespace(&self, name: String) -> Result<()> {
         let namespace_api: Api<Namespace> = Api::all(self.client.clone());
+
+        Span::current().pb_set_message(&format!("Deleting {kind} {name}", kind = Namespace::KIND));
 
         kube::runtime::wait::delete::delete_and_finalize(
             namespace_api,

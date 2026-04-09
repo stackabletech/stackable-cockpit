@@ -26,7 +26,7 @@ use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::{self, span_ext::IndicatifSpanExt as _};
 
 use crate::{
-    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
+    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs, CommonPromptArgs},
     cli::{Cli, OutputType},
     utils::load_operator_values,
 };
@@ -121,6 +121,9 @@ to specify operator versions."
 
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
+
+    #[command(flatten)]
+    prompt_args: CommonPromptArgs,
 }
 
 #[derive(Debug, Args)]
@@ -134,6 +137,9 @@ pub struct DemoUninstallArgs {
     /// Skip uninstalling Stackable operators and CRDs
     #[arg(long)]
     skip_operators_and_crds: bool,
+
+    #[command(flatten)]
+    prompt_args: CommonPromptArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -363,7 +369,10 @@ async fn install_cmd(
     release_branch: &str,
 ) -> Result<String, CmdError> {
     info!(demo_name = %args.demo_name, "Installing demo");
-    Span::current().pb_set_message(&format!("Installing demo {}", args.demo_name));
+    Span::current().pb_set_message(&format!(
+        "Installing demo {demo_name}",
+        demo_name = args.demo_name
+    ));
 
     // Init result output and progress output
     let mut output = Cli::result();
@@ -424,7 +433,9 @@ async fn install_cmd(
     };
 
     let demo_namespace = if args.namespaces.namespace == DEFAULT_NAMESPACE {
-        if tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)? {
+        if args.prompt_args.assume_yes
+            || tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)?
+        {
             // User selected to install in suggested namespace
             args.demo_name.clone()
         } else {
@@ -514,9 +525,10 @@ async fn uninstall_cmd(
     // Init result output and progress output
     let mut output = Cli::result();
 
-    let proceed_with_uninstall = tracing_indicatif::suspend_tracing_indicatif(
-        || -> Result<bool, CmdError> {
-            Confirm::new()
+    let proceed_with_uninstall = args.prompt_args.assume_yes
+        || {
+            tracing_indicatif::suspend_tracing_indicatif(|| -> Result<bool, CmdError> {
+                Confirm::new()
             .with_prompt(
                 format!(
                     "Uninstalling the demo {demo_name:?} will delete the {demo_namespace:?} namespace. This action cannot be undone. Proceed?",
@@ -526,8 +538,8 @@ async fn uninstall_cmd(
             .default(true)
             .interact()
             .context(ConfirmDialogSnafu)
-        },
-    )?;
+            })?
+        };
 
     if !proceed_with_uninstall {
         output.with_output(format!(
@@ -539,7 +551,10 @@ async fn uninstall_cmd(
     }
 
     info!(demo_name = %args.demo_name, "Uninstalling demo");
-    Span::current().pb_set_message(&format!("Uninstalling demo {}", args.demo_name));
+    Span::current().pb_set_message(&format!(
+        "Uninstalling demo {demo_name}",
+        demo_name = args.demo_name
+    ));
 
     let demo = list.get(&args.demo_name).ok_or(CmdError::NoSuchDemo {
         name: args.demo_name.clone(),

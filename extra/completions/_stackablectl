@@ -667,6 +667,9 @@ minikube\:"Use a minikube cluster"))' \
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--skip-release[Skip the installation of the release during the stack install process]' \
+'-y[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--assume-yes[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--yes[Assume "yes" as answer to all prompts and run non-interactively]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -700,6 +703,9 @@ _arguments "${_arguments_options[@]}" : \
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--skip-operators-and-crds[Skip uninstalling Stackable operators and CRDs]' \
+'-y[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--assume-yes[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--yes[Assume "yes" as answer to all prompts and run non-interactively]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1017,6 +1023,9 @@ minikube\:"Use a minikube cluster"))' \
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--skip-release[Skip the installation of the release during the stack install process]' \
+'-y[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--assume-yes[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--yes[Assume "yes" as answer to all prompts and run non-interactively]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -1050,6 +1059,9 @@ _arguments "${_arguments_options[@]}" : \
 repo\:"index.yaml-based repositories\: resolution (dev, test, stable) is based on the version and thus will be operator-specific"))' \
 '--listener-class-preset=[Choose the ListenerClass preset (\`none\`, \`ephemeral-nodes\` or \`stable-nodes\`)]:LISTENER_CLASS_PRESET:(none stable-nodes ephemeral-nodes)' \
 '--skip-operators-and-crds[Skip uninstalling Stackable operators and CRDs]' \
+'-y[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--assume-yes[Assume "yes" as answer to all prompts and run non-interactively]' \
+'--yes[Assume "yes" as answer to all prompts and run non-interactively]' \
 '--no-cache[Do not cache the remote (default) demo, stack and release files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \

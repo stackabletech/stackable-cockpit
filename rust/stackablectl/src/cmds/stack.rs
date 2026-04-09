@@ -26,7 +26,7 @@ use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
-    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
+    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs, CommonPromptArgs},
     cli::{Cli, OutputType},
     utils::load_operator_values,
 };
@@ -117,6 +117,9 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
+
+    #[command(flatten)]
+    prompt_args: CommonPromptArgs,
 }
 
 #[derive(Debug, Args)]
@@ -130,6 +133,9 @@ pub struct StackUninstallArgs {
     /// Skip uninstalling Stackable operators and CRDs
     #[arg(long)]
     skip_operators_and_crds: bool,
+
+    #[command(flatten)]
+    prompt_args: CommonPromptArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -357,7 +363,10 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Installing stack");
-    Span::current().pb_set_message(&format!("Installing stack {}", args.stack_name));
+    Span::current().pb_set_message(&format!(
+        "Installing stack {stack_name}",
+        stack_name = args.stack_name
+    ));
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)
@@ -402,7 +411,10 @@ async fn install_cmd(
             };
 
             let stack_namespace = if args.namespaces.namespace == DEFAULT_NAMESPACE {
-                if tracing_indicatif::suspend_tracing_indicatif(non_default_namespace_confirmation)?
+                if args.prompt_args.assume_yes
+                    || tracing_indicatif::suspend_tracing_indicatif(
+                        non_default_namespace_confirmation,
+                    )?
                 {
                     // User selected to install in suggested namespace
                     args.stack_name.clone()
@@ -484,8 +496,8 @@ async fn uninstall_cmd(
 ) -> Result<String, CmdError> {
     let mut output = Cli::result();
 
-    let proceed_with_uninstall = tracing_indicatif::suspend_tracing_indicatif(
-        || -> Result<bool, CmdError> {
+    let proceed_with_uninstall = args.prompt_args.assume_yes
+        || tracing_indicatif::suspend_tracing_indicatif(|| -> Result<bool, CmdError> {
             Confirm::new()
             .with_prompt(
                 format!(
@@ -496,8 +508,7 @@ async fn uninstall_cmd(
             .default(true)
             .interact()
             .context(ConfirmDialogSnafu)
-        },
-    )?;
+        })?;
 
     if !proceed_with_uninstall {
         output.with_output(format!(
@@ -509,7 +520,10 @@ async fn uninstall_cmd(
     }
 
     info!(stack_name = %args.stack_name, "Uninstalling stack");
-    Span::current().pb_set_message(&format!("Uninstalling stack {}", args.stack_name));
+    Span::current().pb_set_message(&format!(
+        "Uninstalling stack {stack_name}",
+        stack_name = args.stack_name
+    ));
 
     match stack_list.get(&args.stack_name) {
         Some(stack) => {

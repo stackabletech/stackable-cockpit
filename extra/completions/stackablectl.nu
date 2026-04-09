@@ -559,6 +559,8 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --namespace(-n): string   # Namespace where the stacks or demos are deployed
     --product-ns: string      # Namespace where the stacks or demos are deployed
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -591,6 +593,8 @@ module completions {
     --namespace(-n): string   # Namespace where the stacks or demos are deployed
     --product-ns: string      # Namespace where the stacks or demos are deployed
     --skip-operators-and-crds # Skip uninstalling Stackable operators and CRDs
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -849,6 +853,8 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --namespace(-n): string   # Namespace where the stacks or demos are deployed
     --product-ns: string      # Namespace where the stacks or demos are deployed
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -881,6 +887,8 @@ module completions {
     --namespace(-n): string   # Namespace where the stacks or demos are deployed
     --product-ns: string      # Namespace where the stacks or demos are deployed
     --skip-operators-and-crds # Skip uninstalling Stackable operators and CRDs
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files

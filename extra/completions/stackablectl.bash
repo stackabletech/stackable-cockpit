@@ -2581,7 +2581,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__install)
-            opts="-c -n -l -d -s -r -f -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --namespace --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <DEMO>"
+            opts="-c -n -y -l -d -s -r -f -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --namespace --yes --assume-yes --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <DEMO>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -2969,7 +2969,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__demo__uninstall)
-            opts="-n -l -d -s -r -f -h -V --operator-ns --operator-namespace --product-ns --namespace --skip-operators-and-crds --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <DEMO_NAME>"
+            opts="-n -y -l -d -s -r -f -h -V --operator-ns --operator-namespace --product-ns --namespace --skip-operators-and-crds --yes --assume-yes --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <DEMO_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -6607,7 +6607,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__install)
-            opts="-c -n -l -d -s -r -f -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --namespace --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <STACK_NAME>"
+            opts="-c -n -y -l -d -s -r -f -h -V --skip-release --stack-parameters --parameters --cluster --cluster-name --cluster-nodes --cluster-cp-nodes --operator-ns --operator-namespace --product-ns --namespace --yes --assume-yes --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -6995,7 +6995,7 @@ _stackablectl() {
             return 0
             ;;
         stackablectl__stack__uninstall)
-            opts="-n -l -d -s -r -f -h -V --operator-ns --operator-namespace --product-ns --namespace --skip-operators-and-crds --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <STACK_NAME>"
+            opts="-n -y -l -d -s -r -f -h -V --operator-ns --operator-namespace --product-ns --namespace --skip-operators-and-crds --yes --assume-yes --release --log-level --no-cache --demo-file --stack-file --release-file --operator-values --helm-repo-stable --helm-repo-test --helm-repo-dev --chart-source --listener-class-preset --help --version <STACK_NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
