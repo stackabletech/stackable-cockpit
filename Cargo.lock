@@ -195,7 +195,6 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 [[package]]
 name = "aws-lc-rs"
 version = "1.16.2"
-version = "1.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a054912289d18629dc78375ba2c3726a3afe3ff71b4edba9dedfca0e3446d1fc"
 dependencies = [
@@ -3102,7 +3101,7 @@ dependencies = [
  "rustls-webpki",
  "subtle",
  "zeroize",
-]
+]:
 
 [[package]]
 name = "rustls-native-certs"
