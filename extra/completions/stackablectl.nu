@@ -559,6 +559,8 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --namespace(-n): string   # Namespace where the stacks or demos are deployed
     --product-ns: string      # Namespace where the stacks or demos are deployed
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -573,7 +575,41 @@ module completions {
     --listener-class-preset: string@"nu-complete stackablectl stack install listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
     --help(-h)                # Print help (see more with '--help')
     --version(-V)             # Print version
-    stack_name: string        # Name of the stack to describe
+    stack_name: string        # Name of the stack to install
+  ]
+
+  def "nu-complete stackablectl stack uninstall chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl stack uninstall listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
+  # Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs
+  export extern "stackablectl stack uninstall" [
+    --operator-namespace: string # Namespace where the operators are deployed
+    --operator-ns: string     # Namespace where the operators are deployed
+    --namespace(-n): string   # Namespace where the stacks or demos are deployed
+    --product-ns: string      # Namespace where the stacks or demos are deployed
+    --skip-operators-and-crds # Skip uninstalling Stackable operators and CRDs
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
+    --release: string         # Target a specific Stackable release
+    --log-level(-l): string   # Log level this application uses
+    --no-cache                # Do not cache the remote (default) demo, stack and release files
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
+    --helm-repo-stable: string # Provide a custom Helm stable repository URL
+    --helm-repo-test: string  # Provide a custom Helm test repository URL
+    --helm-repo-dev: string   # Provide a custom Helm dev repository URL
+    --chart-source: string@"nu-complete stackablectl stack uninstall chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl stack uninstall listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
+    --help(-h)                # Print help (see more with '--help')
+    --version(-V)             # Print version
+    stack_name: string        # Name of the stack to uninstall
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -590,6 +626,10 @@ module completions {
 
   # Install a specific stack
   export extern "stackablectl stack help install" [
+  ]
+
+  # Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs
+  export extern "stackablectl stack help uninstall" [
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -813,6 +853,8 @@ module completions {
     --operator-ns: string     # Namespace where the operators are deployed
     --namespace(-n): string   # Namespace where the stacks or demos are deployed
     --product-ns: string      # Namespace where the stacks or demos are deployed
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
     --release: string         # Target a specific Stackable release
     --log-level(-l): string   # Log level this application uses
     --no-cache                # Do not cache the remote (default) demo, stack and release files
@@ -830,6 +872,40 @@ module completions {
     DEMO: string              # Demo to install
   ]
 
+  def "nu-complete stackablectl demo uninstall chart_source" [] {
+    [ "oci" "repo" ]
+  }
+
+  def "nu-complete stackablectl demo uninstall listener_class_preset" [] {
+    [ "none" "stable-nodes" "ephemeral-nodes" ]
+  }
+
+  # Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs
+  export extern "stackablectl demo uninstall" [
+    --operator-namespace: string # Namespace where the operators are deployed
+    --operator-ns: string     # Namespace where the operators are deployed
+    --namespace(-n): string   # Namespace where the stacks or demos are deployed
+    --product-ns: string      # Namespace where the stacks or demos are deployed
+    --skip-operators-and-crds # Skip uninstalling Stackable operators and CRDs
+    --assume-yes(-y)          # Assume "yes" as answer to all prompts and run non-interactively
+    --yes                     # Assume "yes" as answer to all prompts and run non-interactively
+    --release: string         # Target a specific Stackable release
+    --log-level(-l): string   # Log level this application uses
+    --no-cache                # Do not cache the remote (default) demo, stack and release files
+    --demo-file(-d): path     # Provide one or more additional (custom) demo file(s)
+    --stack-file(-s): path    # Provide one or more additional (custom) stack file(s)
+    --release-file(-r): path  # Provide one or more additional (custom) release file(s)
+    --operator-values(-f): path # Path to a Helm values file that will be used for the installation of operators
+    --helm-repo-stable: string # Provide a custom Helm stable repository URL
+    --helm-repo-test: string  # Provide a custom Helm test repository URL
+    --helm-repo-dev: string   # Provide a custom Helm dev repository URL
+    --chart-source: string@"nu-complete stackablectl demo uninstall chart_source" # Source the charts from either a OCI registry or from index.yaml-based repositories
+    --listener-class-preset: string@"nu-complete stackablectl demo uninstall listener_class_preset" # Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)
+    --help(-h)                # Print help (see more with '--help')
+    --version(-V)             # Print version
+    demo_name: string         # Demo to uninstall
+  ]
+
   # Print this message or the help of the given subcommand(s)
   export extern "stackablectl demo help" [
   ]
@@ -844,6 +920,10 @@ module completions {
 
   # Install a specific demo
   export extern "stackablectl demo help install" [
+  ]
+
+  # Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs
+  export extern "stackablectl demo help uninstall" [
   ]
 
   # Print this message or the help of the given subcommand(s)
@@ -1281,6 +1361,10 @@ module completions {
   export extern "stackablectl help stack install" [
   ]
 
+  # Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs
+  export extern "stackablectl help stack uninstall" [
+  ]
+
   # Interact with deployed stacklets, which are bundles of resources and containers required to run the product
   export extern "stackablectl help stacklet" [
   ]
@@ -1307,6 +1391,10 @@ module completions {
 
   # Install a specific demo
   export extern "stackablectl help demo install" [
+  ]
+
+  # Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs
+  export extern "stackablectl help demo uninstall" [
   ]
 
   # Generate shell completions for this tool

@@ -5,6 +5,7 @@ use comfy_table::{
     ContentArrangement, Table,
     presets::{NOTHING, UTF8_FULL},
 };
+use dialoguer::Confirm;
 use snafu::{OptionExt as _, ResultExt, Snafu, ensure};
 use stackable_cockpit::{
     common::list,
@@ -12,7 +13,7 @@ use stackable_cockpit::{
     platform::{
         operator::ChartSourceType,
         release,
-        stack::{self, StackInstallParameters},
+        stack::{self, StackInstallParameters, StackUninstallParameters},
     },
     utils::{
         k8s::{self, Client},
@@ -25,7 +26,7 @@ use tracing::{Span, debug, info, instrument};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 
 use crate::{
-    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs},
+    args::{CommonClusterArgs, CommonClusterArgsError, CommonNamespaceArgs, CommonPromptArgs},
     cli::{Cli, OutputType},
     utils::load_operator_values,
 };
@@ -53,6 +54,11 @@ pub enum StackCommands {
     /// Install a specific stack
     #[command(aliases(["i", "in"]))]
     Install(StackInstallArgs),
+
+    /// Uninstall a specific stack. Caution: This will delete the provided stack namespace,
+    /// the operators and provided operator namespace, and all Stackable CRDs
+    #[command(aliases(["u", "un"]))]
+    Uninstall(StackUninstallArgs),
 }
 
 #[derive(Debug, Args)]
@@ -72,7 +78,7 @@ pub struct StackDescribeArgs {
 
 #[derive(Debug, Args)]
 pub struct StackInstallArgs {
-    /// Name of the stack to describe
+    /// Name of the stack to install
     stack_name: String,
 
     /// Skip the installation of the release during the stack install process
@@ -111,6 +117,25 @@ Use \"stackablectl stack describe <STACK>\" to list available parameters for eac
 
     #[command(flatten)]
     namespaces: CommonNamespaceArgs,
+
+    #[command(flatten)]
+    prompt_args: CommonPromptArgs,
+}
+
+#[derive(Debug, Args)]
+pub struct StackUninstallArgs {
+    /// Name of the stack to uninstall
+    stack_name: String,
+
+    #[command(flatten)]
+    namespaces: CommonNamespaceArgs,
+
+    /// Skip uninstalling Stackable operators and CRDs
+    #[arg(long)]
+    skip_operators_and_crds: bool,
+
+    #[command(flatten)]
+    prompt_args: CommonPromptArgs,
 }
 
 #[derive(Debug, Snafu)]
@@ -138,6 +163,16 @@ pub enum CmdError {
 
     #[snafu(display("failed to install stack {stack_name:?}"))]
     InstallStack {
+        #[snafu(source(from(stack::Error, Box::new)))]
+        source: Box<stack::Error>,
+        stack_name: String,
+    },
+
+    #[snafu(display("failed to confirm user input"))]
+    ConfirmDialog { source: dialoguer::Error },
+
+    #[snafu(display("failed to uninstall stack {stack_name:?}"))]
+    UninstallStack {
         #[snafu(source(from(stack::Error, Box::new)))]
         source: Box<stack::Error>,
         stack_name: String,
@@ -200,6 +235,9 @@ impl StackArgs {
             StackCommands::Describe(args) => describe_cmd(args, stack_list),
             StackCommands::Install(args) => {
                 install_cmd(args, cli, stack_list, &transfer_client).await
+            }
+            StackCommands::Uninstall(args) => {
+                uninstall_cmd(args, cli, stack_list, &transfer_client).await
             }
         }
     }
@@ -325,7 +363,10 @@ async fn install_cmd(
     transfer_client: &xfer::Client,
 ) -> Result<String, CmdError> {
     info!(stack_name = %args.stack_name, "Installing stack");
-    Span::current().pb_set_message("Installing stack");
+    Span::current().pb_set_message(&format!(
+        "Installing stack {stack_name}",
+        stack_name = args.stack_name
+    ));
 
     let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
     let release_list = release::ReleaseList::build(&files, transfer_client)
@@ -353,6 +394,39 @@ async fn install_cmd(
             ])
             .context(BuildLabelsSnafu)?;
 
+            // `stackablectl stack uninstall` relies on namespace deletion, suggest installing in a non-default namespace
+            // It should still be possible to skip that if either uninstall is not needed
+            // or installing an older version of the stack which only supports the 'default' namespace
+            let non_default_namespace_confirmation = || -> Result<bool, CmdError> {
+                // Ask to install in a non-default namespace, currently suggesting the stack name as namespace name
+                Confirm::new()
+                .with_prompt(
+                    format!(
+                        "Stacks installed in the {DEFAULT_NAMESPACE:?} namespace cannot be uninstalled with stackablectl. Install the stack in the {stack_namespace:?} namespace instead?",
+                    stack_namespace = args.stack_name.clone())
+                )
+                .default(true)
+                .interact()
+                .context(ConfirmDialogSnafu)
+            };
+
+            let stack_namespace = if args.namespaces.namespace == DEFAULT_NAMESPACE {
+                if args.prompt_args.assume_yes
+                    || tracing_indicatif::suspend_tracing_indicatif(
+                        non_default_namespace_confirmation,
+                    )?
+                {
+                    // User selected to install in suggested namespace
+                    args.stack_name.clone()
+                } else {
+                    // User selected to install in default namespace
+                    args.namespaces.namespace.clone()
+                }
+            } else {
+                // User provided a non-default namespace with command argument
+                args.namespaces.namespace.clone()
+            };
+
             let values_file = cli.get_values_file().context(PathOrUrlParseSnafu)?;
             let operator_values = load_operator_values(values_file.as_ref(), transfer_client)
                 .await
@@ -363,7 +437,7 @@ async fn install_cmd(
                 // There is no demo when installing only a stack
                 demo_name: None,
                 operator_namespace: args.namespaces.operator_namespace.clone(),
-                stack_namespace: args.namespaces.namespace.clone(),
+                stack_namespace: stack_namespace.clone(),
                 parameters: args.parameters.clone(),
                 skip_release: args.skip_release,
                 labels,
@@ -392,11 +466,8 @@ async fn install_cmd(
 
             let stacklet_cmd = format!(
                 "stackablectl stacklet list{option}",
-                option = if args.namespaces.namespace != DEFAULT_NAMESPACE {
-                    format!(
-                        " --namespace {namespace}",
-                        namespace = args.namespaces.namespace
-                    )
+                option = if stack_namespace != DEFAULT_NAMESPACE {
+                    format!(" --namespace {namespace}", namespace = stack_namespace)
                 } else {
                     "".into()
                 }
@@ -409,6 +480,84 @@ async fn install_cmd(
                     "Installed stack {stack_name:?}",
                     stack_name = args.stack_name
                 ));
+
+            Ok(output.render())
+        }
+        None => Ok("No such stack".into()),
+    }
+}
+
+#[instrument(skip(cli, stack_list, transfer_client), fields(indicatif.pb_show = true))]
+async fn uninstall_cmd(
+    args: &StackUninstallArgs,
+    cli: &Cli,
+    stack_list: stack::StackList,
+    transfer_client: &xfer::Client,
+) -> Result<String, CmdError> {
+    let mut output = Cli::result();
+
+    let proceed_with_uninstall = args.prompt_args.assume_yes
+        || tracing_indicatif::suspend_tracing_indicatif(|| -> Result<bool, CmdError> {
+            Confirm::new()
+            .with_prompt(
+                format!(
+                    "Uninstalling the stack {stack_name:?} will delete the {stack_namespace:?} namespace. This action cannot be undone. Proceed?",
+                stack_name = args.stack_name.clone(),
+                stack_namespace = args.namespaces.namespace.clone())
+            )
+            .default(true)
+            .interact()
+            .context(ConfirmDialogSnafu)
+        })?;
+
+    if !proceed_with_uninstall {
+        output.with_output(format!(
+            "Uninstalling stack {stack_name:?} canceled",
+            stack_name = args.stack_name.clone()
+        ));
+
+        return Ok(output.render());
+    }
+
+    info!(stack_name = %args.stack_name, "Uninstalling stack");
+    Span::current().pb_set_message(&format!(
+        "Uninstalling stack {stack_name}",
+        stack_name = args.stack_name
+    ));
+
+    match stack_list.get(&args.stack_name) {
+        Some(stack) => {
+            let client = Client::new().await.context(KubeClientCreateSnafu)?;
+
+            let files = cli.get_release_files().context(PathOrUrlParseSnafu)?;
+            let release_list = release::ReleaseList::build(&files, transfer_client)
+                .await
+                .context(BuildListSnafu)?;
+
+            stack
+                .uninstall(
+                    release_list,
+                    StackUninstallParameters {
+                        stack_name: args.stack_name.clone(),
+                        // There is no demo when uninstalling only a stack
+                        demo_name: None,
+                        operator_namespace: args.namespaces.operator_namespace.clone(),
+                        stack_namespace: args.namespaces.namespace.clone(),
+                        skip_operators: args.skip_operators_and_crds,
+                        skip_crds: args.skip_operators_and_crds,
+                    },
+                    &client,
+                    transfer_client,
+                )
+                .await
+                .context(UninstallStackSnafu {
+                    stack_name: args.stack_name.clone(),
+                })?;
+
+            output.with_output(format!(
+                "Uninstalled stack {stack_name:?}",
+                stack_name = args.stack_name
+            ));
 
             Ok(output.render())
         }

@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 use snafu::{OptionExt, ResultExt, Snafu};
+use stackable_operator::kvp::{Label, LabelError};
 use tracing::{Span, debug, info, instrument, warn};
 use tracing_indicatif::span_ext::IndicatifSpanExt as _;
 #[cfg(feature = "openapi")]
@@ -9,13 +10,13 @@ use crate::{
     common::manifest::ManifestSpec,
     platform::{
         cluster::{ResourceRequests, ResourceRequestsError},
-        demo::DemoInstallParameters,
+        demo::{DemoInstallParameters, DemoUninstallParameters},
         manifests::{self, InstallManifestsExt},
         release::ReleaseList,
         stack::{self, StackInstallParameters, StackList},
     },
     utils::{
-        k8s::Client,
+        k8s::{self, Client},
         params::{
             IntoParameters, IntoParametersError, Parameter, RawParameter, RawParameterParseError,
         },
@@ -47,8 +48,21 @@ pub enum Error {
     #[snafu(display("failed to install stack"))]
     InstallStack { source: stack::Error },
 
+    /// This error indicates that the release failed to uninstall.
+    #[snafu(display("failed to uninstall release"))]
+    UninstallRelease { source: stack::Error },
+
     #[snafu(display("failed to install stack manifests"))]
     InstallManifests { source: manifests::Error },
+
+    #[snafu(display("failed to uninstall Helm manifests"))]
+    UninstallHelmManifests { source: manifests::Error },
+
+    #[snafu(display("failed to delete object"))]
+    DeleteObject { source: k8s::Error },
+
+    #[snafu(display("failed to build label"))]
+    BuildLabel { source: LabelError },
 }
 
 impl InstallManifestsExt for DemoSpec {}
@@ -180,33 +194,128 @@ impl DemoSpec {
     }
 
     #[instrument(skip_all, fields(
+        demo_name = %uninstall_parameters.demo_name,
+        demo_namespace = %uninstall_parameters.demo_namespace,
         stack_name = %self.stack,
-        operator_namespace = %install_params.operator_namespace,
-        demo_namespace = %install_params.demo_namespace,
+    ))]
+    pub async fn uninstall(
+        &self,
+        stack_list: StackList,
+        release_list: ReleaseList,
+        uninstall_parameters: DemoUninstallParameters,
+        client: &Client,
+        transfer_client: &xfer::Client,
+    ) -> Result<(), Error> {
+        // Get the stack spec based on the name defined in the demo spec
+        let stack = stack_list.get(&self.stack).context(NoSuchStackSnafu {
+            name: self.stack.clone(),
+        })?;
+
+        // Uninstall Helm Charts
+        let parameters = &mut Vec::new()
+            .into_params(self.parameters.clone())
+            .context(ParseParametersSnafu)?;
+
+        // We add the STACK and DEMO parameter, so that demos can use that to render e.g. the demo label
+        parameters.insert("STACK".to_owned(), self.stack.clone());
+        parameters.insert("DEMO".to_owned(), uninstall_parameters.demo_name.clone());
+
+        Self::uninstall_helm_manifests(
+            &self.manifests,
+            parameters,
+            &uninstall_parameters.demo_namespace.to_owned(),
+            transfer_client,
+        )
+        .await
+        .context(UninstallHelmManifestsSnafu)?;
+
+        let stack_parameters = &mut Vec::new()
+            .into_params(stack.parameters.clone())
+            .context(ParseParametersSnafu)?;
+
+        // We add the STACK and DEMO parameter, so that stacks can use that to render e.g. the stack label
+        stack_parameters.insert("STACK".to_owned(), self.stack.clone());
+        stack_parameters.insert("DEMO".to_owned(), uninstall_parameters.demo_name.clone());
+
+        Self::uninstall_helm_manifests(
+            &stack.manifests,
+            stack_parameters,
+            &uninstall_parameters.demo_namespace.to_owned(),
+            transfer_client,
+        )
+        .await
+        .context(UninstallHelmManifestsSnafu)?;
+
+        // Delete demo namespace
+        client
+            .delete_namespace(uninstall_parameters.demo_namespace)
+            .await
+            .context(DeleteObjectSnafu)?;
+
+        // Delete remaining objects not namespace scoped
+        client
+            .delete_all_objects_with_label(
+                Label::try_from(("stackable.tech/demo", &uninstall_parameters.demo_name))
+                    .context(BuildLabelSnafu)?,
+                None,
+            )
+            .await
+            .context(DeleteObjectSnafu)?;
+
+        // Delete operators and the operator namespace
+        if !uninstall_parameters.skip_operators {
+            stack
+                .uninstall_release(release_list, &uninstall_parameters.operator_namespace)
+                .await
+                .context(UninstallReleaseSnafu)?;
+
+            client
+                .delete_namespace(uninstall_parameters.operator_namespace)
+                .await
+                .context(DeleteObjectSnafu)?;
+        }
+
+        // Delete CRDs
+        if !uninstall_parameters.skip_crds {
+            client
+                .delete_crds_with_group_suffix("stackable.tech")
+                .await
+                .context(DeleteObjectSnafu)?;
+        }
+
+        Ok(())
+    }
+
+    #[instrument(skip_all, fields(
+        stack_name = %self.stack,
+        operator_namespace = %install_parameters.operator_namespace,
+        demo_namespace = %install_parameters.demo_namespace,
         indicatif.pb_show = true
     ))]
     async fn prepare_manifests(
         &self,
-        install_params: DemoInstallParameters,
+        install_parameters: DemoInstallParameters,
         client: &Client,
         transfer_client: &xfer::Client,
     ) -> Result<(), Error> {
         info!("Installing demo manifests");
         Span::current().pb_set_message("Installing manifests");
 
-        let params = install_params
+        let mut parameters = install_parameters
             .parameters
             .to_owned()
             .into_params(&self.parameters)
             .context(ParseParametersSnafu)?;
 
+        // We add the STACK and DEMO parameter, so that demos can use that to render e.g. the demo label
+        parameters.insert("STACK".to_owned(), install_parameters.stack_name);
+        parameters.insert("DEMO".to_owned(), install_parameters.demo_name);
+
         Self::install_manifests(
             &self.manifests,
-            &params,
-            &install_params.demo_namespace,
-            &install_params.stack_name,
-            Some(&install_params.demo_name),
-            install_params.labels,
+            &parameters,
+            &install_parameters.demo_namespace,
+            install_parameters.labels,
             client,
             transfer_client,
         )

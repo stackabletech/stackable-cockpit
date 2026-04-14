@@ -306,27 +306,28 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and _
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from help" -f -a "uninstall" -d 'Uninstall a release'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from help" -f -a "upgrade" -d 'Upgrade a release'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand release; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l release -d 'Target a specific Stackable release' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s l -l log-level -d 'Log level this application uses' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l release -d 'Target a specific Stackable release' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
 stable-nodes\t''
 ephemeral-nodes\t''"
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s h -l help -d 'Print help (see more with \'--help\')'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -f -a "list" -d 'List available stacks'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -f -a "describe" -d 'Describe a specific stack'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -f -a "install" -d 'Install a specific stack'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "list" -d 'List available stacks'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "describe" -d 'Describe a specific stack'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "install" -d 'Install a specific stack'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "uninstall" -d 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "plain\t'Print output formatted as plain text'
 table\t'Print output formatted as a table'
 json\t'Print output formatted as JSON'
@@ -393,12 +394,35 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __f
 stable-nodes\t''
 ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l skip-release -d 'Skip the installation of the release during the stack install process'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s y -l assume-yes -l yes -d 'Assume "yes" as answer to all prompts and run non-interactively'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s n -l namespace -l product-ns -d 'Namespace where the stacks or demos are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l release -d 'Target a specific Stackable release' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
+repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l skip-operators-and-crds -d 'Skip uninstalling Stackable operators and CRDs'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s y -l assume-yes -l yes -d 'Assume "yes" as answer to all prompts and run non-interactively'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from uninstall" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from help" -f -a "list" -d 'List available stacks'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from help" -f -a "describe" -d 'Describe a specific stack'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from help" -f -a "install" -d 'Install a specific stack'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from help" -f -a "uninstall" -d 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stack; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and not __fish_seen_subcommand_from credentials list help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
@@ -461,27 +485,28 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and 
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from help" -f -a "credentials" -d 'Display credentials for a stacklet'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from help" -f -a "list" -d 'List deployed stacklets'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand stacklet; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l release -d 'Target a specific Stackable release' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s l -l log-level -d 'Log level this application uses' -r
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l release -d 'Target a specific Stackable release' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
 repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
 stable-nodes\t''
 ephemeral-nodes\t''"
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s h -l help -d 'Print help (see more with \'--help\')'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -s V -l version -d 'Print version'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -f -a "list" -d 'List available demos'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -f -a "describe" -d 'Print out detailed demo information'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -f -a "install" -d 'Install a specific demo'
-complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "list" -d 'List available demos'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "describe" -d 'Print out detailed demo information'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "install" -d 'Install a specific demo'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "uninstall" -d 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and not __fish_seen_subcommand_from list describe install uninstall help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from list" -s o -l output -r -f -a "plain\t'Print output formatted as plain text'
 table\t'Print output formatted as a table'
 json\t'Print output formatted as JSON'
@@ -548,12 +573,35 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fi
 stable-nodes\t''
 ephemeral-nodes\t''"
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l skip-release -d 'Skip the installation of the release during the stack install process'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s y -l assume-yes -l yes -d 'Assume "yes" as answer to all prompts and run non-interactively'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from install" -s V -l version -d 'Print version'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l operator-namespace -l operator-ns -d 'Namespace where the operators are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s n -l namespace -l product-ns -d 'Namespace where the stacks or demos are deployed' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l release -d 'Target a specific Stackable release' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s l -l log-level -d 'Log level this application uses' -r
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s s -l stack-file -d 'Provide one or more additional (custom) stack file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s r -l release-file -d 'Provide one or more additional (custom) release file(s)' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s f -l operator-values -d 'Path to a Helm values file that will be used for the installation of operators' -r -F
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l helm-repo-stable -d 'Provide a custom Helm stable repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l helm-repo-test -d 'Provide a custom Helm test repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l helm-repo-dev -d 'Provide a custom Helm dev repository URL' -r -f
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l chart-source -d 'Source the charts from either a OCI registry or from index.yaml-based repositories' -r -f -a "oci\t'OCI registry'
+repo\t'index.yaml-based repositories: resolution (dev, test, stable) is based on the version and thus will be operator-specific'"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l listener-class-preset -d 'Choose the ListenerClass preset (`none`, `ephemeral-nodes` or `stable-nodes`)' -r -f -a "none\t''
+stable-nodes\t''
+ephemeral-nodes\t''"
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l skip-operators-and-crds -d 'Skip uninstalling Stackable operators and CRDs'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s y -l assume-yes -l yes -d 'Assume "yes" as answer to all prompts and run non-interactively'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -l no-cache -d 'Do not cache the remote (default) demo, stack and release files'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from uninstall" -s V -l version -d 'Print version'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "list" -d 'List available demos'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "describe" -d 'Print out detailed demo information'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "install" -d 'Install a specific demo'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "uninstall" -d 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand demo; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s l -l log-level -d 'Log level this application uses' -r
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand completions; and not __fish_seen_subcommand_from bash elvish fish nushell zsh help" -s d -l demo-file -d 'Provide one or more additional (custom) demo file(s)' -r -F
@@ -796,11 +844,13 @@ complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fi
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from stack" -f -a "list" -d 'List available stacks'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from stack" -f -a "describe" -d 'Describe a specific stack'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from stack" -f -a "install" -d 'Install a specific stack'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from stack" -f -a "uninstall" -d 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from stacklet" -f -a "credentials" -d 'Display credentials for a stacklet'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from stacklet" -f -a "list" -d 'List deployed stacklets'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from demo" -f -a "list" -d 'List available demos'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from demo" -f -a "describe" -d 'Print out detailed demo information'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from demo" -f -a "install" -d 'Install a specific demo'
+complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from demo" -f -a "uninstall" -d 'Uninstall a specific stack. Caution: This will delete the provided stack namespace, the operators and provided operator namespace, and all Stackable CRDs'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "bash" -d 'Generate shell completions for Bash'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "elvish" -d 'Generate shell completions for Elvish'
 complete -c stackablectl -n "__fish_stackablectl_using_subcommand help; and __fish_seen_subcommand_from completions" -f -a "fish" -d 'Generate shell completions for Fish'

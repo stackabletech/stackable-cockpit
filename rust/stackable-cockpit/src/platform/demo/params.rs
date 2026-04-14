@@ -22,3 +22,13 @@ pub struct DemoInstallParameters {
     pub chart_source: ChartSourceType,
     pub operator_values: Mapping,
 }
+
+pub struct DemoUninstallParameters {
+    pub demo_name: String,
+
+    pub operator_namespace: String,
+    pub demo_namespace: String,
+
+    pub skip_operators: bool,
+    pub skip_crds: bool,
+}
