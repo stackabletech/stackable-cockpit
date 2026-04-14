@@ -45,6 +45,9 @@ pub async fn determine_and_store_listener_class_preset(from_cli: Option<&Listene
     let listener_class_preset = match kubernetes_environment {
         // Kind does not support LoadBalancers out of the box, so avoid that
         KubernetesEnvironment::Kind => ListenerClassPreset::StableNodes,
+        // Minikube does support LoadBalancers via "minikube tunnel", but that requires additional setup
+        // and we assume that users running Minikube with stackablectl want to keep things simple.
+        KubernetesEnvironment::Minikube => ListenerClassPreset::StableNodes,
         // LoadBalancer support in k3s is optional, so let's be better safe than sorry and not use
         // them
         KubernetesEnvironment::K3s => ListenerClassPreset::StableNodes,
@@ -69,6 +72,7 @@ enum KubernetesEnvironment {
     Kind,
     K3s,
     Ionos,
+    Minikube,
     Unknown,
 }
 
@@ -98,6 +102,13 @@ async fn guess_kubernetes_environment() -> Result<KubernetesEnvironment, snafu::
                 } else if provider_id.starts_with("ionos://") {
                     return Ok(KubernetesEnvironment::Ionos);
                 }
+            }
+        }
+
+        // Check labels for minikube (since minikube doesn't set providerID)
+        if let Some(labels) = node.metadata.labels.as_ref() {
+            if labels.contains_key("minikube.k8s.io/version") {
+                return Ok(KubernetesEnvironment::Minikube);
             }
         }
     }
