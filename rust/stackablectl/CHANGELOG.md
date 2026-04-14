@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 - Heuristic for setting listener presets when the environment is Minikube ([#438]).
 - Add `uninstall` subcommand for `demo`/`stack` commands ([#429]).
+- Add confirmation prompt to `install` subcommand for namespace selection ([#429]).
+- Add `--assume-yes` option for running commands non-interactively ([#429]).
 
 [#438]: https://github.com/stackabletech/stackable-cockpit/pull/438
 [#429]: https://github.com/stackabletech/stackable-cockpit/pull/429
