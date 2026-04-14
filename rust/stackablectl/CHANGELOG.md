@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+
+- Heuristic for setting listener presets when the environment is Minikube ([#438]).
+
+[#438]: https://github.com/stackabletech/stackable-cockpit/pull/438
+
 ## [1.4.0] - 2026-03-18
 
 ### Added
