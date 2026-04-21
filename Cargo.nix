@@ -10491,9 +10491,9 @@ rec {
       };
       "rustls-webpki" = rec {
         crateName = "rustls-webpki";
-        version = "0.103.11";
+        version = "0.103.12";
         edition = "2021";
-        sha256 = "1m3wpj1sfnpgwd6692lf42bcjsk6mbl6dwgarkn20jzadx8sz9i0";
+        sha256 = "01nxzkfd1l96jzp04svc7iznlkarzx3wb9p63a0i17rc4y2vnyc2";
         libName = "webpki";
         dependencies = [
           {
@@ -18185,10 +18185,6 @@ rec {
             name = "snafu";
             packageId = "snafu 0.9.0";
             features = [ "futures" ];
-          }
-          {
-            name = "stackable-cockpitd";
-            packageId = "stackable-cockpitd";
           }
           {
             name = "stackablectl";
