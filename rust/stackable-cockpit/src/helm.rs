@@ -539,3 +539,53 @@ where
 
     serde_yaml::from_str(&index_file_content).context(DeserializeYamlSnafu)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn source_kind_oci() {
+        let repo = ChartRepo {
+            name: "nifi-operator".to_string(),
+            url: "oci://oci.stackable.tech/sdp-charts".to_string(),
+        };
+        assert_eq!(repo.source_kind(), ChartSourceKind::Oci);
+    }
+
+    #[test]
+    fn source_kind_https_repo() {
+        let repo = ChartRepo {
+            name: "stackable-stable".to_string(),
+            url: "https://repo.stackable.tech/repository/helm-stable".to_string(),
+        };
+        assert_eq!(repo.source_kind(), ChartSourceKind::Repo);
+    }
+
+    #[test]
+    fn source_kind_http_repo() {
+        let repo = ChartRepo {
+            name: "example".to_string(),
+            url: "http://example.com/charts".to_string(),
+        };
+        assert_eq!(repo.source_kind(), ChartSourceKind::Repo);
+    }
+
+    #[test]
+    fn source_kind_relative_path_is_local() {
+        let repo = ChartRepo {
+            name: "local".to_string(),
+            url: "./charts/my-chart".to_string(),
+        };
+        assert_eq!(repo.source_kind(), ChartSourceKind::Local);
+    }
+
+    #[test]
+    fn source_kind_absolute_path_is_local() {
+        let repo = ChartRepo {
+            name: "local".to_string(),
+            url: "/absolute/path/to/chart".to_string(),
+        };
+        assert_eq!(repo.source_kind(), ChartSourceKind::Local);
+    }
+}
