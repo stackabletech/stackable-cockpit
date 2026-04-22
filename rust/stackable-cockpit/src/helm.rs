@@ -38,6 +38,40 @@ pub struct ChartRepo {
     pub url: String,
 }
 
+/// The kind of source a chart repo URL refers to.
+///
+/// [Self::Oci] and [Self::Local] don't need special handling, but [Self::Repo]
+/// needs to call `helm::add_repo`.
+///
+/// Note: We don't yet support local repositories, so an error should be emitted
+/// if the source is [Self::Local].
+#[derive(Debug, PartialEq)]
+pub enum ChartSourceKind {
+    /// OCI registry (url starts with `oci://`)
+    Oci,
+
+    /// Traditional index.yaml-based repository (url starts with `http://` or `https://`)
+    Repo,
+
+    /// Local filesystem path (not yet supported)
+    ///
+    /// This is the fallback if not oci or http(s).
+    Local,
+}
+
+impl ChartRepo {
+    /// Determine the kind of chart source based on the URL scheme.
+    pub fn source_kind(&self) -> ChartSourceKind {
+        if self.url.starts_with("oci://") {
+            ChartSourceKind::Oci
+        } else if self.url.starts_with("http://") || self.url.starts_with("https://") {
+            ChartSourceKind::Repo
+        } else {
+            ChartSourceKind::Local
+        }
+    }
+}
+
 #[derive(Debug, Snafu)]
 pub enum Error {
     #[snafu(display("failed to parse URL"))]
