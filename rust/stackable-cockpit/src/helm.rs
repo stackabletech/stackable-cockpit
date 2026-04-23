@@ -542,50 +542,24 @@ where
 
 #[cfg(test)]
 mod tests {
+    use rstest::rstest;
+
     use super::*;
 
-    #[test]
-    fn source_kind_oci() {
+    #[rstest]
+    #[case("oci://oci.stackable.tech/sdp-charts", ChartSourceKind::Oci)]
+    #[case(
+        "https://repo.stackable.tech/repository/helm-stable",
+        ChartSourceKind::Repo
+    )]
+    #[case("http://example.com/charts", ChartSourceKind::Repo)]
+    #[case("./charts/my-chart", ChartSourceKind::Local)]
+    #[case("/absolute/path/to/chart", ChartSourceKind::Local)]
+    fn source_kind(#[case] url: &str, #[case] expected: ChartSourceKind) {
         let repo = ChartRepo {
-            name: "nifi-operator".to_string(),
-            url: "oci://oci.stackable.tech/sdp-charts".to_string(),
+            name: "test".to_owned(),
+            url: url.to_owned(),
         };
-        assert_eq!(repo.source_kind(), ChartSourceKind::Oci);
-    }
-
-    #[test]
-    fn source_kind_https_repo() {
-        let repo = ChartRepo {
-            name: "stackable-stable".to_string(),
-            url: "https://repo.stackable.tech/repository/helm-stable".to_string(),
-        };
-        assert_eq!(repo.source_kind(), ChartSourceKind::Repo);
-    }
-
-    #[test]
-    fn source_kind_http_repo() {
-        let repo = ChartRepo {
-            name: "example".to_string(),
-            url: "http://example.com/charts".to_string(),
-        };
-        assert_eq!(repo.source_kind(), ChartSourceKind::Repo);
-    }
-
-    #[test]
-    fn source_kind_relative_path_is_local() {
-        let repo = ChartRepo {
-            name: "local".to_string(),
-            url: "./charts/my-chart".to_string(),
-        };
-        assert_eq!(repo.source_kind(), ChartSourceKind::Local);
-    }
-
-    #[test]
-    fn source_kind_absolute_path_is_local() {
-        let repo = ChartRepo {
-            name: "local".to_string(),
-            url: "/absolute/path/to/chart".to_string(),
-        };
-        assert_eq!(repo.source_kind(), ChartSourceKind::Local);
+        assert_eq!(repo.source_kind(), expected);
     }
 }
