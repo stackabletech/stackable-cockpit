@@ -57,8 +57,8 @@ pub enum Error {
     },
 
     /// This error indicates that the Helm chart source kind is not supported.
-    #[snafu(display("local Helm chart sources are not yet supported (url: {url})"))]
-    UnsupportedChartSource { url: String },
+    #[snafu(display("local Helm chart sources are not yet supported (source: {chart_source:?})"))]
+    UnsupportedChartSource { chart_source: String },
 
     /// This error indicates that Helm chart options could not be serialized
     /// into YAML.
@@ -120,7 +120,7 @@ pub trait InstallManifestsExt {
                         helm::ChartSourceKind::Oci => &helm_chart.repo.url,
                         helm::ChartSourceKind::Local => {
                             return UnsupportedChartSourceSnafu {
-                                url: helm_chart.repo.url.clone(),
+                                chart_source: helm_chart.repo.url.clone(),
                             }
                             .fail();
                         }
