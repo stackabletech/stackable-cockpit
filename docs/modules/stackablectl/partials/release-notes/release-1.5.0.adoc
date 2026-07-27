@@ -1,3 +1,5 @@
+== 1.5.0
+
 * Add heuristic for setting listener presets when the environment is Minikube
   See https://github.com/stackabletech/stackablectl/pull/438[stackablectl#438].
 * Add `uninstall` subcommand for `demo`/`stack` commands
