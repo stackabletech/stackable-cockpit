@@ -1,10 +1,11 @@
 ---
 name: Stackablectl Release Pipeline
+permissions: {}
 
 on:
   push:
     tags:
-      - "stackablectl-[0-9]+.[0-9]+.[0-9]+**"
+      - "stackablectl-[0-9]+.[0-9]+.[0-9]+*"
 
 env:
   CARGO_CYCLONEDX_VERSION: 0.5.7
@@ -20,6 +21,8 @@ jobs:
   release:
     name: Release for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write # required to upload release binaries and SBOM assets to the GitHub Release
     strategy:
       fail-fast: false
       matrix:
@@ -38,34 +41,42 @@ jobs:
             file-suffix: ""
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           submodules: recursive
 
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
+      - uses: dtolnay/rust-toolchain@6c977a6ca4077a0ceb28ffbe03f59d46e9ac8772 # v1
         with:
           toolchain: ${{ env.RUST_VERSION }}
           targets: ${{ matrix.target }}
 
-      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: '^1.22.2'
+          go-version: '^1.26.0'
 
       - name: Install cargo-cyclonedx
-        run: cargo install --locked cargo-cyclonedx@${{ env.CARGO_CYCLONEDX_VERSION }}
+        run: cargo install --locked cargo-cyclonedx@"$CARGO_CYCLONEDX_VERSION"
 
       - name: Build Binary
         if: matrix.os != 'windows-latest'
-        run: cargo build --target ${{ matrix.target }} --release --package stackablectl
+        env:
+          TARGET: ${{ matrix.target }}
+        run: cargo build --target "$TARGET" --release --package stackablectl
 
       - name: Generate SBOM
         run: cargo cyclonedx --all --spec-version 1.5 --describe binaries
 
       - name: Rename Binary
-        run: mv target/${{ matrix.target }}/release/stackablectl${{ matrix.file-suffix }} stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
+        env:
+          TARGET: ${{ matrix.target }}
+          FILE_SUFFIX: ${{ matrix.file-suffix }}
+        run: mv "target/$TARGET/release/stackablectl$FILE_SUFFIX" "stackablectl-$TARGET$FILE_SUFFIX"
 
       - name: Rename SBOM
-        run: mv rust/stackablectl/stackablectl_bin.cdx.xml stackablectl-${{ matrix.target }}.cdx.xml
+        env:
+          TARGET: ${{ matrix.target }}
+        run: mv rust/stackablectl/stackablectl_bin.cdx.xml "stackablectl-$TARGET.cdx.xml"
 
       - name: Upload Release Binary and SBOM
         uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
