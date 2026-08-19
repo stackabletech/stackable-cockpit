@@ -176,6 +176,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: cargo set-version --offline --package stackable-cockpit "0.0.0-pr$PR_NUMBER"
       - name: Build manifest list
+        if: ${{ !github.event.pull_request.head.repo.fork }}
         run: |
           # Creating manifest list
           make -e docker-manifest-list-build
