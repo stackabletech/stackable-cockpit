@@ -112,9 +112,6 @@ jobs:
 
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        with:
-          # pin to the latest Cosign v2.x, V3 changes how we publish (new bundle format / OCI 1.1 referrer signatures)
-          cosign-release: v2.6.5
 
       - name: Install syft
         uses: anchore/sbom-action/download-syft@9246b90769f852b3a8921f330c59e0b3f439d6e9 # v0.20.1
@@ -161,9 +158,6 @@ jobs:
     steps:
       - name: Install cosign
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
-        with:
-          # pin to the latest Cosign v2.x, V3 changes how we publish (new bundle format / OCI 1.1 referrer signatures)
-          cosign-release: v2.6.5
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
