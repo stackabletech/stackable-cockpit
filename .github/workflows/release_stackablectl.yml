@@ -5,7 +5,7 @@ permissions: {}
 on:
   push:
     tags:
-      - "stackablectl-[0-9]+.[0-9]+.[0-9]+*"
+      - "stackablectl-[0-9]+.[0-9]+.[0-9]+**"
 
 env:
   CARGO_CYCLONEDX_VERSION: 0.5.7
@@ -16,11 +16,31 @@ env:
   RUSTFLAGS: "-D warnings"
   RUSTDOCFLAGS: "-D warnings"
   RUST_LOG: "info"
+  RELEASE_TAG: ${{ github.ref_name }}
 
 jobs:
+  create-release:
+    name: Create Draft Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # required to draft the release
+    steps:
+      # This checkout is only here so that a .git directory is present because the gh CLI needs it.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create Draft Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create --draft --verify-tag "$RELEASE_TAG"
+
   release:
     name: Release for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
+    needs:
+      - create-release
     permissions:
       contents: write # required to upload release binaries and SBOM assets to the GitHub Release
     strategy:
@@ -79,8 +99,27 @@ jobs:
         run: mv rust/stackablectl/stackablectl_bin.cdx.xml "stackablectl-$TARGET.cdx.xml"
 
       - name: Upload Release Binary and SBOM
-        uses: softprops/action-gh-release@72f2c25fcb47643c292f7107632f7a47c1df5cd8 # v2.3.2
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET: ${{ matrix.target }}
+          FILE_SUFFIX: ${{ matrix.file-suffix }}
+        run: gh release upload "$RELEASE_TAG" "stackablectl-$TARGET$FILE_SUFFIX" "stackablectl-$TARGET.cdx.xml"
+
+  finish-release:
+    name: Finish Release
+    needs:
+      - release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # required to finalize the release
+    steps:
+      # This checkout is only here so that a .git directory is present because the gh CLI needs it.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          files: |
-            stackablectl-${{ matrix.target }}${{ matrix.file-suffix }}
-            stackablectl-${{ matrix.target }}.cdx.xml
+          persist-credentials: false
+
+      - name: Finish Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release edit --draft=false --latest "$RELEASE_TAG"

@@ -18,6 +18,12 @@ repos:
         args: ["--allow-missing-credentials"]
       - id: detect-private-key
 
+  - repo: https://github.com/EmbarkStudios/cargo-deny
+    rev: 1c9ca2b643ee15722178c1350501aabb024dd6f3 # 0.19.9
+    hooks:
+      - id: cargo-deny
+        args: ["--all-features", "check", "advisories", "bans", "licenses", "sources"]
+
   - repo: https://github.com/doublify/pre-commit-rust
     rev: eeee35a89e69d5772bdee97db1a6a898467b686e # 1.0
     hooks:
@@ -92,6 +98,22 @@ repos:
         entry: make regenerate-nix
         stages: [pre-commit, pre-merge-commit, manual]
         pass_filenames: false
+
+      - id: cargo-doc
+        name: cargo-doc
+        language: system
+        entry: cargo doc --no-deps --document-private-items
+        stages: [pre-commit, pre-merge-commit]
+        pass_filenames: false
+        files: \.rs$|Cargo\.(toml|lock)
+
+      - id: cargo-test
+        name: cargo-test
+        language: system
+        entry: cargo test
+        stages: [pre-commit, pre-merge-commit]
+        pass_filenames: false
+        files: \.rs$|Cargo\.(toml|lock)
 
       - id: cargo-rustfmt
         name: cargo-rustfmt
