@@ -1,9 +1,11 @@
 ---
-name: pre-commit
+name: prek
 
 on:
   pull_request:
   merge_group:
+
+permissions: {}
 
 env:
   CARGO_TERM_COLOR: always
@@ -12,13 +14,14 @@ env:
   NIX_VERSION: "2.25.2"
 
 jobs:
-  pre-commit:
+  prek:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
-      - uses: stackabletech/actions/run-pre-commit@5901c3b1455488820c4be367531e07c3c3e82538 # v0.4.0
+      - uses: stackabletech/actions/run-prek@0fe048f952bee522474903a925ea48dc706a0bb4 # v0.17.5
         with:
           rust: ${{ env.RUST_TOOLCHAIN_VERSION }}
           hadolint: ${{ env.HADOLINT_VERSION }}

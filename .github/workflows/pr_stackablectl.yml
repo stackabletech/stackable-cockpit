@@ -1,5 +1,6 @@
 ---
 name: Pull Request Stackablectl
+permissions: {}
 
 on:
   pull_request:
@@ -24,15 +25,38 @@ env:
   RUST_LOG: "info"
 
 jobs:
-  general-checks:
-    name: General Pull Request Checks
-    uses: ./.github/workflows/pr_general.yml
+  cargo-udeps:
+    name: Run cargo-udeps
+    runs-on: ubuntu-latest
+    env:
+      RUSTC_BOOTSTRAP: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          submodules: recursive
+
+      - name: Setup Rust
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal
+          rustup default "$RUST_VERSION"
+
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - uses: Swatinem/rust-cache@98c8021b550208e191a6a3145459bfc9fb29c4c0 # v2.8.0
+        with:
+          key: udeps
+          cache-all-crates: "true"
+      - run: cargo install --locked cargo-udeps@0.1.55
+      - run: cargo udeps --workspace
 
   build:
     name: Build stackablectl for ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
     needs:
-      - general-checks
+      - cargo-udeps
     strategy:
       fail-fast: false
       matrix:
@@ -56,16 +80,20 @@ jobs:
             os: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           submodules: recursive
 
-      - uses: dtolnay/rust-toolchain@0e66bd3e6b38ec0ad5312288c83e47c143e6b09e # v1
-        with:
-          toolchain: ${{ env.RUST_VERSION }}
-          targets: ${{ matrix.target }}
+      - name: Setup Rust
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          rustup toolchain install "$RUST_VERSION" --profile minimal
+          rustup target add "$TARGET" --toolchain "$RUST_VERSION"
+          rustup default "$RUST_VERSION"
 
-      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version: ${{ env.GO_VERSION }}
 
@@ -75,16 +103,6 @@ jobs:
 
       - name: Build for non-Windows
         if: matrix.os != 'windows-latest'
-        run: cargo build --target ${{ matrix.target }} -p stackablectl
-
-      - name: Ensure shell completions up-to-date
-        if: matrix.os == 'x86_64-unknown-linux-gnu'
-        run: |
-          cargo xtask gen-comp
-          git diff --exit-code
-
-      - name: Ensure man page is up-to-date
-        if: matrix.os == 'x86_64-unknown-linux-gnu'
-        run: |
-          cargo xtask gen-man
-          git diff --exit-code
+        env:
+          TARGET: ${{ matrix.target }}
+        run: cargo build --target "$TARGET" -p stackablectl

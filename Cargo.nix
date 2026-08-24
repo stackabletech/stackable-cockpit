@@ -4106,9 +4106,9 @@ rec {
       };
       "h2" = rec {
         crateName = "h2";
-        version = "0.4.15";
+        version = "0.4.16";
         edition = "2021";
-        sha256 = "0mgilh1g8gydcchqi6acs5l6j0gwg5jwpa64sj4b3ncb9v497c3c";
+        sha256 = "09syqqhvh36b3rwyn8vjhiz597hfki1hcz3hwagb3cs1ifapmwx9";
         authors = [
           "Carl Lerche <me@carllerche.com>"
           "Sean McArthur <sean@seanmonstar.com>"
