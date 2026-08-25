@@ -120,7 +120,7 @@ repos:
         files: \.rs$
         language: system
         # Pinning to a specific rustc version, so that we get consistent formatting
-        entry: cargo +nightly-2025-05-26 fmt --all -- --check
+        entry: cargo +nightly-2026-08-23 fmt --all -- --check
         stages: [pre-commit]
         pass_filenames: false
 
