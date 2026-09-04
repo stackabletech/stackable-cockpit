@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-09-04
+
+- Re-enable kube's proxy support ([#453]).
+
+[#453]: https://github.com/stackabletech/stackablectl/pull/453
+
 ## [1.5.0] - 2026-07-22
 
 ### Added

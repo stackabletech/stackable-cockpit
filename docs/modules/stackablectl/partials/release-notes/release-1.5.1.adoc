@@ -1,0 +1,4 @@
+== 1.5.1
+
+* Re-enable kube's proxy support.
+  See https://github.com/stackabletech/stackablectl/pull/453[stackablectl#453].

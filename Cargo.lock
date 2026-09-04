@@ -3639,7 +3639,7 @@ dependencies = [
 
 [[package]]
 name = "stackablectl"
-version = "1.5.0"
+version = "1.5.1"
 dependencies = [
  "built",
  "clap",
