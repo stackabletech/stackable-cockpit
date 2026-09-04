@@ -12,8 +12,9 @@ use futures::{
 use rand::RngExt;
 use snafu::{OptionExt, ResultExt, Snafu, futures::TryFutureExt as _};
 use stackable_operator::{
-    builder::pod::security::SecurityContextBuilder,
-    k8s_openapi::api::core::v1::{ContainerStatus, EphemeralContainer, Pod, PodSpec},
+    k8s_openapi::api::core::v1::{
+        ContainerStatus, EphemeralContainer, Pod, PodSpec, SecurityContext,
+    },
     kube::{
         self,
         api::{AttachParams, PatchParams, TerminalSize},
@@ -174,7 +175,10 @@ impl DebugArgs {
                         command: self.cmd.clone(),
                         args: self.cmd.is_some().then(Vec::new),
 
-                        security_context: Some(SecurityContextBuilder::run_as_root()),
+                        security_context: Some(SecurityContext {
+                            run_as_user: Some(0),
+                            ..Default::default()
+                        }),
 
                         // copy environment from template
                         env: template_container.env.clone(),
